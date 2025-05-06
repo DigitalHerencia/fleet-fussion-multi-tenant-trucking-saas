@@ -1,5 +1,6 @@
 # Node modules
 node_modules
+/node_modules
 
 # Environment files
 .env
@@ -8,12 +9,18 @@ node_modules
 
 # Next.js build output
 .next
+/.next/
 out
+/out/
+
+# Production
+/build
 
 # Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.pnpm-debug.log*
 
 # OS generated files
 .DS_Store
@@ -21,21 +28,45 @@ Thumbs.db
 
 # VSCode settings
 .vscode/
+/.vscode
+
+# Editor/IDE
+.idea/
 
 # Misc
 *.log
+_prd&tech-req.md
+_branding&copy.md
 
 # Ignore local database and cache
 .cache
+/.cache/
+.turbo
+**/.swc/
 
 # Ignore static exports
 out/
 
 # Ignore coverage reports
 coverage/
+/coverage
+.eslintcache
 
 # Ignore build artifacts
 dist/
 
 # Ignore public runtime files
 public/runtime/
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Project specific directories
+/.github
+
+# Storybook
+storybook-static/
