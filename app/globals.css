@@ -1,0 +1,38 @@
+/** @format */
+
+@import "tailwindcss";
+
+:root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --primary: 0 0% 9%;
+    --secondary: 0 0% 96.1%;
+    --border: 0 0% 89.8%;
+    --radius: 0.5rem;
+    --chart-1: 221 83% 53%;
+    --chart-2: 162 70% 51%;
+    --chart-3: 41 97% 56%;
+    --chart-4: 340 82% 52%;
+    --chart-5: 271 91% 65%;
+    --chart-6: 0 78% 63%;
+    --chart-7: 192 100% 44%;
+    --chart-8: 120 61% 50%;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --background: 0 0% 3.9%;
+        --foreground: 0 0% 98%;
+        --card: 0 0% 3.9%;
+        --primary: 0 0% 98%;
+        --secondary: 0 0% 14.9%;
+        --border: 0 0% 14.9%;
+    }
+
+    body {
+        background-color: hsl(var(--background));
+        color: hsl(var(--foreground));
+        font-family: system-ui, sans-serif;
+    }
+}

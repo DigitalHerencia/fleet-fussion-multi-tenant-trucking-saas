@@ -1,0 +1,139 @@
+"use client"
+
+import { Line, LineChart, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer, Bar, BarChart } from "recharts"
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+
+interface FinancialMetricsProps {
+  timeRange: string
+}
+
+const mockFinancialData = [
+  { date: "2023-06-01", revenue: 25800, expenses: 18500, profit: 7300 },
+  { date: "2023-06-08", revenue: 23400, expenses: 17200, profit: 6200 },
+  { date: "2023-06-15", revenue: 27500, expenses: 19800, profit: 7700 },
+  { date: "2023-06-22", revenue: 24600, expenses: 18100, profit: 6500 },
+  { date: "2023-06-29", revenue: 27150, expenses: 19300, profit: 7850 },
+]
+
+const mockExpenseBreakdown = [
+  { category: "Fuel", value: 26842 },
+  { category: "Maintenance", value: 12450 },
+  { category: "Insurance", value: 8750 },
+  { category: "Payroll", value: 35200 },
+  { category: "Admin", value: 6800 },
+  { category: "Other", value: 3850 },
+]
+
+export function FinancialMetrics({ timeRange }: FinancialMetricsProps) {
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-medium mb-4">Revenue & Expenses</h3>
+        <ChartContainer
+          config={{
+            revenue: {
+              label: "Revenue",
+              color: "hsl(var(--chart-1))",
+            },
+            expenses: {
+              label: "Expenses",
+              color: "hsl(var(--chart-2))",
+            },
+            profit: {
+              label: "Profit",
+              color: "hsl(var(--chart-3))",
+            },
+          }}
+          className="h-[400px]"
+        >
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={mockFinancialData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" />
+              <YAxis />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Legend />
+              <Line type="monotone" dataKey="revenue" stroke="var(--color-revenue)" name="Revenue" />
+              <Line type="monotone" dataKey="expenses" stroke="var(--color-expenses)" name="Expenses" />
+              <Line type="monotone" dataKey="profit" stroke="var(--color-profit)" name="Profit" />
+            </LineChart>
+          </ResponsiveContainer>
+        </ChartContainer>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <div>
+          <h3 className="text-lg font-medium mb-4">Expense Breakdown</h3>
+          <ChartContainer
+            config={{
+              value: {
+                label: "Amount",
+                color: "hsl(var(--chart-4))",
+              },
+            }}
+            className="h-[300px]"
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={mockExpenseBreakdown} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="category" />
+                <YAxis />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Legend />
+                <Bar dataKey="value" fill="var(--color-value)" name="Amount" />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+        </div>
+
+        <div>
+          <h3 className="text-lg font-medium mb-4">Financial Summary</h3>
+          <div className="rounded-md border">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b bg-muted/50">
+                  <th className="p-2 text-left text-sm font-medium">Metric</th>
+                  <th className="p-2 text-right text-sm font-medium">Current Period</th>
+                  <th className="p-2 text-right text-sm font-medium">Previous Period</th>
+                  <th className="p-2 text-right text-sm font-medium">Change</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b">
+                  <td className="p-2 text-sm font-medium">Total Revenue</td>
+                  <td className="p-2 text-sm text-right">$128,450</td>
+                  <td className="p-2 text-sm text-right">$114,750</td>
+                  <td className="p-2 text-sm text-right text-green-600">+12.0%</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="p-2 text-sm font-medium">Total Expenses</td>
+                  <td className="p-2 text-sm text-right">$93,892</td>
+                  <td className="p-2 text-sm text-right">$85,320</td>
+                  <td className="p-2 text-sm text-right text-red-600">+10.0%</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="p-2 text-sm font-medium">Net Profit</td>
+                  <td className="p-2 text-sm text-right">$34,558</td>
+                  <td className="p-2 text-sm text-right">$29,430</td>
+                  <td className="p-2 text-sm text-right text-green-600">+17.4%</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="p-2 text-sm font-medium">Profit Margin</td>
+                  <td className="p-2 text-sm text-right">26.9%</td>
+                  <td className="p-2 text-sm text-right">25.6%</td>
+                  <td className="p-2 text-sm text-right text-green-600">+1.3%</td>
+                </tr>
+                <tr>
+                  <td className="p-2 text-sm font-medium">Revenue per Mile</td>
+                  <td className="p-2 text-sm text-right">$3.02</td>
+                  <td className="p-2 text-sm text-right">$2.85</td>
+                  <td className="p-2 text-sm text-right text-green-600">+6.0%</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
