@@ -1,72 +1,49 @@
-"use client"
+// Server Component example using auth() helper
+import { auth } from "@clerk/nextjs/server"
+import { redirect } from "next/navigation"
+import { getUserRoleInCompany } from "@/lib/auth"
+import { UserRole } from "@/db/schema"
 
-import { useParams } from "next/navigation"
-import { useEffect, useState } from "react"
-import { DashboardHeader } from "@/components/dashboard/dashboard-header"
-import { DashboardShell } from "@/components/dashboard/dashboard-shell"
-import { DashboardCards } from "@/components/dashboard/dashboard-cards"
-import { Loader2 } from "lucide-react"
+export default async function DashboardPage({ params }: { params: { companyId: string } }) {
+    const { userId } = await auth()
 
-// Mock KPI data - in a real app, you'd fetch this based on the company ID
-const mockKPIs = {
-    activeVehicles: 10,
-    activeDrivers: 12,
-    totalLoads: 45,
-    completedLoads: 32,
-    pendingLoads: 8,
-    inTransitLoads: 5,
-    totalMiles: 24680,
-    totalRevenue: 58750,
-    upcomingMaintenance: 3,
-    recentInspections: 8,
-    failedInspections: 1,
-    utilizationRate: "3.2",
-    revenuePerMile: "2.38"
-}
+    // If not authenticated, redirect to sign-in
+    if (!userId) {
+        redirect("/sign-in")
+    }
 
-export default function CompanyDashboardPage() {
-    const { companyId } = useParams() as { companyId: string }
-    const [company, setCompany] = useState<any>(null)
-    const [isLoading, setIsLoading] = useState(true)
+    try {
+        // Verify user has access to this company and get their role
+        const companyId = parseInt(params.companyId, 10)
+        const userRole = await getUserRoleInCompany(userId, companyId)
 
-    useEffect(() => {
-        async function fetchCompanyData() {
-            try {
-                const res = await fetch(`/api/companies/${companyId}`)
-                if (!res.ok) throw new Error("Failed to fetch company")
-                const data = await res.json()
-                setCompany(data)
-            } catch (error) {
-                console.error("Error fetching company:", error)
-            } finally {
-                setIsLoading(false)
-            }
-        }
-
-        if (companyId) {
-            fetchCompanyData()
-        }
-    }, [companyId])
-
-    if (isLoading) {
         return (
-            <div className="flex h-screen w-full items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <div className="p-6">
+                <h1 className="text-2xl font-bold mb-4">Company Dashboard</h1>
+                <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-6">
+                    <p className="mb-2">
+                        <span className="font-medium">Company ID:</span> {params.companyId}
+                    </p>
+                    <p className="mb-4">
+                        <span className="font-medium">Your Role:</span> {userRole}
+                    </p>
+
+                    {/* Role-specific content can be conditionally rendered here */}
+                    {(userRole === UserRole.ADMIN || userRole === UserRole.OWNER) && (
+                        <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-md">
+                            <h2 className="font-medium text-blue-800 dark:text-blue-300">
+                                Admin Controls
+                            </h2>
+                            <p className="text-sm text-blue-600 dark:text-blue-400">
+                                You have administrator access to this company.
+                            </p>
+                        </div>
+                    )}
+                </div>
             </div>
         )
+    } catch (error) {
+        // If there's an error (like user doesn't have access), redirect to unauthorized
+        redirect("/unauthorized")
     }
-
-    if (!company) {
-        return <div>Company not found. Please check the URL or select a different company.</div>
-    }
-
-    return (
-        <DashboardShell>
-            <DashboardHeader
-                heading={`${company.name} Dashboard`}
-                text="Overview of your fleet operations"
-            />
-            <DashboardCards kpis={mockKPIs} />
-        </DashboardShell>
-    )
 }

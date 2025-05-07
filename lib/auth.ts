@@ -1,224 +1,64 @@
-"use server"
-
-import { auth as clerkAuth, currentUser } from "@clerk/nextjs/server"
-import { redirect } from "next/navigation"
-import { db } from "@/db"
+// lib/auth.ts
+import { cookies } from "next/headers"
+import { auth } from "@clerk/nextjs/server"
+import { db } from "./db"
 import { companyUsers } from "@/db/schema"
 import { eq, and } from "drizzle-orm"
-import { cache } from "react"
-import { getCurrentCompany, getUserRole } from "@/lib/actions/company-actions"
+import { UserRole } from "@/db/schema"
 
-// User roles enum
-export enum UserRole {
-    OWNER = "owner",
-    ADMIN = "admin",
-    DISPATCHER = "dispatcher",
-    SAFETY_MANAGER = "safety_manager",
-    DRIVER = "driver",
-    ACCOUNTANT = "accountant",
-    VIEWER = "viewer"
+// 1) Get the Clerk user ID from the request context
+export async function getCurrentUserId(): Promise<string> {
+    const { userId } = await auth()
+    if (!userId) throw new Error("Not authenticated")
+    return userId
 }
 
-// Role-based permissions
-export const rolePermissions = {
-    [UserRole.OWNER]: [
-        "view:all",
-        "create:all",
-        "update:all",
-        "delete:all",
-        "manage:billing",
-        "manage:users"
-    ],
-    [UserRole.ADMIN]: ["view:all", "create:all", "update:all", "delete:all", "manage:users"],
-    [UserRole.DISPATCHER]: [
-        "view:loads",
-        "create:loads",
-        "update:loads",
-        "delete:loads",
-        "view:drivers",
-        "view:vehicles",
-        "assign:loads"
-    ],
-    [UserRole.SAFETY_MANAGER]: [
-        "view:drivers",
-        "view:vehicles",
-        "view:compliance",
-        "update:compliance",
-        "create:inspections",
-        "update:inspections",
-        "view:loads"
-    ],
-    [UserRole.DRIVER]: ["view:own_loads", "update:own_status", "create:own_hos", "create:own_dvir"],
-    [UserRole.ACCOUNTANT]: ["view:loads", "view:ifta", "create:ifta", "export:reports"],
-    [UserRole.VIEWER]: ["view:loads", "view:drivers", "view:vehicles", "view:analytics"]
+// 2) Read the selectedCompany cookie (set at login/company-select)
+export async function getCurrentCompanyId(): Promise<number> {
+    const cookieStore = await cookies()
+    const raw = cookieStore.get("selectedCompany")?.value
+    if (!raw) throw new Error("No company selected")
+    const id = parseInt(raw, 10)
+    if (isNaN(id)) throw new Error("Invalid company id")
+    return id
 }
 
-// Check if a user has a specific permission
-export function hasPermission(userRole: UserRole, permission: string): boolean {
-    if (!userRole || !permission) {
-        return false
-    }
-
-    const permissions = rolePermissions[userRole]
-
-    if (!permissions) {
-        return false
-    }
-
-    // Check for specific permission
-    if (permissions.includes(permission)) {
-        return true
-    }
-
-    // Check for wildcard permissions
-    if (permission.includes(":") && permissions.includes(`${permission.split(":")[0]}:all`)) {
-        return true
-    }
-
-    // Owner and Admin have all permissions
-    if (userRole === UserRole.OWNER || userRole === UserRole.ADMIN) {
-        return true
-    }
-
-    return false
+// 3) Lookup the user’s role within that company
+export async function getUserRoleInCompany(userId?: string, companyId?: number): Promise<UserRole> {
+    const resolvedUserId = userId ?? (await getCurrentUserId())
+    const resolvedCompanyId = companyId ?? (await getCurrentCompanyId())
+    const record = await db.query.companyUsers.findFirst({
+        where: and(
+            eq(companyUsers.userId, resolvedUserId),
+            eq(companyUsers.companyId, resolvedCompanyId.toString())
+        )
+    })
+    if (!record) throw new Error("User not a member of this company")
+    return record.role as UserRole
 }
 
-/**
- * Get authentication status and user information
- * Use this function in server components to get all auth context
- */
-export const getUserAuth = cache(async () => {
-    const { userId } = await clerkAuth()
-
-    if (!userId) {
-        return {
-            isAuthenticated: false,
-            isCompanySelected: false,
-            user: null,
-            company: null,
-            role: null
-        }
-    }
-
-    const user = await currentUser()
-    const companyResult = await getCurrentCompany()
-    const company = companyResult.success ? companyResult.data : null
-
-    const roleResult = await getUserRole()
-    const role = roleResult.success ? (roleResult.data as UserRole) : null
-
-    return {
-        isAuthenticated: true,
-        isCompanySelected: !!company,
-        user,
-        company,
-        role
-    }
-})
-
-/**
- * Get the current company based on cookie/session
- * Returns null if no company is selected
- */
-export const getCurrentCompanyFromAuth = cache(async () => {
-    const companyResult = await getCurrentCompany()
-    return companyResult.success ? companyResult.data : null
-})
-
-/**
- * Get the user's role in the current company
- * Returns null if no user or company is selected
- */
-export const getUserRoleInCompany = cache(async () => {
-    const roleResult = await getUserRole()
-    return roleResult.success ? (roleResult.data as UserRole) : null
-})
-
-/**
- * Check if a user has a required role
- * Returns boolean indicating if the user has the required role
- */
-export async function checkUserRole(requiredRole: UserRole) {
+// 4) Authorization helper: require at least one of these roles (admins/owners always pass)
+export async function authorizeRoles(required: UserRole[]) {
     const role = await getUserRoleInCompany()
-
-    if (!role) {
-        return false
+    if (![...required, UserRole.ADMIN, UserRole.OWNER].includes(role)) {
+        throw new Error("Unauthorized")
     }
-
-    if (requiredRole === UserRole.OWNER) {
-        return role === UserRole.OWNER
-    }
-
-    if (requiredRole === UserRole.ADMIN) {
-        return role === UserRole.OWNER || role === UserRole.ADMIN
-    }
-
-    // For other roles, check if the user has the exact role or is an admin/owner
-    return role === requiredRole || role === UserRole.ADMIN || role === UserRole.OWNER
 }
 
-/**
- * Check if user has permission
- * Returns boolean indicating if the user has the required permission
- */
-export async function checkPermission(permission: string) {
+// 5) (Optional) Permission-based check, if you prefer fine-grained strings
+export const rolePermissions: Record<UserRole, string[]> = {
+    [UserRole.OWNER]: ["*"],
+    [UserRole.ADMIN]: ["*"],
+    [UserRole.DISPATCHER]: ["load:create", "load:read", "load:update", "load:delete" /*…*/],
+    [UserRole.SAFETY_MANAGER]: ["compliance:read", "compliance:create", "compliance:update" /*…*/],
+    [UserRole.ACCOUNTANT]: ["ifta:create", "ifta:read" /*…*/],
+    [UserRole.DRIVER]: ["load:read_self" /*…*/],
+    [UserRole.VIEWER]: ["load:read", "driver:read", "vehicle:read" /*…*/]
+}
+// Example usage: checkPermission('load:create')
+export async function authorizePermission(perm: string) {
     const role = await getUserRoleInCompany()
-
-    if (!role) {
-        return false
-    }
-
-    return hasPermission(role as UserRole, permission)
-}
-
-/**
- * Require authentication for server components
- * Redirects to sign-in if not authenticated or company-selection if no company is selected
- */
-export async function requireAuth() {
-    const { userId } = await clerkAuth()
-
-    if (!userId) {
-        // Use the custom sign-in page directly instead of Clerk's universal flow
-        redirect("/sign-in?redirect_url=" + encodeURIComponent(global?.location?.href || "/"))
-    }
-
-    const companyResult = await getCurrentCompany()
-    const company = companyResult.success ? companyResult.data : null
-
-    if (!company) {
-        redirect("/company-selection")
-    }
-
-    return { userId, companyId: company.id }
-}
-
-/**
- * Protected route with role check for server components
- * Redirects appropriately based on authentication state and role
- */
-export async function protectRoute(requiredRole?: UserRole) {
-    const { userId } = await clerkAuth()
-
-    if (!userId) {
-        // Use the custom sign-in page directly instead of Clerk's universal flow
-        redirect("/sign-in?redirect_url=" + encodeURIComponent(global?.location?.href || "/"))
-    }
-
-    const companyResult = await getCurrentCompany()
-    const company = companyResult.success ? companyResult.data : null
-
-    if (!company) {
-        redirect("/company-selection")
-    }
-
-    if (requiredRole) {
-        const hasRole = await checkUserRole(requiredRole)
-        if (!hasRole) {
-            // User doesn't have the required role
-            redirect("/unauthorized")
-        }
-    }
-
-    return { userId, companyId: company.id }
+    const perms = rolePermissions[role] || []
+    const allowed = perms.includes(perm) || perms.includes("*")
+    if (!allowed) throw new Error("Forbidden")
 }

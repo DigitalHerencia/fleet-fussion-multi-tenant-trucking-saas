@@ -1,134 +1,92 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server"
-import { NextResponse } from "next/server"
-import type { NextRequest } from "next/server"
-import type { ClerkMiddlewareAuth as Auth } from "@clerk/nextjs/server"
-import { db } from "@/db"
-import { companies, companyUsers } from "@/db/schema"
-import { eq, and } from "drizzle-orm"
-import { cookies } from "next/headers"
-import { getUserRoleInCompany, UserRole } from "@/lib/auth"
 
-// Define public routes that don't require authentication
+// middleware.ts
+import { NextResponse, type NextRequest } from "next/server"
+import { clerkMiddleware, type ClerkMiddlewareAuth } from "@clerk/nextjs/server"
+import { UserRole } from "@/db/schema"
+
+//
+// ——— 1) Routes requiring login vs. public routes ———
+//
 const publicRoutes = [
     "/",
-    "/sign-in(.*)", // Updated to include any sign-in paths
-    "/sign-up(.*)", // Updated to include any sign-up paths
+    "/sign-in(.*)",
+    "/sign-up(.*)",
     "/about",
     "/contact",
     "/pricing",
     "/features",
-    "/services",
     "/privacy",
     "/terms",
-    "/refund"
+    "/refund",
+    "/services",
+    "/api/public(.*)",
+    "/favicon.ico"
 ]
 
-// Routes that are accessible after authentication but before company selection
-const authOnlyRoutes = ["/onboarding(.*)", "/company-selection(.*)"]
+function isPublicRoute(path: string) {
+    return publicRoutes.some(pattern => new RegExp(`^${pattern}$`).test(path))
+}
 
-// Create a matcher for public routes
-const isPublicRoute = createRouteMatcher([...publicRoutes])
-
-// Create a matcher for auth-only routes
-const isAuthOnlyRoute = createRouteMatcher([...authOnlyRoutes])
-
-// Map of protected routes to required roles
-const protectedRouteRoles: { [route: string]: UserRole } = {
+//
+// ——— 2) Minimum roles per protected path prefix ———
+//
+const routeRoles: Record<string, UserRole> = {
     "/dispatch": UserRole.DISPATCHER,
     "/drivers": UserRole.DISPATCHER,
     "/vehicles": UserRole.DISPATCHER,
     "/compliance": UserRole.SAFETY_MANAGER,
-    "/settings": UserRole.ADMIN
-    // Add more as needed
+    "/ifta": UserRole.ACCOUNTANT,
+    "/settings": UserRole.ADMIN,
+    "/analytics": UserRole.ADMIN
 }
 
-interface ClerkAuth extends Auth {
-    userId?: string | null
-}
-
-export default clerkMiddleware(async (auth: ClerkAuth, req: NextRequest) => {
-    // Handle public routes - allow access
-    if (isPublicRoute(req)) {
-        return NextResponse.next()
+//
+// ——— 3) The actual middleware ———
+//
+export default clerkMiddleware(async (auth: ClerkMiddlewareAuth, req: NextRequest) => {
+    const userId = (await auth()).userId
+    const { pathname } = req.nextUrl
+    const { getUserRoleInCompany } = await import("@/lib/auth")
+    const { UserRole } = await import("@/db/schema")
+    // A) Public → do nothing
+    if (isPublicRoute(pathname)) {
+        return
     }
 
-    // If the user isn't authenticated, redirect to sign-in
-    if (!auth.userId) {
+    // B) Not signed in → redirect to Clerk sign-in
+    if (!userId) {
         const signInUrl = new URL("/sign-in", req.url)
-        // Preserve the redirect URL
         signInUrl.searchParams.set("redirect_url", req.url)
         return NextResponse.redirect(signInUrl)
     }
 
-    // Allow access to auth-only routes (like onboarding) for authenticated users without companies
-    if (isAuthOnlyRoute(req)) {
-        return NextResponse.next()
-    }
-
-    // Get current company from cookie
-    const cookieStore = await cookies()
-    const selectedCompanyId = cookieStore.get("selectedCompany")?.value
-
-    // If there's no company selected but the user is authenticated,
-    // redirect to company selection
-    if (!selectedCompanyId && !req.nextUrl.pathname.startsWith("/company-selection")) {
+    // C) Signed in + non-public → enforce company selection
+    const selectedCompany = req.cookies.get("selectedCompany")?.value
+    const companyId = selectedCompany ? parseInt(selectedCompany, 10) : NaN
+    if (!selectedCompany || isNaN(companyId)) {
         return NextResponse.redirect(new URL("/company-selection", req.url))
     }
 
-    // If company is selected, verify it exists and user is a member
-    if (selectedCompanyId && !req.nextUrl.pathname.startsWith("/onboarding")) {
-        try {
-            // Check if user belongs to this company
-            const userCompany = await db.query.companyUsers.findFirst({
-                where: and(
-                    eq(companyUsers.userId, auth.userId),
-                    eq(companyUsers.companyId, selectedCompanyId)
-                ),
-                with: {
-                    company: true
+    // D) Route-level RBAC
+    for (const [prefix, minRole] of Object.entries(routeRoles)) {
+        if (pathname.startsWith(prefix)) {
+            try {
+                const role = await getUserRoleInCompany(userId, companyId)
+                const isAdminOrOwner = [UserRole.ADMIN, UserRole.OWNER].includes(role)
+                if (!(isAdminOrOwner || role === minRole)) {
+                    return NextResponse.redirect(new URL("/unauthorized", req.url))
                 }
-            })
-
-            // If user doesn't belong to company, redirect to company selection
-            if (!userCompany) {
-                cookieStore.delete("selectedCompany")
-                return NextResponse.redirect(new URL("/company-selection", req.url))
+            } catch {
+                // e.g. user not in company
+                return NextResponse.redirect(new URL("/unauthorized", req.url))
             }
-
-            // If company doesn't exist, redirect to onboarding
-            if (!userCompany.company) {
-                return NextResponse.redirect(new URL("/onboarding", req.url))
-            }
-
-            // Role-based route protection
-            for (const [route, requiredRole] of Object.entries(protectedRouteRoles)) {
-                if (req.nextUrl.pathname.startsWith(route)) {
-                    const userRole = await getUserRoleInCompany()
-                    if (
-                        !userRole ||
-                        (userRole !== requiredRole &&
-                            userRole !== UserRole.ADMIN &&
-                            userRole !== UserRole.OWNER)
-                    ) {
-                        return NextResponse.redirect(new URL("/unauthorized", req.url))
-                    }
-                }
-            }
-        } catch (error) {
-            console.error("Error checking company in middleware:", error)
-            // Continue to the app if we can't check the company
-            // The application will handle this error state
         }
     }
 
-    return NextResponse.next()
+    // E) If we reach here, request is allowed
 })
 
 export const config = {
-    matcher: [
-        // Skip Next.js internals and all static files
-        "/((?!_next|static|favicon.ico|logo|icons|images|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.gif|.*\\.svg|.*\\.webp).*)",
-        // Force include only specific API routes that need auth
-        "/(api|trpc)/((?!public).*)"
-    ]
+    // Run on all pages & API routes except Next.js internals & static assets
+    matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"]
 }

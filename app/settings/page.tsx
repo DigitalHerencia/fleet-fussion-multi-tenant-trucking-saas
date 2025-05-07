@@ -1,23 +1,14 @@
-import { SettingsDashboard } from "@/components/settings/settings-dashboard"
-import { PageHeader } from "@/components/ui/page-header"
-import { Button } from "@/components/ui/button"
-import { Save } from "lucide-react"
+import { SettingsForm } from "@/features/settings/SettingsForm"
+import { getCompanySettings } from "@/lib/fetchers/settings"
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+    const companyId = Number(process.env.TEST_COMPANY_ID)
+    const settings = await getCompanySettings(companyId)
+
     return (
-        <div className="flex flex-col gap-6 p-4 md:p-6">
-            <PageHeader
-                title="Settings"
-                description="Manage your account and application settings"
-                breadcrumbs={[{ label: "Settings", href: "/settings" }]}
-                actions={
-                    <Button size="sm">
-                        <Save className="mr-2 h-4 w-4" />
-                        Save Changes
-                    </Button>
-                }
-            />
-            <SettingsDashboard />
+        <div className="max-w-xl mx-auto p-6">
+            <h1 className="text-2xl font-bold mb-4">Company Settings</h1>
+            <SettingsForm defaultValues={settings} />
         </div>
     )
 }

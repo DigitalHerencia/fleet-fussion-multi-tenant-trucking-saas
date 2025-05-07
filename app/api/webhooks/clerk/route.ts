@@ -2,7 +2,6 @@ import { Webhook } from "svix"
 import { headers } from "next/headers"
 import type { WebhookEvent } from "@clerk/nextjs/server"
 import { NextResponse } from "next/server"
-import { protectRoute } from "@/lib/auth"
 
 // External auth service integration
 async function syncUserWithExternalAuth(

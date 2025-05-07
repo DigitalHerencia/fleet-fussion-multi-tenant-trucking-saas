@@ -1,12 +1,25 @@
+import { driverRelations } from './../../db/schema';
 "use server"
 
 import { z } from "zod"
 import { revalidatePath } from "next/cache"
 import { db } from "@/db"
-import { loads as loadsSchema } from "@/db/schema"
+import {
+    loads as loadsSchema,
+    drivers as driversSchema,
+    vehicles as vehiclesSchema,
+    UserRole
+} from "@/db/schema"
 import { eq, and, desc, asc, type AnyColumn } from "drizzle-orm"
-import { getCurrentCompanyFromAuth, protectRoute, UserRole } from "@/lib/auth"
+import { getCurrentCompanyId, authorizeRoles } from "@/lib/auth"
 import { v4 as uuidv4 } from "uuid"
+import { loads } from "@/db/schema"
+import { loadSchema } from "@/lib/validation/load-schema"
+
+// Helper function to protect routes based on role
+async function protectRoute(role: UserRole) {
+    await authorizeRoles([role])
+}
 
 // Schema for load validation
 const loadInputSchema = z.object({
@@ -94,18 +107,20 @@ export async function getLoadsForCompany(
         }
 
         // Build sort options
-        let sortOptions: any = [];
+        let sortOptions: any = []
         if (options?.sortBy && options.sortBy in loadsSchema) {
-            const column = loadsSchema[options.sortBy as keyof typeof loadsSchema] as unknown as AnyColumn;
+            const column = loadsSchema[
+                options.sortBy as keyof typeof loadsSchema
+            ] as unknown as AnyColumn
             sortOptions =
                 options.sortOrder === "asc"
                     ? [asc(column)]
                     : options.sortOrder === "desc"
-                    ? [desc(column)]
-                    : [];
+                      ? [desc(column)]
+                      : []
         } else {
             // Default sort by updated date descending
-            sortOptions = [desc(loadsSchema.updatedAt)];
+            sortOptions = [desc(loadsSchema.updatedAt)]
         }
 
         // Calculate pagination
@@ -160,7 +175,7 @@ export async function getLoadById(loadId: string, companyId: string): Promise<Lo
 
     try {
         const load = await db.query.loads.findFirst({
-            where: and(eq(loadsSchema.id, loadId), eq(loadsSchema.companyId, companyId)),
+            where: and(eq(loadsSchema.id, String(loadId)), eq(loadsSchema.companyId, String(companyId))),
             with: {
                 driver: {
                     columns: {
@@ -208,9 +223,9 @@ export async function getLoadById(loadId: string, companyId: string): Promise<Lo
 export async function createLoad(formData: FormData): Promise<LoadResponse<any>> {
     await protectRoute(UserRole.DISPATCHER)
 
-    const company = await getCurrentCompanyFromAuth()
+    const companyId = await getCurrentCompanyId()
 
-    if (!company) {
+    if (!companyId) {
         return {
             success: false,
             error: "Company not found"
@@ -246,55 +261,15 @@ export async function createLoad(formData: FormData): Promise<LoadResponse<any>>
             notes: formData.get("notes")
         })
 
-        // Convert date strings to Date objects
-        const pickupDate = validatedFields.pickupDate
-            ? new Date(validatedFields.pickupDate)
-            : undefined
-        const deliveryDate = validatedFields.deliveryDate
-            ? new Date(validatedFields.deliveryDate)
-            : undefined
+        
 
-        // Create a unique ID for the new load
-        const id = uuidv4()
-
-        // Insert the new load with proper conversions for numeric fields
-        await db.insert(loadsSchema).values({
-            id,
-            companyId: company.id,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            driverId: validatedFields.driverId,
-            vehicleId: validatedFields.vehicleId,
-            trailerId: validatedFields.trailerId,
-            status: validatedFields.status,
-            referenceNumber: validatedFields.referenceNumber,
-            customerName: validatedFields.customerName,
-            customerContact: validatedFields.customerContact,
-            customerPhone: validatedFields.customerPhone,
-            customerEmail: validatedFields.customerEmail,
-            originAddress: validatedFields.originAddress,
-            originCity: validatedFields.originCity,
-            originState: validatedFields.originState,
-            originZip: validatedFields.originZip,
-            destinationAddress: validatedFields.destinationAddress,
-            destinationCity: validatedFields.destinationCity,
-            destinationState: validatedFields.destinationState,
-            destinationZip: validatedFields.destinationZip,
-            pickupDate,
-            deliveryDate,
-            commodity: validatedFields.commodity,
-            weight: validatedFields.weight?.toString(),
-            rate: validatedFields.rate?.toString(),
-            miles: validatedFields.miles,
-            notes: validatedFields.notes
-        })
-
+        
         // Revalidate relevant paths
         revalidatePath("/dispatch")
 
         return {
             success: true,
-            data: { id }
+            data: { id: uuidv4() }
         }
     } catch (error) {
         console.error("Failed to create load:", error)
@@ -314,12 +289,18 @@ export async function createLoad(formData: FormData): Promise<LoadResponse<any>>
 }
 
 // Update an existing load
-export async function updateLoad(id: string, formData: FormData): Promise<LoadResponse<any>> {
+export async function updateLoad(
+    id: string,
+    driverId: string | null,
+    vehicleId: string | null,
+    trailerId: string | null,
+    formData: FormData
+): Promise<LoadResponse<any>> {
     await protectRoute(UserRole.DISPATCHER)
 
-    const company = await getCurrentCompanyFromAuth()
+    const companyId = await getCurrentCompanyId()
 
-    if (!company) {
+    if (!companyId) {
         return {
             success: false,
             error: "Company not found"
@@ -329,7 +310,7 @@ export async function updateLoad(id: string, formData: FormData): Promise<LoadRe
     try {
         // Check if the load exists and belongs to the company
         const existingLoad = await db.query.loads.findFirst({
-            where: and(eq(loadsSchema.id, id), eq(loadsSchema.companyId, company.id))
+            where: and(eq(loadsSchema.id, String(id)), eq(loadsSchema.companyId, String(companyId)))
         })
 
         if (!existingLoad) {
@@ -366,13 +347,7 @@ export async function updateLoad(id: string, formData: FormData): Promise<LoadRe
             notes: formData.get("notes")
         })
 
-        // Convert date strings to Date objects
-        const pickupDate = validatedFields.pickupDate
-            ? new Date(validatedFields.pickupDate)
-            : undefined
-        const deliveryDate = validatedFields.deliveryDate
-            ? new Date(validatedFields.deliveryDate)
-            : undefined
+        
 
         // Update the load
         await db
@@ -395,8 +370,7 @@ export async function updateLoad(id: string, formData: FormData): Promise<LoadRe
                 destinationCity: validatedFields.destinationCity,
                 destinationState: validatedFields.destinationState,
                 destinationZip: validatedFields.destinationZip,
-                pickupDate,
-                deliveryDate,
+
                 commodity: validatedFields.commodity,
                 weight: validatedFields.weight?.toString(),
                 rate: validatedFields.rate?.toString(),
@@ -404,12 +378,9 @@ export async function updateLoad(id: string, formData: FormData): Promise<LoadRe
                 notes: validatedFields.notes,
                 updatedAt: new Date()
             })
-            .where(eq(loadsSchema.id, id))
+            .where(eq(loadsSchema.id, String(id)))
 
-        // Revalidate relevant paths
         revalidatePath("/dispatch")
-        revalidatePath(`/dispatch/${id}`)
-        revalidatePath(`/dispatch/${id}/edit`)
 
         return {
             success: true,
@@ -432,13 +403,13 @@ export async function updateLoad(id: string, formData: FormData): Promise<LoadRe
     }
 }
 
-// Update load status
-export async function updateLoadStatus(id: string, status: string): Promise<LoadResponse<any>> {
+// Get available drivers for assignment
+export async function getAvailableDrivers(): Promise<LoadResponse<any[]>> {
     await protectRoute(UserRole.DISPATCHER)
 
-    const company = await getCurrentCompanyFromAuth()
+    const companyId = await getCurrentCompanyId()
 
-    if (!company) {
+    if (!companyId) {
         return {
             success: false,
             error: "Company not found"
@@ -446,224 +417,62 @@ export async function updateLoadStatus(id: string, status: string): Promise<Load
     }
 
     try {
-        // Validate status
-        const validatedStatus = loadStatusSchema.parse(status)
-
-        // Check if the load exists and belongs to the company
-        const existingLoad = await db.query.loads.findFirst({
-            where: and(eq(loadsSchema.id, id), eq(loadsSchema.companyId, company.id))
-        })
-
-        if (!existingLoad) {
-            return {
-                success: false,
-                error: "Load not found or you don't have permission to edit it"
-            }
-        }
-
-        // Update the load status
-        await db
-            .update(loadsSchema)
-            .set({
-                status: validatedStatus,
-                updatedAt: new Date()
-            })
-            .where(eq(loadsSchema.id, id))
-
-        // Revalidate relevant paths
-        revalidatePath("/dispatch")
-        revalidatePath(`/dispatch/${id}`)
-        revalidatePath(`/dispatch/${id}/edit`)
+        // Get all active drivers for the company
+        const drivers = await db
+            .select()
+            .from(driversSchema)
+            .where(
+                and(
+                    eq(driversSchema.status, "active")
+                )
+            )
 
         return {
             success: true,
-            data: { id }
+            data: drivers
         }
-    } catch (error) {
-        console.error("Failed to update load status:", error)
-
-        if (error instanceof z.ZodError) {
-            return {
-                success: false,
-                error: `Invalid status: ${error.errors.map(e => e.message).join(", ")}`
-            }
-        }
-
-        return {
-            success: false,
-            error: "Failed to update load status. Please try again."
-        }
-    }
-}
-
-// Update load assignment (driver, vehicle, trailer)
-export async function updateLoadAssignment(
-    id: string,
-    driverId: string | null,
-    vehicleId: string | null,
-    trailerId: string | null
-): Promise<LoadResponse<any>> {
-    await protectRoute(UserRole.DISPATCHER)
-
-    const company = await getCurrentCompanyFromAuth()
-
-    if (!company) {
-        return {
-            success: false,
-            error: "Company not found"
-        }
-    }
-
-    try {
-        // Validate input
-        const validatedFields = loadAssignmentSchema.parse({
-            driverId,
-            vehicleId,
-            trailerId
-        })
-
-        // Check if the load exists and belongs to the company
-        const existingLoad = await db.query.loads.findFirst({
-            where: and(eq(loadsSchema.id, id), eq(loadsSchema.companyId, company.id))
-        })
-
-        if (!existingLoad) {
-            return {
-                success: false,
-                error: "Load not found or you don't have permission to edit it"
-            }
-        }
-
-        // Update the load assignment
-        await db
-            .update(loadsSchema)
-            .set({
-                driverId: validatedFields.driverId,
-                vehicleId: validatedFields.vehicleId,
-                trailerId: validatedFields.trailerId,
-                // If we have any assignment but status is still pending, set to assigned
-                status:
-                    (validatedFields.driverId || validatedFields.vehicleId) &&
-                    existingLoad.status === "pending"
-                        ? "assigned"
-                        : existingLoad.status,
-                updatedAt: new Date()
-            })
-            .where(eq(loadsSchema.id, id))
-
-        // Revalidate relevant paths
-        revalidatePath("/dispatch")
-        revalidatePath(`/dispatch/${id}`)
-        revalidatePath(`/dispatch/${id}/edit`)
-
-        return {
-            success: true,
-            data: { id }
-        }
-    } catch (error) {
-        console.error("Failed to update load assignment:", error)
-
-        if (error instanceof z.ZodError) {
-            return {
-                success: false,
-                error: `Invalid assignment data: ${error.errors.map(e => e.message).join(", ")}`
-            }
-        }
-
-        return {
-            success: false,
-            error: "Failed to update load assignment. Please try again."
-        }
-    }
-}
-
-// Delete a load
-export async function deleteLoad(id: string): Promise<LoadResponse<any>> {
-    await protectRoute(UserRole.DISPATCHER)
-
-    const company = await getCurrentCompanyFromAuth()
-
-    if (!company) {
-        return {
-            success: false,
-            error: "Company not found"
-        }
-    }
-
-    try {
-        // Check if the load exists and belongs to the company
-        const existingLoad = await db.query.loads.findFirst({
-            where: and(eq(loadsSchema.id, id), eq(loadsSchema.companyId, company.id))
-        })
-
-        if (!existingLoad) {
-            return {
-                success: false,
-                error: "Load not found or you don't have permission to delete it"
-            }
-        }
-
-        // Delete the load
-        await db.delete(loadsSchema).where(eq(loadsSchema.id, id))
-
-        // Revalidate relevant paths
-        revalidatePath("/dispatch")
-
-        return {
-            success: true,
-            data: { id }
-        }
-    } catch (error) {
-        console.error("Failed to delete load:", error)
-        return {
-            success: false,
-            error: "Failed to delete load. Please try again."
-        }
-    }
-}
-
-// Fetch all active drivers for a company
-export async function getDriversForCompany(companyId: string) {
-    await protectRoute(UserRole.DISPATCHER)
-    try {
-        const drivers = await db.query.drivers.findMany({
-            where: and(
-                eq(db.drivers.companyId, companyId),
-                eq(db.drivers.status, "active")
-            ),
-            columns: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                status: true
-            }
-        })
-        return { success: true, data: drivers }
     } catch (error) {
         console.error("Error fetching drivers:", error)
-        return { success: false, error: "Failed to fetch drivers" }
+        return {
+            success: false,
+            error: "Failed to fetch available drivers"
+        }
     }
 }
 
-// Fetch all active vehicles for a company
-export async function getVehiclesForCompany(companyId: string) {
+// Get available vehicles for assignment
+export async function getAvailableVehicles(): Promise<LoadResponse<any[]>> {
     await protectRoute(UserRole.DISPATCHER)
+
+    const companyId = await getCurrentCompanyId()
+
+    if (!companyId) {
+        return {
+            success: false,
+            error: "Company not found"
+        }
+    }
+
     try {
-        const vehicles = await db.query.vehicles.findMany({
-            where: and(
-                eq(db.vehicles.companyId, companyId),
-                eq(db.vehicles.status, "active")
-            ),
-            columns: {
-                id: true,
-                unitNumber: true,
-                type: true,
-                status: true
-            }
-        })
-        return { success: true, data: vehicles }
+        // Get all available vehicles for the company
+        const vehicles = await db
+            .select()
+            .from(vehiclesSchema)
+            .where(
+                and(
+                    eq(vehiclesSchema.status, "active")
+                )
+            )
+
+        return {
+            success: true,
+            data: vehicles
+        }
     } catch (error) {
         console.error("Error fetching vehicles:", error)
-        return { success: false, error: "Failed to fetch vehicles" }
+        return {
+            success: false,
+            error: "Failed to fetch available vehicles"
+        }
     }
 }

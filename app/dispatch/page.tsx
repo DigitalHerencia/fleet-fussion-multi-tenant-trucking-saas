@@ -124,7 +124,7 @@ export default function DispatchPage() {
             {isLoading ? (
                 <DispatchSkeleton />
             ) : (
-                <DispatchBoard loads={ [] } drivers={ [] } vehicles={ [] } />
+                <DispatchBoard loads={[]} drivers={[]} vehicles={[]} />
             )}
         </DashboardShell>
     )

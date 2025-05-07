@@ -33,9 +33,8 @@ import {
 } from "lucide-react"
 import { formatDate, formatCurrency } from "@/lib/utils"
 import Link from "next/link"
-import { updateLoadStatus } from "@/lib/loads"
 import { toast } from "@/components/ui/use-toast"
-import { updateLoadAssignment } from "@/lib/actions/load-actions"
+import { updateLoad } from "@/lib/actions/load-actions"
 
 interface Driver {
     id: string
@@ -138,7 +137,10 @@ export function LoadDetailsDialog({
             const vehicleId = selectedVehicleId === "not_assigned" ? null : selectedVehicleId
             const trailerId = selectedTrailerId === "not_assigned" ? null : selectedTrailerId
 
-            const result = await updateLoadAssignment(load.id, driverId, vehicleId, trailerId)
+            const formData = new FormData()
+            formData.append("status", load.status)
+
+            const result = await updateLoad(load.id, driverId, vehicleId, trailerId, formData)
 
             if (result.success) {
                 toast({
@@ -169,7 +171,9 @@ export function LoadDetailsDialog({
         setIsUpdatingStatus(true)
 
         try {
-            const result = await updateLoadStatus(load.id, newStatus)
+            const formData = new FormData()
+            formData.append("status", newStatus)
+            const result = await updateLoad(load.id, null, null, null, formData)
 
             if (result.success) {
                 toast({

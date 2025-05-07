@@ -1,3 +1,4 @@
+import { User } from "lucide-react"
 import { relations } from "drizzle-orm"
 import {
     pgTable,
@@ -10,6 +11,19 @@ import {
     date,
     json
 } from "drizzle-orm/pg-core"
+
+//User roles (permissions within a company)
+// These roles are used to manage access control within the application.
+
+export enum UserRole {
+    OWNER = "OWNER",
+    ADMIN = "ADMIN",
+    DISPATCHER = "DISPATCHER",
+    SAFETY_MANAGER = "SAFETY_MANAGER",
+    ACCOUNTANT = "ACCOUNTANT",
+    DRIVER = "DRIVER",
+    VIEWER = "VIEWER"
+}
 
 // Companies (tenants)
 export const companies = pgTable("companies", {
@@ -309,6 +323,10 @@ export const iftaTrips = pgTable("ifta_trips", {
     totalMiles: decimal("total_miles", { precision: 10, scale: 2 }),
     jurisdictionData: json("jurisdiction_data"), // miles per state/province
     fuelPurchases: json("fuel_purchases"), // fuel purchases during trip
+    tripDate: timestamp("trip_date"), // The date of the trip for reporting purposes
+    state: text("state"), // State/province for the trip
+    miles: decimal("miles", { precision: 10, scale: 2 }), // Miles traveled in the state
+    gallons: decimal("gallons", { precision: 10, scale: 2 }), // Gallons consumed in the state
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at").defaultNow()
 })
@@ -329,5 +347,129 @@ export const iftaTripRelations = relations(iftaTrips, ({ one }) => ({
     load: one(loads, {
         fields: [iftaTrips.loadId],
         references: [loads.id]
+    })
+}))
+
+// IFTA Reports
+export const iftaReports = pgTable("ifta_reports", {
+    id: uuid("id").defaultRandom().primaryKey(),
+    companyId: uuid("company_id")
+        .notNull()
+        .references(() => companies.id, { onDelete: "cascade" }),
+    year: integer("year").notNull(),
+    quarter: integer("quarter").notNull(),
+    status: text("status").notNull().default("draft"), // draft, submitted, filed
+    totalMiles: decimal("total_miles", { precision: 10, scale: 2 }),
+    totalGallons: decimal("total_gallons", { precision: 10, scale: 2 }),
+    submittedDate: timestamp("submitted_date"),
+    filedDate: timestamp("filed_date"),
+    reportData: json("report_data"), // Detailed report data by jurisdiction
+    reportUrl: text("report_url"), // URL to the generated report document
+    notes: text("notes"),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow()
+})
+
+export const iftaReportRelations = relations(iftaReports, ({ one }) => ({
+    company: one(companies, {
+        fields: [iftaReports.companyId],
+        references: [companies.id]
+    })
+}))
+
+// Compliance Documents
+export const complianceDocuments = pgTable("compliance_documents", {
+    id: uuid("id").defaultRandom().primaryKey(),
+    companyId: uuid("company_id")
+        .notNull()
+        .references(() => companies.id, { onDelete: "cascade" }),
+    driverId: uuid("driver_id").references(() => drivers.id),
+    vehicleId: uuid("vehicle_id").references(() => vehicles.id),
+    type: text("type").notNull(), // license, medical_card, registration, etc.
+    name: text("name").notNull(),
+    fileUrl: text("file_url").notNull(),
+    issuedDate: timestamp("issued_date"),
+    expirationDate: timestamp("expiration_date"),
+    status: text("status").notNull().default("active"), // active, expired, revoked
+    notes: text("notes"),
+    fileType: text("file_type"),
+    fileSize: integer("file_size"),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow()
+})
+
+export const complianceDocumentRelations = relations(complianceDocuments, ({ one }) => ({
+    company: one(companies, {
+        fields: [complianceDocuments.companyId],
+        references: [companies.id]
+    }),
+    driver: one(drivers, {
+        fields: [complianceDocuments.driverId],
+        references: [drivers.id]
+    }),
+    vehicle: one(vehicles, {
+        fields: [complianceDocuments.vehicleId],
+        references: [vehicles.id]
+    })
+}))
+
+// Hours of Service Logs
+export const hosLogs = pgTable("hos_logs", {
+    id: uuid("id").defaultRandom().primaryKey(),
+    companyId: uuid("company_id")
+        .notNull()
+        .references(() => companies.id, { onDelete: "cascade" }),
+    driverId: uuid("driver_id")
+        .notNull()
+        .references(() => drivers.id),
+    vehicleId: uuid("vehicle_id").references(() => vehicles.id),
+    date: timestamp("date").notNull(),
+    logType: text("log_type").notNull(), // driving, on_duty, off_duty, sleeper_berth
+    startTime: timestamp("start_time").notNull(),
+    endTime: timestamp("end_time"),
+    duration: integer("duration"), // in minutes
+    location: text("location"),
+    notes: text("notes"),
+    edited: boolean("edited").default(false),
+    editReason: text("edit_reason"),
+    certifiedBy: text("certified_by"), // User ID who certified the log
+    certifiedAt: timestamp("certified_at"),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow()
+})
+
+export const hosLogRelations = relations(hosLogs, ({ one }) => ({
+    company: one(companies, {
+        fields: [hosLogs.companyId],
+        references: [companies.id]
+    }),
+    driver: one(drivers, {
+        fields: [hosLogs.driverId],
+        references: [drivers.id]
+    }),
+    vehicle: one(vehicles, {
+        fields: [hosLogs.vehicleId],
+        references: [vehicles.id]
+    })
+}))
+
+// Compliance Records
+export const complianceRecords = pgTable("compliance_records", {
+    id: uuid("id").defaultRandom().primaryKey(),
+    companyId: uuid("company_id")
+        .notNull()
+        .references(() => companies.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    description: text("description").notNull(),
+    dueDate: timestamp("due_date").notNull(),
+    status: text("status").default("pending"),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow()
+})
+
+export const complianceRecordRelations = relations(complianceRecords, ({ one }) => ({
+    company: one(companies, {
+        fields: [complianceRecords.companyId],
+        references: [companies.id]
     })
 }))
