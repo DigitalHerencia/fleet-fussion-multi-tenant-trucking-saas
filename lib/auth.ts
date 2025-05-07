@@ -1,259 +1,224 @@
-import { Users } from 'lucide-react';
-"use server";
+"use server"
 
-import { auth, currentUser } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
-import { clerkClient } from "@clerk/nextjs/server";
-import { db } from "@/db";
-import { companies } from "@/db/schema";
-import { eq } from "drizzle-orm";
-import { cache } from "react";
+import { auth as clerkAuth, currentUser } from "@clerk/nextjs/server"
+import { redirect } from "next/navigation"
+import { db } from "@/db"
+import { companyUsers } from "@/db/schema"
+import { eq, and } from "drizzle-orm"
+import { cache } from "react"
+import { getCurrentCompany, getUserRole } from "@/lib/actions/company-actions"
 
 // User roles enum
 export enum UserRole {
-  OWNER = "owner",
-  ADMIN = "admin",
-  DISPATCHER = "dispatcher",
-  SAFETY_MANAGER = "safety_manager",
-  DRIVER = "driver",
-  ACCOUNTANT = "accountant",
-  VIEWER = "viewer",
+    OWNER = "owner",
+    ADMIN = "admin",
+    DISPATCHER = "dispatcher",
+    SAFETY_MANAGER = "safety_manager",
+    DRIVER = "driver",
+    ACCOUNTANT = "accountant",
+    VIEWER = "viewer"
 }
 
 // Role-based permissions
 export const rolePermissions = {
-  [UserRole.OWNER]: [
-    "view:all", 
-    "create:all", 
-    "update:all", 
-    "delete:all", 
-    "manage:billing",
-    "manage:users",
-  ],
-  [UserRole.ADMIN]: [
-    "view:all", 
-    "create:all", 
-    "update:all", 
-    "delete:all", 
-    "manage:users",
-  ],
-  [UserRole.DISPATCHER]: [
-    "view:loads", 
-    "create:loads", 
-    "update:loads", 
-    "delete:loads",
-    "view:drivers", 
-    "view:vehicles", 
-    "assign:loads",
-  ],
-  [UserRole.SAFETY_MANAGER]: [
-    "view:drivers",
-    "view:vehicles",
-    "view:compliance",
-    "update:compliance",
-    "create:inspections",
-    "update:inspections",
-    "view:loads",
-  ],
-  [UserRole.DRIVER]: [
-    "view:own_loads", 
-    "update:own_status",
-    "create:own_hos",
-    "create:own_dvir",
-  ],
-  [UserRole.ACCOUNTANT]: [
-    "view:loads",
-    "view:ifta",
-    "create:ifta",
-    "export:reports",
-  ],
-  [UserRole.VIEWER]: [
-    "view:loads",
-    "view:drivers",
-    "view:vehicles",
-    "view:analytics",
-  ],
-};
+    [UserRole.OWNER]: [
+        "view:all",
+        "create:all",
+        "update:all",
+        "delete:all",
+        "manage:billing",
+        "manage:users"
+    ],
+    [UserRole.ADMIN]: ["view:all", "create:all", "update:all", "delete:all", "manage:users"],
+    [UserRole.DISPATCHER]: [
+        "view:loads",
+        "create:loads",
+        "update:loads",
+        "delete:loads",
+        "view:drivers",
+        "view:vehicles",
+        "assign:loads"
+    ],
+    [UserRole.SAFETY_MANAGER]: [
+        "view:drivers",
+        "view:vehicles",
+        "view:compliance",
+        "update:compliance",
+        "create:inspections",
+        "update:inspections",
+        "view:loads"
+    ],
+    [UserRole.DRIVER]: ["view:own_loads", "update:own_status", "create:own_hos", "create:own_dvir"],
+    [UserRole.ACCOUNTANT]: ["view:loads", "view:ifta", "create:ifta", "export:reports"],
+    [UserRole.VIEWER]: ["view:loads", "view:drivers", "view:vehicles", "view:analytics"]
+}
 
 // Check if a user has a specific permission
 export function hasPermission(userRole: UserRole, permission: string): boolean {
-  if (!userRole || !permission) {
-    return false;
-  }
-  
-  const permissions = rolePermissions[userRole];
-  
-  if (!permissions) {
-    return false;
-  }
-  
-  // Check for specific permission
-  if (permissions.includes(permission)) {
-    return true;
-  }
-  
-  // Check for wildcard permissions
-  if (permission.includes(':') && permissions.includes(`${permission.split(':')[0]}:all`)) {
-    return true;
-  }
-  
-  // Owner and Admin have all permissions
-  if (userRole === UserRole.OWNER || userRole === UserRole.ADMIN) {
-    return true;
-  }
-  
-  return false;
+    if (!userRole || !permission) {
+        return false
+    }
+
+    const permissions = rolePermissions[userRole]
+
+    if (!permissions) {
+        return false
+    }
+
+    // Check for specific permission
+    if (permissions.includes(permission)) {
+        return true
+    }
+
+    // Check for wildcard permissions
+    if (permission.includes(":") && permissions.includes(`${permission.split(":")[0]}:all`)) {
+        return true
+    }
+
+    // Owner and Admin have all permissions
+    if (userRole === UserRole.OWNER || userRole === UserRole.ADMIN) {
+        return true
+    }
+
+    return false
 }
 
-// Get authentication status and user information
-// Get authentication status and user information
-export async function getUserAuth() {
-  const { userId, orgId } = await auth();
-  
-  if (!userId) {
+/**
+ * Get authentication status and user information
+ * Use this function in server components to get all auth context
+ */
+export const getUserAuth = cache(async () => {
+    const { userId } = await clerkAuth()
+
+    if (!userId) {
+        return {
+            isAuthenticated: false,
+            isCompanySelected: false,
+            user: null,
+            company: null,
+            role: null
+        }
+    }
+
+    const user = await currentUser()
+    const companyResult = await getCurrentCompany()
+    const company = companyResult.success ? companyResult.data : null
+
+    const roleResult = await getUserRole()
+    const role = roleResult.success ? (roleResult.data as UserRole) : null
+
     return {
-      isOrgSelected: false,
-      user: null,
-      company: null,
-      role: null,
-    };
-  }
-  
-  const user = await currentUser();
-  const role = await getUserRoleInOrg();
-  const company = await getCurrentCompany();
-  
-  return {
-    isAuthenticated: !!userId,
-    isOrgSelected: !!orgId,
-    user,
-    company,
-    role,
-    orgId,
-  };
-}
-
-// Get the current company based on the selected organization
-export const getCurrentCompany = cache(async () => {
-  const { orgId } = await auth();
-  
-  if (!orgId) {
-    return null;
-  }
-  
-  const company = await db.query.companies.findFirst({
-    where: eq(companies.clerkOrgId, orgId),
-  });
-  
-  return company;
-});
-
-// Get the user's role in the current organization
-export async function getUserRoleInOrg() {
-  const { userId, orgId } = await auth();
-  
-  if (!userId || !orgId) {
-    return null;
-  }
-  
-  try {
-    // Fetch the list of memberships for the user
-    const client = await clerkClient();
-    const membershipList = await client.users.getOrganizationMembershipList({
-      userId: userId,
-    });
-
-    // Find the membership for the current organization
-    const membership = membershipList.data?.find((m: { organization: { id: any; }; }) => m.organization.id === orgId);
-
-    if (!membership) {
-      return null;
+        isAuthenticated: true,
+        isCompanySelected: !!company,
+        user,
+        company,
+        role
     }
-    
-    // Clerk stores the role in the publicMetadata
-    const role = membership.role as string;
-    
-    if (Object.values(UserRole).includes(role as UserRole)) {
-      return role as UserRole;
-    }
-    
-    // Default to viewer if the role is not recognized
-    return UserRole.VIEWER;
-  } catch (error) {
-    console.error("Error getting user role:", error);
-    return null;
-  }
-}
+})
 
-// Require authentication
-// Require authentication
-export async function requireAuth() {
-  const authResult = await auth();
-  const { userId, orgId } = authResult;
-  
-  if (!userId) {
-    // Use the synchronous redirectToSignIn from the auth result
-    return authResult.redirectToSignIn();
-  }
-  if (!orgId) {
-    redirect("/org-selection");
-  }
-  
-  return { userId, orgId };
-}
+/**
+ * Get the current company based on cookie/session
+ * Returns null if no company is selected
+ */
+export const getCurrentCompanyFromAuth = cache(async () => {
+    const companyResult = await getCurrentCompany()
+    return companyResult.success ? companyResult.data : null
+})
 
-// Protected route with role check
-export async function protectRoute(requiredRole?: UserRole) {
-  const authResult = await auth();
-  const { userId, orgId } = authResult;
-  
-  if (!userId) {
-    // Use the synchronous redirectToSignIn from the auth result
-    return authResult.redirectToSignIn({ returnBackUrl: "/" });
-  }
-  
-  if (!orgId) {
-    redirect("/org-selection");
-  }
-  
-  if (requiredRole) {
-    const hasRole = await checkUserRole(requiredRole);
-    if (!hasRole) {
-      // User doesn't have the required role
-      redirect("/unauthorized");
-    }
-  }
-  
-  return { userId, orgId };
-}
+/**
+ * Get the user's role in the current company
+ * Returns null if no user or company is selected
+ */
+export const getUserRoleInCompany = cache(async () => {
+    const roleResult = await getUserRole()
+    return roleResult.success ? (roleResult.data as UserRole) : null
+})
 
-// Check if a user has a required role
+/**
+ * Check if a user has a required role
+ * Returns boolean indicating if the user has the required role
+ */
 export async function checkUserRole(requiredRole: UserRole) {
-  const role = await getUserRoleInOrg();
-  
-  if (!role) {
-    return false;
-  }
-  
-  if (requiredRole === UserRole.OWNER) {
-    return role === UserRole.OWNER;
-  }
-  
-  if (requiredRole === UserRole.ADMIN) {
-    return role === UserRole.OWNER || role === UserRole.ADMIN;
-  }
-  
-  // For other roles, check if the user has the exact role or is an admin/owner
-  return role === requiredRole || role === UserRole.ADMIN || role === UserRole.OWNER;
+    const role = await getUserRoleInCompany()
+
+    if (!role) {
+        return false
+    }
+
+    if (requiredRole === UserRole.OWNER) {
+        return role === UserRole.OWNER
+    }
+
+    if (requiredRole === UserRole.ADMIN) {
+        return role === UserRole.OWNER || role === UserRole.ADMIN
+    }
+
+    // For other roles, check if the user has the exact role or is an admin/owner
+    return role === requiredRole || role === UserRole.ADMIN || role === UserRole.OWNER
 }
 
-// Check if user has permission
+/**
+ * Check if user has permission
+ * Returns boolean indicating if the user has the required permission
+ */
 export async function checkPermission(permission: string) {
-  const role = await getUserRoleInOrg();
-  
-  if (!role) {
-    return false;
-  }
-  
-  return hasPermission(role, permission);
+    const role = await getUserRoleInCompany()
+
+    if (!role) {
+        return false
+    }
+
+    return hasPermission(role as UserRole, permission)
+}
+
+/**
+ * Require authentication for server components
+ * Redirects to sign-in if not authenticated or company-selection if no company is selected
+ */
+export async function requireAuth() {
+    const { userId } = await clerkAuth()
+
+    if (!userId) {
+        // Use the custom sign-in page directly instead of Clerk's universal flow
+        redirect("/sign-in?redirect_url=" + encodeURIComponent(global?.location?.href || "/"))
+    }
+
+    const companyResult = await getCurrentCompany()
+    const company = companyResult.success ? companyResult.data : null
+
+    if (!company) {
+        redirect("/company-selection")
+    }
+
+    return { userId, companyId: company.id }
+}
+
+/**
+ * Protected route with role check for server components
+ * Redirects appropriately based on authentication state and role
+ */
+export async function protectRoute(requiredRole?: UserRole) {
+    const { userId } = await clerkAuth()
+
+    if (!userId) {
+        // Use the custom sign-in page directly instead of Clerk's universal flow
+        redirect("/sign-in?redirect_url=" + encodeURIComponent(global?.location?.href || "/"))
+    }
+
+    const companyResult = await getCurrentCompany()
+    const company = companyResult.success ? companyResult.data : null
+
+    if (!company) {
+        redirect("/company-selection")
+    }
+
+    if (requiredRole) {
+        const hasRole = await checkUserRole(requiredRole)
+        if (!hasRole) {
+            // User doesn't have the required role
+            redirect("/unauthorized")
+        }
+    }
+
+    return { userId, companyId: company.id }
 }

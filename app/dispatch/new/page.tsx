@@ -5,96 +5,54 @@ import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { LoadForm } from "@/components/dispatch/load-form"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useAuth } from "@/lib/auth-context"
-
-// Mock data
-const mockDrivers = [
-  {
-    id: "f81d4e2e-bcf2-11e6-869b-7df92533d2db",
-    firstName: "John",
-    lastName: "Smith",
-  },
-  {
-    id: "f81d4e2e-bcf2-11e6-869b-7df92533d2dc",
-    firstName: "Maria",
-    lastName: "Garcia",
-  },
-  {
-    id: "f81d4e2e-bcf2-11e6-869b-7df92533d2dd",
-    firstName: "Robert",
-    lastName: "Johnson",
-  },
-  {
-    id: "f81d4e2e-bcf2-11e6-869b-7df92533d2de",
-    firstName: "Sarah",
-    lastName: "Williams",
-  },
-]
-
-const mockVehicles = [
-  {
-    id: "d81d4e2e-bcf2-11e6-869b-7df92533d2db",
-    unitNumber: "T-101",
-    type: "tractor",
-  },
-  {
-    id: "d81d4e2e-bcf2-11e6-869b-7df92533d2dc",
-    unitNumber: "T-102",
-    type: "tractor",
-  },
-  {
-    id: "d81d4e2e-bcf2-11e6-869b-7df92533d2dd",
-    unitNumber: "T-103",
-    type: "tractor",
-  },
-  {
-    id: "e81d4e2e-bcf2-11e6-869b-7df92533d2db",
-    unitNumber: "TR-201",
-    type: "trailer",
-  },
-  {
-    id: "e81d4e2e-bcf2-11e6-869b-7df92533d2dc",
-    unitNumber: "TR-202",
-    type: "trailer",
-  },
-  {
-    id: "e81d4e2e-bcf2-11e6-869b-7df92533d2dd",
-    unitNumber: "TR-203",
-    type: "trailer",
-  },
-]
+import { useAuth } from "@/context/auth-context"
+import { getDriversForCompany, getVehiclesForCompany } from "@/lib/actions/load-actions"
 
 export default function NewLoadPage() {
-  const [isLoading, setIsLoading] = useState(true)
-  const { company } = useAuth()
+    const { company } = useAuth()
+    const [isLoading, setIsLoading] = useState(true)
+    const [drivers, setDrivers] = useState([])
+    const [vehicles, setVehicles] = useState([])
 
-  useEffect(() => {
-    // Simulate loading data
-    const timer = setTimeout(() => {
-      setIsLoading(false)
-    }, 1000)
+    useEffect(() => {
+        async function fetchData() {
+            if (!company?.id) return
+            setIsLoading(true)
+            try {
+                const [driversRes, vehiclesRes] = await Promise.all([
+                    getDriversForCompany(company.id),
+                    getVehiclesForCompany(company.id)
+                ])
+                setDrivers(driversRes.success ? driversRes.data : [])
+                setVehicles(vehiclesRes.success ? vehiclesRes.data : [])
+            } catch (error) {
+                setDrivers([])
+                setVehicles([])
+            } finally {
+                setIsLoading(false)
+            }
+        }
+        fetchData()
+    }, [company?.id])
 
-    return () => clearTimeout(timer)
-  }, [])
+    if (!company) {
+        return <div>Company not found. Please create a company first.</div>
+    }
 
-  if (!company) {
-    return <div>Company not found. Please create a company first.</div>
-  }
-
-  return (
-    <DashboardShell>
-      <DashboardHeader heading="Create New Load" text="Enter the details for a new load" />
-      {isLoading ? (
-        <div className="space-y-4 mt-6">
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-64 w-full" />
-          <Skeleton className="h-64 w-full" />
-        </div>
-      ) : (
-        <div className="mt-6">
-          <LoadForm drivers={mockDrivers} vehicles={mockVehicles} />
-        </div>
-      )}
-    </DashboardShell>
-  )
+    return (
+        <DashboardShell>
+            <DashboardHeader heading="Create New Load" text="Enter the details for a new load" />
+            {isLoading ? (
+                <div className="space-y-4 mt-6">
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-64 w-full" />
+                    <Skeleton className="h-64 w-full" />
+                </div>
+            ) : (
+                <div className="mt-6">
+                    <LoadForm drivers={drivers} vehicles={vehicles} />
+                </div>
+            )}
+        </DashboardShell>
+    )
 }

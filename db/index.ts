@@ -10,10 +10,10 @@ export const db = drizzle(pool, { schema })
 
 // Helper function to get the company ID from the Clerk organization ID
 export async function getCompanyIdFromClerkOrgId(clerkOrgId: string) {
-  const company = await db.query.companies.findFirst({
-    where: (companies, { eq }) => eq(companies.clerkOrgId, clerkOrgId),
-    columns: { id: true },
-  })
+    const company = await db.query.companies.findFirst({
+        where: (companies, { eq }) => eq(companies.clerkOrgId, clerkOrgId),
+        columns: { id: true }
+    })
 
-  return company?.id
+    return company?.id
 }

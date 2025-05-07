@@ -1,23 +1,17 @@
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { ArrowLeft, Shield } from "lucide-react"
 
 export default function UnauthorizedPage() {
-  return (
-    <div className="flex flex-col min-h-screen items-center justify-center p-4">
-      <div className="max-w-md text-center space-y-6">
-        <Shield className="mx-auto h-16 w-16 text-red-500" />
-        <h1 className="text-3xl font-bold">Access Denied</h1>
-        <p className="text-muted-foreground">
-          You don't have the necessary permissions to access this page. Please contact your administrator for more information.
-        </p>
-        <Button asChild>
-          <Link href="/dashboard">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Dashboard
-          </Link>
-        </Button>
-      </div>
-    </div>
-  )
+    return (
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+            <h1 className="text-3xl font-bold mb-4 text-red-600">Access Denied</h1>
+            <p className="mb-6 text-lg text-muted-foreground">
+                You do not have permission to view this page.
+                <br />
+                If you believe this is an error, please contact your administrator.
+            </p>
+            <Link href="/" className="text-blue-600 underline hover:text-blue-800">
+                Return to Dashboard
+            </Link>
+        </div>
+    )
 }

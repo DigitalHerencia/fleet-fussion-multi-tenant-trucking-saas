@@ -1,240 +1,594 @@
-"use server";
+"use server"
 
-import {auth, clerkClient} from "@clerk/nextjs/server";
-import { db } from "@/db";
-import { companies } from "@/db/schema";
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
-import { eq } from "drizzle-orm";
-import { createCompanySchema, type CreateCompanyFormValues } from "./company-schemas";
-import { z } from "zod";
+import { auth, currentUser } from "@clerk/nextjs/server"
+import { db } from "@/db"
+import { companies, companyUsers } from "@/db/schema"
+import { eq, and, desc } from "drizzle-orm"
+import { z } from "zod"
+import { cookies } from "next/headers"
+import { revalidatePath } from "next/cache"
+import { clerkClient } from "@clerk/nextjs/server"
 
-// Create a new company associated with a Clerk organization
-export async function createCompany(data: CreateCompanyFormValues) {
-  const { userId, orgId } = await auth();
-  
-  if (!userId || !orgId) {
-    throw new Error("Unauthorized: You must be logged in to create a company.");
-  }
-  
-  try {
-    // Validate the data
-    const validatedData = createCompanySchema.parse(data);
-    
-    // Insert the company
-    const [company] = await db
-      .insert(companies)
-      .values({
-        ...validatedData,
-        clerkOrgId: orgId,
-      })
-      .returning();
-    
-    // Revalidate cache for dashboard pages
-    revalidatePath("/dashboard");
-    
-    return { success: true, company };
-  } catch (error) {
-    console.error("Error creating company:", error);
-    
-    if (typeof z !== "undefined" && error instanceof z.ZodError) {
-      return { success: false, error: error.errors };
+const COMPANY_COOKIE_NAME = "selectedCompany"
+
+// Schema for company creation
+export const createCompanySchema = z.object({
+    name: z.string().min(1, "Company name is required"),
+    dotNumber: z.string().optional(),
+    mcNumber: z.string().optional(),
+    address: z.string().optional(),
+    city: z.string().optional(),
+    state: z.string().optional(),
+    zip: z.string().optional(),
+    phone: z.string().optional(),
+    email: z.string().email().optional(),
+    primaryColor: z.string().optional()
+})
+
+export type CreateCompanyFormValues = z.infer<typeof createCompanySchema>
+
+// Get all companies a user belongs to
+export async function getUserCompanies() {
+    try {
+        const { userId } = await auth()
+
+        if (!userId) {
+            return {
+                success: false,
+                error: "Not authenticated"
+            }
+        }
+
+        // Get all companies this user belongs to
+        const userCompanies = await db.query.companyUsers.findMany({
+            where: eq(companyUsers.userId, userId),
+            with: {
+                company: true
+            },
+            orderBy: desc(companyUsers.updatedAt)
+        })
+
+        if (!userCompanies.length) {
+            return {
+                success: true,
+                data: {
+                    companies: [],
+                    currentCompany: null
+                }
+            }
+        }
+
+        // Get the current company from cookie
+        const cookieStore = await cookies()
+        const selectedCompanyId = cookieStore.get(COMPANY_COOKIE_NAME)?.value
+
+        // Find the selected company or default to the most recently used
+        let currentCompany = null
+        if (selectedCompanyId) {
+            currentCompany =
+                userCompanies.find(uc => uc.company.id === selectedCompanyId)?.company || null
+        }
+
+        // If no company is selected, use the first company
+        if (!currentCompany && userCompanies.length > 0) {
+            currentCompany = userCompanies[0]?.company ?? null
+            if (currentCompany) {
+                await setCurrentCompany(currentCompany.id)
+            }
+        }
+
+        return {
+            success: true,
+            data: {
+                companies: userCompanies.map(uc => uc.company),
+                currentCompany
+            }
+        }
+    } catch (error) {
+        console.error("Error getting user companies:", error)
+        return {
+            success: false,
+            error: "Failed to get companies"
+        }
     }
-    
-    return {
-      success: false,
-      error: "Failed to create company. Please try again.",
-    };
-  }
 }
+
+// Set the current company for the user
+export async function setCurrentCompany(companyId: string) {
+    try {
+        const { userId } = await auth()
+
+        if (!userId) {
+            return {
+                success: false,
+                error: "Not authenticated"
+            }
+        }
+
+        // Verify the user belongs to this company
+        const userCompany = await db.query.companyUsers.findFirst({
+            where: and(eq(companyUsers.userId, userId), eq(companyUsers.companyId, companyId)),
+            with: {
+                company: true
+            }
+        })
+
+        if (!userCompany) {
+            return {
+                success: false,
+                error: "User does not belong to this company"
+            }
+        }
+
+        // Set the cookie
+        const cookieStore = await cookies()
+        cookieStore.set(COMPANY_COOKIE_NAME, companyId, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            path: "/",
+            // 30 days
+            maxAge: 30 * 24 * 60 * 60
+        })
+
+        // Update last used timestamp
+        await db
+            .update(companyUsers)
+            .set({ updatedAt: new Date() })
+            .where(and(eq(companyUsers.userId, userId), eq(companyUsers.companyId, companyId)))
+
+        revalidatePath("/")
+
+        return {
+            success: true
+        }
+    } catch (error) {
+        console.error("Error setting current company:", error)
+        return {
+            success: false,
+            error: "Failed to set company"
+        }
+    }
+}
+
+// Get the current company for the user
+export async function getCurrentCompany() {
+    try {
+        const { userId } = await auth()
+
+        if (!userId) {
+            return {
+                success: false,
+                error: "Not authenticated"
+            }
+        }
+
+        // Get selected company from cookie
+        const cookieStore = await cookies()
+        const selectedCompanyId = cookieStore.get(COMPANY_COOKIE_NAME)?.value
+
+        if (!selectedCompanyId) {
+            // If no company is selected, get the most recently used
+            const userCompany = await db.query.companyUsers.findFirst({
+                where: eq(companyUsers.userId, userId),
+                with: {
+                    company: true
+                },
+                orderBy: desc(companyUsers.updatedAt)
+            })
+
+            if (!userCompany) {
+                return {
+                    success: true,
+                    data: null
+                }
+            }
+
+            await setCurrentCompany(userCompany.company.id)
+            return {
+                success: true,
+                data: userCompany.company
+            }
+        }
+
+        // Get the selected company
+        const userCompany = await db.query.companyUsers.findFirst({
+            where: and(
+                eq(companyUsers.userId, userId),
+                eq(companyUsers.companyId, selectedCompanyId)
+            ),
+            with: {
+                company: true
+            }
+        })
+
+        if (!userCompany) {
+            // If the selected company doesn't exist or user doesn't belong to it,
+            // clear the cookie and try again with most recent company
+            cookieStore.delete(COMPANY_COOKIE_NAME)
+            return getCurrentCompany()
+        }
+
+        return {
+            success: true,
+            data: userCompany.company
+        }
+    } catch (error) {
+        console.error("Error getting current company:", error)
+        return {
+            success: false,
+            error: "Failed to get current company"
+        }
+    }
+}
+
+// Create a new company
+export async function createCompany(data: CreateCompanyFormValues) {
+    try {
+        const { userId } = await auth()
+
+        if (!userId) {
+            return {
+                success: false,
+                error: "Not authenticated"
+            }
+        }
+
+        // Validate input
+        const validatedData = createCompanySchema.parse(data)
+
+        // Create the company
+        const [newCompany] = await db
+            .insert(companies)
+            .values({
+                name: validatedData.name,
+                dotNumber: validatedData.dotNumber,
+                mcNumber: validatedData.mcNumber,
+                address: validatedData.address,
+                city: validatedData.city,
+                state: validatedData.state,
+                zip: validatedData.zip,
+                phone: validatedData.phone,
+                email: validatedData.email,
+                primaryColor: validatedData.primaryColor || "#0f766e"
+            })
+            .returning()
+
+        if (!newCompany) {
+            return {
+                success: false,
+                error: "Failed to create company"
+            }
+        }
+
+        // Add the user as an owner of the company
+        await db.insert(companyUsers).values({
+            userId,
+            companyId: newCompany.id,
+            role: "owner"
+        })
+
+        // Set this as the current company
+        await setCurrentCompany(newCompany.id)
+
+        revalidatePath("/")
+
+        return {
+            success: true,
+            data: newCompany
+        }
+    } catch (error) {
+        console.error("Error creating company:", error)
+        if (error instanceof z.ZodError) {
+            return {
+                success: false,
+                error: "Invalid company data",
+                validationErrors: error.errors
+            }
+        }
+        return {
+            success: false,
+            error: "Failed to create company"
+        }
+    }
+}
+
+// Get user's role in the current company
+export async function getUserRole() {
+    try {
+        const { userId } = await auth()
+
+        if (!userId) {
+            return {
+                success: false,
+                error: "Not authenticated"
+            }
+        }
+
+        const currentCompanyResult = await getCurrentCompany()
+
+        if (!currentCompanyResult.success || !currentCompanyResult.data) {
+            return {
+                success: false,
+                error: currentCompanyResult.error || "No company selected"
+            }
+        }
+
+        const userCompany = await db.query.companyUsers.findFirst({
+            where: and(
+                eq(companyUsers.userId, userId),
+                eq(companyUsers.companyId, currentCompanyResult.data.id)
+            )
+        })
+
+        if (!userCompany) {
+            return {
+                success: false,
+                error: "User does not belong to this company"
+            }
+        }
+
+        return {
+            success: true,
+            data: userCompany.role
+        }
+    } catch (error) {
+        console.error("Error getting user role:", error)
+        return {
+            success: false,
+            error: "Failed to get user role"
+        }
+    }
+}
+
+// Get detailed company information for the settings page
+export async function getCompanyDetails() {
+    try {
+        const { userId } = await auth()
+
+        if (!userId) {
+            return {
+                success: false,
+                error: "Not authenticated"
+            }
+        }
+
+        const currentCompanyResult = await getCurrentCompany()
+
+        if (!currentCompanyResult.success || !currentCompanyResult.data) {
+            return {
+                success: false,
+                error: currentCompanyResult.error || "No company selected"
+            }
+        }
+
+        return {
+            success: true,
+            company: currentCompanyResult.data
+        }
+    } catch (error) {
+        console.error("Error getting company details:", error)
+        return {
+            success: false,
+            error: "Failed to get company details"
+        }
+    }
+}
+
+// Schema for company update
+const updateCompanySchema = z.object({
+    name: z.string().min(1, "Company name is required"),
+    dotNumber: z.string().optional().nullable(),
+    mcNumber: z.string().optional().nullable(),
+    address: z.string().optional().nullable(),
+    city: z.string().optional().nullable(),
+    state: z.string().optional().nullable(),
+    zip: z.string().optional().nullable(),
+    phone: z.string().optional().nullable(),
+    email: z.string().email().optional().nullable(),
+    primaryColor: z.string().optional()
+})
+
+export type UpdateCompanyFormValues = z.infer<typeof updateCompanySchema>
 
 // Update an existing company
-export async function updateCompany(data: Partial<CreateCompanyFormValues>) {
-  const { userId, orgId } = await auth();
-  
-  if (!userId || !orgId) {
-    throw new Error("Unauthorized: You must be logged in to update company details.");
-  }
-  
-  try {
-    // Find the company by orgId
-    const existingCompany = await db.query.companies.findFirst({
-      where: eq(companies.clerkOrgId, orgId),
-    });
-    
-    if (!existingCompany) {
-      return {
-        success: false,
-        error: "Company not found.",
-      };
+export async function updateCompany(data: UpdateCompanyFormValues) {
+    try {
+        const { userId } = await auth()
+
+        if (!userId) {
+            return {
+                success: false,
+                error: "Not authenticated"
+            }
+        }
+
+        // Get the current company
+        const currentCompanyResult = await getCurrentCompany()
+
+        if (!currentCompanyResult.success || !currentCompanyResult.data) {
+            return {
+                success: false,
+                error: currentCompanyResult.error || "No company selected"
+            }
+        }
+
+        // Ensure user has permission to update this company
+        const userRole = await getUserRole()
+        if (!userRole.success || (userRole.data !== "owner" && userRole.data !== "admin")) {
+            return {
+                success: false,
+                error: "Insufficient permissions to update company"
+            }
+        }
+
+        // Validate input
+        const validatedData = updateCompanySchema.parse(data)
+
+        // Update the company
+        await db
+            .update(companies)
+            .set({
+                name: validatedData.name,
+                dotNumber: validatedData.dotNumber || null,
+                mcNumber: validatedData.mcNumber || null,
+                address: validatedData.address || null,
+                city: validatedData.city || null,
+                state: validatedData.state || null,
+                zip: validatedData.zip || null,
+                phone: validatedData.phone || null,
+                email: validatedData.email || null,
+                primaryColor: validatedData.primaryColor || "#0f766e",
+                updatedAt: new Date()
+            })
+            .where(eq(companies.id, currentCompanyResult.data.id))
+
+        revalidatePath("/settings")
+
+        return {
+            success: true
+        }
+    } catch (error) {
+        console.error("Error updating company:", error)
+        if (error instanceof z.ZodError) {
+            return {
+                success: false,
+                error: "Invalid company data",
+                validationErrors: error.errors
+            }
+        }
+        return {
+            success: false,
+            error: "Failed to update company"
+        }
     }
-    
-    // Update the company
-    const [updatedCompany] = await db
-      .update(companies)
-      .set({
-        ...data,
-        updatedAt: new Date(),
-      })
-      .where(eq(companies.id, existingCompany.id))
-      .returning();
-    
-    // Revalidate cache for dashboard pages
-    revalidatePath("/dashboard");
-    revalidatePath("/settings");
-    
-    return { success: true, company: updatedCompany };
-  } catch (error) {
-    console.error("Error updating company:", error);
-    
-    if (typeof z !== "undefined" && error instanceof z.ZodError) {
-      return { success: false, error: (error as z.ZodError).errors };
-    }
-    
-    return {
-      success: false,
-      error: "Failed to update company. Please try again.",
-    };
-  }
 }
 
-// Check if a company exists for the current organization
-export async function checkCompanyExists() {
-  const { orgId } = await auth();
-  
-  if (!orgId) {
-    return false;
-  }
-  
-  const company = await db.query.companies.findFirst({
-    where: eq(companies.clerkOrgId, orgId),
-  });
-  
-  return !!company;
-}
-
-// Get organization members with their roles
+// Get all members of the current organization
 export async function getOrganizationMembers() {
-  const { userId, orgId } = await auth();
-  
-  if (!userId || !orgId) {
-    throw new Error("Unauthorized: You must be logged in to view organization members.");
-  }
-  
-  try {
-    const client = await clerkClient();
-    const membershipList = await client.organizations.getOrganizationMembershipList({
-      organizationId: orgId,
-    });
-    
-    return membershipList;
-  } catch (error) {
-    console.error("Error fetching organization members:", error);
-    throw new Error("Failed to fetch organization members.");
-  }
-}
+    try {
+        const { userId, orgId } = await auth()
 
-// Get company details for the current organization
-export async function getCompanyDetails() {
-  const { userId, orgId } = await auth();
-  
-  if (!userId || !orgId) {
-    throw new Error("Unauthorized: You must be logged in to view company details.");
-  }
-  
-  try {
-    const company = await db.query.companies.findFirst({
-      where: eq(companies.clerkOrgId, orgId),
-    });
-    
-    if (!company) {
-      return { success: false, error: "Company not found." };
-    }
-    
-    return { success: true, company };
-  } catch (error) {
-    console.error("Error fetching company details:", error);
-    return {
-      success: false,
-      error: "Failed to fetch company details. Please try again.",
-    };
-  }
-}
+        if (!userId || !orgId) {
+            return {
+                success: false,
+                error: "Not authenticated or no organization selected"
+            }
+        }
 
-// Delete a company (restricted to org admins only)
-export async function deleteCompany() {
-  const { userId, orgId, orgRole } = await auth();
-  
-  if (!userId || !orgId) {
-    throw new Error("Unauthorized: You must be logged in to delete a company.");
-  }
-  
-  // Only org admins can delete companies
-  if (orgRole !== 'admin') {
-    throw new Error("Unauthorized: Only organization administrators can delete a company.");
-  }
-  
-  try {
-    // Find the company by orgId
-    const company = await db.query.companies.findFirst({
-      where: eq(companies.clerkOrgId, orgId),
-    });
-    
-    if (!company) {
-      return { success: false, error: "Company not found." };
+        // Use Clerk API to get organization members
+        const clerk = await clerkClient()
+        const members = await clerk.organizations.getOrganizationMembershipList({
+            organizationId: orgId
+        })
+
+        return {
+            success: true,
+            data: members.data
+        }
+    } catch (error) {
+        console.error("Error getting organization members:", error)
+        return {
+            success: false,
+            error: "Failed to get organization members"
+        }
     }
-    
-    // Delete the company - cascading delete will handle related records
-    await db.delete(companies).where(eq(companies.id, company.id));
-    
-    // Revalidate paths
-    revalidatePath("/dashboard");
-    revalidatePath("/settings");
-    
-    // Redirect to login after deletion
-    redirect("/login");
-  } catch (error) {
-    console.error("Error deleting company:", error);
-    return {
-      success: false,
-      error: "Failed to delete company. Please try again.",
-    };
-  }
 }
 
 // Invite a new member to the organization
-export async function inviteOrganizationMember({
-  email,
-  role = "basic_member",
-}: {
-  email: string;
-  role?: string;
-}) {
-  const { userId, orgId, orgRole } = await auth();
-  
-  if (!userId || !orgId) {
-    throw new Error("Unauthorized: You must be logged in to invite members.");
-  }
-  
-  // Only org admins can invite members
-  if (orgRole !== 'admin') {
-    throw new Error("Unauthorized: Only organization administrators can invite members.");
-  }
-  
-  try {
-    const client = await clerkClient();
-    const invitation = await client.organizations.createOrganizationInvitation({
-      organizationId: orgId,
-      emailAddress: email,
-      role: role,
-    });
-    
-    return { success: true, invitation };
-  } catch (error) {
-    console.error("Error inviting organization member:", error);
-    return {
-      success: false,
-      error: "Failed to invite member. Please check the email address and try again.",
-    };
-  }
+export async function inviteOrganizationMember({ email, role }: { email: string; role: string }) {
+    try {
+        const { userId, orgId } = await auth()
+
+        if (!userId || !orgId) {
+            return {
+                success: false,
+                error: "Not authenticated or no organization selected"
+            }
+        }
+
+        // Validate input
+        if (!email) {
+            return {
+                success: false,
+                error: "Email is required"
+            }
+        }
+        // Use Clerk API to invite the member
+        const clerk = await clerkClient()
+        const invitation = await clerk.organizations.createOrganizationInvitation({
+            organizationId: orgId,
+            emailAddress: email,
+            role: role,
+            inviterUserId: userId
+        })
+
+        return {
+            success: true,
+            data: invitation
+        }
+    } catch (error: any) {
+        console.error("Error inviting organization member:", error)
+        return {
+            success: false,
+            error: error.message || "Failed to invite organization member"
+        }
+    }
+}
+
+// Delete the current company
+export async function deleteCompany() {
+    try {
+        const { userId } = await auth()
+
+        if (!userId) {
+            return {
+                success: false,
+                error: "Not authenticated"
+            }
+        }
+
+        // Get the current company
+        const currentCompanyResult = await getCurrentCompany()
+
+        if (!currentCompanyResult.success || !currentCompanyResult.data) {
+            return {
+                success: false,
+                error: currentCompanyResult.error || "No company selected"
+            }
+        }
+
+        const companyId = currentCompanyResult.data.id
+
+        // Ensure user has permission to delete this company
+        const userRole = await getUserRole()
+        if (!userRole.success || userRole.data !== "owner") {
+            return {
+                success: false,
+                error: "Only the owner can delete a company"
+            }
+        }
+
+        // Delete company users first (to maintain referential integrity)
+        await db.delete(companyUsers).where(eq(companyUsers.companyId, companyId))
+
+        // Delete the company
+        await db.delete(companies).where(eq(companies.id, companyId))
+
+        // Clear the selected company cookie
+        const cookieStore = await cookies()
+        cookieStore.delete(COMPANY_COOKIE_NAME)
+
+        revalidatePath("/")
+
+        return {
+            success: true
+        }
+    } catch (error) {
+        console.error("Error deleting company:", error)
+        return {
+            success: false,
+            error: "Failed to delete company"
+        }
+    }
 }
