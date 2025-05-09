@@ -15,26 +15,31 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 
 interface FinancialMetricsProps {
     timeRange: string
+    financialData: Array<{
+        date: string | undefined
+        revenue: number
+        expenses: number
+        profit: number
+    }>
+    expenseBreakdown: Array<{
+        category: string
+        value: number
+    }>
+    financialSummary: {
+        revenue: { current: number, previous: number, change: string }
+        expenses: { current: number, previous: number, change: string }
+        profit: { current: number, previous: number, change: string }
+        margin: { current: string, previous: string, change: string }
+        ratePerMile: { current: string, previous: string, change: string }
+    }
 }
 
-const mockFinancialData = [
-    { date: "2023-06-01", revenue: 25800, expenses: 18500, profit: 7300 },
-    { date: "2023-06-08", revenue: 23400, expenses: 17200, profit: 6200 },
-    { date: "2023-06-15", revenue: 27500, expenses: 19800, profit: 7700 },
-    { date: "2023-06-22", revenue: 24600, expenses: 18100, profit: 6500 },
-    { date: "2023-06-29", revenue: 27150, expenses: 19300, profit: 7850 }
-]
-
-const mockExpenseBreakdown = [
-    { category: "Fuel", value: 26842 },
-    { category: "Maintenance", value: 12450 },
-    { category: "Insurance", value: 8750 },
-    { category: "Payroll", value: 35200 },
-    { category: "Admin", value: 6800 },
-    { category: "Other", value: 3850 }
-]
-
-export function FinancialMetrics({ timeRange }: FinancialMetricsProps) {
+export function FinancialMetrics({ 
+    timeRange, 
+    financialData, 
+    expenseBreakdown, 
+    financialSummary 
+}: FinancialMetricsProps) {
     return (
         <div className="space-y-6">
             <div>
@@ -58,13 +63,16 @@ export function FinancialMetrics({ timeRange }: FinancialMetricsProps) {
                 >
                     <ResponsiveContainer width="100%" height="100%">
                         <LineChart
-                            data={mockFinancialData}
+                            data={financialData}
                             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                         >
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="date" />
                             <YAxis />
-                            <ChartTooltip content={<ChartTooltipContent />} />
+                            <ChartTooltip 
+                                content={<ChartTooltipContent />} 
+                                formatter={(value) => `$${Number(value).toLocaleString()}`}
+                            />
                             <Legend />
                             <Line
                                 type="monotone"
@@ -96,20 +104,23 @@ export function FinancialMetrics({ timeRange }: FinancialMetricsProps) {
                         config={{
                             value: {
                                 label: "Amount",
-                                color: "hsl(var(--chart-4))"
+                                color: "hsl(var(--chart-1))"
                             }
                         }}
                         className="h-[300px]"
                     >
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart
-                                data={mockExpenseBreakdown}
+                                data={expenseBreakdown}
                                 margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                             >
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis dataKey="category" />
                                 <YAxis />
-                                <ChartTooltip content={<ChartTooltipContent />} />
+                                <ChartTooltip 
+                                    content={<ChartTooltipContent />} 
+                                    formatter={(value) => `$${Number(value).toLocaleString()}`}
+                                />
                                 <Legend />
                                 <Bar dataKey="value" fill="var(--color-value)" name="Amount" />
                             </BarChart>
@@ -136,37 +147,43 @@ export function FinancialMetrics({ timeRange }: FinancialMetricsProps) {
                             <tbody>
                                 <tr className="border-b">
                                     <td className="p-2 text-sm font-medium">Total Revenue</td>
-                                    <td className="p-2 text-sm text-right">$128,450</td>
-                                    <td className="p-2 text-sm text-right">$114,750</td>
-                                    <td className="p-2 text-sm text-right text-green-600">
-                                        +12.0%
+                                    <td className="p-2 text-sm text-right">${financialSummary.revenue.current.toLocaleString()}</td>
+                                    <td className="p-2 text-sm text-right">${financialSummary.revenue.previous.toLocaleString()}</td>
+                                    <td className={`p-2 text-sm text-right ${Number(financialSummary.revenue.change) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                        {Number(financialSummary.revenue.change) >= 0 ? '+' : ''}{financialSummary.revenue.change}%
                                     </td>
                                 </tr>
                                 <tr className="border-b">
                                     <td className="p-2 text-sm font-medium">Total Expenses</td>
-                                    <td className="p-2 text-sm text-right">$93,892</td>
-                                    <td className="p-2 text-sm text-right">$85,320</td>
-                                    <td className="p-2 text-sm text-right text-red-600">+10.0%</td>
+                                    <td className="p-2 text-sm text-right">${financialSummary.expenses.current.toLocaleString()}</td>
+                                    <td className="p-2 text-sm text-right">${financialSummary.expenses.previous.toLocaleString()}</td>
+                                    <td className={`p-2 text-sm text-right ${Number(financialSummary.expenses.change) >= 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                        {Number(financialSummary.expenses.change) >= 0 ? '+' : ''}{financialSummary.expenses.change}%
+                                    </td>
                                 </tr>
                                 <tr className="border-b">
                                     <td className="p-2 text-sm font-medium">Net Profit</td>
-                                    <td className="p-2 text-sm text-right">$34,558</td>
-                                    <td className="p-2 text-sm text-right">$29,430</td>
-                                    <td className="p-2 text-sm text-right text-green-600">
-                                        +17.4%
+                                    <td className="p-2 text-sm text-right">${financialSummary.profit.current.toLocaleString()}</td>
+                                    <td className="p-2 text-sm text-right">${financialSummary.profit.previous.toLocaleString()}</td>
+                                    <td className={`p-2 text-sm text-right ${Number(financialSummary.profit.change) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                        {Number(financialSummary.profit.change) >= 0 ? '+' : ''}{financialSummary.profit.change}%
                                     </td>
                                 </tr>
                                 <tr className="border-b">
                                     <td className="p-2 text-sm font-medium">Profit Margin</td>
-                                    <td className="p-2 text-sm text-right">26.9%</td>
-                                    <td className="p-2 text-sm text-right">25.6%</td>
-                                    <td className="p-2 text-sm text-right text-green-600">+1.3%</td>
+                                    <td className="p-2 text-sm text-right">{financialSummary.margin.current}%</td>
+                                    <td className="p-2 text-sm text-right">{financialSummary.margin.previous}%</td>
+                                    <td className={`p-2 text-sm text-right ${Number(financialSummary.margin.change) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                        {Number(financialSummary.margin.change) >= 0 ? '+' : ''}{financialSummary.margin.change}%
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td className="p-2 text-sm font-medium">Revenue per Mile</td>
-                                    <td className="p-2 text-sm text-right">$3.02</td>
-                                    <td className="p-2 text-sm text-right">$2.85</td>
-                                    <td className="p-2 text-sm text-right text-green-600">+6.0%</td>
+                                    <td className="p-2 text-sm text-right">${financialSummary.ratePerMile.current}</td>
+                                    <td className="p-2 text-sm text-right">${financialSummary.ratePerMile.previous}</td>
+                                    <td className={`p-2 text-sm text-right ${Number(financialSummary.ratePerMile.change) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                        {Number(financialSummary.ratePerMile.change) >= 0 ? '+' : ''}{financialSummary.ratePerMile.change}%
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>

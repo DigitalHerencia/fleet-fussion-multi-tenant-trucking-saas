@@ -27,6 +27,10 @@
     --sidebar-foreground: 0 0% 3.9%;
     --sidebar-border: 0 0% 89.8%;
     --sidebar-accent: 221 83% 53%;
+    --color-revenue: hsl(var(--chart-1));
+    --color-expenses: hsl(var(--chart-2));
+    --color-profit: hsl(var(--chart-3));
+    --color-value: hsl(var(--chart-4));
 }
 
 @media (prefers-color-scheme: dark) {

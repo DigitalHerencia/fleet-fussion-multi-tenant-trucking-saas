@@ -1,8 +1,9 @@
 import { db } from "@/lib/db"
 import { loads, drivers, vehicles, iftaTrips } from "@/db/schema"
 import { eq, and, gte, lte, sql } from "drizzle-orm"
+import { cache } from "react"
 
-export async function getRevenueMetrics(companyId: string, startDate: Date, endDate: Date) {
+export const getRevenueMetrics = cache(async function getRevenueMetrics(companyId: string, startDate: Date, endDate: Date) {
     try {
         const result = await db
             .select({
@@ -26,9 +27,9 @@ export async function getRevenueMetrics(companyId: string, startDate: Date, endD
         console.error("getRevenueMetrics error:", error)
         throw new Error("Unable to load revenue metrics")
     }
-}
+})
 
-export async function getDriverPerformance(companyId: string, startDate: Date, endDate: Date) {
+export const getDriverPerformance = cache(async function getDriverPerformance(companyId: string, startDate: Date, endDate: Date) {
     try {
         const result = await db
             .select({
@@ -55,9 +56,9 @@ export async function getDriverPerformance(companyId: string, startDate: Date, e
         console.error("getDriverPerformance error:", error)
         throw new Error("Unable to load driver performance metrics")
     }
-}
+})
 
-export async function getVehicleUtilization(companyId: string, startDate: Date, endDate: Date) {
+export const getVehicleUtilization = cache(async function getVehicleUtilization(companyId: string, startDate: Date, endDate: Date) {
     try {
         const result = await db
             .select({
@@ -85,9 +86,9 @@ export async function getVehicleUtilization(companyId: string, startDate: Date, 
         console.error("getVehicleUtilization error:", error)
         throw new Error("Unable to load vehicle utilization metrics")
     }
-}
+})
 
-export async function getDailyRevenueTimeline(companyId: string, startDate: Date, endDate: Date) {
+export const getDailyRevenueTimeline = cache(async function getDailyRevenueTimeline(companyId: string, startDate: Date, endDate: Date) {
     try {
         const result = await db
             .select({
@@ -110,9 +111,9 @@ export async function getDailyRevenueTimeline(companyId: string, startDate: Date
         console.error("getDailyRevenueTimeline error:", error)
         throw new Error("Unable to load revenue timeline data")
     }
-}
+})
 
-export async function getComplianceStatusMetrics(companyId: string) {
+export const getComplianceStatusMetrics = cache(async function getComplianceStatusMetrics(companyId: string) {
     try {
         // Since we don't have all_documents_valid field in drivers,
         // we'll check license expiration and medical card expiration
@@ -151,4 +152,4 @@ export async function getComplianceStatusMetrics(companyId: string) {
         console.error("getComplianceStatusMetrics error:", error)
         throw new Error("Unable to load compliance metrics")
     }
-}
+})

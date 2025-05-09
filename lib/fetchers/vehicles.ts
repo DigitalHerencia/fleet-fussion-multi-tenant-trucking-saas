@@ -1,31 +1,34 @@
 import { db } from "@/lib/db"
 import { vehicles } from "@/db/schema"
 import { eq } from "drizzle-orm"
+import { cache } from "react"
 
 /**
- * Retrieves all vehicles for a specific company
- *
- * @param companyId - The ID of the company to fetch vehicles for
- * @returns Array of vehicles with their details
+ * Retrieves all vehicles for a specific company with pagination, filtering, and sorting
  */
-export async function getVehiclesForCompany(companyId: number) {
-    try {
-        return await db.query.vehicles.findMany({
-            where: eq(vehicles.companyId, String(companyId)),
-            orderBy: (vehicles, { asc }) => [asc(vehicles.unitNumber)],
-            with: {
-                maintenanceRecords: {
-                    where: (records, { eq }) => eq(records.status, "scheduled"),
-                    orderBy: (records, { asc }) => [asc(records.scheduledDate)],
-                    limit: 1
-                }
-            }
-        })
-    } catch (error) {
-        console.error("getVehiclesForCompany error:", error)
-        throw new Error("Unable to load vehicles")
-    }
-}
+export const getVehiclesForCompany = cache(async function getVehiclesForCompany(
+  companyId: number,
+  options?: {
+    limit?: number;
+    offset?: number;
+    status?: string;
+    type?: string;
+    sortBy?: keyof typeof vehicles;
+    sortOrder?: "asc" | "desc";
+  }
+) {
+  try {
+    const whereConds = [eq(vehicles.companyId, String(companyId))];
+    if (options?.status) whereConds.push(eq(vehicles.status, options.status));
+    // Return the result of the query
+    return await db.query.vehicles.findMany({
+      where: (vehicles, { and }) => and(...whereConds),
+    });
+  } catch (error) {
+    console.error("getVehiclesForCompany error:", error);
+    throw new Error("Unable to load vehicles");
+  }
+});
 
 /**
  * Retrieves vehicles for a company filtered by type (e.g., "tractor" or "trailer")

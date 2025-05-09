@@ -5,17 +5,22 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 
 interface PerformanceMetricsProps {
     timeRange: string
+    data: Array<{
+        date: string
+        loads: number
+        miles: number
+        onTimeDelivery: number
+        utilization: number
+    }>
+    comparisonData: {
+        loadCount: { current: number, previous: number, change: string }
+        miles: { current: number, previous: number, change: string }
+        onTimeDelivery: { current: number, previous: number, change: string }
+        utilization: { current: number, previous: number, change: string }
+    }
 }
 
-const mockPerformanceData = [
-    { date: "2023-06-01", loads: 42, miles: 12450, onTimeDelivery: 95, utilization: 88 },
-    { date: "2023-06-08", loads: 38, miles: 11200, onTimeDelivery: 92, utilization: 85 },
-    { date: "2023-06-15", loads: 45, miles: 13500, onTimeDelivery: 94, utilization: 90 },
-    { date: "2023-06-22", loads: 40, miles: 12000, onTimeDelivery: 96, utilization: 87 },
-    { date: "2023-06-29", loads: 44, miles: 13200, onTimeDelivery: 93, utilization: 89 }
-]
-
-export function PerformanceMetrics({ timeRange }: PerformanceMetricsProps) {
+export function PerformanceMetrics({ timeRange, data, comparisonData }: PerformanceMetricsProps) {
     return (
         <div className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2">
@@ -32,7 +37,7 @@ export function PerformanceMetrics({ timeRange }: PerformanceMetricsProps) {
                     >
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart
-                                data={mockPerformanceData}
+                                data={data}
                                 margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                             >
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -64,7 +69,7 @@ export function PerformanceMetrics({ timeRange }: PerformanceMetricsProps) {
                     >
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart
-                                data={mockPerformanceData}
+                                data={data}
                                 margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                             >
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -96,7 +101,7 @@ export function PerformanceMetrics({ timeRange }: PerformanceMetricsProps) {
                     >
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart
-                                data={mockPerformanceData}
+                                data={data}
                                 margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                             >
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -128,7 +133,7 @@ export function PerformanceMetrics({ timeRange }: PerformanceMetricsProps) {
                     >
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart
-                                data={mockPerformanceData}
+                                data={data}
                                 margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                             >
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -161,33 +166,35 @@ export function PerformanceMetrics({ timeRange }: PerformanceMetricsProps) {
                     <tbody>
                         <tr className="border-b">
                             <td className="p-2 text-sm font-medium">Total Loads</td>
-                            <td className="p-2 text-sm text-right">209</td>
-                            <td className="p-2 text-sm text-right">195</td>
-                            <td className="p-2 text-sm text-right text-green-600">+7.2%</td>
+                            <td className="p-2 text-sm text-right">{comparisonData.loadCount.current}</td>
+                            <td className="p-2 text-sm text-right">{comparisonData.loadCount.previous}</td>
+                            <td className={`p-2 text-sm text-right ${Number(comparisonData.loadCount.change) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                {Number(comparisonData.loadCount.change) >= 0 ? '+' : ''}{comparisonData.loadCount.change}%
+                            </td>
                         </tr>
                         <tr className="border-b">
                             <td className="p-2 text-sm font-medium">Total Miles</td>
-                            <td className="p-2 text-sm text-right">62,350</td>
-                            <td className="p-2 text-sm text-right">58,450</td>
-                            <td className="p-2 text-sm text-right text-green-600">+6.7%</td>
-                        </tr>
-                        <tr className="border-b">
-                            <td className="p-2 text-sm font-medium">Average Load Distance</td>
-                            <td className="p-2 text-sm text-right">298 mi</td>
-                            <td className="p-2 text-sm text-right">300 mi</td>
-                            <td className="p-2 text-sm text-right text-red-600">-0.7%</td>
+                            <td className="p-2 text-sm text-right">{comparisonData.miles.current.toLocaleString()}</td>
+                            <td className="p-2 text-sm text-right">{comparisonData.miles.previous.toLocaleString()}</td>
+                            <td className={`p-2 text-sm text-right ${Number(comparisonData.miles.change) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                {Number(comparisonData.miles.change) >= 0 ? '+' : ''}{comparisonData.miles.change}%
+                            </td>
                         </tr>
                         <tr className="border-b">
                             <td className="p-2 text-sm font-medium">On-Time Delivery Rate</td>
-                            <td className="p-2 text-sm text-right">94.2%</td>
-                            <td className="p-2 text-sm text-right">92.5%</td>
-                            <td className="p-2 text-sm text-right text-green-600">+1.8%</td>
+                            <td className="p-2 text-sm text-right">{comparisonData.onTimeDelivery.current}%</td>
+                            <td className="p-2 text-sm text-right">{comparisonData.onTimeDelivery.previous}%</td>
+                            <td className={`p-2 text-sm text-right ${Number(comparisonData.onTimeDelivery.change) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                {Number(comparisonData.onTimeDelivery.change) >= 0 ? '+' : ''}{comparisonData.onTimeDelivery.change}%
+                            </td>
                         </tr>
                         <tr>
                             <td className="p-2 text-sm font-medium">Fleet Utilization</td>
-                            <td className="p-2 text-sm text-right">87.8%</td>
-                            <td className="p-2 text-sm text-right">85.2%</td>
-                            <td className="p-2 text-sm text-right text-green-600">+3.1%</td>
+                            <td className="p-2 text-sm text-right">{comparisonData.utilization.current}%</td>
+                            <td className="p-2 text-sm text-right">{comparisonData.utilization.previous}%</td>
+                            <td className={`p-2 text-sm text-right ${Number(comparisonData.utilization.change) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                {Number(comparisonData.utilization.change) >= 0 ? '+' : ''}{comparisonData.utilization.change}%
+                            </td>
                         </tr>
                     </tbody>
                 </table>

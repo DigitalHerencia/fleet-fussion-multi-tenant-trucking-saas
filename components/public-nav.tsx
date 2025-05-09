@@ -2,7 +2,6 @@
 import Link from "next/link"
 import { MapPinned } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { SignIn } from "@clerk/nextjs"
 
 export function PublicNav() {
     return (
@@ -34,10 +33,16 @@ export function PublicNav() {
                 >
                     About
                 </Link>
-                <SignIn />
-                <Button className="bg-blue-400 hover:bg-blue-700 text-white font-semibold rounded-lg py-2 transition-colors ml-2">
-                    Login
-                </Button>
+                <Link href="/sign-up">
+                    <Button variant="outline" className="rounded-lg py-2">
+                        Sign Up
+                    </Button>
+                </Link>
+                <Link href="/sign-in">
+                    <Button className="bg-blue-400 hover:bg-blue-700 text-white font-semibold rounded-lg py-2 transition-colors">
+                        Sign In
+                    </Button>
+                </Link>
             </nav>
         </header>
     )

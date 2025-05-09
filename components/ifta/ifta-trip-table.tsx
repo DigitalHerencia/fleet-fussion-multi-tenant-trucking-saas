@@ -5,63 +5,25 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Search } from "lucide-react"
 
-const mockTrips = [
-    {
-        id: 1,
-        date: "06/28/2023",
-        driver: "John Smith",
-        vehicle: "T-101",
-        origin: "Chicago, IL",
-        destination: "Milwaukee, WI",
-        miles: 92,
-        jurisdictions: "IL, WI"
-    },
-    {
-        id: 2,
-        date: "06/25/2023",
-        driver: "Maria Garcia",
-        vehicle: "T-102",
-        origin: "Indianapolis, IN",
-        destination: "Columbus, OH",
-        miles: 175,
-        jurisdictions: "IN, OH"
-    },
-    {
-        id: 3,
-        date: "06/22/2023",
-        driver: "Robert Johnson",
-        vehicle: "T-103",
-        origin: "Detroit, MI",
-        destination: "Cleveland, OH",
-        miles: 170,
-        jurisdictions: "MI, OH"
-    },
-    {
-        id: 4,
-        date: "06/20/2023",
-        driver: "Sarah Williams",
-        vehicle: "T-101",
-        origin: "Chicago, IL",
-        destination: "St. Louis, MO",
-        miles: 300,
-        jurisdictions: "IL, MO"
-    },
-    {
-        id: 5,
-        date: "06/18/2023",
-        driver: "Michael Brown",
-        vehicle: "T-102",
-        origin: "Madison, WI",
-        destination: "Minneapolis, MN",
-        miles: 270,
-        jurisdictions: "WI, MN"
-    }
-]
+export type IftaTrip = {
+    id: string | number
+    date: string
+    driver: string
+    vehicle: string
+    origin: string
+    destination: string
+    miles: number
+    jurisdictions: string
+}
 
-export function IftaTripTable() {
+interface IftaTripTableProps {
+    trips: IftaTrip[]
+}
+
+export function IftaTripTable({ trips }: IftaTripTableProps) {
     const [searchTerm, setSearchTerm] = useState("")
 
-    const filteredTrips = mockTrips.filter(
+    const filteredTrips = trips.filter(
         trip =>
             trip.driver.toLowerCase().includes(searchTerm.toLowerCase()) ||
             trip.vehicle.toLowerCase().includes(searchTerm.toLowerCase()) ||

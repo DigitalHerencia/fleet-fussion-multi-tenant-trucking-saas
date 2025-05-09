@@ -1,49 +1,54 @@
-import React from "react"
-import Image from "next/image"
+"use client"
+
+import Link from "next/link"
+import { MapPinned } from "lucide-react"
 import { SignUp } from "@clerk/nextjs"
+import { useTheme } from "next-themes"
 
 export default function SignUpPage() {
-    return (
-        <div className="flex min-h-screen flex-col justify-center bg-gradient-to-b from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-950 py-12 sm:px-6 lg:px-8">
-            <div className="sm:mx-auto sm:w-full sm:max-w-md">
-                <div className="flex justify-center">
-                    <Image
-                        src="/map-pinned.png"
-                        alt="FleetFusion Logo"
-                        width={64}
-                        height={64}
-                        className="mx-auto"
-                    />
-                </div>
-                <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
-                    Create your account
-                </h2>
-                <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-                    Start managing your fleet efficiently with FleetFusion
-                </p>
-            </div>
+  const { resolvedTheme } = useTheme();
+  const isDarkMode = resolvedTheme === "dark";
 
-            <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-                <div className="bg-white dark:bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10">
-                    <SignUp
-                        appearance={{
-                            elements: {
-                                formButtonPrimary:
-                                    "bg-primary hover:bg-primary/90 text-primary-foreground",
-                                card: "bg-transparent shadow-none",
-                                footer: "text-xs text-gray-500 dark:text-gray-400"
-                            }
-                        }}
-                        redirectUrl={process.env.NEXT_PUBLIC_CLERK_SIGN_UP_REDIRECT_URL}
-                        path="/sign-up"
-                    />
-                </div>
-
-                <p className="mt-6 text-center text-xs text-gray-500 dark:text-gray-400">
-                    &copy; {new Date().getFullYear()} FleetFusion. Enterprise-grade fleet
-                    management.
-                </p>
-            </div>
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center bg-muted/40 px-4 py-12 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-8">
+        <div className="flex flex-col items-center justify-center text-center">
+          <Link href="/" className="flex items-center space-x-2">
+            <MapPinned className="h-8 w-8 text-primary" />
+            <span className="font-extrabold text-blue-700 dark:text-blue-400 text-3xl">
+              FleetFusion
+            </span>
+          </Link>
+          <h1 className="mt-6 text-3xl font-extrabold text-slate-900 dark:text-slate-100">
+            Create your account
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Already have an account?{" "}
+            <Link href="/sign-in" className="font-medium text-primary hover:underline">
+              Sign in
+            </Link>
+          </p>
         </div>
-    )
+        
+        <div className="mt-8 bg-background p-6 shadow-sm sm:rounded-lg sm:px-10 border flex justify-center">
+          <SignUp 
+            appearance={{
+              elements: {
+                formButtonPrimary: 
+                  "bg-primary hover:bg-primary/80 text-primary-foreground",
+                card: "bg-transparent shadow-none",
+                headerTitle: "text-foreground",
+                headerSubtitle: "text-muted-foreground",
+                socialButtonsBlockButton: "border-border text-foreground",
+                formFieldLabel: "text-foreground",
+                formFieldInput: "bg-background border-input",
+                footer: "hidden",
+              }
+            }}
+            signInUrl="/sign-in"
+          />
+        </div>
+      </div>
+    </div>
+  )
 }

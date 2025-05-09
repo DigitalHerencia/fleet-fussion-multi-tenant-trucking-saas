@@ -14,57 +14,18 @@ import { Badge } from "@/components/ui/badge"
 
 interface DriverPerformanceProps {
     timeRange: string
+    data: Array<{
+        name: string
+        miles: number
+        loads: number
+        onTime: number
+        fuelEfficiency: number
+        safetyScore: number
+        violations: number
+    }>
 }
 
-const mockDriverPerformanceData = [
-    {
-        name: "John Smith",
-        miles: 8450,
-        loads: 28,
-        onTime: 96,
-        fuelEfficiency: 6.4,
-        safetyScore: 95,
-        violations: 0
-    },
-    {
-        name: "Maria Garcia",
-        miles: 7850,
-        loads: 26,
-        onTime: 92,
-        fuelEfficiency: 6.2,
-        safetyScore: 92,
-        violations: 1
-    },
-    {
-        name: "Robert Johnson",
-        miles: 8200,
-        loads: 27,
-        onTime: 94,
-        fuelEfficiency: 6.5,
-        safetyScore: 97,
-        violations: 0
-    },
-    {
-        name: "Sarah Williams",
-        miles: 7650,
-        loads: 25,
-        onTime: 95,
-        fuelEfficiency: 6.3,
-        safetyScore: 94,
-        violations: 0
-    },
-    {
-        name: "Michael Brown",
-        miles: 7950,
-        loads: 26,
-        onTime: 93,
-        fuelEfficiency: 6.1,
-        safetyScore: 90,
-        violations: 1
-    }
-]
-
-export function DriverPerformance({ timeRange }: DriverPerformanceProps) {
+export function DriverPerformance({ timeRange, data }: DriverPerformanceProps) {
     return (
         <div className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2">
@@ -81,7 +42,7 @@ export function DriverPerformance({ timeRange }: DriverPerformanceProps) {
                     >
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart
-                                data={mockDriverPerformanceData}
+                                data={data}
                                 margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                             >
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -108,7 +69,7 @@ export function DriverPerformance({ timeRange }: DriverPerformanceProps) {
                     >
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart
-                                data={mockDriverPerformanceData}
+                                data={data}
                                 margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                             >
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -142,7 +103,7 @@ export function DriverPerformance({ timeRange }: DriverPerformanceProps) {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {mockDriverPerformanceData.map(driver => (
+                        {data.map(driver => (
                             <TableRow key={driver.name}>
                                 <TableCell className="font-medium">{driver.name}</TableCell>
                                 <TableCell className="text-right">

@@ -8,34 +8,29 @@ import { getCurrentCompanyId } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
 
 export async function createDriverAction(_: any, formData: FormData) {
-    const result = driverSchema.safeParse(Object.fromEntries(formData))
-    if (!result.success) {
-        return {
-            success: false,
-            errors: result.error.flatten().fieldErrors
-        }
-    }
-
-    const data = result.data
-
     try {
+        const result = driverSchema.safeParse(Object.fromEntries(formData))
+        if (!result.success) {
+            return {
+                success: false,
+                error: "Validation failed",
+                errors: result.error.flatten().fieldErrors
+            }
+        }
+        const data = result.data
         // Get current company ID from auth context
         const companyId = await getCurrentCompanyId()
-
         // Split name into firstName and lastName (basic split, adjust as needed)
         const [firstName, ...lastNameParts] = data.name.trim().split(" ")
         const lastName = lastNameParts.join(" ")
-
         // Ensure firstName and lastName are not empty or undefined
         if (!firstName || !lastName) {
             return {
                 success: false,
-                errors: {
-                    name: ["Please provide both first and last name."]
-                }
+                error: "Please provide both first and last name.",
+                errors: { name: ["Please provide both first and last name."] }
             }
         }
-
         // Insert the new driver into the database
         const newDriver = await db
             .insert(drivers)
@@ -43,7 +38,6 @@ export async function createDriverAction(_: any, formData: FormData) {
                 firstName,
                 lastName,
                 licenseNumber: data.licenseNumber,
-                // Add any other required driver fields from data here
                 companyId: String(companyId),
                 status: "active",
                 createdAt: new Date(),
@@ -51,19 +45,17 @@ export async function createDriverAction(_: any, formData: FormData) {
                 ...(data.notes && { notes: data.notes })
             })
             .returning()
-
-        // Revalidate the drivers page to show the new driver
         revalidatePath("/drivers")
-
         return {
             success: true,
             data: newDriver[0]
         }
     } catch (error) {
-        console.error("Error creating driver:", error)
+        console.error("[DriverActions] Error creating driver:", error)
         return {
             success: false,
-            error: error instanceof Error ? error.message : "Failed to create driver"
+            error: error instanceof Error ? error.message : "Failed to create driver",
+            errors: undefined
         }
     }
 }

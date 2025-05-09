@@ -14,7 +14,7 @@ export default async function NewLoadPage() {
     }))
 
     // Map vehicles to expected shape: { id: number; licensePlate: string }
-    const vehiclesMapped = vehicles.map((vehicle: any) => ({
+    const vehiclesMapped = (vehicles ?? []).map((vehicle: any) => ({
         id: Number(vehicle.id),
         licensePlate: vehicle.licensePlate
     }))

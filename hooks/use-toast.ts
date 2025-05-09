@@ -139,7 +139,7 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, "id">
 
-function toast({ ...props }: Toast, p0: { const: any; setError(errorMessage: any): any }) {
+function toast({ ...props }: Toast) {
     const id = genId()
 
     const update = (props: ToasterToast) =>
@@ -155,7 +155,7 @@ function toast({ ...props }: Toast, p0: { const: any; setError(errorMessage: any
             ...props,
             id,
             open: true,
-            onOpenChange: (open: any) => {
+            onOpenChange: (open: boolean) => {
                 if (!open) dismiss()
             }
         }

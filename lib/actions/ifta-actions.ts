@@ -1,10 +1,11 @@
 "use server"
 
 import { db } from "@/lib/db"
-import { iftaTrips, iftaReports } from "@/db/schema"
+import { iftaTrips, iftaReports, fuelPurchases } from "@/db/schema"
 import { eq, and, sql } from "drizzle-orm"
 import { z } from "zod"
 import { iftaSchema } from "@/lib/validation/ifta-schema"
+import { fuelPurchaseSchema } from "@/lib/validation/fuel-schema"
 
 // Zod schema for server-side validation
 const iftaTripSchema = z.object({
@@ -26,13 +27,13 @@ async function getCompanyId(): Promise<string> {
 }
 
 export async function updateIftaTrip(id: string, formData: FormData) {
-    const result = iftaTripSchema.safeParse(Object.fromEntries(formData))
-    if (!result.success) {
-        return { success: false, errors: result.error.flatten().fieldErrors }
-    }
-    const data = result.data as IftaTripForm
-    const companyId = await getCompanyId()
     try {
+        const result = iftaTripSchema.safeParse(Object.fromEntries(formData))
+        if (!result.success) {
+            return { success: false, error: "Validation failed", errors: result.error.flatten().fieldErrors }
+        }
+        const data = result.data as IftaTripForm
+        const companyId = await getCompanyId()
         await db
             .update(iftaTrips)
             .set({
@@ -48,32 +49,31 @@ export async function updateIftaTrip(id: string, formData: FormData) {
                 fuelPurchases: data.fuelPurchases ? JSON.stringify(data.fuelPurchases) : null
             })
             .where(and(eq(iftaTrips.id, id), eq(iftaTrips.companyId, companyId)))
-            .returning() // Added returning() method
+            .returning()
         return { success: true }
     } catch (error) {
-        console.error("updateIftaTrip error:", error)
-        return { success: false, errors: { form: ["Failed to update IFTA trip"] } }
+        console.error("[IFTA-Actions] updateIftaTrip error:", error)
+        return { success: false, error: error instanceof Error ? error.message : "Failed to update IFTA trip", errors: { form: ["Failed to update IFTA trip"] } }
     }
 }
 
 export async function deleteIftaTrip(id: string) {
-    const companyId = await getCompanyId()
     try {
+        const companyId = await getCompanyId()
         await db
             .delete(iftaTrips)
             .where(and(eq(iftaTrips.id, id), eq(iftaTrips.companyId, companyId)))
         return { success: true }
     } catch (error) {
-        console.error("deleteIftaTrip error:", error)
-        return { success: false, errors: { form: ["Failed to delete IFTA trip"] } }
+        console.error("[IFTA-Actions] deleteIftaTrip error:", error)
+        return { success: false, error: error instanceof Error ? error.message : "Failed to delete IFTA trip", errors: { form: ["Failed to delete IFTA trip"] } }
     }
 }
 
 export async function generateIftaReport(formData: FormData) {
-    const { quarter, year } = Object.fromEntries(formData)
-    const companyId = await getCompanyId()
-
     try {
+        const { quarter, year } = Object.fromEntries(formData)
+        const companyId = await getCompanyId()
         // Calculate summary data by aggregating trips for the quarter
         const tripData = await db
             .select({
@@ -81,13 +81,10 @@ export async function generateIftaReport(formData: FormData) {
             })
             .from(iftaTrips)
             .where(eq(iftaTrips.companyId, companyId))
-
         const totalMiles =
             tripData.length > 0 && tripData[0] && tripData[0].totalMiles !== undefined
                 ? Number(tripData[0].totalMiles) || 0
                 : 0
-
-        // Since we don't have iftaReports in the schema, we'll return the aggregated data directly
         return {
             success: true,
             report: {
@@ -100,19 +97,18 @@ export async function generateIftaReport(formData: FormData) {
             }
         }
     } catch (error) {
-        console.error("generateIftaReport error:", error)
-        return { success: false, errors: { form: ["Failed to generate IFTA report"] } }
+        console.error("[IFTA-Actions] generateIftaReport error:", error)
+        return { success: false, error: error instanceof Error ? error.message : "Failed to generate IFTA report", errors: { form: ["Failed to generate IFTA report"] } }
     }
 }
 
 export async function createIFTAAction(_: any, formData: FormData) {
-    const result = iftaSchema.safeParse(Object.fromEntries(formData))
-    if (!result.success) {
-        return { success: false, errors: result.error.flatten().fieldErrors }
-    }
-
-    const companyId = await getCompanyId()
     try {
+        const result = iftaSchema.safeParse(Object.fromEntries(formData))
+        if (!result.success) {
+            return { success: false, error: "Validation failed", errors: result.error.flatten().fieldErrors }
+        }
+        const companyId = await getCompanyId()
         await db.insert(iftaReports).values({
             ...result.data,
             quarter: Number(result.data.quarter),
@@ -122,7 +118,29 @@ export async function createIFTAAction(_: any, formData: FormData) {
         })
         return { success: true }
     } catch (err) {
-        console.error("createIFTAAction error:", err)
-        return { success: false, errors: { form: ["Failed to create IFTA record"] } }
+        console.error("[IFTA-Actions] createIFTAAction error:", err)
+        return { success: false, error: err instanceof Error ? err.message : "Failed to create IFTA record", errors: { form: ["Failed to create IFTA record"] } }
+    }
+}
+
+export async function createFuelPurchaseAction(_: any, formData: FormData) {
+    try {
+        const result = fuelPurchaseSchema.safeParse(Object.fromEntries(formData))
+        if (!result.success) {
+            return { success: false, error: "Validation failed", errors: result.error.flatten().fieldErrors }
+        }
+        const companyId = await getCompanyId()
+        await db.insert(fuelPurchases).values({
+            ...result.data,
+            companyId,
+            date: result.data.date,
+            gallons: String(result.data.gallons),
+            pricePerGallon: String(result.data.pricePerGallon),
+            totalAmount: String(result.data.totalAmount)
+        })
+        return { success: true }
+    } catch (err) {
+        console.error("[IFTA-Actions] createFuelPurchaseAction error:", err)
+        return { success: false, error: err instanceof Error ? err.message : "Failed to create fuel purchase", errors: { form: ["Failed to create fuel purchase"] } }
     }
 }

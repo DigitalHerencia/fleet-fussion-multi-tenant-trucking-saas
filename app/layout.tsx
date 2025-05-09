@@ -2,9 +2,10 @@ import type React from "react"
 import "@/app/globals.css"
 import { AuthProvider } from "@/context/auth-context"
 import { ThemeProvider } from "@/components/theme-provider"
-import { ClerkProvider } from "@clerk/nextjs"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
+import { ClerkProvider } from "@clerk/nextjs"
+import { Toaster } from "sonner"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -20,9 +21,19 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
-        <html lang="en">
+        <html lang="en" suppressHydrationWarning={true}>
             <body className={inter.className} suppressHydrationWarning={true}>
-                <ClerkProvider>
+                <ClerkProvider 
+                    appearance={{
+                        variables: {
+                            colorPrimary: "hsl(var(--primary))",
+                            colorBackground: "hsl(var(--background))",
+                            colorText: "hsl(var(--foreground))",
+                            colorInputText: "hsl(var(--foreground))",
+                            colorInputBackground: "hsl(var(--background))"
+                        }
+                    }}
+                >
                     <AuthProvider>
                         <ThemeProvider
                             attribute="class"
@@ -30,6 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                             enableSystem
                             disableTransitionOnChange
                         >
+                            <Toaster position="top-right" />
                             {children}
                         </ThemeProvider>
                     </AuthProvider>

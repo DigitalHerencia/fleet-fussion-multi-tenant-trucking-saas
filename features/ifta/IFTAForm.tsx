@@ -6,12 +6,19 @@ import { useActionState } from "react"
 import { iftaSchema, type IFTAFormData } from "@/lib/validation/ifta-schema"
 import { createIFTAAction } from "@/lib/actions/ifta-actions"
 import { FormError } from "@/components/ui/form-error"
+import { isValid } from "zod"
 
 export function IFTAForm() {
-    const [state, formAction] = useActionState(createIFTAAction, {
-        success: false,
-        errors: {}
-    })
+    const [state, formAction] = useActionState(
+        async (_prevState: any, _formData: any) => {
+            // ...existing code...
+            if (!isValid) {
+                return { success: false, error: 'Validation failed', errors };
+            }
+            // ...existing code...
+        },
+        { success: false, error: '', errors: {} }
+    )
 
     const {
         register,

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useAuth } from "@clerk/nextjs"
+import { useUser, useOrganizationList } from "@clerk/nextjs" // <-- useOrganizationList instead of useOrganization
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { createCompany } from "@/lib/actions/company-actions"
@@ -9,7 +9,8 @@ import type { CreateCompanyFormValues } from "@/lib/actions/company-actions"
 import { Loader2, Building2, Truck, Palette } from "lucide-react"
 
 export default function OnboardingPage() {
-    const { isLoaded: authLoaded, userId } = useAuth()
+    const { user, isSignedIn, isLoaded: isUserLoaded } = useUser()
+    const { isLoaded: isOrgListLoaded, createOrganization } = useOrganizationList() // <-- useOrganizationList
     const router = useRouter()
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [formData, setFormData] = useState<CreateCompanyFormValues>({
@@ -21,11 +22,11 @@ export default function OnboardingPage() {
         state: "",
         zip: "",
         phone: "",
-        email: "",
+        email: user?.primaryEmailAddress?.emailAddress || "",
         primaryColor: "#4ea5ff"
     })
 
-    if (!authLoaded) {
+    if (!isUserLoaded || !isOrgListLoaded) {
         return (
             <div className="flex h-screen w-full items-center justify-center bg-slate-50 dark:bg-gray-900">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -34,7 +35,7 @@ export default function OnboardingPage() {
     }
 
     // If user is not logged in, redirect to login
-    if (!userId) {
+    if (!isSignedIn) {
         router.push("/sign-in")
         return null
     }
@@ -44,10 +45,15 @@ export default function OnboardingPage() {
         setIsSubmitting(true)
 
         try {
+            // First create the organization in Clerk
+            const organization = await createOrganization({ name: formData.name || "My Company" });
+            
+            // Then create the company in our database
             const result = await createCompany({
                 ...formData,
                 // Ensure name is not empty
                 name: formData.name || "My Company"
+                // clerkOrgId removed, handled in backend
             })
 
             if (result.success) {

@@ -20,15 +20,14 @@ import { AlertCircle, CheckCircle2, Upload, UserPlus, Trash2, Users } from "luci
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useToast } from "@/hooks/use-toast"
 import {
-    getCurrentCompany,
-    getUserCompanies,
     getCompanyDetails,
     updateCompany,
     getOrganizationMembers,
     inviteOrganizationMember,
-    deleteCompany
+    deleteCompany,
+    getUserRole
 } from "@/lib/actions/company-actions"
-import { useOrganization, useOrganizationList, useUser } from "@clerk/nextjs"
+import { useAuth } from "@/context/auth-context"
 import {
     Dialog,
     DialogContent,
@@ -42,9 +41,7 @@ import {
 export function CompanySettings() {
     const router = useRouter()
     const { toast } = useToast()
-    const { organization } = useOrganization()
-    const { user } = useUser()
-    const { setActive } = useOrganizationList()
+    const { user, organization, company } = useAuth()
 
     const [formState, setFormState] = useState({
         name: "",
@@ -60,6 +57,7 @@ export function CompanySettings() {
     })
 
     const [isAdmin, setIsAdmin] = useState(false)
+    const [userRole, setUserRole] = useState<string | null>(null)
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState("")
@@ -74,16 +72,30 @@ export function CompanySettings() {
 
     useEffect(() => {
         if (organization) {
-            // Check if current user is an admin
-            // setIsAdmin(organization?.membershipRole === "admin")
-            // Use correct property or logic for admin check if available
+            // Fetch the user's role in the current company
+            fetchUserRole()
+
             // Load company data
             fetchCompanyData()
             // Load organization members and invitations
             fetchOrganizationMembers()
             fetchOrganizationInvitations()
         }
-    }, [organization])
+    }, [organization, user])
+
+    const fetchUserRole = async () => {
+        try {
+            const roleResult = await getUserRole()
+            if (roleResult.success && roleResult.data) {
+                const role = roleResult.data as string
+                setUserRole(role)
+                // Check if current user is an admin - adjust based on your role implementation
+                setIsAdmin(role === "admin" || role === "owner" || role === "ADMIN" || role === "OWNER")
+            }
+        } catch (err) {
+            console.error("Error fetching user role:", err)
+        }
+    }
 
     const fetchCompanyData = async () => {
         try {
@@ -126,10 +138,13 @@ export function CompanySettings() {
     const fetchOrganizationInvitations = async () => {
         if (!isAdmin) return
         try {
-            // Only fetch invitations if the user is an admin
-            if (organization?.id && organization.getInvitations) {
-                const invitations = await organization.getInvitations()
-                setPendingInvitations(invitations?.data || [])
+            // Replace Clerk's invitation method with custom API
+            const response = await fetch(`/api/organizations/${organization?.id}/invitations`)
+            if (response.ok) {
+                const data = await response.json()
+                setPendingInvitations(data.invitations || [])
+            } else {
+                console.error("Failed to fetch invitations:", response.statusText)
             }
         } catch (err) {
             console.error("Error loading pending invitations:", err)
@@ -153,15 +168,10 @@ export function CompanySettings() {
             const result = await updateCompany(formState)
             if (result.success) {
                 setSuccess("Company information updated successfully")
-                toast(
-                    { title: "Company Updated" },
-                    {
-                        const: undefined,
-                        setError: function (errorMessage: any) {
-                            throw new Error("Function not implemented.")
-                        }
-                    }
-                )
+                toast({
+                    title: "Company Updated",
+                    description: "Your company information has been updated successfully"
+                })
             } else {
                 setError(
                     typeof result.error === "string"
@@ -191,15 +201,10 @@ export function CompanySettings() {
                 role: inviteRole
             })
             if (result.success) {
-                toast(
-                    { title: "Invitation Sent" },
-                    {
-                        const: undefined,
-                        setError: function (errorMessage: any) {
-                            throw new Error("Function not implemented.")
-                        }
-                    }
-                )
+                toast({
+                    title: "Invitation Sent",
+                    description: "An invitation email has been sent to the user"
+                })
                 // Clear form and refresh members list
                 setInviteEmail("")
                 fetchOrganizationMembers()
@@ -219,19 +224,11 @@ export function CompanySettings() {
     const handleDeleteCompany = async () => {
         // Verify that the user typed DELETE to confirm
         if (deleteConfirmText !== "DELETE") {
-            toast(
-                {
-                    title: "Error",
-                    description: "You must type DELETE to confirm deletion",
-                    variant: "destructive"
-                },
-                {
-                    const: undefined,
-                    setError: function (errorMessage: any) {
-                        throw new Error("Function not implemented.")
-                    }
-                }
-            )
+            toast({
+                title: "Error",
+                description: "You must type DELETE to confirm deletion",
+                variant: "destructive"
+            })
             return
         }
         try {
@@ -648,48 +645,30 @@ export function CompanySettings() {
                                                     className="text-destructive"
                                                     onClick={async () => {
                                                         try {
-                                                            if (organization?.removeMember) {
-                                                                await organization.removeMember(
-                                                                    invitation.id
-                                                                )
-                                                                toast(
-                                                                    { title: "Invitation Revoked" },
-                                                                    {
-                                                                        const: undefined,
-                                                                        setError: function (
-                                                                            errorMessage: any
-                                                                        ) {
-                                                                            throw new Error(
-                                                                                "Function not implemented."
-                                                                            )
-                                                                        }
-                                                                    }
-                                                                )
-                                                                fetchOrganizationInvitations()
+                                                            // Replace Clerk's invitation revoke with custom API call
+                                                            const response = await fetch(`/api/organizations/${organization?.id}/invitations/${invitation.id}`, {
+                                                                method: 'DELETE',
+                                                            });
+                                                            
+                                                            if (response.ok) {
+                                                                toast({
+                                                                    title: "Invitation Revoked",
+                                                                    description: "The invitation has been successfully revoked"
+                                                                });
+                                                                fetchOrganizationInvitations();
+                                                            } else {
+                                                                throw new Error("Failed to revoke invitation");
                                                             }
                                                         } catch (err) {
                                                             console.error(
                                                                 "Error revoking invitation:",
                                                                 err
-                                                            )
-                                                            toast(
-                                                                {
-                                                                    title: "Error",
-                                                                    description:
-                                                                        "Failed to revoke invitation",
-                                                                    variant: "destructive"
-                                                                },
-                                                                {
-                                                                    const: undefined,
-                                                                    setError: function (
-                                                                        errorMessage: any
-                                                                    ) {
-                                                                        throw new Error(
-                                                                            "Function not implemented."
-                                                                        )
-                                                                    }
-                                                                }
-                                                            )
+                                                            );
+                                                            toast({
+                                                                title: "Error",
+                                                                description: "Failed to revoke invitation",
+                                                                variant: "destructive"
+                                                            });
                                                         }
                                                     }}
                                                 >

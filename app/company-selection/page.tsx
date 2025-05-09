@@ -3,13 +3,13 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { useAuth } from "@clerk/nextjs"
+import { useAuth } from "@/context/auth-context"
 import { getUserCompanies, setCurrentCompany, createCompany } from "@/lib/actions/company-actions"
 import type { Company } from "@/types/types"
 import { Loader2, Building2, PlusCircle } from "lucide-react"
 
 export default function CompanySelectionPage() {
-    const { isLoaded: authLoaded, userId } = useAuth()
+    const { isSignedIn, user } = useAuth()
     const router = useRouter()
     const [isLoading, setIsLoading] = useState(true)
     const [isCreating, setIsCreating] = useState(false)
@@ -21,7 +21,7 @@ export default function CompanySelectionPage() {
     // Fetch companies on component mount
     useEffect(() => {
         async function loadCompanies() {
-            if (!userId) return
+            if (!user?.id) return
 
             try {
                 const result = await getUserCompanies()
@@ -45,10 +45,12 @@ export default function CompanySelectionPage() {
             }
         }
 
-        if (userId) {
+        if (user?.id) {
             loadCompanies()
+        } else {
+            setIsLoading(false)
         }
-    }, [userId, router])
+    }, [user?.id, router])
 
     // Handle company selection
     const handleSelectCompany = async (companyId: string) => {
@@ -57,6 +59,10 @@ export default function CompanySelectionPage() {
             const result = await setCurrentCompany(companyId)
 
             if (result.success) {
+                // Store the selected company in cookies/localStorage
+                document.cookie = `selectedCompany=${companyId};path=/;max-age=31536000`;
+                localStorage.setItem('selectedCompanyId', companyId);
+                
                 router.push("/dashboard")
             } else {
                 setError(result.error || "Failed to select company")
@@ -95,9 +101,19 @@ export default function CompanySelectionPage() {
         }
     }
 
-    if (!authLoaded || (authLoaded && !userId)) {
-        router.push("/sign-in")
-        return null
+    // Redirect to sign-in if not authenticated
+    useEffect(() => {
+        if (!isLoading && !isSignedIn) {
+            router.push("/sign-in")
+        }
+    }, [isLoading, isSignedIn, router])
+
+    if (isLoading || !isSignedIn) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-muted/40">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        )
     }
 
     return (

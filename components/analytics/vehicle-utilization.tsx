@@ -14,79 +14,20 @@ import { Badge } from "@/components/ui/badge"
 
 interface VehicleUtilizationProps {
     timeRange: string
+    data: Array<{
+        number: string
+        type: string
+        miles: number
+        utilization: number
+        fuelEfficiency: number | string
+        maintenance: number
+        status: string
+        id: string
+        unitNumber: string
+    }>
 }
 
-interface Vehicle {
-    number: string
-    type: string
-    miles: number
-    utilization: number
-    fuelEfficiency: number | string
-    maintenance: number
-    status: string
-    id: string
-    unitNumber: string
-}
-
-const VehicleData: Vehicle[] = [
-    {
-        number: "T-101",
-        type: "Tractor",
-        miles: 14250,
-        utilization: 92,
-        fuelEfficiency: 6.4,
-        maintenance: 1250,
-        status: "Active",
-        id: "",
-        unitNumber: ""
-    },
-    {
-        number: "T-102",
-        type: "Tractor",
-        miles: 13850,
-        utilization: 88,
-        fuelEfficiency: 6.2,
-        maintenance: 1450,
-        status: "Active",
-        id: "",
-        unitNumber: ""
-    },
-    {
-        number: "T-103",
-        type: "Tractor",
-        miles: 14050,
-        utilization: 90,
-        fuelEfficiency: 6.5,
-        maintenance: 950,
-        status: "Maintenance",
-        id: "",
-        unitNumber: ""
-    },
-    {
-        number: "TR-201",
-        type: "Trailer",
-        miles: 13650,
-        utilization: 87,
-        fuelEfficiency: "N/A",
-        maintenance: 750,
-        status: "Active",
-        id: "",
-        unitNumber: ""
-    },
-    {
-        number: "TR-202",
-        type: "Trailer",
-        miles: 12950,
-        utilization: 83,
-        fuelEfficiency: "N/A",
-        maintenance: 850,
-        status: "Active",
-        id: "",
-        unitNumber: ""
-    }
-]
-
-export function VehicleUtilization({ timeRange }: VehicleUtilizationProps) {
+export function VehicleUtilization({ timeRange, data }: VehicleUtilizationProps) {
     return (
         <div className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2">
@@ -103,7 +44,7 @@ export function VehicleUtilization({ timeRange }: VehicleUtilizationProps) {
                     >
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart
-                                data={VehicleData}
+                                data={data}
                                 margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                             >
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -123,26 +64,22 @@ export function VehicleUtilization({ timeRange }: VehicleUtilizationProps) {
                         config={{
                             utilization: {
                                 label: "Utilization",
-                                color: "hsl(var(--chart-2))"
+                                color: "hsl(var(--chart-3))"
                             }
                         }}
                         className="h-[300px]"
                     >
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart
-                                data={VehicleData}
+                                data={data}
                                 margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                             >
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis dataKey="number" />
-                                <YAxis domain={[70, 100]} />
+                                <YAxis domain={[0, 100]} />
                                 <ChartTooltip content={<ChartTooltipContent />} />
                                 <Legend />
-                                <Bar
-                                    dataKey="utilization"
-                                    fill="var(--chart-3)"
-                                    name="Utilization"
-                                />
+                                <Bar dataKey="utilization" fill="var(--chart-3)" name="Utilization" />
                             </BarChart>
                         </ResponsiveContainer>
                     </ChartContainer>
@@ -164,7 +101,7 @@ export function VehicleUtilization({ timeRange }: VehicleUtilizationProps) {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {VehicleData.map(vehicle => (
+                        {data.map(vehicle => (
                             <TableRow key={vehicle.number}>
                                 <TableCell className="font-medium">{vehicle.number}</TableCell>
                                 <TableCell>{vehicle.type}</TableCell>

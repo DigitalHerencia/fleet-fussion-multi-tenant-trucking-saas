@@ -1,49 +1,46 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
+import { useState } from "react"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Download, Eye } from "lucide-react"
 
-const mockReports = [
-    {
-        id: 1,
-        quarter: "2023 - Q1",
-        filingDate: "04/25/2023",
-        status: "Filed",
-        totalMiles: 38945,
-        totalGallons: 6254,
-        taxPaid: "$1,128.42"
-    },
-    {
-        id: 2,
-        quarter: "2022 - Q4",
-        filingDate: "01/28/2023",
-        status: "Filed",
-        totalMiles: 42156,
-        totalGallons: 6782,
-        taxPaid: "$1,245.87"
-    },
-    {
-        id: 3,
-        quarter: "2022 - Q3",
-        filingDate: "10/22/2022",
-        status: "Filed",
-        totalMiles: 45321,
-        totalGallons: 7245,
-        taxPaid: "$1,356.32"
-    },
-    {
-        id: 4,
-        quarter: "2022 - Q2",
-        filingDate: "07/26/2022",
-        status: "Filed",
-        totalMiles: 40125,
-        totalGallons: 6420,
-        taxPaid: "$1,185.65"
-    }
-]
+export type IftaReport = {
+    id: string | number
+    quarter: string
+    filingDate: string
+    status: string
+    totalMiles: number
+    totalGallons: number
+    taxPaid: string
+}
 
-export function IftaReportTable() {
+interface IftaReportTableProps {
+    reports: IftaReport[]
+}
+
+export function IftaReportTable({ reports }: IftaReportTableProps) {
+    const [downloading, setDownloading] = useState<string | null>(null)
+
+    async function handleDownload(report: IftaReport) {
+        setDownloading(report.id.toString())
+        try {
+            const res = await fetch(`/api/ifta-report?year=${new Date().getFullYear()}&quarter=${report.quarter.replace('Q','')}&id=${report.id}`)
+            if (!res.ok) throw new Error("Failed to download PDF")
+            const blob = await res.blob()
+            const url = window.URL.createObjectURL(blob)
+            const a = document.createElement("a")
+            a.href = url
+            a.download = `IFTA_Report_${new Date().getFullYear()}_${report.quarter}.pdf`
+            document.body.appendChild(a)
+            a.click()
+            a.remove()
+            window.URL.revokeObjectURL(url)
+        } finally {
+            setDownloading(null)
+        }
+    }
+
     return (
         <div className="space-y-4">
             <div className="rounded-md border">
@@ -60,7 +57,7 @@ export function IftaReportTable() {
                         </tr>
                     </thead>
                     <tbody>
-                        {mockReports.map(report => (
+                        {reports.map(report => (
                             <tr key={report.id} className="border-b">
                                 <td className="p-2 text-sm font-medium">{report.quarter}</td>
                                 <td className="p-2 text-sm">{report.filingDate}</td>
@@ -78,11 +75,21 @@ export function IftaReportTable() {
                                 <td className="p-2 text-sm text-right">{report.taxPaid}</td>
                                 <td className="p-2 text-sm">
                                     <div className="flex justify-center gap-2">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            title="Download Report"
+                                            onClick={() => handleDownload(report)}
+                                            disabled={downloading === report.id.toString()}
+                                        >
+                                            {downloading === report.id.toString() ? (
+                                                <span className="animate-spin">⏳</span>
+                                            ) : (
+                                                <Download className="h-4 w-4" />
+                                            )}
+                                        </Button>
                                         <Button variant="ghost" size="icon" title="View Report">
                                             <Eye className="h-4 w-4" />
-                                        </Button>
-                                        <Button variant="ghost" size="icon" title="Download Report">
-                                            <Download className="h-4 w-4" />
                                         </Button>
                                     </div>
                                 </td>

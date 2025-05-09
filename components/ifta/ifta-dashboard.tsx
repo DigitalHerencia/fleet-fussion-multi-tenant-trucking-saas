@@ -15,9 +15,21 @@ import { Progress } from "@/components/ui/progress"
 import { IftaReportTable } from "./ifta-report-table"
 import { IftaTripTable } from "./ifta-trip-table"
 import { BarChart, Calendar, Download, FileText, TrendingUp } from "lucide-react"
+import { FuelPurchaseForm } from "@/features/ifta/FuelPurchaseForm"
 
 export function IftaDashboard() {
     const [quarter, setQuarter] = useState("2023-Q2")
+    const [showFuelModal, setShowFuelModal] = useState(false)
+
+    // TODO: Replace with real fetchers
+    const vehicles = [
+        { id: "1", unitNumber: "T-101" },
+        { id: "2", unitNumber: "T-102" }
+    ]
+    const drivers = [
+        { id: "1", name: "John Doe" },
+        { id: "2", name: "Jane Smith" }
+    ]
 
     return (
         <div className="space-y-6">
@@ -252,7 +264,7 @@ export function IftaDashboard() {
                             <CardDescription>Record of trips for IFTA reporting</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <IftaTripTable />
+                            <IftaTripTable trips={ [] } />
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -343,7 +355,7 @@ export function IftaDashboard() {
                                 </table>
                             </div>
                             <div className="mt-4 flex justify-between">
-                                <Button variant="outline" size="sm">
+                                <Button variant="outline" size="sm" onClick={() => setShowFuelModal(true)}>
                                     Add Fuel Purchase
                                 </Button>
                                 <Button variant="outline" size="sm">
@@ -361,11 +373,25 @@ export function IftaDashboard() {
                             <CardDescription>History of filed IFTA reports</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <IftaReportTable />
+                            <IftaReportTable reports={ [] } />
                         </CardContent>
                     </Card>
                 </TabsContent>
             </Tabs>
+
+            {showFuelModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                    <div className="bg-white dark:bg-gray-900 rounded-lg p-6 w-full max-w-lg shadow-lg">
+                        <h2 className="text-xl font-bold mb-4">Add Fuel Purchase</h2>
+                        <FuelPurchaseForm vehicles={vehicles} drivers={drivers} />
+                        <div className="mt-4 flex justify-end">
+                            <Button variant="outline" onClick={() => setShowFuelModal(false)}>
+                                Cancel
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

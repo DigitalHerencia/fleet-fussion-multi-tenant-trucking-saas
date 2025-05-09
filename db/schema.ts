@@ -473,3 +473,39 @@ export const complianceRecordRelations = relations(complianceRecords, ({ one }) 
         references: [companies.id]
     })
 }))
+
+// Fuel Purchases
+export const fuelPurchases = pgTable("fuel_purchases", {
+    id: uuid("id").defaultRandom().primaryKey(),
+    companyId: uuid("company_id")
+        .notNull()
+        .references(() => companies.id, { onDelete: "cascade" }),
+    vehicleId: uuid("vehicle_id")
+        .notNull()
+        .references(() => vehicles.id),
+    driverId: uuid("driver_id").references(() => drivers.id),
+    date: timestamp("date").notNull(),
+    location: text("location"),
+    jurisdiction: text("jurisdiction"), // State/province
+    gallons: decimal("gallons", { precision: 10, scale: 3 }).notNull(),
+    pricePerGallon: decimal("price_per_gallon", { precision: 10, scale: 3 }).notNull(),
+    totalAmount: decimal("total_amount", { precision: 12, scale: 2 }).notNull(),
+    notes: text("notes"),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow()
+});
+
+export const fuelPurchaseRelations = relations(fuelPurchases, ({ one }) => ({
+    company: one(companies, {
+        fields: [fuelPurchases.companyId],
+        references: [companies.id]
+    }),
+    vehicle: one(vehicles, {
+        fields: [fuelPurchases.vehicleId],
+        references: [vehicles.id]
+    }),
+    driver: one(drivers, {
+        fields: [fuelPurchases.driverId],
+        references: [drivers.id]
+    })
+}));

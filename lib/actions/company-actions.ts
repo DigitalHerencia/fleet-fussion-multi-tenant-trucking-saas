@@ -1,12 +1,12 @@
 "use server"
 
-import { auth, currentUser } from "@clerk/nextjs/server"
 import { db } from "@/db"
 import { companies, companyUsers } from "@/db/schema"
 import { eq, and, desc } from "drizzle-orm"
 import { z } from "zod"
 import { cookies } from "next/headers"
 import { revalidatePath } from "next/cache"
+import { getCurrentUserId } from "@/lib/auth"
 import { clerkClient } from "@clerk/nextjs/server"
 
 const COMPANY_COOKIE_NAME = "selectedCompany"
@@ -30,7 +30,8 @@ export type CreateCompanyFormValues = z.infer<typeof createCompanySchema>
 // Get all companies a user belongs to
 export async function getUserCompanies() {
     try {
-        const { userId } = await auth()
+        // Get the current user ID using our custom auth helper
+        const userId = await getCurrentUserId()
 
         if (!userId) {
             return {
@@ -96,7 +97,8 @@ export async function getUserCompanies() {
 // Set the current company for the user
 export async function setCurrentCompany(companyId: string) {
     try {
-        const { userId } = await auth()
+        // Get the current user ID using our custom auth helper
+        const userId = await getCurrentUserId()
 
         if (!userId) {
             return {
@@ -154,7 +156,8 @@ export async function setCurrentCompany(companyId: string) {
 // Get the current company for the user
 export async function getCurrentCompany() {
     try {
-        const { userId } = await auth()
+        // Get the current user ID using our custom auth helper
+        const userId = await getCurrentUserId()
 
         if (!userId) {
             return {
@@ -164,7 +167,7 @@ export async function getCurrentCompany() {
         }
 
         // Get selected company from cookie
-        const cookieStore = await cookies()
+        const cookieStore =  await cookies()
         const selectedCompanyId = cookieStore.get(COMPANY_COOKIE_NAME)?.value
 
         if (!selectedCompanyId) {
@@ -205,8 +208,9 @@ export async function getCurrentCompany() {
         if (!userCompany) {
             // If the selected company doesn't exist or user doesn't belong to it,
             // clear the cookie and try again with most recent company
-            cookieStore.delete(COMPANY_COOKIE_NAME)
-            return getCurrentCompany()
+            const store = await cookieStore;
+            store.delete(COMPANY_COOKIE_NAME)
+            return await getCurrentCompany()
         }
 
         return {
@@ -225,7 +229,8 @@ export async function getCurrentCompany() {
 // Create a new company
 export async function createCompany(data: CreateCompanyFormValues) {
     try {
-        const { userId } = await auth()
+        // Get the current user ID using our custom auth helper
+        const userId = await getCurrentUserId()
 
         if (!userId) {
             return {
@@ -237,7 +242,16 @@ export async function createCompany(data: CreateCompanyFormValues) {
         // Validate input
         const validatedData = createCompanySchema.parse(data)
 
-        // Create the company
+        // 1. Create Clerk organization
+        const clerkOrg = await createClerkOrganization(validatedData.name)
+        if (!clerkOrg?.id) {
+            return {
+                success: false,
+                error: "Failed to create Clerk organization"
+            }
+        }
+
+        // 2. Create the company in the DB, linking to Clerk org
         const [newCompany] = await db
             .insert(companies)
             .values({
@@ -250,7 +264,8 @@ export async function createCompany(data: CreateCompanyFormValues) {
                 zip: validatedData.zip,
                 phone: validatedData.phone,
                 email: validatedData.email,
-                primaryColor: validatedData.primaryColor || "#0f766e"
+                primaryColor: validatedData.primaryColor || "#0f766e",
+                clerkOrgId: clerkOrg.id // Link to Clerk organization ID
             })
             .returning()
 
@@ -293,10 +308,18 @@ export async function createCompany(data: CreateCompanyFormValues) {
     }
 }
 
+// Helper to create Clerk org (using Clerk SDK)
+async function createClerkOrganization(name: string) {
+    // Use Clerk SDK to create Clerk org
+const client = await clerkClient(); // Await the function to get the client
+const org = await client.organizations.createOrganization({ name });    return org
+}
+
 // Get user's role in the current company
 export async function getUserRole() {
     try {
-        const { userId } = await auth()
+        // Get the current user ID using our custom auth helper
+        const userId = await getCurrentUserId()
 
         if (!userId) {
             return {
@@ -344,7 +367,8 @@ export async function getUserRole() {
 // Get detailed company information for the settings page
 export async function getCompanyDetails() {
     try {
-        const { userId } = await auth()
+        // Get the current user ID using our custom auth helper
+        const userId = await getCurrentUserId()
 
         if (!userId) {
             return {
@@ -394,7 +418,8 @@ export type UpdateCompanyFormValues = z.infer<typeof updateCompanySchema>
 // Update an existing company
 export async function updateCompany(data: UpdateCompanyFormValues) {
     try {
-        const { userId } = await auth()
+        // Get the current user ID using our custom auth helper
+        const userId = await getCurrentUserId()
 
         if (!userId) {
             return {
@@ -467,24 +492,50 @@ export async function updateCompany(data: UpdateCompanyFormValues) {
 // Get all members of the current organization
 export async function getOrganizationMembers() {
     try {
-        const { userId, orgId } = await auth()
-
-        if (!userId || !orgId) {
+        // Get the current user ID using our custom auth helper
+        const userId = await getCurrentUserId()
+        
+        if (!userId) {
             return {
                 success: false,
-                error: "Not authenticated or no organization selected"
+                error: "Not authenticated"
             }
         }
-
-        // Use Clerk API to get organization members
-        const clerk = await clerkClient()
-        const members = await clerk.organizations.getOrganizationMembershipList({
-            organizationId: orgId
+        
+        // Get the current company
+        const currentCompanyResult = await getCurrentCompany()
+        
+        if (!currentCompanyResult.success || !currentCompanyResult.data) {
+            return {
+                success: false,
+                error: "No company selected"
+            }
+        }
+        
+        const companyId = currentCompanyResult.data.id
+        
+        // Get all users associated with this company
+        const  companyUsersList = await db.query.companyUsers.findMany({
+            where: eq(companyUsers.companyId, companyId)
+            // If you need user details like name/email, ensure a 'user' relation 
+            // is defined in your companyUsers schema and then you can use:
+            // with: {
+            //     user: true 
+            // }
         })
-
+        
+        // Since we no longer have Clerk, we would need to adapt this based on how user data is stored
+        // This is a simplified implementation that returns the IDs and roles
+        const members = companyUsersList.map(cu => ({
+            id: cu.userId,
+            role: cu.role,
+            createdAt: cu.createdAt,
+            updatedAt: cu.updatedAt
+        }))
+        
         return {
             success: true,
-            data: members.data
+            data: members
         }
     } catch (error) {
         console.error("Error getting organization members:", error)
@@ -498,40 +549,57 @@ export async function getOrganizationMembers() {
 // Invite a new member to the organization
 export async function inviteOrganizationMember({ email, role }: { email: string; role: string }) {
     try {
-        const { userId, orgId } = await auth()
-
-        if (!userId || !orgId) {
+        const userId = await getCurrentUserId()
+        if (!userId) {
             return {
                 success: false,
-                error: "Not authenticated or no organization selected"
+                error: "Not authenticated"
             }
         }
-
-        // Validate input
+        const currentCompanyResult = await getCurrentCompany()
+        if (!currentCompanyResult.success || !currentCompanyResult.data) {
+            return {
+                success: false,
+                error: "No company selected"
+            }
+        }
         if (!email) {
             return {
                 success: false,
                 error: "Email is required"
             }
         }
-        // Use Clerk API to invite the member
-        const clerk = await clerkClient()
-        const invitation = await clerk.organizations.createOrganizationInvitation({
-            organizationId: orgId,
+        const company = currentCompanyResult.data
+        const clerkOrgId = company.clerkOrgId
+        if (!clerkOrgId) {
+            return {
+                success: false,
+                error: "No Clerk organization linked to this company"
+            }
+        }
+        // Use Clerk SDK to invite user to Clerk org
+        const client = await clerkClient(); // Get the actual Clerk client
+        await client.organizations.createOrganizationInvitation({
+            organizationId: clerkOrgId,
             emailAddress: email,
-            role: role,
-            inviterUserId: userId
-        })
-
+            role
+        });
         return {
             success: true,
-            data: invitation
+            data: {
+                email,
+                role,
+                companyId: company.id,
+                invitedBy: userId,
+                status: "pending",
+                createdAt: new Date()
+            }
         }
-    } catch (error: any) {
-        console.error("Error inviting organization member:", error)
+    } catch (err: any) {
+        console.error("Error inviting organization member:", err)
         return {
             success: false,
-            error: error.message || "Failed to invite organization member"
+            error: err.message || "Failed to invite organization member"
         }
     }
 }
@@ -539,7 +607,8 @@ export async function inviteOrganizationMember({ email, role }: { email: string;
 // Delete the current company
 export async function deleteCompany() {
     try {
-        const { userId } = await auth()
+        // Get the current user ID using our custom auth helper
+        const userId = await getCurrentUserId()
 
         if (!userId) {
             return {

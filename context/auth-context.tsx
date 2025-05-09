@@ -1,8 +1,15 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
-import { useOrganization, useUser, useAuth as useClerkAuth, RedirectToSignIn } from "@clerk/nextjs"
 import { useRouter } from "next/navigation"
+import { 
+  useUser, 
+  useOrganization, 
+  useAuth as useClerkAuth, 
+  SignOutButton,
+  SignInButton,
+  OrganizationSwitcher
+} from "@clerk/nextjs"
 
 // Company interface for multi-tenant TMS SaaS
 export interface Company {
@@ -26,8 +33,8 @@ export interface Company {
 export interface AuthContextType {
     company: Company | null
     isLoading: boolean
-    user: ReturnType<typeof useUser>["user"]
-    organization: ReturnType<typeof useOrganization>["organization"]
+    user: ReturnType<typeof useUser>['user']
+    organization: ReturnType<typeof useOrganization>['organization'] | null
     signOut: () => Promise<void>
     isSignedIn: boolean
     isOrgSelected: boolean
@@ -56,13 +63,19 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [company, setCompany] = useState<Company | null>(null)
     const [isLoading, setIsLoading] = useState(true)
-    const { organization, isLoaded: isOrgLoaded } = useOrganization()
-    const { user, isLoaded: isUserLoaded, isSignedIn } = useUser()
-    const { signOut } = useClerkAuth()
+    const { user, isSignedIn: isUserSignedIn } = useUser()
+    const { organization } = useOrganization()
+    const { signOut: clerkSignOut } = useClerkAuth()
     const router = useRouter()
     const isOrgSelected = !!organization?.id
 
-    // Custom redirect to sign-in that uses our custom sign-in page
+    // SignOut function using Clerk
+    const signOut = async () => {
+        await clerkSignOut()
+        router.push('/sign-in')
+    }
+
+    // Custom redirect to sign-in using Clerk
     const redirectToSignIn = (redirectUrl?: string) => {
         const baseUrl = "/sign-in"
         const url = redirectUrl
@@ -71,37 +84,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         router.push(url)
     }
 
-    // Load company data when organization is available
+    // Load company data when organization changes
     useEffect(() => {
         const loadCompanyData = async () => {
-            if (!organization || !user || !isUserLoaded || !isOrgLoaded) {
-                if (isUserLoaded && isOrgLoaded) {
-                    setIsLoading(false) // Only stop loading when we know auth is loaded
-                }
+            if (!organization?.id) {
+                setCompany(null)
+                setIsLoading(false)
                 return
             }
 
             try {
-                // Fetch real company data from the API
-                const res = await fetch(`/api/companies/${organization.id}`)
-                if (!res.ok) throw new Error("Company lookup failed")
-                const companyData = await res.json()
-
-                setCompany(companyData)
+                const res = await fetch(`/api/companies?clerkOrgId=${organization.id}`)
+                if (res.ok) {
+                    const companyData = await res.json()
+                    setCompany(companyData)
+                } else {
+                    // If company doesn't exist yet, use default
+                    setCompany({
+                        ...defaultCompany,
+                        name: organization.name || defaultCompany.name
+                    })
+                }
             } catch (error) {
                 console.error("Error loading company data:", error)
-                setCompany(defaultCompany)
+                setCompany({
+                    ...defaultCompany,
+                    name: organization?.name || defaultCompany.name
+                })
             } finally {
                 setIsLoading(false)
             }
         }
 
-        if (isUserLoaded && isOrgLoaded) {
+        if (isUserSignedIn) {
             loadCompanyData()
+        } else {
+            setIsLoading(false)
         }
-    }, [organization, user, isUserLoaded, isOrgLoaded])
-
-    return (
+    }, [organization?.id, isUserSignedIn]);    return (
         <AuthContext.Provider
             value={{
                 company,
@@ -109,7 +129,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 user,
                 organization,
                 signOut,
-                isSignedIn: !!isSignedIn,
+                isSignedIn: !!isUserSignedIn,
                 isOrgSelected,
                 redirectToSignIn
             }}

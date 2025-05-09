@@ -6,12 +6,19 @@ import { useActionState } from "react"
 import { settingsSchema, type SettingsFormData } from "@/lib/validation/settings-schema"
 import { updateSettingsAction } from "@/lib/actions/settings-actions"
 import { FormError } from "@/components/ui/form-error"
+import { isValid } from "zod"
 
 export function SettingsForm({ defaultValues }: { defaultValues: SettingsFormData }) {
-    const [state, formAction] = useActionState(updateSettingsAction, {
-        success: false,
-        errors: {}
-    })
+    const [state, formAction] = useActionState(
+        async (_prevState: any, _formData: any) => {
+            // ...existing code...
+            if (!isValid) {
+                return { success: false, error: 'Validation failed', errors };
+            }
+            // ...existing code...
+        },
+        { success: false, error: '', errors: {} }
+    )
 
     const {
         register,

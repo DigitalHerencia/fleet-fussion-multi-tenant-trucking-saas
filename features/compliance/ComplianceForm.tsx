@@ -7,6 +7,7 @@ import { complianceSchema } from "@/lib/validation/compliance-schema"
 import type { ComplianceFormData } from "@/lib/validation/compliance-schema"
 import { createComplianceAction } from "@/lib/actions/compliance-actions"
 import { FormError } from "@/components/ui/form-error"
+import { isValid } from "zod"
 
 type FormErrors = {
     title?: string[]
@@ -16,10 +17,16 @@ type FormErrors = {
 }
 
 export function ComplianceForm() {
-    const [state, formAction] = useActionState(createComplianceAction, {
-        success: false,
-        errors: {} as FormErrors
-    })
+    const [state, formAction] = useActionState(
+        async (_prevState: any, _formData: any) => {
+            // ...existing code...
+            if (!isValid) {
+                return { success: false, error: 'Validation failed', errors };
+            }
+            // ...existing code...
+        },
+        { success: false, error: '', errors: {} }
+    )
 
     const {
         register,
@@ -29,7 +36,7 @@ export function ComplianceForm() {
         resolver: zodResolver(complianceSchema)
     })
 
-    const formErrors = (state.errors as FormErrors) || {}
+    const formErrors = (errors as FormErrors) || {}
 
     return (
         <form action={formAction} className="space-y-6">

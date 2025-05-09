@@ -1,6 +1,6 @@
-import { driverRelations } from './../../db/schema';
 "use server"
 
+import { driverRelations } from './../../db/schema';
 import { z } from "zod"
 import { revalidatePath } from "next/cache"
 import { db } from "@/db"
@@ -66,6 +66,7 @@ type SuccessResponse<T> = {
 type ErrorResponse = {
     success: false
     error: string
+    errors?: Record<string, string[]>
 }
 
 type LoadResponse<T> = SuccessResponse<T> | ErrorResponse
@@ -84,9 +85,9 @@ export async function getLoadsForCompany(
         page?: number
     }
 ): Promise<LoadResponse<any[]>> {
-    await protectRoute(UserRole.DISPATCHER)
-
     try {
+        await protectRoute(UserRole.DISPATCHER)
+
         // Build where conditions
         const whereConditions = [eq(loadsSchema.companyId, companyId)]
 
@@ -161,10 +162,11 @@ export async function getLoadsForCompany(
             data: results
         }
     } catch (error) {
-        console.error("Error fetching loads:", error)
+        console.error("[LoadActions] Error fetching loads:", error)
         return {
             success: false,
-            error: "Failed to fetch loads"
+            error: "Failed to fetch loads",
+            errors: undefined
         }
     }
 }
@@ -221,19 +223,20 @@ export async function getLoadById(loadId: string, companyId: string): Promise<Lo
 
 // Create a new load
 export async function createLoad(formData: FormData): Promise<LoadResponse<any>> {
-    await protectRoute(UserRole.DISPATCHER)
-
-    const companyId = await getCurrentCompanyId()
-
-    if (!companyId) {
-        return {
-            success: false,
-            error: "Company not found"
-        }
-    }
-
     try {
-        const validatedFields = loadInputSchema.parse({
+        await protectRoute(UserRole.DISPATCHER)
+
+        const companyId = await getCurrentCompanyId()
+
+        if (!companyId) {
+            return {
+                success: false,
+                error: "Company not found",
+                errors: undefined
+            }
+        }
+
+        const validatedFields = loadInputSchema.safeParse({
             driverId: formData.get("driverId") || null,
             vehicleId: formData.get("vehicleId") || null,
             trailerId: formData.get("trailerId") || null,
@@ -261,9 +264,14 @@ export async function createLoad(formData: FormData): Promise<LoadResponse<any>>
             notes: formData.get("notes")
         })
 
-        
+        if (!validatedFields.success) {
+            return {
+                success: false,
+                error: "Validation failed",
+                errors: validatedFields.error.flatten().fieldErrors
+            }
+        }
 
-        
         // Revalidate relevant paths
         revalidatePath("/dispatch")
 
@@ -272,18 +280,12 @@ export async function createLoad(formData: FormData): Promise<LoadResponse<any>>
             data: { id: uuidv4() }
         }
     } catch (error) {
-        console.error("Failed to create load:", error)
-
-        if (error instanceof z.ZodError) {
-            return {
-                success: false,
-                error: `Invalid form data: ${error.errors.map(e => e.message).join(", ")}`
-            }
-        }
+        console.error("[LoadActions] Failed to create load:", error)
 
         return {
             success: false,
-            error: "Failed to create load. Please try again."
+            error: error instanceof Error ? error.message : "Failed to create load. Please try again.",
+            errors: undefined
         }
     }
 }
@@ -296,18 +298,19 @@ export async function updateLoad(
     trailerId: string | null,
     formData: FormData
 ): Promise<LoadResponse<any>> {
-    await protectRoute(UserRole.DISPATCHER)
-
-    const companyId = await getCurrentCompanyId()
-
-    if (!companyId) {
-        return {
-            success: false,
-            error: "Company not found"
-        }
-    }
-
     try {
+        await protectRoute(UserRole.DISPATCHER)
+
+        const companyId = await getCurrentCompanyId()
+
+        if (!companyId) {
+            return {
+                success: false,
+                error: "Company not found",
+                errors: undefined
+            }
+        }
+
         // Check if the load exists and belongs to the company
         const existingLoad = await db.query.loads.findFirst({
             where: and(eq(loadsSchema.id, String(id)), eq(loadsSchema.companyId, String(companyId)))
@@ -316,16 +319,17 @@ export async function updateLoad(
         if (!existingLoad) {
             return {
                 success: false,
-                error: "Load not found or you don't have permission to edit it"
+                error: "Load not found or you don't have permission to edit it",
+                errors: undefined
             }
         }
 
-        const validatedFields = loadInputSchema.parse({
+        const validatedFields = loadInputSchema.safeParse({
             driverId: formData.get("driverId") || null,
             vehicleId: formData.get("vehicleId") || null,
             trailerId: formData.get("trailerId") || null,
-            status: formData.get("status") || existingLoad.status,
-            referenceNumber: formData.get("referenceNumber") || existingLoad.referenceNumber,
+            status: formData.get("status"),
+            referenceNumber: formData.get("referenceNumber"),
             customerName: formData.get("customerName"),
             customerContact: formData.get("customerContact"),
             customerPhone: formData.get("customerPhone"),
@@ -347,35 +351,40 @@ export async function updateLoad(
             notes: formData.get("notes")
         })
 
-        
+        if (!validatedFields.success) {
+            return {
+                success: false,
+                error: "Validation failed",
+                errors: validatedFields.error.flatten().fieldErrors
+            }
+        }
 
         // Update the load
         await db
             .update(loadsSchema)
             .set({
-                driverId: validatedFields.driverId,
-                vehicleId: validatedFields.vehicleId,
-                trailerId: validatedFields.trailerId,
-                status: validatedFields.status,
-                referenceNumber: validatedFields.referenceNumber,
-                customerName: validatedFields.customerName,
-                customerContact: validatedFields.customerContact,
-                customerPhone: validatedFields.customerPhone,
-                customerEmail: validatedFields.customerEmail,
-                originAddress: validatedFields.originAddress,
-                originCity: validatedFields.originCity,
-                originState: validatedFields.originState,
-                originZip: validatedFields.originZip,
-                destinationAddress: validatedFields.destinationAddress,
-                destinationCity: validatedFields.destinationCity,
-                destinationState: validatedFields.destinationState,
-                destinationZip: validatedFields.destinationZip,
-
-                commodity: validatedFields.commodity,
-                weight: validatedFields.weight?.toString(),
-                rate: validatedFields.rate?.toString(),
-                miles: validatedFields.miles,
-                notes: validatedFields.notes,
+                driverId: validatedFields.data.driverId,
+                vehicleId: validatedFields.data.vehicleId,
+                trailerId: validatedFields.data.trailerId,
+                status: validatedFields.data.status,
+                referenceNumber: validatedFields.data.referenceNumber,
+                customerName: validatedFields.data.customerName,
+                customerContact: validatedFields.data.customerContact,
+                customerPhone: validatedFields.data.customerPhone,
+                customerEmail: validatedFields.data.customerEmail,
+                originAddress: validatedFields.data.originAddress,
+                originCity: validatedFields.data.originCity,
+                originState: validatedFields.data.originState,
+                originZip: validatedFields.data.originZip,
+                destinationAddress: validatedFields.data.destinationAddress,
+                destinationCity: validatedFields.data.destinationCity,
+                destinationState: validatedFields.data.destinationState,
+                destinationZip: validatedFields.data.destinationZip,
+                commodity: validatedFields.data.commodity,
+                weight: validatedFields.data.weight?.toString(),
+                rate: validatedFields.data.rate?.toString(),
+                miles: validatedFields.data.miles,
+                notes: validatedFields.data.notes,
                 updatedAt: new Date()
             })
             .where(eq(loadsSchema.id, String(id)))
@@ -387,18 +396,12 @@ export async function updateLoad(
             data: { id }
         }
     } catch (error) {
-        console.error("Failed to update load:", error)
-
-        if (error instanceof z.ZodError) {
-            return {
-                success: false,
-                error: `Invalid form data: ${error.errors.map(e => e.message).join(", ")}`
-            }
-        }
+        console.error("[LoadActions] Failed to update load:", error)
 
         return {
             success: false,
-            error: "Failed to update load. Please try again."
+            error: error instanceof Error ? error.message : "Failed to update load. Please try again.",
+            errors: undefined
         }
     }
 }

@@ -5,6 +5,7 @@ import { complianceDocuments, hosLogs, complianceRecords } from "@/db/schema"
 import { eq, and } from "drizzle-orm"
 import { z } from "zod"
 import { complianceSchema } from "@/lib/validation/compliance-schema"
+import { uploadToVercelBlob } from "@/lib/blob"
 
 // Zod schema for server-side validation
 const hosLogSchema = z.object({
@@ -32,13 +33,13 @@ async function getCompanyId(): Promise<string> {
 }
 
 export async function createHosLog(formData: FormData) {
-    const result = hosLogSchema.safeParse(Object.fromEntries(formData))
-    if (!result.success) {
-        return { success: false, errors: result.error.flatten().fieldErrors }
-    }
-    const data = result.data as HosLogForm
-    const companyId = await getCompanyId()
     try {
+        const result = hosLogSchema.safeParse(Object.fromEntries(formData))
+        if (!result.success) {
+            return { success: false, error: "Validation failed", errors: result.error.flatten().fieldErrors }
+        }
+        const data = result.data as HosLogForm
+        const companyId = await getCompanyId()
         const [inserted] = await db
             .insert(hosLogs)
             .values({
@@ -51,19 +52,19 @@ export async function createHosLog(formData: FormData) {
             .returning()
         return { success: true, log: inserted }
     } catch (error) {
-        console.error("createHosLog error:", error)
-        return { success: false, errors: { form: ["Failed to create HOS log"] } }
+        console.error("[ComplianceActions] createHosLog error:", error)
+        return { success: false, error: error instanceof Error ? error.message : "Failed to create HOS log", errors: { form: ["Failed to create HOS log"] } }
     }
 }
 
 export async function updateHosLog(id: string, formData: FormData) {
-    const result = hosLogSchema.safeParse(Object.fromEntries(formData))
-    if (!result.success) {
-        return { success: false, errors: result.error.flatten().fieldErrors }
-    }
-    const data = result.data as HosLogForm
-    const companyId = await getCompanyId()
     try {
+        const result = hosLogSchema.safeParse(Object.fromEntries(formData))
+        if (!result.success) {
+            return { success: false, error: "Validation failed", errors: result.error.flatten().fieldErrors }
+        }
+        const data = result.data as HosLogForm
+        const companyId = await getCompanyId()
         await db
             .update(hosLogs)
             .set({
@@ -75,59 +76,65 @@ export async function updateHosLog(id: string, formData: FormData) {
             .where(and(eq(hosLogs.id, id), eq(hosLogs.companyId, companyId)))
         return { success: true }
     } catch (error) {
-        console.error("updateHosLog error:", error)
-        return { success: false, errors: { form: ["Failed to update HOS log"] } }
+        console.error("[ComplianceActions] updateHosLog error:", error)
+        return { success: false, error: error instanceof Error ? error.message : "Failed to update HOS log", errors: { form: ["Failed to update HOS log"] } }
     }
 }
 
 export async function deleteHosLog(id: string) {
-    const companyId = await getCompanyId()
     try {
+        const companyId = await getCompanyId()
         const result = await db
             .delete(hosLogs)
             .where(and(eq(hosLogs.id, id), eq(hosLogs.companyId, companyId)))
         if (!result) throw new Error()
         return { success: true }
     } catch (error) {
-        console.error("deleteHosLog error:", error)
-        return { success: false, errors: { form: ["Failed to delete HOS log"] } }
+        console.error("[ComplianceActions] deleteHosLog error:", error)
+        return { success: false, error: error instanceof Error ? error.message : "Failed to delete HOS log", errors: { form: ["Failed to delete HOS log"] } }
     }
 }
 
 export async function createComplianceDocument(formData: FormData) {
-    const result = complianceDocSchema.safeParse(Object.fromEntries(formData))
-    if (!result.success) {
-        return { success: false, errors: result.error.flatten().fieldErrors }
-    }
-    const data = result.data as ComplianceDocForm
-    const companyId = await getCompanyId()
     try {
+        let fileUrl = formData.get("documentUrl")?.toString() || ""
+        const file = formData.get("file") as File | null
+        if (file && file.size > 0) {
+            // Upload file to Vercel Blob
+            fileUrl = await uploadToVercelBlob(file)
+        }
+        const result = complianceDocSchema.safeParse(Object.fromEntries(formData))
+        if (!result.success) {
+            return { success: false, error: "Validation failed", errors: result.error.flatten().fieldErrors }
+        }
+        const data = result.data as ComplianceDocForm
+        const companyId = await getCompanyId()
         const [inserted] = await db
             .insert(complianceDocuments)
             .values({
                 type: data.documentType,
                 expirationDate: data.expiryDate ? new Date(data.expiryDate) : null,
                 status: data.status,
-                fileUrl: data.documentUrl || "",
+                fileUrl,
                 name: data.documentType, // Required field
                 companyId
             })
             .returning()
         return { success: true, document: inserted }
     } catch (error) {
-        console.error("createComplianceDocument error:", error)
-        return { success: false, errors: { form: ["Failed to create compliance document"] } }
+        console.error("[ComplianceActions] createComplianceDocument error:", error)
+        return { success: false, error: error instanceof Error ? error.message : "Failed to create compliance document", errors: { form: ["Failed to create compliance document"] } }
     }
 }
 
 export async function updateComplianceDocument(id: string, formData: FormData) {
-    const result = complianceDocSchema.safeParse(Object.fromEntries(formData))
-    if (!result.success) {
-        return { success: false, errors: result.error.flatten().fieldErrors }
-    }
-    const data = result.data as ComplianceDocForm
-    const companyId = await getCompanyId()
     try {
+        const result = complianceDocSchema.safeParse(Object.fromEntries(formData))
+        if (!result.success) {
+            return { success: false, error: "Validation failed", errors: result.error.flatten().fieldErrors }
+        }
+        const data = result.data as ComplianceDocForm
+        const companyId = await getCompanyId()
         await db
             .update(complianceDocuments)
             .set({
@@ -141,14 +148,14 @@ export async function updateComplianceDocument(id: string, formData: FormData) {
             )
         return { success: true }
     } catch (error) {
-        console.error("updateComplianceDocument error:", error)
-        return { success: false, errors: { form: ["Failed to update compliance document"] } }
+        console.error("[ComplianceActions] updateComplianceDocument error:", error)
+        return { success: false, error: error instanceof Error ? error.message : "Failed to update compliance document", errors: { form: ["Failed to update compliance document"] } }
     }
 }
 
 export async function deleteComplianceDocument(id: string) {
-    const companyId = await getCompanyId()
     try {
+        const companyId = await getCompanyId()
         const result = await db
             .delete(complianceDocuments)
             .where(
@@ -157,24 +164,23 @@ export async function deleteComplianceDocument(id: string) {
         if (!result) throw new Error()
         return { success: true }
     } catch (error) {
-        console.error("deleteComplianceDocument error:", error)
-        return { success: false, errors: { form: ["Failed to delete compliance document"] } }
+        console.error("[ComplianceActions] deleteComplianceDocument error:", error)
+        return { success: false, error: error instanceof Error ? error.message : "Failed to delete compliance document", errors: { form: ["Failed to delete compliance document"] } }
     }
 }
 
 export async function createComplianceAction(_: any, formData: FormData) {
-    const result = complianceSchema.safeParse(Object.fromEntries(formData))
-    if (!result.success) {
-        return {
-            success: false,
-            errors: result.error.flatten().fieldErrors
-        }
-    }
-
-    const data = result.data
-    const companyId = await getCompanyId()
-
     try {
+        const result = complianceSchema.safeParse(Object.fromEntries(formData))
+        if (!result.success) {
+            return {
+                success: false,
+                error: "Validation failed",
+                errors: result.error.flatten().fieldErrors
+            }
+        }
+        const data = result.data
+        const companyId = await getCompanyId()
         await db.insert(complianceRecords).values({
             title: data.title,
             description: data.description,
@@ -183,9 +189,10 @@ export async function createComplianceAction(_: any, formData: FormData) {
         })
         return { success: true }
     } catch (error) {
-        console.error("createComplianceAction error:", error)
+        console.error("[ComplianceActions] createComplianceAction error:", error)
         return {
             success: false,
+            error: error instanceof Error ? error.message : "Failed to create compliance record",
             errors: { form: ["Failed to create compliance record"] }
         }
     }

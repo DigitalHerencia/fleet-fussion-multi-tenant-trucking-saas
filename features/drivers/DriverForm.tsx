@@ -6,12 +6,19 @@ import { useActionState } from "react"
 import { driverSchema, type DriverFormData } from "@/lib/validation/driver-schema"
 import { createDriverAction } from "@/lib/actions/driver-actions"
 import { FormError } from "@/components/ui/form-error"
+import { isValid } from "zod"
 
 export function DriverForm() {
-    const [state, formAction] = useActionState(createDriverAction, {
-        success: false,
-        errors: {}
-    })
+    const [state, formAction] = useActionState(
+        async (_prevState: any, _formData: any) => {
+            // ...existing code...
+            if (!isValid) {
+                return { success: false, error: 'Validation failed', errors };
+            }
+            // ...existing code...
+        },
+        { success: false, error: '', errors: {} }
+    )
 
     const {
         register,
@@ -26,14 +33,14 @@ export function DriverForm() {
             <div>
                 <label htmlFor="name">Driver Name</label>
                 <input {...register("name")} type="text" className="input" />
-                <FormError message={errors.name?.message || state.errors?.name?.[0]} />
+                <FormError message={errors.name?.message } />
             </div>
 
             <div>
                 <label htmlFor="licenseNumber">License Number</label>
                 <input {...register("licenseNumber")} type="text" className="input" />
                 <FormError
-                    message={errors.licenseNumber?.message || state.errors?.licenseNumber?.[0]}
+                    message={errors.licenseNumber?.message }
                 />
             </div>
 

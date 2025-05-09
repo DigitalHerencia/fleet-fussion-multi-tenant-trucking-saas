@@ -13,7 +13,6 @@ import {
 } from "lucide-react"
 import PricingSection from "@/components/pricing-section"
 import { PublicNav } from "@/components/public-nav"
-import { SignUpButton } from "@clerk/nextjs"
 
 export default function Home() {
     return (
@@ -45,12 +44,12 @@ export default function Home() {
                                     </p>
                                 </div>
                                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                                    <SignUpButton mode="modal">
+                                    <Link href="/sign-up">
                                         <Button className="w-full py-2 rounded-lg font-semibold text-white bg-blue-400 hover:bg-blue-700 transition-colors">
                                             Start Free 30-Day Trial{" "}
                                             <ArrowRight className="ml-2 h-4 w-4" />
                                         </Button>
-                                    </SignUpButton>
+                                    </Link>
                                 </div>
                             </div>
                             {/* Show hero image only on small screens */}

@@ -1,12 +1,15 @@
 "use client"
 
-import { UserButton, OrganizationSwitcher } from "@clerk/nextjs"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { useAuth } from "@clerk/nextjs"
-import { Button } from "@/components/ui/button"
+import { useAuth } from "@/context/auth-context"
+import { useUser, UserButton, OrganizationSwitcher } from "@clerk/nextjs"
+import { useTheme } from "next-themes"
 
 export function UserNav() {
     const { isSignedIn } = useAuth()
+    const { user } = useUser()
+    const { resolvedTheme } = useTheme()
+    const isDarkMode = resolvedTheme === "dark"
 
     if (!isSignedIn) {
         return null
@@ -15,17 +18,27 @@ export function UserNav() {
     return (
         <div className="flex items-center gap-4">
             <ThemeToggle />
-            <OrganizationSwitcher
+            
+            {/* Clerk Organization Switcher */}
+            <OrganizationSwitcher 
                 appearance={{
                     elements: {
-                        organizationSwitcherTrigger: "py-2 px-4 h-8 rounded-full"
+                        organizationSwitcherTrigger: "py-2 px-4 h-8 rounded-full border border-border bg-transparent hover:bg-accent hover:text-accent-foreground",
+                        organizationSwitcherPopoverCard: "bg-popover border border-border shadow-md",
+                        organizationPreview: "hover:bg-accent",
+                        organizationSwitcherPopoverFooter: "border-t border-border",
                     }
                 }}
             />
-            <UserButton
+
+            {/* Clerk User Button */}
+            <UserButton 
                 appearance={{
                     elements: {
-                        userButtonAvatarBox: "h-8 w-8"
+                        avatarBox: "h-8 w-8",
+                        userButtonPopoverCard: "bg-popover border border-border shadow-md",
+                        userButtonPopoverFooter: "border-t border-border",
+                        userPreview: "hover:bg-accent"
                     }
                 }}
             />
