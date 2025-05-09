@@ -71,11 +71,5 @@ export async function GET(req: NextRequest) {
     doc.on("end", () => resolve(Buffer.concat(bufs)))
   })
 
-  return new NextResponse(pdfBuffer, {
-    status: 200,
-    headers: {
-      "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename=IFTA_Report_${year}_Q${quarter}.pdf`
-    }
-  })
+  
 }

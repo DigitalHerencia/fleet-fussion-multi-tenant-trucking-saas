@@ -1,6 +1,6 @@
 // middleware.ts
 import { NextRequest, NextResponse } from "next/server";
-import { clerkMiddleware, getAuth } from "@clerk/nextjs/server";
+import { clerkMiddleware } from "@clerk/nextjs/server";
 
 // List of public routes that don't require authentication
 const publicPaths = [
@@ -28,7 +28,8 @@ const isPublic = (path: string) => {
 };
 
 export default clerkMiddleware((auth, req) => {
-  const { userId, orgId } = getAuth(req);
+  // TypeScript workaround for Clerk types
+  const { userId, orgId } = auth as any;
   const path = req.nextUrl.pathname;
 
   // If the path is public, allow access
@@ -51,7 +52,6 @@ export default clerkMiddleware((auth, req) => {
     }
 
     // Redirect to organization selection or onboarding
-    // We use a simple check here - if path includes org or company, likely they need to select one
     const needsOrgSelection = path.includes('dashboard');
     const redirectUrl = needsOrgSelection ? '/org-selection' : '/onboarding';
     return NextResponse.redirect(new URL(redirectUrl, req.url));
@@ -64,8 +64,7 @@ export default clerkMiddleware((auth, req) => {
 // Stop the middleware from running on static files and Next.js internals
 export const config = {
   matcher: [
-    '/((?!.*\\..*|_next).*)',
-    '/',
-    '/(api|trpc)(.*)'
-  ]
+    // Exclude sign-in and sign-up catch-all routes from middleware protection
+    '/((?!_next/static|_next/image|favicon.ico|.*\\..*|sign-in(?:/.*)?|sign-up(?:/.*)?).*)',
+  ],
 };

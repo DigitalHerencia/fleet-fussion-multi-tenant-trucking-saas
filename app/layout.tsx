@@ -20,17 +20,19 @@ export const metadata: Metadata = {
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+    const isDarkMode = typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches;
+
     return (
         <html lang="en" suppressHydrationWarning={true}>
             <body className={inter.className} suppressHydrationWarning={true}>
                 <ClerkProvider 
                     appearance={{
                         variables: {
-                            colorPrimary: "hsl(var(--primary))",
-                            colorBackground: "hsl(var(--background))",
-                            colorText: "hsl(var(--foreground))",
-                            colorInputText: "hsl(var(--foreground))",
-                            colorInputBackground: "hsl(var(--background))"
+                            colorPrimary: isDarkMode ? "#60a5fa" : "#2563eb", // blue-400 (dark) / blue-700 (light)
+                            colorBackground: isDarkMode ? "#18181b" : "#fff",
+                            colorText: isDarkMode ? "#f1f5f9" : "#0f172a",
+                            colorInputText: isDarkMode ? "#f1f5f9" : "#0f172a",
+                            colorInputBackground: isDarkMode ? "#27272a" : "#f8fafc"
                         }
                     }}
                 >
