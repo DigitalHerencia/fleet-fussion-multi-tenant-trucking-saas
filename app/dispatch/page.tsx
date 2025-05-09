@@ -18,17 +18,17 @@ export default function DispatchPage() {
     const [loads, setLoads] = useState<Load[]>([])
     const [drivers, setDrivers] = useState<Driver[]>([])
     const [vehicles, setVehicles] = useState<Vehicle[]>([])
-    const { company } = useAuth()
+    const { organization } = useAuth()
 
     useEffect(() => {
         async function fetchData() {
-            if (!company?.id) return
+            if (!organization?.id) return
 
             try {
                 setIsLoading(true)
 
                 // Fetch loads using our server action
-                const loadsResult = await getLoadsForCompany(company.id)
+                const loadsResult = await getLoadsForCompany(organization.id)
 
                 if (loadsResult.success) {
                     // Transform data to match expected format if needed
@@ -105,9 +105,9 @@ export default function DispatchPage() {
         }
 
         fetchData()
-    }, [company?.id])
+    }, [organization?.id])
 
-    if (!company) {
+    if (!organization) {
         return <div className="p-4">Company not found. Please create a company first.</div>
     }
 

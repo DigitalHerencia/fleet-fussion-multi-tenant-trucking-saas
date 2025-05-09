@@ -40,7 +40,7 @@ export default function SignInPage() {
       <div className="w-full max-w-md space-y-8">
         <div className="flex flex-col items-center justify-center text-center">
           <Link href="/" className="flex items-center space-x-2 mb-2">
-            <Image src="/FleetFusion-logo.png" alt="FleetFusion Logo" width={220} height={60} priority />
+            <Image src="/white.png" alt="FleetFusion Logo" width={220} height={60} priority />
           </Link>
           <h1 className="mt-2 text-3xl font-extrabold text-white">Sign in to your account</h1>
           <p className="mt-2 text-sm text-gray-400">
@@ -70,7 +70,6 @@ export default function SignInPage() {
             onChange={e => setPassword(e.target.value)}
           />
           <div className="flex justify-between items-center mt-2">
-            <Link href="/sign-up" className="text-blue-400 text-sm hover:underline">Sign up</Link>
             <Link href="/forgot-password" className="text-blue-400 text-sm hover:underline">Forgot password?</Link>
           </div>
           {error && <div className="text-red-400 text-sm mt-2">{error}</div>}

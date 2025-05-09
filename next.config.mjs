@@ -11,11 +11,12 @@ const nextConfig = {
         remotePatterns: [
             {
                 protocol: "http",
-                hostname: "**"
+                hostname: "localhost",
+                port: "3000"
             },
             {
                 protocol: "https",
-                hostname: "**"
+                hostname: "fleet-fusion.vercel.app"
             }
         ]
     },

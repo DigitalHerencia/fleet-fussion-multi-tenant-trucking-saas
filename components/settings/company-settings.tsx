@@ -39,9 +39,8 @@ import {
 } from "@/components/ui/dialog"
 
 export function CompanySettings() {
-    const router = useRouter()
     const { toast } = useToast()
-    const { user, organization, company } = useAuth()
+    const { user, organization } = useAuth()
 
     const [formState, setFormState] = useState({
         name: "",
