@@ -95,7 +95,7 @@ export const columns: ColumnDef<Document>[] = [
     {
         id: "actions",
         cell: ({ row }) => {
-            const fileUrl = row.original.fileUrl;
+            const fileUrl = row.original.fileUrl
             // Use a custom event to trigger preview from the DataTable context
             return (
                 <DropdownMenu>
@@ -107,10 +107,14 @@ export const columns: ColumnDef<Document>[] = [
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                         {fileUrl && (
-                            <DropdownMenuItem onClick={() => {
-                                const event = new CustomEvent("document-preview", { detail: fileUrl });
-                                window.dispatchEvent(event);
-                            }}>
+                            <DropdownMenuItem
+                                onClick={() => {
+                                    const event = new CustomEvent("document-preview", {
+                                        detail: fileUrl
+                                    })
+                                    window.dispatchEvent(event)
+                                }}
+                            >
                                 <Eye className="mr-2 h-4 w-4" />
                                 Preview
                             </DropdownMenuItem>
@@ -126,7 +130,7 @@ export const columns: ColumnDef<Document>[] = [
                         <DropdownMenuItem>Update Status</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
-            );
+            )
         }
     }
 ]
@@ -152,17 +156,19 @@ export function ComplianceDocuments() {
     // Listen for the custom event to set previewUrl
     useEffect(() => {
         const handler = (e: Event) => {
-            const url = (e as CustomEvent<string>).detail;
-            setPreviewUrl(url);
-        };
-        window.addEventListener("document-preview", handler as EventListener);
-        return () => window.removeEventListener("document-preview", handler as EventListener);
-    }, []);
+            const url = (e as CustomEvent<string>).detail
+            setPreviewUrl(url)
+        }
+        window.addEventListener("document-preview", handler as EventListener)
+        return () => window.removeEventListener("document-preview", handler as EventListener)
+    }, [])
 
     // Dynamically generate filter options
     const typeOptions = Array.from(new Set(documents.map(doc => doc.type))).filter(Boolean)
     const statusOptions = Array.from(new Set(documents.map(doc => doc.status))).filter(Boolean)
-    const assignedToOptions = Array.from(new Set(documents.map(doc => doc.assignedTo))).filter(Boolean)
+    const assignedToOptions = Array.from(new Set(documents.map(doc => doc.assignedTo))).filter(
+        Boolean
+    )
 
     // Filtered and searched documents
     const filteredDocs = documents.filter(doc => {
@@ -209,7 +215,9 @@ export function ComplianceDocuments() {
                     >
                         <option value="">All Types</option>
                         {typeOptions.map(type => (
-                            <option key={type} value={type}>{type}</option>
+                            <option key={type} value={type}>
+                                {type}
+                            </option>
                         ))}
                     </select>
                     <select
@@ -219,7 +227,9 @@ export function ComplianceDocuments() {
                     >
                         <option value="">All Statuses</option>
                         {statusOptions.map(status => (
-                            <option key={status} value={status}>{status}</option>
+                            <option key={status} value={status}>
+                                {status}
+                            </option>
                         ))}
                     </select>
                     <select
@@ -229,7 +239,9 @@ export function ComplianceDocuments() {
                     >
                         <option value="">All Assignees</option>
                         {assignedToOptions.map(assignee => (
-                            <option key={assignee} value={assignee}>{assignee}</option>
+                            <option key={assignee} value={assignee}>
+                                {assignee}
+                            </option>
                         ))}
                     </select>
                 </div>
@@ -247,15 +259,32 @@ export function ComplianceDocuments() {
                         onSubmit={handleUpload}
                     >
                         <h3 className="text-lg font-semibold">Upload Compliance Document</h3>
-                        <input name="documentType" placeholder="Document Name" className="input w-full" required />
+                        <input
+                            name="documentType"
+                            placeholder="Document Name"
+                            className="input w-full"
+                            required
+                        />
                         <select name="type" className="input w-full" required>
                             <option value="Required">Required</option>
                             <option value="Optional">Optional</option>
                         </select>
                         <input name="expiryDate" type="date" className="input w-full" />
-                        <input name="file" type="file" ref={fileInputRef} className="input w-full" required />
+                        <input
+                            name="file"
+                            type="file"
+                            ref={fileInputRef}
+                            className="input w-full"
+                            required
+                        />
                         <div className="flex gap-2 justify-end">
-                            <Button type="button" variant="outline" onClick={() => setShowUpload(false)}>Cancel</Button>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setShowUpload(false)}
+                            >
+                                Cancel
+                            </Button>
                             <Button type="submit">Upload</Button>
                         </div>
                     </form>
@@ -282,7 +311,9 @@ export function ComplianceDocuments() {
                             const exp = new Date(doc["expirationDate"])
                             const now = new Date()
                             expired = exp < now
-                            expiring = !expired && (exp.getTime() - now.getTime()) / (1000 * 60 * 60 * 24) < 30
+                            expiring =
+                                !expired &&
+                                (exp.getTime() - now.getTime()) / (1000 * 60 * 60 * 24) < 30
                         }
                         return (
                             <TableRow key={doc.id}>
@@ -292,21 +323,36 @@ export function ComplianceDocuments() {
                                         <div>
                                             <h3 className="font-medium">{doc.name}</h3>
                                             <p className="text-sm text-muted-foreground">
-                                                Last updated: {doc.lastUpdated ? new Date(doc.lastUpdated).toLocaleDateString() : "-"}
+                                                Last updated:{" "}
+                                                {doc.lastUpdated
+                                                    ? new Date(doc.lastUpdated).toLocaleDateString()
+                                                    : "-"}
                                             </p>
                                             {doc["expirationDate"] && (
-                                                <span className={`text-xs ml-2 ${expired ? "text-red-600" : expiring ? "text-amber-600" : "text-green-600"}`}>
-                                                    {expired ? "Expired" : expiring ? "Expiring Soon" : "Valid"}
+                                                <span
+                                                    className={`text-xs ml-2 ${expired ? "text-red-600" : expiring ? "text-amber-600" : "text-green-600"}`}
+                                                >
+                                                    {expired
+                                                        ? "Expired"
+                                                        : expiring
+                                                          ? "Expiring Soon"
+                                                          : "Valid"}
                                                 </span>
                                             )}
                                         </div>
                                     </div>
                                 </TableCell>
                                 <TableCell>
-                                    <Badge variant={doc.type === "Required" ? "default" : "outline"}>{doc.type}</Badge>
+                                    <Badge
+                                        variant={doc.type === "Required" ? "default" : "outline"}
+                                    >
+                                        {doc.type}
+                                    </Badge>
                                 </TableCell>
                                 <TableCell>
-                                    {doc.lastUpdated ? new Date(doc.lastUpdated).toLocaleDateString() : "-"}
+                                    {doc.lastUpdated
+                                        ? new Date(doc.lastUpdated).toLocaleDateString()
+                                        : "-"}
                                 </TableCell>
                                 <TableCell>
                                     <Badge
@@ -323,12 +369,24 @@ export function ComplianceDocuments() {
                                 <TableCell>
                                     <div className="flex items-center gap-2">
                                         {doc["fileUrl"] && (
-                                            <Button variant="ghost" size="icon" onClick={() => setPreviewUrl(doc["fileUrl"] ?? null)} title="Preview Document">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() =>
+                                                    setPreviewUrl(doc["fileUrl"] ?? null)
+                                                }
+                                                title="Preview Document"
+                                            >
                                                 <Eye className="h-4 w-4" />
                                             </Button>
                                         )}
                                         {doc["fileUrl"] && (
-                                            <a href={doc["fileUrl"]} target="_blank" rel="noopener noreferrer" title="Download Document">
+                                            <a
+                                                href={doc["fileUrl"]}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                title="Download Document"
+                                            >
                                                 <Button variant="ghost" size="icon">
                                                     <Download className="h-4 w-4" />
                                                 </Button>
@@ -348,20 +406,26 @@ export function ComplianceDocuments() {
                     <DialogHeader>
                         <DialogTitle>Document Preview</DialogTitle>
                         <DialogDescription>
-                            Preview the selected document below. Close to return to the document list.
+                            Preview the selected document below. Close to return to the document
+                            list.
                         </DialogDescription>
                     </DialogHeader>
-                    {previewUrl && (
-                        previewUrl.match(/\.(pdf)$/i) ? (
+                    {previewUrl &&
+                        (previewUrl.match(/\.(pdf)$/i) ? (
                             <iframe src={previewUrl} className="w-full h-[60vh]" />
                         ) : previewUrl.match(/\.(jpg|jpeg|png|gif)$/i) ? (
-                            <img src={previewUrl} alt="Document Preview" className="max-w-full max-h-[60vh] mx-auto" />
+                            <img
+                                src={previewUrl}
+                                alt="Document Preview"
+                                className="max-w-full max-h-[60vh] mx-auto"
+                            />
                         ) : (
                             <p>Preview not available for this file type.</p>
-                        )
-                    )}
+                        ))}
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setPreviewUrl(null)}>Close</Button>
+                        <Button variant="outline" onClick={() => setPreviewUrl(null)}>
+                            Close
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

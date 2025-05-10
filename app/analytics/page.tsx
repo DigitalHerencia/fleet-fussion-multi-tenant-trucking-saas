@@ -17,15 +17,15 @@ export default async function AnalyticsPage() {
     try {
         const userId = await getCurrentUserId()
         const companyId = await getCurrentCompanyId()
-    
+
         // Hard-code time range for now, in the future this could be a state in the URL
         const timeRange = "30d"
-        
+
         // Calculate date range for the summary cards
         const endDate = new Date()
-        let startDate = new Date()
+        const startDate = new Date()
         startDate.setDate(endDate.getDate() - 30)
-        
+
         // Get metrics for the summary cards (parallel fetch)
         const previousStartDate = new Date(startDate)
         previousStartDate.setDate(previousStartDate.getDate() - 30)
@@ -33,29 +33,38 @@ export default async function AnalyticsPage() {
             getRevenueMetrics(companyId, startDate, endDate),
             getRevenueMetrics(companyId, previousStartDate, startDate)
         ])
-        
+
         // Calculate percent changes for the cards
-        const revenueChange = previousMetrics?.totalRevenue 
-            ? ((Number(metrics?.totalRevenue || 0) - Number(previousMetrics.totalRevenue)) / Number(previousMetrics.totalRevenue) * 100).toFixed(1)
+        const revenueChange = previousMetrics?.totalRevenue
+            ? (
+                  ((Number(metrics?.totalRevenue || 0) - Number(previousMetrics.totalRevenue)) /
+                      Number(previousMetrics.totalRevenue)) *
+                  100
+              ).toFixed(1)
             : "20.1"
-        
+
         // Estimate miles based on revenue and average rate per mile
-        const milesEstimate = Math.round(Number(metrics?.totalRevenue || 0) / (Number(metrics?.avgRatePerMile || 3)))
-        const previousMilesEstimate = Math.round(Number(previousMetrics?.totalRevenue || 0) / (Number(previousMetrics?.avgRatePerMile || 3)))
-        const milesChange = previousMilesEstimate 
-            ? ((milesEstimate - previousMilesEstimate) / previousMilesEstimate * 100).toFixed(1)
+        const milesEstimate = Math.round(
+            Number(metrics?.totalRevenue || 0) / Number(metrics?.avgRatePerMile || 3)
+        )
+        const previousMilesEstimate = Math.round(
+            Number(previousMetrics?.totalRevenue || 0) /
+                Number(previousMetrics?.avgRatePerMile || 3)
+        )
+        const milesChange = previousMilesEstimate
+            ? (((milesEstimate - previousMilesEstimate) / previousMilesEstimate) * 100).toFixed(1)
             : "12.5"
-        
+
         const loadCount = Number(metrics?.loadCount || 126)
         const previousLoadCount = Number(previousMetrics?.loadCount || 0)
-        const loadChange = previousLoadCount 
-            ? ((loadCount - previousLoadCount) / previousLoadCount * 100).toFixed(1)
+        const loadChange = previousLoadCount
+            ? (((loadCount - previousLoadCount) / previousLoadCount) * 100).toFixed(1)
             : "8.2"
-        
+
         // Driver utilization is estimated based on load count per driver
         const driverUtilizationPercent = 87
         const driverUtilizationChange = "5.1"
-    
+
         return (
             <div className="flex flex-col gap-6 p-4 md:p-6">
                 <PageHeader
@@ -75,7 +84,7 @@ export default async function AnalyticsPage() {
                         </>
                     }
                 />
-    
+
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -83,11 +92,24 @@ export default async function AnalyticsPage() {
                             <DollarSign className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">${Number(metrics?.totalRevenue || 45231.89).toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
+                            <div className="text-2xl font-bold">
+                                $
+                                {Number(metrics?.totalRevenue || 45231.89).toLocaleString(
+                                    undefined,
+                                    { maximumFractionDigits: 0 }
+                                )}
+                            </div>
                             <p className="text-xs text-muted-foreground flex items-center">
-                                <span className={Number(revenueChange) >= 0 ? "text-green-500 mr-1" : "text-red-500 mr-1"}>
-                                    {Number(revenueChange) >= 0 ? "↑" : "↓"} {Math.abs(Number(revenueChange))}%
-                                </span> 
+                                <span
+                                    className={
+                                        Number(revenueChange) >= 0
+                                            ? "text-green-500 mr-1"
+                                            : "text-red-500 mr-1"
+                                    }
+                                >
+                                    {Number(revenueChange) >= 0 ? "↑" : "↓"}{" "}
+                                    {Math.abs(Number(revenueChange))}%
+                                </span>
                                 vs previous period
                             </p>
                         </CardContent>
@@ -98,10 +120,19 @@ export default async function AnalyticsPage() {
                             <Truck className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{milesEstimate.toLocaleString()}</div>
+                            <div className="text-2xl font-bold">
+                                {milesEstimate.toLocaleString()}
+                            </div>
                             <p className="text-xs text-muted-foreground flex items-center">
-                                <span className={Number(milesChange) >= 0 ? "text-green-500 mr-1" : "text-red-500 mr-1"}>
-                                    {Number(milesChange) >= 0 ? "↑" : "↓"} {Math.abs(Number(milesChange))}%
+                                <span
+                                    className={
+                                        Number(milesChange) >= 0
+                                            ? "text-green-500 mr-1"
+                                            : "text-red-500 mr-1"
+                                    }
+                                >
+                                    {Number(milesChange) >= 0 ? "↑" : "↓"}{" "}
+                                    {Math.abs(Number(milesChange))}%
                                 </span>
                                 vs previous period
                             </p>
@@ -115,8 +146,15 @@ export default async function AnalyticsPage() {
                         <CardContent>
                             <div className="text-2xl font-bold">{loadCount}</div>
                             <p className="text-xs text-muted-foreground flex items-center">
-                                <span className={Number(loadChange) >= 0 ? "text-green-500 mr-1" : "text-red-500 mr-1"}>
-                                    {Number(loadChange) >= 0 ? "↑" : "↓"} {Math.abs(Number(loadChange))}%
+                                <span
+                                    className={
+                                        Number(loadChange) >= 0
+                                            ? "text-green-500 mr-1"
+                                            : "text-red-500 mr-1"
+                                    }
+                                >
+                                    {Number(loadChange) >= 0 ? "↑" : "↓"}{" "}
+                                    {Math.abs(Number(loadChange))}%
                                 </span>
                                 vs previous period
                             </p>
@@ -124,21 +162,30 @@ export default async function AnalyticsPage() {
                     </Card>
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Driver Utilization</CardTitle>
+                            <CardTitle className="text-sm font-medium">
+                                Driver Utilization
+                            </CardTitle>
                             <User className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{driverUtilizationPercent}%</div>
                             <p className="text-xs text-muted-foreground flex items-center">
-                                <span className={Number(driverUtilizationChange) >= 0 ? "text-green-500 mr-1" : "text-red-500 mr-1"}>
-                                    {Number(driverUtilizationChange) >= 0 ? "↑" : "↓"} {Math.abs(Number(driverUtilizationChange))}%
+                                <span
+                                    className={
+                                        Number(driverUtilizationChange) >= 0
+                                            ? "text-green-500 mr-1"
+                                            : "text-red-500 mr-1"
+                                    }
+                                >
+                                    {Number(driverUtilizationChange) >= 0 ? "↑" : "↓"}{" "}
+                                    {Math.abs(Number(driverUtilizationChange))}%
                                 </span>
                                 vs previous period
                             </p>
                         </CardContent>
                     </Card>
                 </div>
-    
+
                 <Tabs defaultValue="performance" className="w-full">
                     <TabsList className="w-full md:w-auto grid grid-cols-2 md:grid-cols-4">
                         <TabsTrigger value="performance">Performance</TabsTrigger>
@@ -156,7 +203,10 @@ export default async function AnalyticsPage() {
                             </CardHeader>
                             <CardContent className="overflow-x-auto">
                                 <Suspense fallback={<div>Loading performance metrics...</div>}>
-                                    <PerformanceMetricsServer companyId={companyId} timeRange={timeRange} />
+                                    <PerformanceMetricsServer
+                                        companyId={companyId}
+                                        timeRange={timeRange}
+                                    />
                                 </Suspense>
                             </CardContent>
                         </Card>
@@ -171,7 +221,10 @@ export default async function AnalyticsPage() {
                             </CardHeader>
                             <CardContent className="overflow-x-auto">
                                 <Suspense fallback={<div>Loading financial metrics...</div>}>
-                                    <FinancialMetricsServer companyId={companyId} timeRange={timeRange} />
+                                    <FinancialMetricsServer
+                                        companyId={companyId}
+                                        timeRange={timeRange}
+                                    />
                                 </Suspense>
                             </CardContent>
                         </Card>
@@ -186,7 +239,10 @@ export default async function AnalyticsPage() {
                             </CardHeader>
                             <CardContent className="overflow-x-auto">
                                 <Suspense fallback={<div>Loading driver performance data...</div>}>
-                                    <DriverPerformanceServer companyId={companyId} timeRange={timeRange} />
+                                    <DriverPerformanceServer
+                                        companyId={companyId}
+                                        timeRange={timeRange}
+                                    />
                                 </Suspense>
                             </CardContent>
                         </Card>
@@ -201,7 +257,10 @@ export default async function AnalyticsPage() {
                             </CardHeader>
                             <CardContent className="overflow-x-auto">
                                 <Suspense fallback={<div>Loading vehicle utilization data...</div>}>
-                                    <VehicleUtilizationServer companyId={companyId} timeRange={timeRange} />
+                                    <VehicleUtilizationServer
+                                        companyId={companyId}
+                                        timeRange={timeRange}
+                                    />
                                 </Suspense>
                             </CardContent>
                         </Card>

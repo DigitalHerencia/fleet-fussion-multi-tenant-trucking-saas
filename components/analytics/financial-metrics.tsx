@@ -26,19 +26,19 @@ interface FinancialMetricsProps {
         value: number
     }>
     financialSummary: {
-        revenue: { current: number, previous: number, change: string }
-        expenses: { current: number, previous: number, change: string }
-        profit: { current: number, previous: number, change: string }
-        margin: { current: string, previous: string, change: string }
-        ratePerMile: { current: string, previous: string, change: string }
+        revenue: { current: number; previous: number; change: string }
+        expenses: { current: number; previous: number; change: string }
+        profit: { current: number; previous: number; change: string }
+        margin: { current: string; previous: string; change: string }
+        ratePerMile: { current: string; previous: string; change: string }
     }
 }
 
-export function FinancialMetrics({ 
-    timeRange, 
-    financialData, 
-    expenseBreakdown, 
-    financialSummary 
+export function FinancialMetrics({
+    timeRange,
+    financialData,
+    expenseBreakdown,
+    financialSummary
 }: FinancialMetricsProps) {
     return (
         <div className="space-y-6">
@@ -69,9 +69,9 @@ export function FinancialMetrics({
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="date" />
                             <YAxis />
-                            <ChartTooltip 
-                                content={<ChartTooltipContent />} 
-                                formatter={(value) => `$${Number(value).toLocaleString()}`}
+                            <ChartTooltip
+                                content={<ChartTooltipContent />}
+                                formatter={value => `$${Number(value).toLocaleString()}`}
                             />
                             <Legend />
                             <Line
@@ -117,9 +117,9 @@ export function FinancialMetrics({
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis dataKey="category" />
                                 <YAxis />
-                                <ChartTooltip 
-                                    content={<ChartTooltipContent />} 
-                                    formatter={(value) => `$${Number(value).toLocaleString()}`}
+                                <ChartTooltip
+                                    content={<ChartTooltipContent />}
+                                    formatter={value => `$${Number(value).toLocaleString()}`}
                                 />
                                 <Legend />
                                 <Bar dataKey="value" fill="var(--color-value)" name="Amount" />
@@ -147,42 +147,79 @@ export function FinancialMetrics({
                             <tbody>
                                 <tr className="border-b">
                                     <td className="p-2 text-sm font-medium">Total Revenue</td>
-                                    <td className="p-2 text-sm text-right">${financialSummary.revenue.current.toLocaleString()}</td>
-                                    <td className="p-2 text-sm text-right">${financialSummary.revenue.previous.toLocaleString()}</td>
-                                    <td className={`p-2 text-sm text-right ${Number(financialSummary.revenue.change) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                        {Number(financialSummary.revenue.change) >= 0 ? '+' : ''}{financialSummary.revenue.change}%
+                                    <td className="p-2 text-sm text-right">
+                                        ${financialSummary.revenue.current.toLocaleString()}
+                                    </td>
+                                    <td className="p-2 text-sm text-right">
+                                        ${financialSummary.revenue.previous.toLocaleString()}
+                                    </td>
+                                    <td
+                                        className={`p-2 text-sm text-right ${Number(financialSummary.revenue.change) >= 0 ? "text-green-600" : "text-red-600"}`}
+                                    >
+                                        {Number(financialSummary.revenue.change) >= 0 ? "+" : ""}
+                                        {financialSummary.revenue.change}%
                                     </td>
                                 </tr>
                                 <tr className="border-b">
                                     <td className="p-2 text-sm font-medium">Total Expenses</td>
-                                    <td className="p-2 text-sm text-right">${financialSummary.expenses.current.toLocaleString()}</td>
-                                    <td className="p-2 text-sm text-right">${financialSummary.expenses.previous.toLocaleString()}</td>
-                                    <td className={`p-2 text-sm text-right ${Number(financialSummary.expenses.change) >= 0 ? 'text-red-600' : 'text-green-600'}`}>
-                                        {Number(financialSummary.expenses.change) >= 0 ? '+' : ''}{financialSummary.expenses.change}%
+                                    <td className="p-2 text-sm text-right">
+                                        ${financialSummary.expenses.current.toLocaleString()}
+                                    </td>
+                                    <td className="p-2 text-sm text-right">
+                                        ${financialSummary.expenses.previous.toLocaleString()}
+                                    </td>
+                                    <td
+                                        className={`p-2 text-sm text-right ${Number(financialSummary.expenses.change) >= 0 ? "text-red-600" : "text-green-600"}`}
+                                    >
+                                        {Number(financialSummary.expenses.change) >= 0 ? "+" : ""}
+                                        {financialSummary.expenses.change}%
                                     </td>
                                 </tr>
                                 <tr className="border-b">
                                     <td className="p-2 text-sm font-medium">Net Profit</td>
-                                    <td className="p-2 text-sm text-right">${financialSummary.profit.current.toLocaleString()}</td>
-                                    <td className="p-2 text-sm text-right">${financialSummary.profit.previous.toLocaleString()}</td>
-                                    <td className={`p-2 text-sm text-right ${Number(financialSummary.profit.change) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                        {Number(financialSummary.profit.change) >= 0 ? '+' : ''}{financialSummary.profit.change}%
+                                    <td className="p-2 text-sm text-right">
+                                        ${financialSummary.profit.current.toLocaleString()}
+                                    </td>
+                                    <td className="p-2 text-sm text-right">
+                                        ${financialSummary.profit.previous.toLocaleString()}
+                                    </td>
+                                    <td
+                                        className={`p-2 text-sm text-right ${Number(financialSummary.profit.change) >= 0 ? "text-green-600" : "text-red-600"}`}
+                                    >
+                                        {Number(financialSummary.profit.change) >= 0 ? "+" : ""}
+                                        {financialSummary.profit.change}%
                                     </td>
                                 </tr>
                                 <tr className="border-b">
                                     <td className="p-2 text-sm font-medium">Profit Margin</td>
-                                    <td className="p-2 text-sm text-right">{financialSummary.margin.current}%</td>
-                                    <td className="p-2 text-sm text-right">{financialSummary.margin.previous}%</td>
-                                    <td className={`p-2 text-sm text-right ${Number(financialSummary.margin.change) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                        {Number(financialSummary.margin.change) >= 0 ? '+' : ''}{financialSummary.margin.change}%
+                                    <td className="p-2 text-sm text-right">
+                                        {financialSummary.margin.current}%
+                                    </td>
+                                    <td className="p-2 text-sm text-right">
+                                        {financialSummary.margin.previous}%
+                                    </td>
+                                    <td
+                                        className={`p-2 text-sm text-right ${Number(financialSummary.margin.change) >= 0 ? "text-green-600" : "text-red-600"}`}
+                                    >
+                                        {Number(financialSummary.margin.change) >= 0 ? "+" : ""}
+                                        {financialSummary.margin.change}%
                                     </td>
                                 </tr>
                                 <tr>
                                     <td className="p-2 text-sm font-medium">Revenue per Mile</td>
-                                    <td className="p-2 text-sm text-right">${financialSummary.ratePerMile.current}</td>
-                                    <td className="p-2 text-sm text-right">${financialSummary.ratePerMile.previous}</td>
-                                    <td className={`p-2 text-sm text-right ${Number(financialSummary.ratePerMile.change) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                        {Number(financialSummary.ratePerMile.change) >= 0 ? '+' : ''}{financialSummary.ratePerMile.change}%
+                                    <td className="p-2 text-sm text-right">
+                                        ${financialSummary.ratePerMile.current}
+                                    </td>
+                                    <td className="p-2 text-sm text-right">
+                                        ${financialSummary.ratePerMile.previous}
+                                    </td>
+                                    <td
+                                        className={`p-2 text-sm text-right ${Number(financialSummary.ratePerMile.change) >= 0 ? "text-green-600" : "text-red-600"}`}
+                                    >
+                                        {Number(financialSummary.ratePerMile.change) >= 0
+                                            ? "+"
+                                            : ""}
+                                        {financialSummary.ratePerMile.change}%
                                     </td>
                                 </tr>
                             </tbody>

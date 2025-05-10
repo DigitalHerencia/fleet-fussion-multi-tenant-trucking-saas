@@ -13,32 +13,32 @@ import { ComplianceDocuments } from "./compliance-documents"
 import { useToast } from "@/hooks/use-toast"
 
 type ComplianceMetrics = {
-  driverCompliance: { 
-    rate: number;
-    total: number;
-    compliant: number;
-    needAttention: number;
-  };
-  vehicleCompliance: {
-    rate: number;
-    total: number;
-    compliant: number;
-    needAttention: number;
-  };
-  documentCompliance: {
-    rate: number;
-    total: number;
-    compliant: number;
-    needAttention: number;
-  };
-  hosViolations: number;
+    driverCompliance: {
+        rate: number
+        total: number
+        compliant: number
+        needAttention: number
+    }
+    vehicleCompliance: {
+        rate: number
+        total: number
+        compliant: number
+        needAttention: number
+    }
+    documentCompliance: {
+        rate: number
+        total: number
+        compliant: number
+        needAttention: number
+    }
+    hosViolations: number
 }
 
 type DeadlineItem = {
-  type: string;
-  name: string;
-  dueIn: number;
-  status: string;
+    type: string
+    name: string
+    dueIn: number
+    status: string
 }
 
 export function ComplianceDashboard() {
@@ -59,18 +59,18 @@ export function ComplianceDashboard() {
             try {
                 setIsLoading(true)
                 setError(null)
-                
+
                 // Fetch company ID from server
                 const response = await fetch("/api/company/current")
                 if (!response.ok) {
                     throw new Error("Failed to get current company")
                 }
-                
+
                 const { id: companyId } = await response.json()
                 if (!companyId) {
                     throw new Error("No company selected")
                 }
-                
+
                 // Fetch compliance data in parallel
                 const [metrics, deadlines] = await Promise.all([
                     fetch(`/api/compliance/metrics?companyId=${companyId}`).then(res => {
@@ -82,19 +82,24 @@ export function ComplianceDashboard() {
                         return res.json()
                     })
                 ])
-                
+
                 setSummaryMetrics(metrics)
                 setUpcomingDeadlines(deadlines)
 
                 // Show toast alerts for expiring/expired documents
-                const expiringDocs = deadlines.filter((d: DeadlineItem) =>
-                    d.type === "Document Expiration" && (d.status === "Expiring Soon" || d.status === "Expired")
+                const expiringDocs = deadlines.filter(
+                    (d: DeadlineItem) =>
+                        d.type === "Document Expiration" &&
+                        (d.status === "Expiring Soon" || d.status === "Expired")
                 )
                 if (expiringDocs.length > 0) {
                     expiringDocs.forEach((doc: DeadlineItem) => {
                         toast({
-                            title: doc.status === "Expired" ? "Document Expired" : "Document Expiring Soon",
-                            description: `${doc.name} ${doc.status === "Expired" ? "has expired" : `will expire in ${doc.dueIn} day${doc.dueIn === 1 ? '' : 's'}`}.`,
+                            title:
+                                doc.status === "Expired"
+                                    ? "Document Expired"
+                                    : "Document Expiring Soon",
+                            description: `${doc.name} ${doc.status === "Expired" ? "has expired" : `will expire in ${doc.dueIn} day${doc.dueIn === 1 ? "" : "s"}`}.`,
                             variant: doc.status === "Expired" ? "destructive" : "default"
                         })
                     })
@@ -111,7 +116,7 @@ export function ComplianceDashboard() {
                 setIsLoading(false)
             }
         }
-        
+
         if (activeTab === "overview") {
             fetchDashboardData()
         }
@@ -150,7 +155,9 @@ export function ComplianceDashboard() {
                         <div className="flex items-center justify-center p-8">
                             <div className="flex flex-col items-center gap-2">
                                 <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-                                <p className="text-sm text-muted-foreground">Loading compliance data...</p>
+                                <p className="text-sm text-muted-foreground">
+                                    Loading compliance data...
+                                </p>
                             </div>
                         </div>
                     ) : error ? (
@@ -159,13 +166,11 @@ export function ComplianceDashboard() {
                                 <div className="flex flex-col items-center justify-center text-center">
                                     <AlertCircle className="h-12 w-12 text-destructive mb-2" />
                                     <h3 className="text-lg font-medium">Failed to load data</h3>
-                                    <p className="text-sm text-muted-foreground mt-1">
-                                        {error}
-                                    </p>
-                                    <Button 
-                                        onClick={() => setActiveTab("overview")} 
-                                        variant="outline" 
-                                        size="sm" 
+                                    <p className="text-sm text-muted-foreground mt-1">{error}</p>
+                                    <Button
+                                        onClick={() => setActiveTab("overview")}
+                                        variant="outline"
+                                        size="sm"
                                         className="mt-4"
                                     >
                                         Retry
@@ -190,11 +195,17 @@ export function ComplianceDashboard() {
                                         )}
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="text-2xl font-bold">{summaryMetrics.driverCompliance.rate}%</div>
+                                        <div className="text-2xl font-bold">
+                                            {summaryMetrics.driverCompliance.rate}%
+                                        </div>
                                         <p className="text-xs text-muted-foreground">
-                                            {summaryMetrics.driverCompliance.needAttention} drivers need attention
+                                            {summaryMetrics.driverCompliance.needAttention} drivers
+                                            need attention
                                         </p>
-                                        <Progress value={summaryMetrics.driverCompliance.rate} className="mt-2" />
+                                        <Progress
+                                            value={summaryMetrics.driverCompliance.rate}
+                                            className="mt-2"
+                                        />
                                     </CardContent>
                                 </Card>
 
@@ -212,11 +223,17 @@ export function ComplianceDashboard() {
                                         )}
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="text-2xl font-bold">{summaryMetrics.vehicleCompliance.rate}%</div>
+                                        <div className="text-2xl font-bold">
+                                            {summaryMetrics.vehicleCompliance.rate}%
+                                        </div>
                                         <p className="text-xs text-muted-foreground">
-                                            {summaryMetrics.vehicleCompliance.needAttention} vehicles need attention
+                                            {summaryMetrics.vehicleCompliance.needAttention}{" "}
+                                            vehicles need attention
                                         </p>
-                                        <Progress value={summaryMetrics.vehicleCompliance.rate} className="mt-2" />
+                                        <Progress
+                                            value={summaryMetrics.vehicleCompliance.rate}
+                                            className="mt-2"
+                                        />
                                     </CardContent>
                                 </Card>
 
@@ -228,11 +245,13 @@ export function ComplianceDashboard() {
                                         <Clock className="h-4 w-4 text-red-500" />
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="text-2xl font-bold">{summaryMetrics.hosViolations}</div>
+                                        <div className="text-2xl font-bold">
+                                            {summaryMetrics.hosViolations}
+                                        </div>
                                         <p className="text-xs text-muted-foreground">Last 7 days</p>
-                                        <Progress 
-                                            value={Math.min(summaryMetrics.hosViolations * 10, 100)} 
-                                            className="mt-2" 
+                                        <Progress
+                                            value={Math.min(summaryMetrics.hosViolations * 10, 100)}
+                                            className="mt-2"
                                         />
                                     </CardContent>
                                 </Card>
@@ -251,11 +270,21 @@ export function ComplianceDashboard() {
                                         )}
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="text-2xl font-bold">{summaryMetrics.documentCompliance.rate}%</div>
+                                        <div className="text-2xl font-bold">
+                                            {summaryMetrics.documentCompliance.rate}%
+                                        </div>
                                         <p className="text-xs text-muted-foreground">
-                                            {summaryMetrics.documentCompliance.needAttention} document{summaryMetrics.documentCompliance.needAttention !== 1 ? 's' : ''} need attention
+                                            {summaryMetrics.documentCompliance.needAttention}{" "}
+                                            document
+                                            {summaryMetrics.documentCompliance.needAttention !== 1
+                                                ? "s"
+                                                : ""}{" "}
+                                            need attention
                                         </p>
-                                        <Progress value={summaryMetrics.documentCompliance.rate} className="mt-2" />
+                                        <Progress
+                                            value={summaryMetrics.documentCompliance.rate}
+                                            className="mt-2"
+                                        />
                                     </CardContent>
                                 </Card>
                             </div>
@@ -278,32 +307,44 @@ export function ComplianceDashboard() {
                                             </div>
                                         ) : (
                                             <div className="space-y-4">
-                                                {upcomingDeadlines.slice(0, 5).map((deadline, index) => (
-                                                    <div key={index} className="flex items-center justify-between">
-                                                        <div className="space-y-1">
-                                                            <p className="text-sm font-medium">
-                                                                {deadline.type} - {deadline.name}
-                                                            </p>
-                                                            <p className="text-xs text-muted-foreground">
-                                                                {deadline.dueIn === 1 
-                                                                    ? "Due tomorrow" 
-                                                                    : `Due in ${deadline.dueIn} days`}
-                                                            </p>
-                                                        </div>
-                                                        <Badge
-                                                            variant="outline"
-                                                            className={
-                                                                deadline.status === "Expiring Soon" || deadline.status === "Due Soon"
-                                                                    ? "bg-amber-50 text-amber-700 border-amber-200"
-                                                                    : "bg-blue-50 text-blue-700 border-blue-200"
-                                                            }
+                                                {upcomingDeadlines
+                                                    .slice(0, 5)
+                                                    .map((deadline, index) => (
+                                                        <div
+                                                            key={index}
+                                                            className="flex items-center justify-between"
                                                         >
-                                                            {deadline.status}
-                                                        </Badge>
-                                                    </div>
-                                                ))}
+                                                            <div className="space-y-1">
+                                                                <p className="text-sm font-medium">
+                                                                    {deadline.type} -{" "}
+                                                                    {deadline.name}
+                                                                </p>
+                                                                <p className="text-xs text-muted-foreground">
+                                                                    {deadline.dueIn === 1
+                                                                        ? "Due tomorrow"
+                                                                        : `Due in ${deadline.dueIn} days`}
+                                                                </p>
+                                                            </div>
+                                                            <Badge
+                                                                variant="outline"
+                                                                className={
+                                                                    deadline.status ===
+                                                                        "Expiring Soon" ||
+                                                                    deadline.status === "Due Soon"
+                                                                        ? "bg-amber-50 text-amber-700 border-amber-200"
+                                                                        : "bg-blue-50 text-blue-700 border-blue-200"
+                                                                }
+                                                            >
+                                                                {deadline.status}
+                                                            </Badge>
+                                                        </div>
+                                                    ))}
                                                 {upcomingDeadlines.length > 5 && (
-                                                    <Button variant="outline" size="sm" className="w-full mt-2">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="w-full mt-2"
+                                                    >
                                                         View All ({upcomingDeadlines.length})
                                                     </Button>
                                                 )}
@@ -343,7 +384,7 @@ export function ComplianceDashboard() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <DriverComplianceTable drivers={ [] } />
+                            <DriverComplianceTable drivers={[]} />
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -357,7 +398,7 @@ export function ComplianceDashboard() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <VehicleComplianceTable vehicles={ [] } />
+                            <VehicleComplianceTable vehicles={[]} />
                         </CardContent>
                     </Card>
                 </TabsContent>

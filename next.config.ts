@@ -1,5 +1,5 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {
+const nextConfig: import("next").NextConfig = {
     reactStrictMode: true,
     eslint: {
         ignoreDuringBuilds: true
@@ -26,5 +26,4 @@ const nextConfig = {
         }
     }
 }
-
 export default nextConfig

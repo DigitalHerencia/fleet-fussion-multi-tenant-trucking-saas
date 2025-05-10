@@ -505,7 +505,7 @@ export const fuelPurchases = pgTable("fuel_purchases", {
     notes: text("notes"),
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at").defaultNow()
-});
+})
 
 export const fuelPurchaseRelations = relations(fuelPurchases, ({ one }) => ({
     company: one(companies, {
@@ -520,12 +520,14 @@ export const fuelPurchaseRelations = relations(fuelPurchases, ({ one }) => ({
         fields: [fuelPurchases.driverId],
         references: [drivers.id]
     })
-}));
+}))
 
 // Customers
 export const customers = pgTable("customers", {
     id: uuid("id").defaultRandom().primaryKey(),
-    companyId: uuid("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+    companyId: uuid("company_id")
+        .notNull()
+        .references(() => companies.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
     contactName: text("contact_name"),
     contactEmail: text("contact_email"),
@@ -535,13 +537,15 @@ export const customers = pgTable("customers", {
     state: text("state"),
     zip: text("zip"),
     createdAt: timestamp("created_at").defaultNow(),
-    updatedAt: timestamp("updated_at").defaultNow(),
-});
+    updatedAt: timestamp("updated_at").defaultNow()
+})
 
 // Invoices
 export const invoices = pgTable("invoices", {
     id: uuid("id").defaultRandom().primaryKey(),
-    companyId: uuid("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+    companyId: uuid("company_id")
+        .notNull()
+        .references(() => companies.id, { onDelete: "cascade" }),
     customerId: uuid("customer_id").references(() => customers.id, { onDelete: "set null" }),
     loadId: uuid("load_id").references(() => loads.id, { onDelete: "set null" }),
     amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
@@ -551,13 +555,15 @@ export const invoices = pgTable("invoices", {
     paidDate: timestamp("paid_date"),
     notes: text("notes"),
     createdAt: timestamp("created_at").defaultNow(),
-    updatedAt: timestamp("updated_at").defaultNow(),
-});
+    updatedAt: timestamp("updated_at").defaultNow()
+})
 
 // Settlements
 export const settlements = pgTable("settlements", {
     id: uuid("id").defaultRandom().primaryKey(),
-    companyId: uuid("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+    companyId: uuid("company_id")
+        .notNull()
+        .references(() => companies.id, { onDelete: "cascade" }),
     driverId: uuid("driver_id").references(() => drivers.id, { onDelete: "set null" }),
     loadId: uuid("load_id").references(() => loads.id, { onDelete: "set null" }),
     amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
@@ -566,13 +572,15 @@ export const settlements = pgTable("settlements", {
     paidDate: timestamp("paid_date"),
     notes: text("notes"),
     createdAt: timestamp("created_at").defaultNow(),
-    updatedAt: timestamp("updated_at").defaultNow(),
-});
+    updatedAt: timestamp("updated_at").defaultNow()
+})
 
 // Insurance Policies
 export const insurancePolicies = pgTable("insurance_policies", {
     id: uuid("id").defaultRandom().primaryKey(),
-    companyId: uuid("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+    companyId: uuid("company_id")
+        .notNull()
+        .references(() => companies.id, { onDelete: "cascade" }),
     provider: text("provider").notNull(),
     policyNumber: text("policy_number").notNull(),
     coverageType: text("coverage_type"),
@@ -582,25 +590,29 @@ export const insurancePolicies = pgTable("insurance_policies", {
     status: text("status").notNull().default("active"),
     notes: text("notes"),
     createdAt: timestamp("created_at").defaultNow(),
-    updatedAt: timestamp("updated_at").defaultNow(),
-});
+    updatedAt: timestamp("updated_at").defaultNow()
+})
 
 // Audit Logs
 export const auditLogs = pgTable("audit_logs", {
     id: uuid("id").defaultRandom().primaryKey(),
-    companyId: uuid("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+    companyId: uuid("company_id")
+        .notNull()
+        .references(() => companies.id, { onDelete: "cascade" }),
     userId: text("user_id"),
     action: text("action").notNull(),
     targetTable: text("target_table"),
     targetId: uuid("target_id"),
     details: json("details"),
-    createdAt: timestamp("created_at").defaultNow(),
-});
+    createdAt: timestamp("created_at").defaultNow()
+})
 
 // Notifications
 export const notifications = pgTable("notifications", {
     id: uuid("id").defaultRandom().primaryKey(),
-    companyId: uuid("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+    companyId: uuid("company_id")
+        .notNull()
+        .references(() => companies.id, { onDelete: "cascade" }),
     userId: text("user_id").notNull(), // Clerk user ID
     type: text("type").notNull(), // e.g. 'dispatch', 'compliance', 'system', etc.
     title: text("title").notNull(),

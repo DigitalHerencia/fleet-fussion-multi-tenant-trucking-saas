@@ -36,7 +36,11 @@ export async function createHosLog(formData: FormData) {
     try {
         const result = hosLogSchema.safeParse(Object.fromEntries(formData))
         if (!result.success) {
-            return { success: false, error: "Validation failed", errors: result.error.flatten().fieldErrors }
+            return {
+                success: false,
+                error: "Validation failed",
+                errors: result.error.flatten().fieldErrors
+            }
         }
         const data = result.data as HosLogForm
         const companyId = await getCompanyId()
@@ -53,7 +57,11 @@ export async function createHosLog(formData: FormData) {
         return { success: true, log: inserted }
     } catch (error) {
         console.error("[ComplianceActions] createHosLog error:", error)
-        return { success: false, error: error instanceof Error ? error.message : "Failed to create HOS log", errors: { form: ["Failed to create HOS log"] } }
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : "Failed to create HOS log",
+            errors: { form: ["Failed to create HOS log"] }
+        }
     }
 }
 
@@ -61,7 +69,11 @@ export async function updateHosLog(id: string, formData: FormData) {
     try {
         const result = hosLogSchema.safeParse(Object.fromEntries(formData))
         if (!result.success) {
-            return { success: false, error: "Validation failed", errors: result.error.flatten().fieldErrors }
+            return {
+                success: false,
+                error: "Validation failed",
+                errors: result.error.flatten().fieldErrors
+            }
         }
         const data = result.data as HosLogForm
         const companyId = await getCompanyId()
@@ -77,7 +89,11 @@ export async function updateHosLog(id: string, formData: FormData) {
         return { success: true }
     } catch (error) {
         console.error("[ComplianceActions] updateHosLog error:", error)
-        return { success: false, error: error instanceof Error ? error.message : "Failed to update HOS log", errors: { form: ["Failed to update HOS log"] } }
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : "Failed to update HOS log",
+            errors: { form: ["Failed to update HOS log"] }
+        }
     }
 }
 
@@ -91,7 +107,11 @@ export async function deleteHosLog(id: string) {
         return { success: true }
     } catch (error) {
         console.error("[ComplianceActions] deleteHosLog error:", error)
-        return { success: false, error: error instanceof Error ? error.message : "Failed to delete HOS log", errors: { form: ["Failed to delete HOS log"] } }
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : "Failed to delete HOS log",
+            errors: { form: ["Failed to delete HOS log"] }
+        }
     }
 }
 
@@ -111,7 +131,11 @@ export async function createComplianceDocument(formData: FormData) {
         }
         const result = complianceDocSchema.safeParse(Object.fromEntries(formData))
         if (!result.success) {
-            return { success: false, error: "Validation failed", errors: result.error.flatten().fieldErrors }
+            return {
+                success: false,
+                error: "Validation failed",
+                errors: result.error.flatten().fieldErrors
+            }
         }
         const data = result.data as ComplianceDocForm
         const companyId = await getCompanyId()
@@ -129,7 +153,11 @@ export async function createComplianceDocument(formData: FormData) {
         return { success: true, document: inserted }
     } catch (error) {
         console.error("[ComplianceActions] createComplianceDocument error:", error)
-        return { success: false, error: error instanceof Error ? error.message : "Failed to create compliance document", errors: { form: ["Failed to create compliance document"] } }
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : "Failed to create compliance document",
+            errors: { form: ["Failed to create compliance document"] }
+        }
     }
 }
 
@@ -137,7 +165,11 @@ export async function updateComplianceDocument(id: string, formData: FormData) {
     try {
         const result = complianceDocSchema.safeParse(Object.fromEntries(formData))
         if (!result.success) {
-            return { success: false, error: "Validation failed", errors: result.error.flatten().fieldErrors }
+            return {
+                success: false,
+                error: "Validation failed",
+                errors: result.error.flatten().fieldErrors
+            }
         }
         const data = result.data as ComplianceDocForm
         const companyId = await getCompanyId()
@@ -155,7 +187,11 @@ export async function updateComplianceDocument(id: string, formData: FormData) {
         return { success: true }
     } catch (error) {
         console.error("[ComplianceActions] updateComplianceDocument error:", error)
-        return { success: false, error: error instanceof Error ? error.message : "Failed to update compliance document", errors: { form: ["Failed to update compliance document"] } }
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : "Failed to update compliance document",
+            errors: { form: ["Failed to update compliance document"] }
+        }
     }
 }
 
@@ -171,7 +207,11 @@ export async function deleteComplianceDocument(id: string) {
         return { success: true }
     } catch (error) {
         console.error("[ComplianceActions] deleteComplianceDocument error:", error)
-        return { success: false, error: error instanceof Error ? error.message : "Failed to delete compliance document", errors: { form: ["Failed to delete compliance document"] } }
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : "Failed to delete compliance document",
+            errors: { form: ["Failed to delete compliance document"] }
+        }
     }
 }
 

@@ -116,7 +116,7 @@ export type Document = {
     name: string
     fileUrl: string
     fileType?: string
-    fileSize?: number,
+    fileSize?: number
     notes?: string
     createdAt: string
     updatedAt: string

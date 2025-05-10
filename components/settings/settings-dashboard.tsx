@@ -247,7 +247,7 @@ export function SettingsDashboard() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <UserSettings users={ [] } />
+                        <UserSettings users={[]} />
                     </CardContent>
                 </Card>
             </TabsContent>

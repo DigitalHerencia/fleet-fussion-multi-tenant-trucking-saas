@@ -64,12 +64,18 @@ export default async function IFTAPage() {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Miles ({summary?.period.label})</CardTitle>
+                        <CardTitle className="text-sm font-medium">
+                            Total Miles ({summary?.period.label})
+                        </CardTitle>
                         <MapPin className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{summary?.metrics.totalMiles?.toLocaleString() ?? 0}</div>
-                        <p className="text-xs text-muted-foreground">{summary?.metrics.milesChange}% from last quarter</p>
+                        <div className="text-2xl font-bold">
+                            {summary?.metrics.totalMiles?.toLocaleString() ?? 0}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            {summary?.metrics.milesChange}% from last quarter
+                        </p>
                     </CardContent>
                 </Card>
                 <Card>
@@ -80,8 +86,12 @@ export default async function IFTAPage() {
                         <MapPin className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{summary?.metrics.totalGallons?.toLocaleString() ?? 0}</div>
-                        <p className="text-xs text-muted-foreground">{summary?.metrics.gallonsChange}% from last quarter</p>
+                        <div className="text-2xl font-bold">
+                            {summary?.metrics.totalGallons?.toLocaleString() ?? 0}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            {summary?.metrics.gallonsChange}% from last quarter
+                        </p>
                     </CardContent>
                 </Card>
                 <Card>
@@ -91,7 +101,9 @@ export default async function IFTAPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{summary?.metrics.avgMpg ?? "0.0"}</div>
-                        <p className="text-xs text-muted-foreground">{summary?.metrics.mpgChange} from last quarter</p>
+                        <p className="text-xs text-muted-foreground">
+                            {summary?.metrics.mpgChange} from last quarter
+                        </p>
                     </CardContent>
                 </Card>
                 <Card>
@@ -100,7 +112,9 @@ export default async function IFTAPage() {
                         <MapPin className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{summary?.metrics.uniqueJurisdictions ?? 0}</div>
+                        <div className="text-2xl font-bold">
+                            {summary?.metrics.uniqueJurisdictions ?? 0}
+                        </div>
                         <p className="text-xs text-muted-foreground">
                             States traveled this quarter
                         </p>

@@ -206,9 +206,7 @@ export function LoadDetailsDialog({
             <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle className="text-xl">Load {load.referenceNumber}</DialogTitle>
-                    <DialogDescription>
-                        View and manage details for this load.
-                    </DialogDescription>
+                    <DialogDescription>View and manage details for this load.</DialogDescription>
                 </DialogHeader>
 
                 <Tabs defaultValue="details" className="w-full">

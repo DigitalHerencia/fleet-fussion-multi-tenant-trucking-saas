@@ -18,21 +18,23 @@ export function UserNav() {
     return (
         <div className="flex items-center gap-4">
             <ThemeToggle />
-            
+
             {/* Clerk Organization Switcher */}
-            <OrganizationSwitcher 
+            <OrganizationSwitcher
                 appearance={{
                     elements: {
-                        organizationSwitcherTrigger: "py-2 px-4 h-8 rounded-full border border-border bg-transparent hover:bg-accent hover:text-accent-foreground",
-                        organizationSwitcherPopoverCard: "bg-popover border border-border shadow-md",
+                        organizationSwitcherTrigger:
+                            "py-2 px-4 h-8 rounded-full border border-border bg-transparent hover:bg-accent hover:text-accent-foreground",
+                        organizationSwitcherPopoverCard:
+                            "bg-popover border border-border shadow-md",
                         organizationPreview: "hover:bg-accent",
-                        organizationSwitcherPopoverFooter: "border-t border-border",
+                        organizationSwitcherPopoverFooter: "border-t border-border"
                     }
                 }}
             />
 
             {/* Clerk User Button */}
-            <UserButton 
+            <UserButton
                 appearance={{
                     elements: {
                         avatarBox: "h-8 w-8",

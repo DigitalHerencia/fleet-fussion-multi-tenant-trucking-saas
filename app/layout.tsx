@@ -6,12 +6,6 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import { ClerkProvider } from "@clerk/nextjs"
 import { Toaster } from "sonner"
-import { validateEnv } from "@/lib/env"
-
-// Validate environment variables during server initialization
-if (process.env.NODE_ENV === 'production') {
-    validateEnv();
-}
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -26,12 +20,13 @@ export const metadata: Metadata = {
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-    const isDarkMode = typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const isDarkMode =
+        typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches
 
     return (
         <html lang="en" suppressHydrationWarning={true}>
             <body className={inter.className} suppressHydrationWarning={true}>
-                <ClerkProvider 
+                <ClerkProvider
                     appearance={{
                         variables: {
                             colorPrimary: isDarkMode ? "#60a5fa" : "#2563eb", // blue-400 (dark) / blue-700 (light)

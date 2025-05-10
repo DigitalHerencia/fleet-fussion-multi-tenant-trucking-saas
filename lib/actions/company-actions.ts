@@ -167,7 +167,7 @@ export async function getCurrentCompany() {
         }
 
         // Get selected company from cookie
-        const cookieStore =  await cookies()
+        const cookieStore = await cookies()
         const selectedCompanyId = cookieStore.get(COMPANY_COOKIE_NAME)?.value
 
         if (!selectedCompanyId) {
@@ -208,7 +208,7 @@ export async function getCurrentCompany() {
         if (!userCompany) {
             // If the selected company doesn't exist or user doesn't belong to it,
             // clear the cookie and try again with most recent company
-            const store = await cookieStore;
+            const store = await cookieStore
             store.delete(COMPANY_COOKIE_NAME)
             return await getCurrentCompany()
         }
@@ -311,8 +311,9 @@ export async function createCompany(data: CreateCompanyFormValues) {
 // Helper to create Clerk org (using Clerk SDK)
 async function createClerkOrganization(name: string) {
     // Use Clerk SDK to create Clerk org
-const client = await clerkClient(); // Await the function to get the client
-const org = await client.organizations.createOrganization({ name });    return org
+    const client = await clerkClient() // Await the function to get the client
+    const org = await client.organizations.createOrganization({ name })
+    return org
 }
 
 // Get user's role in the current company
@@ -494,36 +495,36 @@ export async function getOrganizationMembers() {
     try {
         // Get the current user ID using our custom auth helper
         const userId = await getCurrentUserId()
-        
+
         if (!userId) {
             return {
                 success: false,
                 error: "Not authenticated"
             }
         }
-        
+
         // Get the current company
         const currentCompanyResult = await getCurrentCompany()
-        
+
         if (!currentCompanyResult.success || !currentCompanyResult.data) {
             return {
                 success: false,
                 error: "No company selected"
             }
         }
-        
+
         const companyId = currentCompanyResult.data.id
-        
+
         // Get all users associated with this company
-        const  companyUsersList = await db.query.companyUsers.findMany({
+        const companyUsersList = await db.query.companyUsers.findMany({
             where: eq(companyUsers.companyId, companyId)
-            // If you need user details like name/email, ensure a 'user' relation 
+            // If you need user details like name/email, ensure a 'user' relation
             // is defined in your companyUsers schema and then you can use:
             // with: {
-            //     user: true 
+            //     user: true
             // }
         })
-        
+
         // Since we no longer have Clerk, we would need to adapt this based on how user data is stored
         // This is a simplified implementation that returns the IDs and roles
         const members = companyUsersList.map(cu => ({
@@ -532,7 +533,7 @@ export async function getOrganizationMembers() {
             createdAt: cu.createdAt,
             updatedAt: cu.updatedAt
         }))
-        
+
         return {
             success: true,
             data: members
@@ -578,12 +579,12 @@ export async function inviteOrganizationMember({ email, role }: { email: string;
             }
         }
         // Use Clerk SDK to invite user to Clerk org
-        const client = await clerkClient(); // Get the actual Clerk client
+        const client = await clerkClient() // Get the actual Clerk client
         await client.organizations.createOrganizationInvitation({
             organizationId: clerkOrgId,
             emailAddress: email,
             role
-        });
+        })
         return {
             success: true,
             data: {

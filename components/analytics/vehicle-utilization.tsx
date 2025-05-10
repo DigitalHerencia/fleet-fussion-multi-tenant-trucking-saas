@@ -79,7 +79,11 @@ export function VehicleUtilization({ timeRange, data }: VehicleUtilizationProps)
                                 <YAxis domain={[0, 100]} />
                                 <ChartTooltip content={<ChartTooltipContent />} />
                                 <Legend />
-                                <Bar dataKey="utilization" fill="var(--chart-3)" name="Utilization" />
+                                <Bar
+                                    dataKey="utilization"
+                                    fill="var(--chart-3)"
+                                    name="Utilization"
+                                />
                             </BarChart>
                         </ResponsiveContainer>
                     </ChartContainer>

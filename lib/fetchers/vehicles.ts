@@ -7,28 +7,28 @@ import { cache } from "react"
  * Retrieves all vehicles for a specific company with pagination, filtering, and sorting
  */
 export const getVehiclesForCompany = cache(async function getVehiclesForCompany(
-  companyId: number,
-  options?: {
-    limit?: number;
-    offset?: number;
-    status?: string;
-    type?: string;
-    sortBy?: keyof typeof vehicles;
-    sortOrder?: "asc" | "desc";
-  }
+    companyId: number,
+    options?: {
+        limit?: number
+        offset?: number
+        status?: string
+        type?: string
+        sortBy?: keyof typeof vehicles
+        sortOrder?: "asc" | "desc"
+    }
 ) {
-  try {
-    const whereConds = [eq(vehicles.companyId, String(companyId))];
-    if (options?.status) whereConds.push(eq(vehicles.status, options.status));
-    // Return the result of the query
-    return await db.query.vehicles.findMany({
-      where: (vehicles, { and }) => and(...whereConds),
-    });
-  } catch (error) {
-    console.error("getVehiclesForCompany error:", error);
-    throw new Error("Unable to load vehicles");
-  }
-});
+    try {
+        const whereConds = [eq(vehicles.companyId, String(companyId))]
+        if (options?.status) whereConds.push(eq(vehicles.status, options.status))
+        // Return the result of the query
+        return await db.query.vehicles.findMany({
+            where: (vehicles, { and }) => and(...whereConds)
+        })
+    } catch (error) {
+        console.error("getVehiclesForCompany error:", error)
+        throw new Error("Unable to load vehicles")
+    }
+})
 
 /**
  * Retrieves vehicles for a company filtered by type (e.g., "tractor" or "trailer")

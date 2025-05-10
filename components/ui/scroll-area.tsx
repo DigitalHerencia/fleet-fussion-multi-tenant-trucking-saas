@@ -46,7 +46,4 @@ const ScrollBar = React.forwardRef<
 ScrollBar.displayName = "ScrollBar"
 
 // Export all ScrollArea subcomponents for consistent usage
-export {
-    ScrollArea,
-    ScrollBar
-}
+export { ScrollArea, ScrollBar }

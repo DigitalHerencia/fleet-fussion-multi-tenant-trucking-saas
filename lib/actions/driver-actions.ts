@@ -28,7 +28,10 @@ export async function createDriverAction(_: any, formData: FormData) {
             return {
                 success: false,
                 error: "Please provide both first and last name.",
-                errors: { firstName: ["First name is required."], lastName: ["Last name is required."] }
+                errors: {
+                    firstName: ["First name is required."],
+                    lastName: ["Last name is required."]
+                }
             }
         }
         // Insert the new driver into the database

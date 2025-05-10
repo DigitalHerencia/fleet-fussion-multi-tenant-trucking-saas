@@ -16,11 +16,11 @@ export function DriverForm() {
         async (_prevState: any, _formData: any) => {
             // ...existing code...
             if (!isValid) {
-                return { success: false, error: 'Validation failed', errors };
+                return { success: false, error: "Validation failed", errors }
             }
             // ...existing code...
         },
-        { success: false, error: '', errors: {} }
+        { success: false, error: "", errors: {} }
     )
 
     const {
@@ -38,19 +38,17 @@ export function DriverForm() {
             <div>
                 <label htmlFor="firstName">First Name</label>
                 <input {...register("firstName")} type="text" className="input" />
-                <FormError message={errors.firstName?.message } />
+                <FormError message={errors.firstName?.message} />
             </div>
             <div>
                 <label htmlFor="lastName">Last Name</label>
                 <input {...register("lastName")} type="text" className="input" />
-                <FormError message={errors.lastName?.message } />
+                <FormError message={errors.lastName?.message} />
             </div>
             <div>
                 <label htmlFor="licenseNumber">License Number</label>
                 <input {...register("licenseNumber")} type="text" className="input" />
-                <FormError
-                    message={errors.licenseNumber?.message }
-                />
+                <FormError message={errors.licenseNumber?.message} />
             </div>
             {/* ...other fields as needed... */}
             <button type="submit" disabled={isSubmitting} className="btn btn-primary w-full">

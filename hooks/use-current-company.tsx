@@ -3,11 +3,13 @@
 import { useAuth } from "@/context/auth-context"
 
 export function useCurrentCompany() {
-  const { organization, orgId } = useAuth()
-  
-  return {
-    company: organization ? {
-      ...organization
-    } : null
-  }
+    const { organization } = useAuth()
+
+    return {
+        company: organization
+            ? {
+                  ...organization
+              }
+            : null
+    }
 }

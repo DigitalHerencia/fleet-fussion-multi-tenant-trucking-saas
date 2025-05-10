@@ -13,11 +13,11 @@ export function SettingsForm({ defaultValues }: { defaultValues: SettingsFormDat
         async (_prevState: any, _formData: any) => {
             // ...existing code...
             if (!isValid) {
-                return { success: false, error: 'Validation failed', errors };
+                return { success: false, error: "Validation failed", errors }
             }
             // ...existing code...
         },
-        { success: false, error: '', errors: {} }
+        { success: false, error: "", errors: {} }
     )
 
     const {

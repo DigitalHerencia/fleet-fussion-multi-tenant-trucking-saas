@@ -43,7 +43,11 @@ export async function updateCompanyDetails(formData: FormData) {
     try {
         const result = companySchema.safeParse(Object.fromEntries(formData))
         if (!result.success) {
-            return { success: false, error: "Validation failed", errors: result.error.flatten().fieldErrors }
+            return {
+                success: false,
+                error: "Validation failed",
+                errors: result.error.flatten().fieldErrors
+            }
         }
         const data = result.data as CompanyForm
         const companyId = await getCompanyId()
@@ -51,7 +55,11 @@ export async function updateCompanyDetails(formData: FormData) {
         return { success: true }
     } catch (error) {
         console.error("[SettingsActions] updateCompanyDetails error:", error)
-        return { success: false, error: error instanceof Error ? error.message : "Failed to update company details", errors: { form: ["Failed to update company details"] } }
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : "Failed to update company details",
+            errors: { form: ["Failed to update company details"] }
+        }
     }
 }
 
@@ -59,7 +67,11 @@ export async function updateCompanyPreferences(formData: FormData) {
     try {
         const result = preferencesSchema.safeParse(Object.fromEntries(formData))
         if (!result.success) {
-            return { success: false, error: "Validation failed", errors: result.error.flatten().fieldErrors }
+            return {
+                success: false,
+                error: "Validation failed",
+                errors: result.error.flatten().fieldErrors
+            }
         }
         const data = result.data as PreferencesForm
         const companyId = await getCompanyId()
@@ -72,7 +84,11 @@ export async function updateCompanyPreferences(formData: FormData) {
         return { success: true }
     } catch (error) {
         console.error("[SettingsActions] updateCompanyPreferences error:", error)
-        return { success: false, error: error instanceof Error ? error.message : "Failed to update company preferences", errors: { form: ["Failed to update company preferences"] } }
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : "Failed to update company preferences",
+            errors: { form: ["Failed to update company preferences"] }
+        }
     }
 }
 
@@ -80,7 +96,11 @@ export async function createUser(formData: FormData) {
     try {
         const result = userSchema.safeParse(Object.fromEntries(formData))
         if (!result.success) {
-            return { success: false, error: "Validation failed", errors: result.error.flatten().fieldErrors }
+            return {
+                success: false,
+                error: "Validation failed",
+                errors: result.error.flatten().fieldErrors
+            }
         }
         const data = result.data as UserForm
         const companyId = await getCompanyId()
@@ -95,7 +115,11 @@ export async function createUser(formData: FormData) {
         return { success: true, user: inserted }
     } catch (error) {
         console.error("[SettingsActions] createUser error:", error)
-        return { success: false, error: error instanceof Error ? error.message : "Failed to create user", errors: { form: ["Failed to create user"] } }
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : "Failed to create user",
+            errors: { form: ["Failed to create user"] }
+        }
     }
 }
 
@@ -103,7 +127,11 @@ export async function updateUser(id: string, formData: FormData) {
     try {
         const result = userSchema.safeParse(Object.fromEntries(formData))
         if (!result.success) {
-            return { success: false, error: "Validation failed", errors: result.error.flatten().fieldErrors }
+            return {
+                success: false,
+                error: "Validation failed",
+                errors: result.error.flatten().fieldErrors
+            }
         }
         const data = result.data as UserForm
         const companyId = await getCompanyId()
@@ -114,7 +142,11 @@ export async function updateUser(id: string, formData: FormData) {
         return { success: true }
     } catch (error) {
         console.error("[SettingsActions] updateUser error:", error)
-        return { success: false, error: error instanceof Error ? error.message : "Failed to update user", errors: { form: ["Failed to update user"] } }
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : "Failed to update user",
+            errors: { form: ["Failed to update user"] }
+        }
     }
 }
 
@@ -127,7 +159,11 @@ export async function deleteUser(id: string) {
         return { success: true }
     } catch (error) {
         console.error("[SettingsActions] deleteUser error:", error)
-        return { success: false, error: error instanceof Error ? error.message : "Failed to delete user", errors: { form: ["Failed to delete user"] } }
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : "Failed to delete user",
+            errors: { form: ["Failed to delete user"] }
+        }
     }
 }
 
@@ -137,13 +173,21 @@ export async function updateUserPreferences(userId: string, formData: FormData) 
     try {
         const result = preferencesSchema.safeParse(Object.fromEntries(formData))
         if (!result.success) {
-            return { success: false, error: "Validation failed", errors: result.error.flatten().fieldErrors }
+            return {
+                success: false,
+                error: "Validation failed",
+                errors: result.error.flatten().fieldErrors
+            }
         }
         // In a real implementation, we would store these preferences in a proper field or table
         return { success: true }
     } catch (error) {
         console.error("[SettingsActions] updateUserPreferences error:", error)
-        return { success: false, error: error instanceof Error ? error.message : "Failed to update user preferences", errors: { form: ["Failed to update user preferences"] } }
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : "Failed to update user preferences",
+            errors: { form: ["Failed to update user preferences"] }
+        }
     }
 }
 
@@ -151,13 +195,21 @@ export async function updateSettingsAction(_: any, formData: FormData) {
     try {
         const result = settingsSchema.safeParse(Object.fromEntries(formData))
         if (!result.success) {
-            return { success: false, error: "Validation failed", errors: result.error.flatten().fieldErrors }
+            return {
+                success: false,
+                error: "Validation failed",
+                errors: result.error.flatten().fieldErrors
+            }
         }
         const companyId = process.env.TEST_COMPANY_ID ?? "" // Replace with session
         await db.update(companies).set(result.data).where(eq(companies.id, companyId))
         return { success: true }
     } catch (err) {
         console.error("[SettingsActions] updateSettingsAction error:", err)
-        return { success: false, error: err instanceof Error ? err.message : "Failed to update settings", errors: { form: ["Failed to update settings"] } }
+        return {
+            success: false,
+            error: err instanceof Error ? err.message : "Failed to update settings",
+            errors: { form: ["Failed to update settings"] }
+        }
     }
 }

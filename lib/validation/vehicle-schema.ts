@@ -6,10 +6,15 @@ export const vehicleSchema = z.object({
     status: z.enum(["active", "inactive", "maintenance"], { message: "Status is required" }),
     make: z.string().optional(),
     model: z.string().optional(),
-    year: z.coerce.number().int().min(1900).max(new Date().getFullYear() + 1).optional(),
+    year: z.coerce
+        .number()
+        .int()
+        .min(1900)
+        .max(new Date().getFullYear() + 1)
+        .optional(),
     vin: z.string().optional(),
     licensePlate: z.string().min(1, "License plate is required"),
-    state: z.string().length(2, "State must be 2 characters").optional(),
+    state: z.string().length(2, "State must be 2 characters").optional()
 })
 
 export type VehicleFormData = z.infer<typeof vehicleSchema>

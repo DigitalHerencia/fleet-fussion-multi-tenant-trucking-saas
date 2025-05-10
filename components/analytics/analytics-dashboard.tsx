@@ -26,13 +26,13 @@ export function AnalyticsDashboard({
     driverPerformanceData,
     vehicleUtilizationData
 }: {
-    performanceData: any[];
-    performanceComparisonData: any;
-    financialData: any[];
-    expenseBreakdown: any[];
-    financialSummary: any;
-    driverPerformanceData: any[];
-    vehicleUtilizationData: any[];
+    performanceData: any[]
+    performanceComparisonData: any
+    financialData: any[]
+    expenseBreakdown: any[]
+    financialSummary: any
+    driverPerformanceData: any[]
+    vehicleUtilizationData: any[]
 }) {
     const [timeRange, setTimeRange] = useState("30d")
 
@@ -136,8 +136,8 @@ export function AnalyticsDashboard({
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <PerformanceMetrics 
-                                timeRange={timeRange} 
+                            <PerformanceMetrics
+                                timeRange={timeRange}
                                 data={performanceData}
                                 comparisonData={performanceComparisonData}
                             />
@@ -154,8 +154,8 @@ export function AnalyticsDashboard({
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <FinancialMetrics 
-                                timeRange={timeRange} 
+                            <FinancialMetrics
+                                timeRange={timeRange}
                                 financialData={financialData}
                                 expenseBreakdown={expenseBreakdown}
                                 financialSummary={financialSummary}
@@ -173,10 +173,7 @@ export function AnalyticsDashboard({
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <DriverPerformance 
-                                timeRange={timeRange} 
-                                data={driverPerformanceData}
-                            />
+                            <DriverPerformance timeRange={timeRange} data={driverPerformanceData} />
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -188,8 +185,8 @@ export function AnalyticsDashboard({
                             <CardDescription>Vehicle usage and maintenance metrics</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <VehicleUtilization 
-                                timeRange={timeRange} 
+                            <VehicleUtilization
+                                timeRange={timeRange}
                                 data={vehicleUtilizationData}
                             />
                         </CardContent>

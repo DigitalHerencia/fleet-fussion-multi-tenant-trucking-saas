@@ -30,7 +30,11 @@ export async function updateIftaTrip(id: string, formData: FormData) {
     try {
         const result = iftaTripSchema.safeParse(Object.fromEntries(formData))
         if (!result.success) {
-            return { success: false, error: "Validation failed", errors: result.error.flatten().fieldErrors }
+            return {
+                success: false,
+                error: "Validation failed",
+                errors: result.error.flatten().fieldErrors
+            }
         }
         const data = result.data as IftaTripForm
         const companyId = await getCompanyId()
@@ -53,7 +57,11 @@ export async function updateIftaTrip(id: string, formData: FormData) {
         return { success: true }
     } catch (error) {
         console.error("[IFTA-Actions] updateIftaTrip error:", error)
-        return { success: false, error: error instanceof Error ? error.message : "Failed to update IFTA trip", errors: { form: ["Failed to update IFTA trip"] } }
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : "Failed to update IFTA trip",
+            errors: { form: ["Failed to update IFTA trip"] }
+        }
     }
 }
 
@@ -66,7 +74,11 @@ export async function deleteIftaTrip(id: string) {
         return { success: true }
     } catch (error) {
         console.error("[IFTA-Actions] deleteIftaTrip error:", error)
-        return { success: false, error: error instanceof Error ? error.message : "Failed to delete IFTA trip", errors: { form: ["Failed to delete IFTA trip"] } }
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : "Failed to delete IFTA trip",
+            errors: { form: ["Failed to delete IFTA trip"] }
+        }
     }
 }
 
@@ -98,7 +110,11 @@ export async function generateIftaReport(formData: FormData) {
         }
     } catch (error) {
         console.error("[IFTA-Actions] generateIftaReport error:", error)
-        return { success: false, error: error instanceof Error ? error.message : "Failed to generate IFTA report", errors: { form: ["Failed to generate IFTA report"] } }
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : "Failed to generate IFTA report",
+            errors: { form: ["Failed to generate IFTA report"] }
+        }
     }
 }
 
@@ -106,7 +122,11 @@ export async function createIFTAAction(_: any, formData: FormData) {
     try {
         const result = iftaSchema.safeParse(Object.fromEntries(formData))
         if (!result.success) {
-            return { success: false, error: "Validation failed", errors: result.error.flatten().fieldErrors }
+            return {
+                success: false,
+                error: "Validation failed",
+                errors: result.error.flatten().fieldErrors
+            }
         }
         const companyId = await getCompanyId()
         await db.insert(iftaReports).values({
@@ -119,7 +139,11 @@ export async function createIFTAAction(_: any, formData: FormData) {
         return { success: true }
     } catch (err) {
         console.error("[IFTA-Actions] createIFTAAction error:", err)
-        return { success: false, error: err instanceof Error ? err.message : "Failed to create IFTA record", errors: { form: ["Failed to create IFTA record"] } }
+        return {
+            success: false,
+            error: err instanceof Error ? err.message : "Failed to create IFTA record",
+            errors: { form: ["Failed to create IFTA record"] }
+        }
     }
 }
 
@@ -127,7 +151,11 @@ export async function createFuelPurchaseAction(_: any, formData: FormData) {
     try {
         const result = fuelPurchaseSchema.safeParse(Object.fromEntries(formData))
         if (!result.success) {
-            return { success: false, error: "Validation failed", errors: result.error.flatten().fieldErrors }
+            return {
+                success: false,
+                error: "Validation failed",
+                errors: result.error.flatten().fieldErrors
+            }
         }
         const companyId = await getCompanyId()
         await db.insert(fuelPurchases).values({
@@ -141,6 +169,10 @@ export async function createFuelPurchaseAction(_: any, formData: FormData) {
         return { success: true }
     } catch (err) {
         console.error("[IFTA-Actions] createFuelPurchaseAction error:", err)
-        return { success: false, error: err instanceof Error ? err.message : "Failed to create fuel purchase", errors: { form: ["Failed to create fuel purchase"] } }
+        return {
+            success: false,
+            error: err instanceof Error ? err.message : "Failed to create fuel purchase",
+            errors: { form: ["Failed to create fuel purchase"] }
+        }
     }
 }

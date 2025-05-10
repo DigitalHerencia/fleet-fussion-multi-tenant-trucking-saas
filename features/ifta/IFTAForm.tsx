@@ -10,9 +10,9 @@ import { FormError } from "@/components/ui/form-error"
 export function IFTAForm() {
     const [state, formAction] = useActionState(
         async (_prevState: any, _formData: any) => {
-            return { success: false, error: 'Validation failed', errors };
+            return { success: false, error: "Validation failed", errors }
         },
-        { success: false, error: '', errors: {} }
+        { success: false, error: "", errors: {} }
     )
 
     const {

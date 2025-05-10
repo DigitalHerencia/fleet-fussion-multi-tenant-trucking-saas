@@ -89,7 +89,9 @@ export function CompanySettings() {
                 const role = roleResult.data as string
                 setUserRole(role)
                 // Check if current user is an admin - adjust based on your role implementation
-                setIsAdmin(role === "admin" || role === "owner" || role === "ADMIN" || role === "OWNER")
+                setIsAdmin(
+                    role === "admin" || role === "owner" || role === "ADMIN" || role === "OWNER"
+                )
             }
         } catch (err) {
             console.error("Error fetching user role:", err)
@@ -645,29 +647,36 @@ export function CompanySettings() {
                                                     onClick={async () => {
                                                         try {
                                                             // Replace Clerk's invitation revoke with custom API call
-                                                            const response = await fetch(`/api/organizations/${organization?.id}/invitations/${invitation.id}`, {
-                                                                method: 'DELETE',
-                                                            });
-                                                            
+                                                            const response = await fetch(
+                                                                `/api/organizations/${organization?.id}/invitations/${invitation.id}`,
+                                                                {
+                                                                    method: "DELETE"
+                                                                }
+                                                            )
+
                                                             if (response.ok) {
                                                                 toast({
                                                                     title: "Invitation Revoked",
-                                                                    description: "The invitation has been successfully revoked"
-                                                                });
-                                                                fetchOrganizationInvitations();
+                                                                    description:
+                                                                        "The invitation has been successfully revoked"
+                                                                })
+                                                                fetchOrganizationInvitations()
                                                             } else {
-                                                                throw new Error("Failed to revoke invitation");
+                                                                throw new Error(
+                                                                    "Failed to revoke invitation"
+                                                                )
                                                             }
                                                         } catch (err) {
                                                             console.error(
                                                                 "Error revoking invitation:",
                                                                 err
-                                                            );
+                                                            )
                                                             toast({
                                                                 title: "Error",
-                                                                description: "Failed to revoke invitation",
+                                                                description:
+                                                                    "Failed to revoke invitation",
                                                                 variant: "destructive"
-                                                            });
+                                                            })
                                                         }
                                                     }}
                                                 >

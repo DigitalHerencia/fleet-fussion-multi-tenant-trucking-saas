@@ -22,35 +22,35 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function calculateJurisdictionTax({
-  miles,
-  gallons,
-  state,
-  county,
-}: {
-  miles: number
-  gallons: number
-  state: string
-  county?: string
-}) {
-  // Use county-specific rate if in Dona Ana, NM
-  let rateKey = state
-  if (state === "NM" && county?.toLowerCase() === "dona ana") {
-    rateKey = "NM-DA"
-  }
-  const stateRate = IFTA_TAX_RATES[rateKey] || 0
-  const federalRate = IFTA_TAX_RATES.FEDERAL || 0
-  const lustRate = IFTA_TAX_RATES.LUST || 0
-  const totalRate = stateRate + federalRate + lustRate
-  const taxOwed = gallons * totalRate
-  return {
-    state,
-    county,
-    gallons,
     miles,
-    stateRate,
-    federalRate,
-    lustRate,
-    totalRate,
-    taxOwed,
-  }
+    gallons,
+    state,
+    county
+}: {
+    miles: number
+    gallons: number
+    state: string
+    county?: string
+}) {
+    // Use county-specific rate if in Dona Ana, NM
+    let rateKey = state
+    if (state === "NM" && county?.toLowerCase() === "dona ana") {
+        rateKey = "NM-DA"
+    }
+    const stateRate = IFTA_TAX_RATES[rateKey] || 0
+    const federalRate = IFTA_TAX_RATES.FEDERAL || 0
+    const lustRate = IFTA_TAX_RATES.LUST || 0
+    const totalRate = stateRate + federalRate + lustRate
+    const taxOwed = gallons * totalRate
+    return {
+        state,
+        county,
+        gallons,
+        miles,
+        stateRate,
+        federalRate,
+        lustRate,
+        totalRate,
+        taxOwed
+    }
 }

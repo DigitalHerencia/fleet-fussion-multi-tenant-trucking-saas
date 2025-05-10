@@ -12,55 +12,61 @@ import { z } from "zod"
 type CustomerFormValues = z.infer<typeof customerCoreSchema>
 
 export function CustomerForm() {
-  const [state, formAction] = useActionState(async (_prev: any, formData: FormData) => {
-    return await createCustomer(formData)
-  }, { success: false, error: "", errors: {} })
+    const [state, formAction] = useActionState(
+        async (_prev: any, formData: FormData) => {
+            return await createCustomer(formData)
+        },
+        { success: false, error: "", errors: {} }
+    )
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<CustomerFormValues>({
-    resolver: zodResolver(customerCoreSchema)
-  })
+    const {
+        register,
+        handleSubmit,
+        formState: { errors, isSubmitting }
+    } = useForm<CustomerFormValues>({
+        resolver: zodResolver(customerCoreSchema)
+    })
 
-  return (
-    <form action={formAction} className="space-y-6">
-      <div>
-        <label>Name</label>
-        <input {...register("name")}
-          className="input" />
-        <FormError message={errors.name?.message || state.errors?.name?.[0]} />
-      </div>
-      <div>
-        <label>Contact Person</label>
-        <input {...register("contactPerson")} className="input" />
-      </div>
-      <div>
-        <label>Contact Email</label>
-        <input {...register("email")} className="input" />
-        <FormError message={errors.email?.message || state.errors?.email?.[0]} />
-      </div>
-      <div>
-        <label>Contact Phone</label>
-        <input {...register("phone")} className="input" />
-      </div>
-      <div>
-        <label>Address</label>
-        <input {...register("address")} className="input" />
-      </div>
-      <div>
-        <label>City</label>
-        <input {...register("city")} className="input" />
-      </div>
-      <div>
-        <label>State</label>
-        <input {...register("state")} className="input" />
-      </div>
-      <div>
-        <label>Zip</label>
-        <input {...register("zip")} className="input" />
-      </div>
-      <button type="submit" className="btn btn-primary w-full" disabled={isSubmitting}>
-        {isSubmitting ? "Submitting..." : "Add Customer"}
-      </button>
-      <FormError message={state.error} />
-    </form>
-  )
+    return (
+        <form action={formAction} className="space-y-6">
+            <div>
+                <label>Name</label>
+                <input {...register("name")} className="input" />
+                <FormError message={errors.name?.message || state.errors?.name?.[0]} />
+            </div>
+            <div>
+                <label>Contact Person</label>
+                <input {...register("contactPerson")} className="input" />
+            </div>
+            <div>
+                <label>Contact Email</label>
+                <input {...register("email")} className="input" />
+                <FormError message={errors.email?.message || state.errors?.email?.[0]} />
+            </div>
+            <div>
+                <label>Contact Phone</label>
+                <input {...register("phone")} className="input" />
+            </div>
+            <div>
+                <label>Address</label>
+                <input {...register("address")} className="input" />
+            </div>
+            <div>
+                <label>City</label>
+                <input {...register("city")} className="input" />
+            </div>
+            <div>
+                <label>State</label>
+                <input {...register("state")} className="input" />
+            </div>
+            <div>
+                <label>Zip</label>
+                <input {...register("zip")} className="input" />
+            </div>
+            <button type="submit" className="btn btn-primary w-full" disabled={isSubmitting}>
+                {isSubmitting ? "Submitting..." : "Add Customer"}
+            </button>
+            <FormError message={state.error} />
+        </form>
+    )
 }

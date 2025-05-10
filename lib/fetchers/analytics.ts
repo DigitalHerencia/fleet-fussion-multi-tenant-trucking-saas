@@ -3,7 +3,11 @@ import { loads, drivers, vehicles, iftaTrips } from "@/db/schema"
 import { eq, and, gte, lte, sql } from "drizzle-orm"
 import { cache } from "react"
 
-export const getRevenueMetrics = cache(async function getRevenueMetrics(companyId: string, startDate: Date, endDate: Date) {
+export const getRevenueMetrics = cache(async function getRevenueMetrics(
+    companyId: string,
+    startDate: Date,
+    endDate: Date
+) {
     try {
         const result = await db
             .select({
@@ -29,7 +33,11 @@ export const getRevenueMetrics = cache(async function getRevenueMetrics(companyI
     }
 })
 
-export const getDriverPerformance = cache(async function getDriverPerformance(companyId: string, startDate: Date, endDate: Date) {
+export const getDriverPerformance = cache(async function getDriverPerformance(
+    companyId: string,
+    startDate: Date,
+    endDate: Date
+) {
     try {
         const result = await db
             .select({
@@ -58,7 +66,11 @@ export const getDriverPerformance = cache(async function getDriverPerformance(co
     }
 })
 
-export const getVehicleUtilization = cache(async function getVehicleUtilization(companyId: string, startDate: Date, endDate: Date) {
+export const getVehicleUtilization = cache(async function getVehicleUtilization(
+    companyId: string,
+    startDate: Date,
+    endDate: Date
+) {
     try {
         const result = await db
             .select({
@@ -88,7 +100,11 @@ export const getVehicleUtilization = cache(async function getVehicleUtilization(
     }
 })
 
-export const getDailyRevenueTimeline = cache(async function getDailyRevenueTimeline(companyId: string, startDate: Date, endDate: Date) {
+export const getDailyRevenueTimeline = cache(async function getDailyRevenueTimeline(
+    companyId: string,
+    startDate: Date,
+    endDate: Date
+) {
     try {
         const result = await db
             .select({
@@ -113,7 +129,9 @@ export const getDailyRevenueTimeline = cache(async function getDailyRevenueTimel
     }
 })
 
-export const getComplianceStatusMetrics = cache(async function getComplianceStatusMetrics(companyId: string) {
+export const getComplianceStatusMetrics = cache(async function getComplianceStatusMetrics(
+    companyId: string
+) {
     try {
         // Since we don't have all_documents_valid field in drivers,
         // we'll check license expiration and medical card expiration

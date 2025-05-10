@@ -25,7 +25,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const orgId = organization?.id ?? null
     const userId = user?.id ?? null
     // Clerk org role is available on user.organizationMemberships
-    const orgRole = user?.organizationMemberships?.find(m => m.organization.id === orgId)?.role ?? null
+    const orgRole =
+        user?.organizationMemberships?.find(m => m.organization.id === orgId)?.role ?? null
 
     const redirectToSignIn = (redirectUrl?: string) => {
         const baseUrl = "/sign-in"

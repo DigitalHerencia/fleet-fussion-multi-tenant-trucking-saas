@@ -13,10 +13,10 @@ interface PerformanceMetricsProps {
         utilization: number
     }>
     comparisonData: {
-        loadCount: { current: number, previous: number, change: string }
-        miles: { current: number, previous: number, change: string }
-        onTimeDelivery: { current: number, previous: number, change: string }
-        utilization: { current: number, previous: number, change: string }
+        loadCount: { current: number; previous: number; change: string }
+        miles: { current: number; previous: number; change: string }
+        onTimeDelivery: { current: number; previous: number; change: string }
+        utilization: { current: number; previous: number; change: string }
     }
 }
 
@@ -166,34 +166,62 @@ export function PerformanceMetrics({ timeRange, data, comparisonData }: Performa
                     <tbody>
                         <tr className="border-b">
                             <td className="p-2 text-sm font-medium">Total Loads</td>
-                            <td className="p-2 text-sm text-right">{comparisonData.loadCount.current}</td>
-                            <td className="p-2 text-sm text-right">{comparisonData.loadCount.previous}</td>
-                            <td className={`p-2 text-sm text-right ${Number(comparisonData.loadCount.change) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                {Number(comparisonData.loadCount.change) >= 0 ? '+' : ''}{comparisonData.loadCount.change}%
+                            <td className="p-2 text-sm text-right">
+                                {comparisonData.loadCount.current}
+                            </td>
+                            <td className="p-2 text-sm text-right">
+                                {comparisonData.loadCount.previous}
+                            </td>
+                            <td
+                                className={`p-2 text-sm text-right ${Number(comparisonData.loadCount.change) >= 0 ? "text-green-600" : "text-red-600"}`}
+                            >
+                                {Number(comparisonData.loadCount.change) >= 0 ? "+" : ""}
+                                {comparisonData.loadCount.change}%
                             </td>
                         </tr>
                         <tr className="border-b">
                             <td className="p-2 text-sm font-medium">Total Miles</td>
-                            <td className="p-2 text-sm text-right">{comparisonData.miles.current.toLocaleString()}</td>
-                            <td className="p-2 text-sm text-right">{comparisonData.miles.previous.toLocaleString()}</td>
-                            <td className={`p-2 text-sm text-right ${Number(comparisonData.miles.change) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                {Number(comparisonData.miles.change) >= 0 ? '+' : ''}{comparisonData.miles.change}%
+                            <td className="p-2 text-sm text-right">
+                                {comparisonData.miles.current.toLocaleString()}
+                            </td>
+                            <td className="p-2 text-sm text-right">
+                                {comparisonData.miles.previous.toLocaleString()}
+                            </td>
+                            <td
+                                className={`p-2 text-sm text-right ${Number(comparisonData.miles.change) >= 0 ? "text-green-600" : "text-red-600"}`}
+                            >
+                                {Number(comparisonData.miles.change) >= 0 ? "+" : ""}
+                                {comparisonData.miles.change}%
                             </td>
                         </tr>
                         <tr className="border-b">
                             <td className="p-2 text-sm font-medium">On-Time Delivery Rate</td>
-                            <td className="p-2 text-sm text-right">{comparisonData.onTimeDelivery.current}%</td>
-                            <td className="p-2 text-sm text-right">{comparisonData.onTimeDelivery.previous}%</td>
-                            <td className={`p-2 text-sm text-right ${Number(comparisonData.onTimeDelivery.change) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                {Number(comparisonData.onTimeDelivery.change) >= 0 ? '+' : ''}{comparisonData.onTimeDelivery.change}%
+                            <td className="p-2 text-sm text-right">
+                                {comparisonData.onTimeDelivery.current}%
+                            </td>
+                            <td className="p-2 text-sm text-right">
+                                {comparisonData.onTimeDelivery.previous}%
+                            </td>
+                            <td
+                                className={`p-2 text-sm text-right ${Number(comparisonData.onTimeDelivery.change) >= 0 ? "text-green-600" : "text-red-600"}`}
+                            >
+                                {Number(comparisonData.onTimeDelivery.change) >= 0 ? "+" : ""}
+                                {comparisonData.onTimeDelivery.change}%
                             </td>
                         </tr>
                         <tr>
                             <td className="p-2 text-sm font-medium">Fleet Utilization</td>
-                            <td className="p-2 text-sm text-right">{comparisonData.utilization.current}%</td>
-                            <td className="p-2 text-sm text-right">{comparisonData.utilization.previous}%</td>
-                            <td className={`p-2 text-sm text-right ${Number(comparisonData.utilization.change) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                {Number(comparisonData.utilization.change) >= 0 ? '+' : ''}{comparisonData.utilization.change}%
+                            <td className="p-2 text-sm text-right">
+                                {comparisonData.utilization.current}%
+                            </td>
+                            <td className="p-2 text-sm text-right">
+                                {comparisonData.utilization.previous}%
+                            </td>
+                            <td
+                                className={`p-2 text-sm text-right ${Number(comparisonData.utilization.change) >= 0 ? "text-green-600" : "text-red-600"}`}
+                            >
+                                {Number(comparisonData.utilization.change) >= 0 ? "+" : ""}
+                                {comparisonData.utilization.change}%
                             </td>
                         </tr>
                     </tbody>

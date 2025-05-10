@@ -25,7 +25,9 @@ export function IftaReportTable({ reports }: IftaReportTableProps) {
     async function handleDownload(report: IftaReport) {
         setDownloading(report.id.toString())
         try {
-            const res = await fetch(`/api/ifta-report?year=${new Date().getFullYear()}&quarter=${report.quarter.replace('Q','')}&id=${report.id}`)
+            const res = await fetch(
+                `/api/ifta-report?year=${new Date().getFullYear()}&quarter=${report.quarter.replace("Q", "")}&id=${report.id}`
+            )
             if (!res.ok) throw new Error("Failed to download PDF")
             const blob = await res.blob()
             const url = window.URL.createObjectURL(blob)

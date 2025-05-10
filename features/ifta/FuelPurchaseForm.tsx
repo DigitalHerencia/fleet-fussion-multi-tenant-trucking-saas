@@ -26,7 +26,7 @@ type FuelPurchaseFormState = {
 
 export function FuelPurchaseForm({
     vehicles,
-    drivers,
+    drivers
 }: {
     vehicles: { id: string; unitNumber: string }[]
     drivers: { id: string; name: string }[]
@@ -42,7 +42,7 @@ export function FuelPurchaseForm({
             return {
                 success: result.success ?? false,
                 error: result.error ?? "",
-                errors: result.errors ?? {},
+                errors: result.errors ?? {}
             }
         },
         { success: false, error: "", errors: {} }
@@ -50,9 +50,9 @@ export function FuelPurchaseForm({
 
     const {
         register,
-        formState: { errors, isSubmitting },
+        formState: { errors, isSubmitting }
     } = useForm<FuelPurchaseFormData>({
-        resolver: zodResolver(fuelPurchaseSchema),
+        resolver: zodResolver(fuelPurchaseSchema)
     })
 
     return (
@@ -62,7 +62,7 @@ export function FuelPurchaseForm({
                 <label>Vehicle</label>
                 <select {...register("vehicleId")} className="input">
                     <option value="">Select Vehicle</option>
-                    {vehicles.map((v) => (
+                    {vehicles.map(v => (
                         <option key={v.id} value={v.id}>
                             {v.unitNumber}
                         </option>
@@ -74,7 +74,7 @@ export function FuelPurchaseForm({
                 <label>Driver</label>
                 <select {...register("driverId")} className="input">
                     <option value="">Select Driver</option>
-                    {drivers.map((d) => (
+                    {drivers.map(d => (
                         <option key={d.id} value={d.id}>
                             {d.name}
                         </option>
@@ -95,7 +95,9 @@ export function FuelPurchaseForm({
             <div>
                 <label>Jurisdiction</label>
                 <input type="text" {...register("jurisdiction")} className="input" />
-                <FormError message={errors.jurisdiction?.message || state.errors.jurisdiction?.[0]} />
+                <FormError
+                    message={errors.jurisdiction?.message || state.errors.jurisdiction?.[0]}
+                />
             </div>
             <div>
                 <label>Gallons</label>
@@ -104,8 +106,15 @@ export function FuelPurchaseForm({
             </div>
             <div>
                 <label>Price Per Gallon</label>
-                <input type="number" step="0.001" {...register("pricePerGallon")} className="input" />
-                <FormError message={errors.pricePerGallon?.message || state.errors.pricePerGallon?.[0]} />
+                <input
+                    type="number"
+                    step="0.001"
+                    {...register("pricePerGallon")}
+                    className="input"
+                />
+                <FormError
+                    message={errors.pricePerGallon?.message || state.errors.pricePerGallon?.[0]}
+                />
             </div>
             <div>
                 <label>Total Amount</label>

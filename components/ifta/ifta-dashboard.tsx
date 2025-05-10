@@ -264,7 +264,7 @@ export function IftaDashboard() {
                             <CardDescription>Record of trips for IFTA reporting</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <IftaTripTable trips={ [] } />
+                            <IftaTripTable trips={[]} />
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -355,7 +355,11 @@ export function IftaDashboard() {
                                 </table>
                             </div>
                             <div className="mt-4 flex justify-between">
-                                <Button variant="outline" size="sm" onClick={() => setShowFuelModal(true)}>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setShowFuelModal(true)}
+                                >
                                     Add Fuel Purchase
                                 </Button>
                                 <Button variant="outline" size="sm">
@@ -373,7 +377,7 @@ export function IftaDashboard() {
                             <CardDescription>History of filed IFTA reports</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <IftaReportTable reports={ [] } />
+                            <IftaReportTable reports={[]} />
                         </CardContent>
                     </Card>
                 </TabsContent>

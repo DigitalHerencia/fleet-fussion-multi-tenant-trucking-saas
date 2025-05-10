@@ -1,6 +1,6 @@
 "use server"
 
-import { driverRelations } from './../../db/schema';
+import { driverRelations } from "./../../db/schema"
 import { z } from "zod"
 import { revalidatePath } from "next/cache"
 import { db } from "@/db"
@@ -177,7 +177,10 @@ export async function getLoadById(loadId: string, companyId: string): Promise<Lo
 
     try {
         const load = await db.query.loads.findFirst({
-            where: and(eq(loadsSchema.id, String(loadId)), eq(loadsSchema.companyId, String(companyId))),
+            where: and(
+                eq(loadsSchema.id, String(loadId)),
+                eq(loadsSchema.companyId, String(companyId))
+            ),
             with: {
                 driver: {
                     columns: {
@@ -284,7 +287,8 @@ export async function createLoad(formData: FormData): Promise<LoadResponse<any>>
 
         return {
             success: false,
-            error: error instanceof Error ? error.message : "Failed to create load. Please try again.",
+            error:
+                error instanceof Error ? error.message : "Failed to create load. Please try again.",
             errors: undefined
         }
     }
@@ -400,7 +404,8 @@ export async function updateLoad(
 
         return {
             success: false,
-            error: error instanceof Error ? error.message : "Failed to update load. Please try again.",
+            error:
+                error instanceof Error ? error.message : "Failed to update load. Please try again.",
             errors: undefined
         }
     }
@@ -424,11 +429,7 @@ export async function getAvailableDrivers(): Promise<LoadResponse<any[]>> {
         const drivers = await db
             .select()
             .from(driversSchema)
-            .where(
-                and(
-                    eq(driversSchema.status, "active")
-                )
-            )
+            .where(and(eq(driversSchema.status, "active")))
 
         return {
             success: true,
@@ -461,11 +462,7 @@ export async function getAvailableVehicles(): Promise<LoadResponse<any[]>> {
         const vehicles = await db
             .select()
             .from(vehiclesSchema)
-            .where(
-                and(
-                    eq(vehiclesSchema.status, "active")
-                )
-            )
+            .where(and(eq(vehiclesSchema.status, "active")))
 
         return {
             success: true,
