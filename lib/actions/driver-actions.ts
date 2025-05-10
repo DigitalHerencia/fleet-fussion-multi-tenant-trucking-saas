@@ -1,15 +1,15 @@
 "use server"
 
-import { db } from "@/lib/db"
+import { db } from "@/db"
 import { drivers } from "@/db/schema"
-import { driverSchema } from "@/lib/validation/driver-schema"
+import { driverCoreSchema } from "@/lib/validation/driver-schema"
 import { eq } from "drizzle-orm"
 import { getCurrentCompanyId } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
 
 export async function createDriverAction(_: any, formData: FormData) {
     try {
-        const result = driverSchema.safeParse(Object.fromEntries(formData))
+        const result = driverCoreSchema.safeParse(Object.fromEntries(formData))
         if (!result.success) {
             return {
                 success: false,
@@ -20,15 +20,15 @@ export async function createDriverAction(_: any, formData: FormData) {
         const data = result.data
         // Get current company ID from auth context
         const companyId = await getCurrentCompanyId()
-        // Split name into firstName and lastName (basic split, adjust as needed)
-        const [firstName, ...lastNameParts] = data.name.trim().split(" ")
-        const lastName = lastNameParts.join(" ")
+        // Use firstName and lastName directly from data
+        const firstName = data.firstName
+        const lastName = data.lastName
         // Ensure firstName and lastName are not empty or undefined
         if (!firstName || !lastName) {
             return {
                 success: false,
                 error: "Please provide both first and last name.",
-                errors: { name: ["Please provide both first and last name."] }
+                errors: { firstName: ["First name is required."], lastName: ["Last name is required."] }
             }
         }
         // Insert the new driver into the database

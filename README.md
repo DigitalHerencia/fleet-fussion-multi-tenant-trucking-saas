@@ -1,30 +1,86 @@
 # FleetFusion (multi-tenant SaaS)
 
-_Automatically synced with your [v0.dev](https://v0.dev) deployments_
+FleetFusion is a modern, production-ready, multi-tenant SaaS platform for comprehensive fleet management, built with Next.js 15, React 19 Server Components, Drizzle ORM, and PostgreSQL on Neon. It is designed for trucking companies to efficiently manage vehicles, drivers, loads, compliance, and analytics with a scalable, modular, and secure architecture.
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/digital-herencia/fleet-fusion)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.dev-black?style=for-the-badge)](https://v0.dev/chat/projects/OURP0qOTyib)
+---
 
-## Overview
+## Live Deployment
 
-This repository will stay in sync with your deployed chats on [v0.dev](https://v0.dev).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.dev](https://v0.dev).
+- **Production:** [https://vercel.com/digital-herencia/fleet-fusion](https://vercel.com/digital-herencia/fleet-fusion)
+- **Build & Chat:** [https://v0.dev/chat/projects/OURP0qOTyib](https://v0.dev/chat/projects/OURP0qOTyib)
 
-## Deployment
+---
 
-Your project is live at:
+## Key Features
 
-**[https://vercel.com/digital-herencia/fleet-fusion](https://vercel.com/digital-herencia/fleet-fusion)**
+- **Dispatch Management:** Interactive board for load creation, assignment, and real-time status tracking.
+- **Vehicle Management:** Track vehicle details, maintenance, inspections, and compliance documents.
+- **Driver Management:** Manage driver info, licensing, HOS, performance, and document alerts.
+- **Compliance:** Centralized compliance dashboard, document management, and automated alerts.
+- **IFTA Reporting:** Automated miles/fuel tracking, tax calculation, and report export.
+- **Analytics:** Real-time dashboards for performance, utilization, and financial metrics.
+- **Role-Based Access:** Admin, Dispatcher, Driver, Compliance Officer, and Account Manager roles.
+- **Multi-Tenancy:** Company-level data isolation and organization-based access.
+- **Modern UI:** Responsive, accessible, dark/light mode, and mobile-friendly.
 
-## Build your app
+---
 
-Continue building your app on:
+## Tech Stack
 
-**[https://v0.dev/chat/projects/OURP0qOTyib](https://v0.dev/chat/projects/OURP0qOTyib)**
+- **Frontend:** Next.js 15 (App Router), React 19 (Server Components), Tailwind CSS 4
+- **Backend:** Node.js/Edge, React Server Actions, Next.js API Routes
+- **Database:** PostgreSQL (Neon), Drizzle ORM
+- **Auth:** Clerk (organization-based, RBAC)
+- **Storage:** Vercel Blob Storage
+- **Monitoring:** Vercel Analytics
+- **Testing:** Vitest, React Testing Library, Playwright
 
-## How It Works
+---
 
-1. Create and modify your project using [v0.dev](https://v0.dev)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+## Project Structure
+
+- `app/` – Pages, layouts, and routes (App Router)
+- `components/` – Reusable UI components
+- `features/` – Feature modules (dispatch, vehicles, drivers, etc.)
+- `lib/` – Domain logic, fetchers, actions, utils
+- `types/` – Shared TypeScript types
+- `public/` – Static assets
+- `config/` – Tailwind, Next.js, PostCSS, etc.
+
+---
+
+## Development Workflow
+
+- **Run locally:** `npm run dev`
+- **Dev with Clerk webhooks:** `npm run dev:ngrok`
+- **Testing:** `npm test` (unit/integration), `npx playwright test` (e2e)
+- **CI/CD:** Automated with GitHub Actions and Vercel
+
+---
+
+## Clerk Webhook Setup
+
+- Endpoint: `/api/clerk/webhook-handler`
+- Subscribed to all organization, user, and session events
+
+---
+
+## Modern Fullstack Best Practices
+
+- Server-first rendering with React Server Components
+- Data fetching/mutation via Server Actions (not API routes)
+- Zod validation for all forms
+- Feature-driven, modular architecture
+- Strict TypeScript, ESLint, Prettier
+- Accessibility (WCAG 2.1 AA), responsive design, and dark mode
+
+---
+
+## Documentation
+
+- [Product Requirements (PRD)](.github/PRD.md)
+- [Technical Requirements](.github/TECHNICAL_REQUIREMENTS.md)
+
+---
+
+For more details, see the PRD and Technical Requirements in `.github/`.

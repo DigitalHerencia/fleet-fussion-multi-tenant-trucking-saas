@@ -4,6 +4,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Badge } from "@/components/ui/badge"
 import { MapPin, Calendar, User, Truck } from "lucide-react"
 import { formatDate } from "@/lib/utils"
+import { StatusBadge } from "@/components/ui/status-badge"
 
 interface Load {
     id: string
@@ -33,31 +34,12 @@ interface LoadCardProps {
 }
 
 export function LoadCard({ load, onClick }: LoadCardProps) {
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case "pending":
-                return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
-            case "assigned":
-                return "bg-blue-100 text-blue-800 hover:bg-blue-200"
-            case "in_transit":
-                return "bg-indigo-100 text-indigo-800 hover:bg-indigo-200"
-            case "completed":
-                return "bg-green-100 text-green-800 hover:bg-green-200"
-            case "cancelled":
-                return "bg-red-100 text-red-800 hover:bg-red-200"
-            default:
-                return "bg-gray-100 text-gray-800 hover:bg-gray-200"
-        }
-    }
-
     return (
         <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={onClick}>
             <CardHeader className="pb-2">
                 <div className="flex justify-between items-start">
                     <CardTitle className="text-lg">{load.referenceNumber}</CardTitle>
-                    <Badge className={`${getStatusColor(load.status)}`}>
-                        {load.status.replace("_", " ")}
-                    </Badge>
+                    <StatusBadge status={load.status} />
                 </div>
                 <p className="text-sm text-muted-foreground">{load.customerName}</p>
             </CardHeader>

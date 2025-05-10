@@ -1,4 +1,4 @@
-import { db } from "@/lib/db"
+import { db } from "@/db"
 import { complianceDocuments } from "@/db/schema"
 import { eq, and, ilike, sql } from "drizzle-orm"
 import { addDays } from "date-fns"
@@ -7,6 +7,11 @@ import type { ComplianceDocument } from "@/types/types"
 /**
  * Fetch compliance documents for a company, with optional search/filter.
  * Flags documents expiring within 30 days or expired.
+ * @param {Object} params
+ * @param {string} params.companyId - The company ID to fetch documents for.
+ * @param {string} [params.search] - Optional search string.
+ * @param {string} [params.type] - Optional document type filter.
+ * @returns {Promise<ComplianceDocument[]>}
  */
 export async function getComplianceDocuments({
   companyId,

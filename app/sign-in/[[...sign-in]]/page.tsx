@@ -24,7 +24,7 @@ export default function SignInPage() {
     try {
       const res = await signIn.create({ identifier: email, password });
       if (res.status === "complete") {
-        router.push("/company-selection");
+        router.push("/org-selection"); // Always go to org-selection, middleware will handle onboarding if needed
       } else {
         setError("Sign in failed. Please check your credentials.");
       }
@@ -81,6 +81,8 @@ export default function SignInPage() {
             {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
+        {/* Optionally, show Clerk's <SignIn /> for social/magic link */}
+        {/* <SignIn afterSignInUrl="/org-selection" /> */}
       </div>
     </div>
   );

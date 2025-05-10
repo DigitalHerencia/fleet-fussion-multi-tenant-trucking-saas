@@ -1,4 +1,4 @@
-import { db } from "@/lib/db"
+import { db } from "@/db"
 import { vehicles } from "@/db/schema"
 import { eq } from "drizzle-orm"
 import { cache } from "react"

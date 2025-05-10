@@ -37,50 +37,7 @@ import {
 } from "@/components/ui/select"
 import { MoreHorizontal, Plus, Search } from "lucide-react"
 
-const mockUsers = [
-    {
-        id: 1,
-        name: "John Smith",
-        email: "john.smith@cjexpress.com",
-        role: "Admin",
-        status: "Active",
-        lastLogin: "2023-06-28 09:45 AM"
-    },
-    {
-        id: 2,
-        name: "Maria Garcia",
-        email: "maria.garcia@cjexpress.com",
-        role: "Dispatcher",
-        status: "Active",
-        lastLogin: "2023-06-28 08:30 AM"
-    },
-    {
-        id: 3,
-        name: "Robert Johnson",
-        email: "robert.johnson@cjexpress.com",
-        role: "Driver",
-        status: "Active",
-        lastLogin: "2023-06-27 05:15 PM"
-    },
-    {
-        id: 4,
-        name: "Sarah Williams",
-        email: "sarah.williams@cjexpress.com",
-        role: "Accounting",
-        status: "Active",
-        lastLogin: "2023-06-28 10:20 AM"
-    },
-    {
-        id: 5,
-        name: "Michael Brown",
-        email: "michael.brown@cjexpress.com",
-        role: "Manager",
-        status: "Inactive",
-        lastLogin: "2023-06-25 02:10 PM"
-    }
-]
-
-export function UserSettings() {
+export function UserSettings({ users }: { users: any[] }) {
     const [searchTerm, setSearchTerm] = useState("")
     const [isAddUserOpen, setIsAddUserOpen] = useState(false)
     const [newUser, setNewUser] = useState({
@@ -89,7 +46,7 @@ export function UserSettings() {
         role: ""
     })
 
-    const filteredUsers = mockUsers.filter(
+    const filteredUsers = users.filter(
         user =>
             user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||

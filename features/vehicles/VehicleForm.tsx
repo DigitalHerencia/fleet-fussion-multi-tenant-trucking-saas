@@ -6,7 +6,6 @@ import { useActionState } from "react"
 import { vehicleSchema, type VehicleFormData } from "@/lib/validation/vehicle-schema"
 import { createVehicleAction } from "@/lib/actions/vehicle-actions"
 import { FormError } from "@/components/ui/form-error"
-import { isValid } from "zod"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
@@ -14,11 +13,7 @@ import { Button } from "@/components/ui/button"
 export function VehicleForm() {
     const [state, formAction] = useActionState(
         async (_prevState: any, _formData: any) => {
-            // ...existing code...
-            if (!isValid) {
-                return { success: false, error: 'Validation failed', errors };
-            }
-            // ...existing code...
+            return { success: false, error: 'Validation failed', errors };
         },
         { success: false, error: '', errors: {} }
     )

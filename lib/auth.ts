@@ -1,6 +1,6 @@
 // lib/auth.ts
 import { cookies } from 'next/headers';
-import { db } from './db';
+import { db } from '@/db';
 import { companyUsers, companies } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { UserRole } from '@/db/schema';

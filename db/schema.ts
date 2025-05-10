@@ -1,4 +1,16 @@
-import { User } from "lucide-react"
+/**
+ * Database schema for FleetFusion.
+ *
+ * This file defines all tables, relations, and field types using Drizzle ORM.
+ *
+ * - Use UUIDs for primary keys
+ * - All major tables reference companyId for multi-tenancy
+ * - Relations are defined using Drizzle's relations() helper
+ * - Timestamps: createdAt, updatedAt on most tables
+ *
+ * See db/README.md for a high-level schema overview.
+ */
+
 import { relations } from "drizzle-orm"
 import {
     pgTable,
@@ -509,3 +521,101 @@ export const fuelPurchaseRelations = relations(fuelPurchases, ({ one }) => ({
         references: [drivers.id]
     })
 }));
+
+// Customers
+export const customers = pgTable("customers", {
+    id: uuid("id").defaultRandom().primaryKey(),
+    companyId: uuid("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    contactName: text("contact_name"),
+    contactEmail: text("contact_email"),
+    contactPhone: text("contact_phone"),
+    address: text("address"),
+    city: text("city"),
+    state: text("state"),
+    zip: text("zip"),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Invoices
+export const invoices = pgTable("invoices", {
+    id: uuid("id").defaultRandom().primaryKey(),
+    companyId: uuid("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+    customerId: uuid("customer_id").references(() => customers.id, { onDelete: "set null" }),
+    loadId: uuid("load_id").references(() => loads.id, { onDelete: "set null" }),
+    amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
+    status: text("status").notNull().default("pending"),
+    issuedDate: timestamp("issued_date").defaultNow(),
+    dueDate: timestamp("due_date"),
+    paidDate: timestamp("paid_date"),
+    notes: text("notes"),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Settlements
+export const settlements = pgTable("settlements", {
+    id: uuid("id").defaultRandom().primaryKey(),
+    companyId: uuid("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+    driverId: uuid("driver_id").references(() => drivers.id, { onDelete: "set null" }),
+    loadId: uuid("load_id").references(() => loads.id, { onDelete: "set null" }),
+    amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
+    status: text("status").notNull().default("pending"),
+    issuedDate: timestamp("issued_date").defaultNow(),
+    paidDate: timestamp("paid_date"),
+    notes: text("notes"),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Insurance Policies
+export const insurancePolicies = pgTable("insurance_policies", {
+    id: uuid("id").defaultRandom().primaryKey(),
+    companyId: uuid("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+    provider: text("provider").notNull(),
+    policyNumber: text("policy_number").notNull(),
+    coverageType: text("coverage_type"),
+    startDate: date("start_date"),
+    endDate: date("end_date"),
+    premium: decimal("premium", { precision: 12, scale: 2 }),
+    status: text("status").notNull().default("active"),
+    notes: text("notes"),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Audit Logs
+export const auditLogs = pgTable("audit_logs", {
+    id: uuid("id").defaultRandom().primaryKey(),
+    companyId: uuid("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+    userId: text("user_id"),
+    action: text("action").notNull(),
+    targetTable: text("target_table"),
+    targetId: uuid("target_id"),
+    details: json("details"),
+    createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Notifications
+export const notifications = pgTable("notifications", {
+    id: uuid("id").defaultRandom().primaryKey(),
+    companyId: uuid("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+    userId: text("user_id").notNull(), // Clerk user ID
+    type: text("type").notNull(), // e.g. 'dispatch', 'compliance', 'system', etc.
+    title: text("title").notNull(),
+    body: text("body").notNull(),
+    data: json("data"), // extra payload for deep linking
+    read: boolean("read").default(false),
+    delivered: boolean("delivered").default(false),
+    channel: text("channel").default("in-app"), // in-app, email, push, sms
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow()
+})
+
+export const notificationRelations = relations(notifications, ({ one }) => ({
+    company: one(companies, {
+        fields: [notifications.companyId],
+        references: [companies.id]
+    })
+}))

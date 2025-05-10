@@ -9,6 +9,9 @@ export interface AuthContextType {
     organization: ReturnType<typeof useOrganization>["organization"] | null
     isSignedIn: boolean
     isOrgSelected: boolean
+    orgId: string | null
+    userId: string | null
+    orgRole: string | null
     redirectToSignIn: (redirectUrl?: string) => void
 }
 
@@ -19,6 +22,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { organization } = useOrganization()
     const router = useRouter()
     const isOrgSelected = !!organization?.id
+    const orgId = organization?.id ?? null
+    const userId = user?.id ?? null
+    // Clerk org role is available on user.organizationMemberships
+    const orgRole = user?.organizationMemberships?.find(m => m.organization.id === orgId)?.role ?? null
 
     const redirectToSignIn = (redirectUrl?: string) => {
         const baseUrl = "/sign-in"
@@ -35,6 +42,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 organization,
                 isSignedIn: !!isUserSignedIn,
                 isOrgSelected,
+                orgId,
+                userId,
+                orgRole,
                 redirectToSignIn
             }}
         >

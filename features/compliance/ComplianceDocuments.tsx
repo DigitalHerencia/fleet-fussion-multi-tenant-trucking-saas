@@ -1,3 +1,17 @@
+/**
+ * ComplianceDocuments component
+ *
+ * Displays a list of compliance documents with search, filter, upload, and preview functionality.
+ * Integrates with backend actions for document creation and fetchers for data retrieval.
+ *
+ * Props:
+ * - documents: ComplianceDocument[] — List of compliance documents to display
+ *
+ * Usage:
+ * ```tsx
+ * <ComplianceDocuments documents={documents} />
+ * ```
+ */
 import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -31,8 +45,6 @@ export default function ComplianceDocuments({ documents: initialDocuments }: Com
     const res = await createComplianceDocument(formData)
     if (res.success) {
       setShowUpload(false)
-      // Ideally, revalidate via server action or router refresh
-      // For now, fetch again
       window.location.reload()
     }
   }
@@ -146,10 +158,10 @@ export default function ComplianceDocuments({ documents: initialDocuments }: Com
             <Button variant="ghost" size="icon" className="absolute top-2 right-2" onClick={() => setPreviewUrl(null)}>
               ×
             </Button>
-            {previewUrl.match(/\.(pdf)$/i) ? (
+            {typeof previewUrl === "string" && previewUrl.match(/\.(pdf)$/i) ? (
               <iframe src={previewUrl} className="w-full h-[60vh]" />
-            ) : previewUrl.match(/\.(jpg|jpeg|png|gif)$/i) ? (
-              <img src={previewUrl} alt="Document Preview" className="max-w-full max-h-[60vh] mx-auto" />
+            ) : typeof previewUrl === "string" && previewUrl.match(/\.(jpg|jpeg|png|gif)$/i) ? (
+              <img src={previewUrl || undefined} alt="Document Preview" className="max-w-full max-h-[60vh] mx-auto" />
             ) : (
               <p>Preview not available for this file type.</p>
             )}

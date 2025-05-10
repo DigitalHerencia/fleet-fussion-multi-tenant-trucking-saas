@@ -24,6 +24,7 @@ const Switch = React.forwardRef<
         />
     </SwitchPrimitives.Root>
 ))
-Switch.displayName = SwitchPrimitives.Root.displayName
+Switch.displayName = "Switch"
 
+// Export Switch for consistent usage
 export { Switch }

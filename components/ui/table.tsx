@@ -1,3 +1,16 @@
+/**
+ * Table primitives for consistent data display.
+ *
+ * Exports:
+ * - Table: Table wrapper component
+ * - TableHeader, TableBody, TableFooter: Table section components
+ * - TableRow, TableHead, TableCell, TableCaption: Table row/cell components
+ *
+ * Usage:
+ * ```tsx
+ * import { Table, TableHeader, TableRow, TableCell } from "@/components/ui/table"
+ * ```
+ */
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
@@ -92,4 +105,5 @@ const TableCaption = React.forwardRef<
 ))
 TableCaption.displayName = "TableCaption"
 
+// Export all Table subcomponents for consistent usage
 export { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell, TableCaption }

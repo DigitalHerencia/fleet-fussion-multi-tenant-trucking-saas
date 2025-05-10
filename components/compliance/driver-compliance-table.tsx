@@ -118,63 +118,10 @@ export const columns: ColumnDef<Driver>[] = [
     }
 ]
 
-const mockDrivers = [
-    {
-        id: "1",
-        name: "John Smith",
-        cdlStatus: "Valid",
-        cdlExpiration: "2025-06-15",
-        medicalStatus: "Expiring Soon",
-        medicalExpiration: "2023-07-10",
-        hosStatus: "Compliant",
-        lastViolation: "2023-04-22"
-    },
-    {
-        id: "2",
-        name: "Maria Garcia",
-        cdlStatus: "Valid",
-        cdlExpiration: "2024-08-22",
-        medicalStatus: "Valid",
-        medicalExpiration: "2024-02-18",
-        hosStatus: "Violation",
-        lastViolation: "2023-06-05"
-    },
-    {
-        id: "3",
-        name: "Robert Johnson",
-        cdlStatus: "Valid",
-        cdlExpiration: "2026-03-30",
-        medicalStatus: "Valid",
-        medicalExpiration: "2023-11-12",
-        hosStatus: "Compliant",
-        lastViolation: "None"
-    },
-    {
-        id: "4",
-        name: "Sarah Williams",
-        cdlStatus: "Expiring Soon",
-        cdlExpiration: "2023-07-28",
-        medicalStatus: "Valid",
-        medicalExpiration: "2024-05-20",
-        hosStatus: "Compliant",
-        lastViolation: "2023-02-14"
-    },
-    {
-        id: "5",
-        name: "Michael Brown",
-        cdlStatus: "Valid",
-        cdlExpiration: "2025-11-05",
-        medicalStatus: "Expired",
-        medicalExpiration: "2023-06-01",
-        hosStatus: "Compliant",
-        lastViolation: "2023-01-30"
-    }
-]
-
-export function DriverComplianceTable() {
+export function DriverComplianceTable({ drivers }: { drivers: any[] }) {
     const [searchTerm, setSearchTerm] = useState("")
 
-    const filteredDrivers = mockDrivers.filter(driver =>
+    const filteredDrivers = drivers.filter(driver =>
         driver.name.toLowerCase().includes(searchTerm.toLowerCase())
     )
 

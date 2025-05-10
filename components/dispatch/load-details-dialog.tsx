@@ -6,7 +6,8 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogFooter
+    DialogFooter,
+    DialogDescription
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -204,12 +205,10 @@ export function LoadDetailsDialog({
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                    <div className="flex justify-between items-center">
-                        <DialogTitle className="text-xl">Load {load.referenceNumber}</DialogTitle>
-                        <Badge className={getStatusColor(load.status)}>
-                            {load.status.replace("_", " ")}
-                        </Badge>
-                    </div>
+                    <DialogTitle className="text-xl">Load {load.referenceNumber}</DialogTitle>
+                    <DialogDescription>
+                        View and manage details for this load.
+                    </DialogDescription>
                 </DialogHeader>
 
                 <Tabs defaultValue="details" className="w-full">

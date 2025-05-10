@@ -1,6 +1,7 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog"
 import type { Vehicle } from "@/types/types"
 import { type ReactNode } from "react"
+import { Button } from "../ui/button"
 
 interface VehicleDetailsDialogProps {
   vehicle: Vehicle
@@ -15,9 +16,7 @@ export function VehicleDetailsDialog({ vehicle, isOpen, onClose, children }: Veh
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Vehicle Details: {vehicle.unitNumber}</DialogTitle>
-          <DialogClose asChild>
-            <button aria-label="Close" onClick={onClose} className="absolute top-2 right-2">×</button>
-          </DialogClose>
+          <DialogDescription>View and manage vehicle information.</DialogDescription>
         </DialogHeader>
         <div className="space-y-2">
           <div><strong>Type:</strong> {vehicle.type}</div>
@@ -27,6 +26,9 @@ export function VehicleDetailsDialog({ vehicle, isOpen, onClose, children }: Veh
           <div><strong>Year:</strong> {(vehicle as any).year ?? ""}</div>
         </div>
         {children}
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Close</Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

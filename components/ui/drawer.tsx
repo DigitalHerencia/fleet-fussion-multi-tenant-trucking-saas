@@ -86,12 +86,13 @@ const DrawerDescription = React.forwardRef<
 ))
 DrawerDescription.displayName = DrawerPrimitive.Description.displayName
 
+// Export all Drawer subcomponents for consistent usage
 export {
     Drawer,
-    DrawerPortal,
-    DrawerOverlay,
     DrawerTrigger,
+    DrawerPortal,
     DrawerClose,
+    DrawerOverlay,
     DrawerContent,
     DrawerHeader,
     DrawerFooter,

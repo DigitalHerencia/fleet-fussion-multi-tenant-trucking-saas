@@ -31,6 +31,28 @@
     --color-expenses: hsl(var(--chart-2));
     --color-profit: hsl(var(--chart-3));
     --color-value: hsl(var(--chart-4));
+    --status-active-bg: 120 60% 90%;
+    --status-active-fg: 120 40% 30%;
+    --status-inactive-bg: 0 80% 95%;
+    --status-inactive-fg: 0 60% 40%;
+    --status-on-leave-bg: 45 100% 90%;
+    --status-on-leave-fg: 45 80% 40%;
+    --status-pending-bg: 45 100% 90%;
+    --status-pending-fg: 45 80% 40%;
+    --status-assigned-bg: 221 83% 95%;
+    --status-assigned-fg: 221 83% 40%;
+    --status-in-transit-bg: 271 91% 95%;
+    --status-in-transit-fg: 271 91% 40%;
+    --status-completed-bg: 120 60% 90%;
+    --status-completed-fg: 120 40% 30%;
+    --status-cancelled-bg: 0 80% 95%;
+    --status-cancelled-fg: 0 60% 40%;
+    --status-maintenance-bg: 45 100% 90%;
+    --status-maintenance-fg: 45 80% 40%;
+    --status-default-bg: 0 0% 90%;
+    --status-default-fg: 0 0% 30%;
+    --radix-select-trigger-width: 12rem;
+    --radix-select-trigger-height: 2.5rem;
 }
 
 @media (prefers-color-scheme: dark) {

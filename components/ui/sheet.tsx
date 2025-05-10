@@ -1,5 +1,21 @@
 "use client"
 
+/**
+ * Sheet (Sliding Panel) UI component using Radix Dialog primitives.
+ *
+ * Exports:
+ * - Sheet: Root component
+ * - SheetTrigger: Button/element to open the sheet
+ * - SheetClose: Button/element to close the sheet
+ * - SheetPortal, SheetOverlay, SheetContent: Portal and overlay primitives
+ * - SheetHeader, SheetFooter, SheetTitle, SheetDescription: Layout helpers
+ *
+ * Usage:
+ * ```tsx
+ * import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet"
+ * ```
+ */
+
 import * as React from "react"
 import * as SheetPrimitive from "@radix-ui/react-dialog"
 import { cva, type VariantProps } from "class-variance-authority"
@@ -109,12 +125,13 @@ const SheetDescription = React.forwardRef<
 ))
 SheetDescription.displayName = SheetPrimitive.Description.displayName
 
+// Export all Sheet subcomponents for consistent usage
 export {
     Sheet,
-    SheetPortal,
-    SheetOverlay,
     SheetTrigger,
     SheetClose,
+    SheetPortal,
+    SheetOverlay,
     SheetContent,
     SheetHeader,
     SheetFooter,

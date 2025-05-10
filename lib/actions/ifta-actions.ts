@@ -1,6 +1,6 @@
 "use server"
 
-import { db } from "@/lib/db"
+import { db } from "@/db"
 import { iftaTrips, iftaReports, fuelPurchases } from "@/db/schema"
 import { eq, and, sql } from "drizzle-orm"
 import { z } from "zod"

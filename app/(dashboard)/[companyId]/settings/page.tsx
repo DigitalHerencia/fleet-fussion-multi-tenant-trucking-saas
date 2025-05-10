@@ -69,7 +69,6 @@ export default function CompanySettingsPage() {
 
         // In a real app, you would submit changes to your API
         alert("Settings would be saved in a real app")
-        console.log("Company settings to save:", formData)
     }
 
     if (isLoading) {

@@ -1,6 +1,6 @@
 "use server"
 
-import { db } from "@/lib/db"
+import { db } from "@/db"
 import { vehicles } from "@/db/schema"
 import { vehicleSchema, type VehicleFormData } from "@/lib/validation/vehicle-schema"
 import { getAuthCompanyId } from "@/lib/auth"

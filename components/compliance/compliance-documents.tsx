@@ -12,6 +12,22 @@ import {
 import { MoreHorizontal, FileText, Download, Eye } from "lucide-react"
 import type { ColumnDef } from "@tanstack/react-table"
 import { createComplianceDocument } from "@/lib/actions/compliance-actions"
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow
+} from "@/components/ui/table"
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter
+} from "@/components/ui/dialog"
 
 // Define the Document type
 interface Document {
@@ -247,81 +263,108 @@ export function ComplianceDocuments() {
             )}
 
             {/* Document list */}
-            <div className="grid gap-4">
-                {filteredDocs.map(doc => {
-                    let expiring = false
-                    let expired = false
-                    if (doc["expirationDate"]) {
-                        const exp = new Date(doc["expirationDate"])
-                        const now = new Date()
-                        expired = exp < now
-                        expiring = !expired && (exp.getTime() - now.getTime()) / (1000 * 60 * 60 * 24) < 30
-                    }
-                    return (
-                        <div
-                            key={doc.id}
-                            className="border rounded-md p-4 flex justify-between items-center"
-                        >
-                            <div className="flex items-center gap-2">
-                                <FileText className="h-5 w-5 text-muted-foreground" />
-                                <div>
-                                    <h3 className="font-medium">{doc.name}</h3>
-                                    <p className="text-sm text-muted-foreground">
-                                        Last updated: {doc.lastUpdated ? new Date(doc.lastUpdated).toLocaleDateString() : "-"}
-                                    </p>
-                                    {doc["expirationDate"] && (
-                                        <span className={`text-xs ml-2 ${expired ? "text-red-600" : expiring ? "text-amber-600" : "text-green-600"}`}>
-                                            {expired ? "Expired" : expiring ? "Expiring Soon" : "Valid"}
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Badge
-                                    className={
-                                        doc.status === "Complete"
-                                            ? "bg-green-100 text-green-800"
-                                            : "bg-amber-100 text-amber-800"
-                                    }
-                                >
-                                    {doc.status}
-                                </Badge>
-                                {doc["fileUrl"] && (
-                                    <Button variant="ghost" size="icon" onClick={() => setPreviewUrl(doc["fileUrl"] ?? null)} title="Preview Document">
-                                        <Eye className="h-4 w-4" />
-                                    </Button>
-                                )}
-                                {doc["fileUrl"] && (
-                                    <a href={doc["fileUrl"]} target="_blank" rel="noopener noreferrer" title="Download Document">
-                                        <Button variant="ghost" size="icon">
-                                            <Download className="h-4 w-4" />
-                                        </Button>
-                                    </a>
-                                )}
-                            </div>
-                        </div>
-                    )
-                })}
-            </div>
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>Document Name</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Last Updated</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Assigned To</TableHead>
+                        <TableHead>Actions</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {filteredDocs.map(doc => {
+                        let expiring = false
+                        let expired = false
+                        if (doc["expirationDate"]) {
+                            const exp = new Date(doc["expirationDate"])
+                            const now = new Date()
+                            expired = exp < now
+                            expiring = !expired && (exp.getTime() - now.getTime()) / (1000 * 60 * 60 * 24) < 30
+                        }
+                        return (
+                            <TableRow key={doc.id}>
+                                <TableCell>
+                                    <div className="flex items-center gap-2">
+                                        <FileText className="h-5 w-5 text-muted-foreground" />
+                                        <div>
+                                            <h3 className="font-medium">{doc.name}</h3>
+                                            <p className="text-sm text-muted-foreground">
+                                                Last updated: {doc.lastUpdated ? new Date(doc.lastUpdated).toLocaleDateString() : "-"}
+                                            </p>
+                                            {doc["expirationDate"] && (
+                                                <span className={`text-xs ml-2 ${expired ? "text-red-600" : expiring ? "text-amber-600" : "text-green-600"}`}>
+                                                    {expired ? "Expired" : expiring ? "Expiring Soon" : "Valid"}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    <Badge variant={doc.type === "Required" ? "default" : "outline"}>{doc.type}</Badge>
+                                </TableCell>
+                                <TableCell>
+                                    {doc.lastUpdated ? new Date(doc.lastUpdated).toLocaleDateString() : "-"}
+                                </TableCell>
+                                <TableCell>
+                                    <Badge
+                                        className={
+                                            doc.status === "Complete"
+                                                ? "bg-green-100 text-green-800"
+                                                : "bg-amber-100 text-amber-800"
+                                        }
+                                    >
+                                        {doc.status}
+                                    </Badge>
+                                </TableCell>
+                                <TableCell>{doc.assignedTo}</TableCell>
+                                <TableCell>
+                                    <div className="flex items-center gap-2">
+                                        {doc["fileUrl"] && (
+                                            <Button variant="ghost" size="icon" onClick={() => setPreviewUrl(doc["fileUrl"] ?? null)} title="Preview Document">
+                                                <Eye className="h-4 w-4" />
+                                            </Button>
+                                        )}
+                                        {doc["fileUrl"] && (
+                                            <a href={doc["fileUrl"]} target="_blank" rel="noopener noreferrer" title="Download Document">
+                                                <Button variant="ghost" size="icon">
+                                                    <Download className="h-4 w-4" />
+                                                </Button>
+                                            </a>
+                                        )}
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        )
+                    })}
+                </TableBody>
+            </Table>
 
             {/* Preview Modal */}
-            {previewUrl && (
-                <>
-                    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={() => setPreviewUrl(null)} />
-                    <div className="bg-white dark:bg-zinc-900 p-6 rounded-lg shadow-lg max-w-2xl w-full relative z-50">
-                        <Button variant="ghost" size="icon" className="absolute top-2 right-2" onClick={() => setPreviewUrl(null)}>
-                            ×
-                        </Button>
-                        {previewUrl.match(/\.(pdf)$/i) ? (
+            <Dialog open={!!previewUrl} onOpenChange={() => setPreviewUrl(null)}>
+                <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle>Document Preview</DialogTitle>
+                        <DialogDescription>
+                            Preview the selected document below. Close to return to the document list.
+                        </DialogDescription>
+                    </DialogHeader>
+                    {previewUrl && (
+                        previewUrl.match(/\.(pdf)$/i) ? (
                             <iframe src={previewUrl} className="w-full h-[60vh]" />
                         ) : previewUrl.match(/\.(jpg|jpeg|png|gif)$/i) ? (
                             <img src={previewUrl} alt="Document Preview" className="max-w-full max-h-[60vh] mx-auto" />
                         ) : (
                             <p>Preview not available for this file type.</p>
-                        )}
-                    </div>
-                </>
-            )}
+                        )
+                    )}
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setPreviewUrl(null)}>Close</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

@@ -1,6 +1,6 @@
 "use server"
 
-import { db } from "@/lib/db"
+import { db } from "@/db"
 import { companies, companyUsers } from "@/db/schema"
 import { eq, and } from "drizzle-orm"
 import { z } from "zod"

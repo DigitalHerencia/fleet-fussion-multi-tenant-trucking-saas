@@ -343,7 +343,7 @@ export function ComplianceDashboard() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <DriverComplianceTable />
+                            <DriverComplianceTable drivers={ [] } />
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -357,7 +357,7 @@ export function ComplianceDashboard() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <VehicleComplianceTable />
+                            <VehicleComplianceTable vehicles={ [] } />
                         </CardContent>
                     </Card>
                 </TabsContent>

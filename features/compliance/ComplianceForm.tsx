@@ -7,7 +7,6 @@ import { complianceSchema } from "@/lib/validation/compliance-schema"
 import type { ComplianceFormData } from "@/lib/validation/compliance-schema"
 import { createComplianceAction } from "@/lib/actions/compliance-actions"
 import { FormError } from "@/components/ui/form-error"
-import { isValid } from "zod"
 
 type FormErrors = {
     title?: string[]
@@ -19,11 +18,7 @@ type FormErrors = {
 export function ComplianceForm() {
     const [state, formAction] = useActionState(
         async (_prevState: any, _formData: any) => {
-            // ...existing code...
-            if (!isValid) {
-                return { success: false, error: 'Validation failed', errors };
-            }
-            // ...existing code...
+            return { success: false, error: 'Validation failed', errors };
         },
         { success: false, error: '', errors: {} }
     )

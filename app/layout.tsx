@@ -6,6 +6,12 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import { ClerkProvider } from "@clerk/nextjs"
 import { Toaster } from "sonner"
+import { validateEnv } from "@/lib/env"
+
+// Validate environment variables during server initialization
+if (process.env.NODE_ENV === 'production') {
+    validateEnv();
+}
 
 const inter = Inter({ subsets: ["latin"] })
 

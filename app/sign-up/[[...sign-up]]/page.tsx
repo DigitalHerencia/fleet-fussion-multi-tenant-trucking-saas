@@ -30,7 +30,7 @@ export default function SignUpPage() {
       if (res.status === "complete") {
         router.push("/onboarding");
       } else {
-        setError("Sign up failed. Please check your details.");
+        setError("Sign up incomplete. Please check your email to verify your account and then sign in.");
       }
     } catch (err: any) {
       setError(err?.errors?.[0]?.message || "Sign up failed.");
@@ -98,6 +98,8 @@ export default function SignUpPage() {
             {loading ? "Signing up..." : "Sign Up"}
           </button>
         </form>
+        {/* Optionally, show Clerk's <SignUp /> for social/magic link */}
+        {/* <SignUp afterSignUpUrl="/onboarding" /> */}
       </div>
     </div>
   );

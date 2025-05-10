@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Phone, Mail, Calendar, FileText } from "lucide-react"
 import { formatDate } from "@/lib/utils"
+import { StatusBadge } from "@/components/ui/status-badge"
 
 interface Driver {
     id: string
@@ -25,19 +26,6 @@ interface DriverCardProps {
 }
 
 export function DriverCard({ driver, onClick }: DriverCardProps) {
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case "active":
-                return "bg-green-100 text-green-800 hover:bg-green-200"
-            case "inactive":
-                return "bg-red-100 text-red-800 hover:bg-red-200"
-            case "on_leave":
-                return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
-            default:
-                return "bg-gray-100 text-gray-800 hover:bg-gray-200"
-        }
-    }
-
     const getInitials = (firstName: string, lastName: string) => {
         return `${firstName.charAt(0)}${lastName.charAt(0)}`
     }
@@ -54,9 +42,7 @@ export function DriverCard({ driver, onClick }: DriverCardProps) {
                     <h3 className="font-medium leading-none">
                         {driver.firstName} {driver.lastName}
                     </h3>
-                    <Badge className={getStatusColor(driver.status)}>
-                        {driver.status.replace("_", " ")}
-                    </Badge>
+                    <StatusBadge status={driver.status} />
                 </div>
             </CardHeader>
             <CardContent className="pb-2">

@@ -1,6 +1,6 @@
 "use server"
 
-import { db } from "@/lib/db"
+import { db } from "@/db"
 import { complianceDocuments, hosLogs, complianceRecords } from "@/db/schema"
 import { eq, and } from "drizzle-orm"
 import { z } from "zod"
@@ -95,6 +95,12 @@ export async function deleteHosLog(id: string) {
     }
 }
 
+/**
+ * Uploads a new compliance document for the current company.
+ * Handles file upload, validation, and database insertion.
+ * @param {FormData} formData - The form data containing document fields and file.
+ * @returns {Promise<{success: boolean, document?: any, error?: string, errors?: any}>}
+ */
 export async function createComplianceDocument(formData: FormData) {
     try {
         let fileUrl = formData.get("documentUrl")?.toString() || ""

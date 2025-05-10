@@ -1,5 +1,21 @@
 "use client"
 
+/**
+ * VehicleDocuments component
+ *
+ * Displays and manages vehicle-specific documents, including upload, preview, and download.
+ * Integrates with backend actions for document creation and fetchers for data retrieval.
+ *
+ * Props:
+ * - vehicleId: string — The vehicle's unique identifier
+ * - documents: Document[] — List of documents for the vehicle
+ *
+ * Usage:
+ * ```tsx
+ * <VehicleDocuments vehicleId={id} documents={docs} />
+ * ```
+ */
+
 import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { FileText, Download, Eye } from "lucide-react"

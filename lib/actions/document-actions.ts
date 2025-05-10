@@ -1,6 +1,6 @@
 "use server"
 
-import { db } from "@/lib/db"
+import { db } from "@/db"
 import { documents } from "@/db/schema"
 import { uploadToVercelBlob } from "@/lib/blob"
 import { z } from "zod"

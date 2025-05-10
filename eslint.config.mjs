@@ -1,6 +1,5 @@
 /** @type {import("eslint").Linter.ConfigSchema} */
 export default {
-  root: true,
   parser: "@typescript-eslint/parser",
   parserOptions: {
     ecmaVersion: "latest",
