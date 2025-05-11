@@ -11,7 +11,6 @@ import { Label } from "@/components/ui/label"
 
 export default function CompanySettingsPage() {
     const { companyId } = useParams() as { companyId: string }
-    const [company, setCompany] = useState<any | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [formData, setFormData] = useState({
         name: "",
@@ -32,7 +31,6 @@ export default function CompanySettingsPage() {
                 const res = await fetch(`/api/companies/${companyId}`)
                 if (!res.ok) throw new Error("Failed to fetch company")
                 const data = await res.json()
-                setCompany(data)
 
                 // Populate form with company data
                 setFormData({
@@ -79,7 +77,7 @@ export default function CompanySettingsPage() {
         )
     }
 
-    if (!company) {
+    if (!companyId) {
         return <div>Company not found. Please check the URL or select a different company.</div>
     }
 
@@ -87,7 +85,7 @@ export default function CompanySettingsPage() {
         <DashboardShell>
             <DashboardHeader
                 text="Manage your company information and preferences"
-                heading={company.name}
+                heading={companyId}
             />
 
             <form onSubmit={handleSubmit} className="space-y-8">

@@ -14,7 +14,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     let userId: string
     try {
         userId = await getCurrentUserId()
-    } catch (error) {
+    } catch {
         redirect("/sign-in")
     }
 
@@ -51,7 +51,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                 </div>
             </div>
         )
-    } catch (error) {
+    } catch {
         // 5) On any error (e.g. no membership), redirect to unauthorized
         redirect("/unauthorized")
     }
