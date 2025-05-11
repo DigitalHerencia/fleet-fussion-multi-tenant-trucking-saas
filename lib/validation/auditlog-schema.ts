@@ -1,5 +1,4 @@
 import { z } from "zod"
-import { UserRole } from "@/db/schema" // Assuming UserRole is defined and exported from your schema
 
 export const AuditLogActionEnum = z.enum([
     // User/Auth Actions

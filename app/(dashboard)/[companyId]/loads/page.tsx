@@ -5,6 +5,7 @@ import { useEffect, useState } from "react"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { Loader2 } from "lucide-react"
+import type { Company } from "@/types/types"
 
 interface Load {
     id: string
@@ -21,7 +22,7 @@ interface Load {
 
 export default function CompanyLoadsPage() {
     const { companyId } = useParams() as { companyId: string }
-    const [company, setCompany] = useState<any>(null)
+    const [company, setCompany] = useState<Company | null>(null)
     const [loads, setLoads] = useState<Load[]>([])
     const [isLoading, setIsLoading] = useState(true)
 

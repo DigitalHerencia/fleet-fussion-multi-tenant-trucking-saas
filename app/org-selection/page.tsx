@@ -1,31 +1,17 @@
 "use client"
 
-import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useUser, useOrganizationList } from "@clerk/nextjs"
 import { Loader2, Building2, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle
-} from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Image from "next/image"
 import { toast } from "sonner"
 
 export default function OrgSelectionPage() {
     const router = useRouter()
     const { user, isLoaded: isUserLoaded } = useUser()
-    const {
-        userMemberships,
-        isLoaded: isOrgLoaded,
-        createOrganization,
-        setActive
-    } = useOrganizationList()
-    const [isCreating, setIsCreating] = useState(false)
+    const { userMemberships, isLoaded: isOrgLoaded, setActive } = useOrganizationList()
 
     // Show a loading state when checking for organizations
     if (!isUserLoaded || !isOrgLoaded) {
@@ -56,12 +42,10 @@ export default function OrgSelectionPage() {
     }
 
     const handleCreateOrg = async () => {
-        setIsCreating(true)
         try {
             router.push("/onboarding")
         } catch (error) {
             console.error("Error redirecting to create organization:", error)
-            setIsCreating(false)
             toast.error("Failed to create new organization. Please try again.")
         }
     }

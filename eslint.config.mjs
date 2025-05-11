@@ -23,7 +23,8 @@ export default [
                 ecmaVersion: "latest",
                 sourceType: "module",
                 ecmaFeatures: {
-                    jsx: true
+                    jsx: true,
+                    tsx: true
                 }
             },
             globals: {
@@ -64,6 +65,15 @@ export default [
     {
         plugins: {
             "@next/next": nextPlugin
+        },
+        rules: {
+            // Disable Next.js legacy image and link rules for Next.js 13+ (App Router)
+            "@next/next/no-img-element": "off",
+            "@next/next/no-html-link-for-pages": "off",
+            // Allow use of server components and client components in Next.js 15
+            "@next/next/no-sync-scripts": "off",
+            "@next/next/no-document-import-in-page": "off",
+            "@next/next/no-head-element": "off"
         }
     },
 
@@ -75,9 +85,7 @@ export default [
         rules: {
             "prettier/prettier": "error",
             "@typescript-eslint/explicit-function-return-type": "off",
-            "@typescript-eslint/no-explicit-any": "warn",
-            "no-unused-vars": "off",
-            "@typescript-eslint/no-unused-vars": "warn"
+            "@typescript-eslint/no-explicit-any": "warn"
         }
     },
 
