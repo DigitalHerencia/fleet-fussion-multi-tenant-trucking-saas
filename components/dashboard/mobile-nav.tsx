@@ -2,8 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Button, Sheet, SheetContent, SheetTrigger } from "@/components/ui"
 import { Menu } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 
