@@ -43,7 +43,7 @@ export async function POST(req: Request) {
 
     if (eventType === "organization.created") {
         // Create a new company when an organization is created
-        const { id, name, slug } = evt.data
+        const { id, name } = evt.data
 
         try {
             await db.insert(companies).values({

@@ -77,7 +77,8 @@ export type Vehicle = {
 }
 
 // Load represents a shipment or job assigned to a driver/vehicle
-export type Load = {
+export type load = {
+    status: string
     /** Unique identifier for the load */
     id: string
     /** Scheduled pickup date */

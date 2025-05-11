@@ -3,7 +3,6 @@
 import { db } from "@/db"
 import { drivers } from "@/db/schema"
 import { driverCoreSchema } from "@/lib/validation/driver-schema"
-import { eq } from "drizzle-orm"
 import { getCurrentCompanyId } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
 

@@ -1,8 +1,7 @@
 import { db } from "@/db"
 import { complianceDocuments, hosLogs, drivers, vehicles, inspections } from "@/db/schema"
-import { eq, and, lte, gte, count, sql, desc, lt, isNull } from "drizzle-orm"
-import { addDays, isAfter, isBefore, parseISO } from "date-fns"
-import { cache } from "react"
+import { eq, and, gte, count, sql } from "drizzle-orm"
+import { addDays, isAfter, isBefore } from "date-fns"
 
 type DeadlineItem = {
     type: string
@@ -459,7 +458,6 @@ export async function getUpcomingComplianceDeadlines(companyId: string): Promise
 
         // Add quarterly IFTA deadlines if within 30 days
         const currentDate = new Date()
-        const currentMonth = currentDate.getMonth() + 1
         const currentYear = currentDate.getFullYear()
 
         // IFTA due dates: Jan 31, Apr 30, Jul 31, Oct 31

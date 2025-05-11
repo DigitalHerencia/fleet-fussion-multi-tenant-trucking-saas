@@ -24,7 +24,6 @@ export async function createCustomer(formData: FormData) {
 }
 
 export async function updateCustomer(id: string, formData: FormData) {
-    const companyId = await getCurrentCompanyId()
     const parsed = customerCoreSchema.safeParse(Object.fromEntries(formData))
     if (!parsed.success) {
         return {
@@ -42,7 +41,6 @@ export async function updateCustomer(id: string, formData: FormData) {
 }
 
 export async function deleteCustomer(id: string) {
-    const companyId = await getCurrentCompanyId()
     await db.delete(customers).where(eq(customers.id, id))
     return { success: true }
 }

@@ -1,6 +1,4 @@
 import { db } from "@/db"
-import { documents } from "@/db/schema"
-import { eq } from "drizzle-orm"
 import { cache } from "react"
 
 export const getDocumentsForVehicle = cache(async function getDocumentsForVehicle(

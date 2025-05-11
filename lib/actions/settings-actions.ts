@@ -5,6 +5,7 @@ import { companies, companyUsers } from "@/db/schema"
 import { eq, and } from "drizzle-orm"
 import { z } from "zod"
 import { settingsSchema } from "@/lib/validation/settings-schema"
+import { getCurrentCompanyId } from "@/lib/auth"
 
 // Zod schema for server-side validation
 const companySchema = z.object({
@@ -36,7 +37,7 @@ const preferencesSchema = z.object({
 type PreferencesForm = z.infer<typeof preferencesSchema>
 
 async function getCompanyId(): Promise<string> {
-    return process.env.TEST_COMPANY_ID || ""
+    return getCurrentCompanyId()
 }
 
 export async function updateCompanyDetails(formData: FormData) {
@@ -201,7 +202,7 @@ export async function updateSettingsAction(_: any, formData: FormData) {
                 errors: result.error.flatten().fieldErrors
             }
         }
-        const companyId = process.env.TEST_COMPANY_ID ?? "" // Replace with session
+        const companyId = await getCompanyId()
         await db.update(companies).set(result.data).where(eq(companies.id, companyId))
         return { success: true }
     } catch (err) {

@@ -9,15 +9,6 @@ import { LoadDetailsDialog } from "@/components/dispatch/load-details-dialog"
 import { PlusCircle, Filter } from "lucide-react"
 import Link from "next/link"
 
-interface Driver {
-    id: string
-    firstName: string
-    lastName: string
-    status: string
-    email?: string
-    phone?: string
-}
-
 interface Load {
     id: string
     referenceNumber: string
@@ -34,18 +25,27 @@ interface Load {
         firstName: string
         lastName: string
     } | null
-    vehicle: {
+    vehicle?: {
         id: string
         unitNumber: string
     } | null
-    trailer: {
+    trailer?: {
         id: string
         unitNumber: string
     } | null
-    commodity: string
-    weight: number
-    rate: number
-    miles: number
+    commodity?: string
+    weight?: number
+    rate?: number
+    miles?: number
+}
+
+interface Driver {
+    id: string
+    firstName: string
+    lastName: string
+    status: string
+    email?: string
+    phone?: string
 }
 
 interface Vehicle {

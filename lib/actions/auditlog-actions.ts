@@ -4,7 +4,6 @@ import { db } from "@/db"
 import { auditLogs } from "@/db/schema"
 import { auditLogSchema, type AuditLogFormValues } from "@/lib/validation/auditlog-schema"
 import { getCurrentCompanyId } from "@/lib/auth"
-import { eq } from "drizzle-orm"
 
 export async function createAuditLog(data: AuditLogFormValues) {
     const companyId = await getCurrentCompanyId()

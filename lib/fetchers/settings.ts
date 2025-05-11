@@ -59,7 +59,7 @@ export async function getUserSettings(userId: string, companyId: string) {
     }
 }
 
-export async function getCompanySettings(companyId: number): Promise<SettingsFormData> {
+export async function getCompanySettings(companyId: string): Promise<SettingsFormData> {
     try {
         const company = await db.query.companies.findFirst({
             where: eq(companies.id, String(companyId))

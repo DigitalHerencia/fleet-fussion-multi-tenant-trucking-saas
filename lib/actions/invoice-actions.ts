@@ -2,7 +2,7 @@
 
 import { db } from "@/db"
 import { invoices } from "@/db/schema"
-import { invoiceSchema, type InvoiceFormValues } from "@/lib/validation/invoice-schema"
+import { invoiceSchema } from "@/lib/validation/invoice-schema"
 import { getCurrentCompanyId } from "@/lib/auth"
 import { eq } from "drizzle-orm"
 
@@ -30,7 +30,6 @@ export async function createInvoice(formData: FormData) {
 }
 
 export async function updateInvoice(id: string, formData: FormData) {
-    const companyId = await getCurrentCompanyId()
     const parsed = invoiceSchema.safeParse(Object.fromEntries(formData))
     if (!parsed.success) {
         return {
@@ -56,7 +55,6 @@ export async function updateInvoice(id: string, formData: FormData) {
 }
 
 export async function deleteInvoice(id: string) {
-    const companyId = await getCurrentCompanyId()
     await db.delete(invoices).where(eq(invoices.id, id))
     return { success: true }
 }

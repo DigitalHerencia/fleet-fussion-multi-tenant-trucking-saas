@@ -6,6 +6,7 @@ import { eq, and } from "drizzle-orm"
 import { z } from "zod"
 import { complianceSchema } from "@/lib/validation/compliance-schema"
 import { uploadToVercelBlob } from "@/lib/blob"
+import { getCurrentCompanyId } from "@/lib/auth"
 
 // Zod schema for server-side validation
 const hosLogSchema = z.object({
@@ -29,7 +30,7 @@ type ComplianceDocForm = z.infer<typeof complianceDocSchema>
 
 // Replace with your session-based lookup
 async function getCompanyId(): Promise<string> {
-    return process.env.TEST_COMPANY_ID || ""
+    return getCurrentCompanyId()
 }
 
 export async function createHosLog(formData: FormData) {

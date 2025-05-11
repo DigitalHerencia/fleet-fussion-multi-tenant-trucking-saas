@@ -2,7 +2,7 @@
 
 import { db } from "@/db"
 import { settlements } from "@/db/schema"
-import { settlementSchema, type SettlementFormValues } from "@/lib/validation/settlement-schema"
+import { settlementSchema } from "@/lib/validation/settlement-schema"
 import { getCurrentCompanyId } from "@/lib/auth"
 import { eq } from "drizzle-orm"
 
@@ -29,7 +29,6 @@ export async function createSettlement(formData: FormData) {
 }
 
 export async function updateSettlement(id: string, formData: FormData) {
-    const companyId = await getCurrentCompanyId()
     const parsed = settlementSchema.safeParse(Object.fromEntries(formData))
     if (!parsed.success) {
         return {
@@ -54,7 +53,6 @@ export async function updateSettlement(id: string, formData: FormData) {
 }
 
 export async function deleteSettlement(id: string) {
-    const companyId = await getCurrentCompanyId()
     await db.delete(settlements).where(eq(settlements.id, id))
     return { success: true }
 }

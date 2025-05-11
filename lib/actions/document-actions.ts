@@ -4,6 +4,7 @@ import { db } from "@/db"
 import { documents } from "@/db/schema"
 import { uploadToVercelBlob } from "@/lib/blob"
 import { z } from "zod"
+import { getCurrentCompanyId } from "@/lib/auth"
 
 const documentSchema = z.object({
     name: z.string().min(1),
@@ -19,8 +20,7 @@ const documentSchema = z.object({
 type DocumentForm = z.infer<typeof documentSchema>
 
 async function getCompanyId(): Promise<string> {
-    // Replace with real session-based lookup
-    return process.env.TEST_COMPANY_ID || ""
+    return getCurrentCompanyId()
 }
 
 export async function uploadDocument(formData: FormData) {

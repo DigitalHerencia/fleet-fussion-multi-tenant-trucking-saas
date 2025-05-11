@@ -11,7 +11,57 @@ import Link from "next/link"
 import { useAuth } from "@/context/auth-context"
 import { getLoadsForCompany } from "@/lib/loads"
 import { toast } from "@/components/ui/use-toast"
-import type { Load, Driver, Vehicle } from "@/types/types"
+import type { LoadWithRelations } from "@/lib/actions/load-actions"
+
+// Redefine types to match DispatchBoard expectations
+interface Driver {
+    id: string
+    firstName: string
+    lastName: string
+    status: string
+    email?: string
+    phone?: string
+}
+
+interface Vehicle {
+    id: string
+    unitNumber: string
+    make: string
+    model: string
+    year: number
+    status: string
+    type: string
+}
+
+interface Load {
+    id: string
+    referenceNumber: string
+    status: string
+    customerName: string
+    originCity: string
+    originState: string
+    destinationCity: string
+    destinationState: string
+    pickupDate: Date
+    deliveryDate: Date
+    driver?: {
+        id: string
+        firstName: string
+        lastName: string
+    } | null
+    vehicle?: {
+        id: string
+        unitNumber: string
+    } | null
+    trailer?: {
+        id: string
+        unitNumber: string
+    } | null
+    commodity: string
+    weight: number
+    rate: number
+    miles: number
+}
 
 export default function DispatchPage() {
     const [isLoading, setIsLoading] = useState(true)
@@ -31,16 +81,45 @@ export default function DispatchPage() {
                 const loadsResult = await getLoadsForCompany(organization.id)
 
                 if (loadsResult.success) {
-                    // Transform data to match expected format if needed
-                    const formattedLoads = loadsResult.data.map((load: Load) => ({
-                        ...load,
+                    // Transform data to match expected format for DispatchBoard
+                    const formattedLoads = (loadsResult.data as LoadWithRelations[]).map(load => ({
+                        id: load.id,
+                        referenceNumber: load.referenceNumber || "",
+                        status: load.status || "pending",
+                        customerName: load.customerName || "",
+                        originCity: load.originCity || "",
+                        originState: load.originState || "",
+                        destinationCity: load.destinationCity || "",
+                        destinationState: load.destinationState || "",
                         pickupDate: load.pickupDate ? new Date(load.pickupDate) : new Date(),
-                        deliveryDate: load.deliveryDate ? new Date(load.deliveryDate) : new Date()
+                        deliveryDate: load.deliveryDate ? new Date(load.deliveryDate) : new Date(),
+                        driver: load.driver
+                            ? {
+                                  id: load.driver.id,
+                                  firstName: load.driver.firstName,
+                                  lastName: load.driver.lastName
+                              }
+                            : null,
+                        vehicle:
+                            load.vehicle !== undefined
+                                ? load.vehicle
+                                    ? { id: load.vehicle.id, unitNumber: load.vehicle.unitNumber }
+                                    : null
+                                : null,
+                        trailer:
+                            load.trailer !== undefined
+                                ? load.trailer
+                                    ? { id: load.trailer.id, unitNumber: load.trailer.unitNumber }
+                                    : null
+                                : null,
+                        commodity: load.commodity || "",
+                        weight: Number(load.weight) || 0,
+                        rate: Number(load.rate) || 0,
+                        miles: Number(load.miles) || 0
                     }))
                     setLoads(formattedLoads)
 
                     // Extract unique drivers from loads for now
-                    // In a real app, you would fetch all drivers from a driver-specific endpoint
                     const uniqueDrivers = new Map<string, Driver>()
                     formattedLoads.forEach(load => {
                         if (load.driver) {
@@ -55,23 +134,28 @@ export default function DispatchPage() {
                     setDrivers(Array.from(uniqueDrivers.values()))
 
                     // Extract unique vehicles from loads for now
-                    // In a real app, you would fetch all vehicles from a vehicle-specific endpoint
                     const uniqueVehicles = new Map<string, Vehicle>()
                     formattedLoads.forEach(load => {
                         if (load.vehicle) {
                             uniqueVehicles.set(load.vehicle.id, {
                                 id: load.vehicle.id,
                                 unitNumber: load.vehicle.unitNumber,
-                                type: "tractor",
-                                status: "active"
+                                make: "",
+                                model: "",
+                                year: 0,
+                                status: "active",
+                                type: "tractor"
                             })
                         }
                         if (load.trailer) {
                             uniqueVehicles.set(load.trailer.id, {
                                 id: load.trailer.id,
                                 unitNumber: load.trailer.unitNumber,
-                                type: "trailer",
-                                status: "active"
+                                make: "",
+                                model: "",
+                                year: 0,
+                                status: "active",
+                                type: "trailer"
                             })
                         }
                     })
@@ -83,7 +167,6 @@ export default function DispatchPage() {
                         description: `Failed to load dispatch data: ${loadsResult.error}`,
                         variant: "destructive"
                     })
-                    // Set empty arrays as fallback
                     setLoads([])
                     setDrivers([])
                     setVehicles([])
@@ -95,7 +178,6 @@ export default function DispatchPage() {
                     description: "An unexpected error occurred while loading data",
                     variant: "destructive"
                 })
-                // Set empty arrays as fallback
                 setLoads([])
                 setDrivers([])
                 setVehicles([])
@@ -124,7 +206,7 @@ export default function DispatchPage() {
             {isLoading ? (
                 <DispatchSkeleton />
             ) : (
-                <DispatchBoard loads={[]} drivers={[]} vehicles={[]} />
+                <DispatchBoard drivers={drivers} vehicles={vehicles} loads={loads} />
             )}
         </DashboardShell>
     )

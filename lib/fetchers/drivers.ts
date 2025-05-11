@@ -19,13 +19,6 @@ export const getDriversForCompany = cache(async function getDriversForCompany(
     try {
         const whereConds = [eq(drivers.companyId, String(companyId))]
         if (options?.status) whereConds.push(eq(drivers.status, options.status))
-        interface GetDriversForCompanyOptions {
-            limit?: number
-            offset?: number
-            status?: string
-            sortBy?: keyof typeof drivers
-            sortOrder?: "asc" | "desc"
-        }
 
         return await db.query.drivers.findMany({
             where: (drivers, { and }) => and(...whereConds)

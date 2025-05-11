@@ -6,6 +6,7 @@ import { eq, and, sql } from "drizzle-orm"
 import { z } from "zod"
 import { iftaSchema } from "@/lib/validation/ifta-schema"
 import { fuelPurchaseSchema } from "@/lib/validation/fuel-schema"
+import { getCurrentCompanyId } from "@/lib/auth"
 
 // Zod schema for server-side validation
 const iftaTripSchema = z.object({
@@ -23,7 +24,7 @@ const iftaTripSchema = z.object({
 type IftaTripForm = z.infer<typeof iftaTripSchema>
 
 async function getCompanyId(): Promise<string> {
-    return process.env.TEST_COMPANY_ID || ""
+    return getCurrentCompanyId()
 }
 
 export async function updateIftaTrip(id: string, formData: FormData) {

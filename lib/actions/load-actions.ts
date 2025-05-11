@@ -1,6 +1,5 @@
 "use server"
 
-import { driverRelations } from "./../../db/schema"
 import { z } from "zod"
 import { revalidatePath } from "next/cache"
 import { db } from "@/db"
@@ -10,16 +9,16 @@ import {
     vehicles as vehiclesSchema,
     UserRole
 } from "@/db/schema"
-import { eq, and, desc, asc, type AnyColumn } from "drizzle-orm"
+import { eq, and } from "drizzle-orm"
 import { getCurrentCompanyId, authorizeRoles } from "@/lib/auth"
 import { v4 as uuidv4 } from "uuid"
-import { loads } from "@/db/schema"
-import { loadSchema } from "@/lib/validation/load-schema"
 
 // Helper function to protect routes based on role
 async function protectRoute(role: UserRole) {
     await authorizeRoles([role])
 }
+
+// Helper for descending order (Drizzle ORM style)
 
 // Schema for load validation
 const loadInputSchema = z.object({
@@ -48,16 +47,8 @@ const loadInputSchema = z.object({
     miles: z.number().optional(),
     notes: z.string().optional()
 })
-
-const loadAssignmentSchema = z.object({
-    driverId: z.string().uuid().nullable(),
-    vehicleId: z.string().uuid().nullable(),
-    trailerId: z.string().uuid().nullable()
-})
-
-const loadStatusSchema = z.enum(["pending", "assigned", "in_transit", "completed", "cancelled"])
-
 // Types for function returns
+
 type SuccessResponse<T> = {
     success: true
     data: T
@@ -70,6 +61,22 @@ type ErrorResponse = {
 }
 
 type LoadResponse<T> = SuccessResponse<T> | ErrorResponse
+
+export type LoadWithRelations = typeof loadsSchema.$inferSelect & {
+    driver?: {
+        id: string
+        firstName: string
+        lastName: string
+    } | null
+    vehicle?: {
+        id: string
+        unitNumber: string
+    } | null
+    trailer?: {
+        id: string
+        unitNumber: string
+    } | null
+}
 
 // Get all loads for a company with optional filtering
 export async function getLoadsForCompany(
@@ -84,7 +91,7 @@ export async function getLoadsForCompany(
         limit?: number
         page?: number
     }
-): Promise<LoadResponse<any[]>> {
+): Promise<LoadResponse<LoadWithRelations[]>> {
     try {
         await protectRoute(UserRole.DISPATCHER)
 
@@ -107,23 +114,6 @@ export async function getLoadsForCompany(
             whereConditions.push(eq(loadsSchema.trailerId, options.trailerId))
         }
 
-        // Build sort options
-        let sortOptions: any = []
-        if (options?.sortBy && options.sortBy in loadsSchema) {
-            const column = loadsSchema[
-                options.sortBy as keyof typeof loadsSchema
-            ] as unknown as AnyColumn
-            sortOptions =
-                options.sortOrder === "asc"
-                    ? [asc(column)]
-                    : options.sortOrder === "desc"
-                      ? [desc(column)]
-                      : []
-        } else {
-            // Default sort by updated date descending
-            sortOptions = [desc(loadsSchema.updatedAt)]
-        }
-
         // Calculate pagination
         const limit = options?.limit || 100
         const offset = options?.page ? (options.page - 1) * limit : 0
@@ -131,7 +121,6 @@ export async function getLoadsForCompany(
         // Execute query
         const results = await db.query.loads.findMany({
             where: and(...whereConditions),
-            orderBy: sortOptions,
             limit,
             offset,
             with: {
@@ -275,12 +264,49 @@ export async function createLoad(formData: FormData): Promise<LoadResponse<any>>
             }
         }
 
+        // Actually insert the load into the database
+        const id = uuidv4()
+        await db.insert(loadsSchema).values({
+            id,
+            companyId,
+            driverId: validatedFields.data.driverId,
+            vehicleId: validatedFields.data.vehicleId,
+            trailerId: validatedFields.data.trailerId,
+            status: validatedFields.data.status,
+            referenceNumber: validatedFields.data.referenceNumber,
+            customerName: validatedFields.data.customerName,
+            customerContact: validatedFields.data.customerContact,
+            customerPhone: validatedFields.data.customerPhone,
+            customerEmail: validatedFields.data.customerEmail,
+            originAddress: validatedFields.data.originAddress,
+            originCity: validatedFields.data.originCity,
+            originState: validatedFields.data.originState,
+            originZip: validatedFields.data.originZip,
+            destinationAddress: validatedFields.data.destinationAddress,
+            destinationCity: validatedFields.data.destinationCity,
+            destinationState: validatedFields.data.destinationState,
+            destinationZip: validatedFields.data.destinationZip,
+            pickupDate: validatedFields.data.pickupDate
+                ? new Date(validatedFields.data.pickupDate)
+                : undefined,
+            deliveryDate: validatedFields.data.deliveryDate
+                ? new Date(validatedFields.data.deliveryDate)
+                : undefined,
+            commodity: validatedFields.data.commodity,
+            weight: validatedFields.data.weight?.toString(),
+            rate: validatedFields.data.rate?.toString(),
+            miles: validatedFields.data.miles,
+            notes: validatedFields.data.notes,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        })
+
         // Revalidate relevant paths
         revalidatePath("/dispatch")
 
         return {
             success: true,
-            data: { id: uuidv4() }
+            data: { id }
         }
     } catch (error) {
         console.error("[LoadActions] Failed to create load:", error)
@@ -429,7 +455,7 @@ export async function getAvailableDrivers(): Promise<LoadResponse<any[]>> {
         const drivers = await db
             .select()
             .from(driversSchema)
-            .where(and(eq(driversSchema.status, "active")))
+            .where(and(eq(driversSchema.status, "active"), eq(driversSchema.companyId, companyId)))
 
         return {
             success: true,
@@ -462,7 +488,9 @@ export async function getAvailableVehicles(): Promise<LoadResponse<any[]>> {
         const vehicles = await db
             .select()
             .from(vehiclesSchema)
-            .where(and(eq(vehiclesSchema.status, "active")))
+            .where(
+                and(eq(vehiclesSchema.status, "active"), eq(vehiclesSchema.companyId, companyId))
+            )
 
         return {
             success: true,

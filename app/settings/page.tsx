@@ -1,9 +1,10 @@
 import { SettingsForm } from "@/features/settings/SettingsForm"
 import { getCompanySettings } from "@/lib/fetchers/settings"
+import { getCurrentCompanyId } from "@/lib/auth"
 
 export default async function SettingsPage() {
-    const companyId = Number(process.env.TEST_COMPANY_ID)
-    const settings = await getCompanySettings(companyId)
+    const companyId = await getCurrentCompanyId()
+    const settings = await getCompanySettings(String(companyId))
 
     return (
         <div className="max-w-xl mx-auto p-6">

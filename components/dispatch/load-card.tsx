@@ -1,7 +1,6 @@
 "use client"
 
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { MapPin, Calendar, User, Truck } from "lucide-react"
 import { formatDate } from "@/lib/utils"
 import { StatusBadge } from "@/components/ui/status-badge"

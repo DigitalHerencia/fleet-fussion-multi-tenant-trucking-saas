@@ -2,10 +2,7 @@
 
 import { db } from "@/db"
 import { insurancePolicies } from "@/db/schema"
-import {
-    insurancePolicySchema,
-    type InsurancePolicyFormValues
-} from "@/lib/validation/insurance-schema"
+import { insurancePolicySchema } from "@/lib/validation/insurance-schema"
 import { getCurrentCompanyId } from "@/lib/auth"
 import { eq } from "drizzle-orm"
 
@@ -35,7 +32,6 @@ export async function createInsurancePolicy(formData: FormData) {
 }
 
 export async function updateInsurancePolicy(id: string, formData: FormData) {
-    const companyId = await getCurrentCompanyId()
     const parsed = insurancePolicySchema.safeParse(Object.fromEntries(formData))
     if (!parsed.success) {
         return {
@@ -62,7 +58,6 @@ export async function updateInsurancePolicy(id: string, formData: FormData) {
 }
 
 export async function deleteInsurancePolicy(id: string) {
-    const companyId = await getCurrentCompanyId()
     await db.delete(insurancePolicies).where(eq(insurancePolicies.id, id))
     return { success: true }
 }
