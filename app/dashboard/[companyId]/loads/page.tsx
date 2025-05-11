@@ -2,7 +2,8 @@
 
 import { useParams } from "next/navigation"
 import { useEffect, useState } from "react"
-import { DashboardHeader, DashboardShell } from "@/components/dashboard"
+import { DashboardHeader } from "@/components/dashboard/dashboard-header"
+import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { Loader2 } from "lucide-react"
 import type { Company } from "@/types/types"
 
