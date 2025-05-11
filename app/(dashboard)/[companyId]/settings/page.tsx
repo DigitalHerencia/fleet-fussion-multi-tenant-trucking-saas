@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label"
 
 export default function CompanySettingsPage() {
     const { companyId } = useParams() as { companyId: string }
-    const [company, setCompany] = useState<any>(null)
+    const [company, setCompany] = useState<any | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [formData, setFormData] = useState({
         name: "",
@@ -86,8 +86,8 @@ export default function CompanySettingsPage() {
     return (
         <DashboardShell>
             <DashboardHeader
-                heading={`${company.name} Settings`}
                 text="Manage your company information and preferences"
+                heading={company.name}
             />
 
             <form onSubmit={handleSubmit} className="space-y-8">
