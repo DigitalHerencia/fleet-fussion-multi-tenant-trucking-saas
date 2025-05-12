@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
-import { safeClientSide } from "@/lib/hydration"
+import { safeClientSide } from "../lib/hydration"
 
 type StorageType = "localStorage" | "sessionStorage"
 

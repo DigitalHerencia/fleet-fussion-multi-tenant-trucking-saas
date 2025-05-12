@@ -1,6 +1,6 @@
 "use client"
 
-import { useCompany } from "@/context/company-context"
+import { useCompany } from "../context/company-context"
 
 /**
  * Custom hook to access the currently active company in the multi-tenant application

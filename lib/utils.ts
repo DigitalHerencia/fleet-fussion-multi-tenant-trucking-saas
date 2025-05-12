@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { IFTA_TAX_RATES } from "@/lib/constants/ifta-tax-rates"
+import { IFTA_TAX_RATES } from "./constants/ifta-tax-rates"
 
 /**
  * Formats a date to YYYY-MM-DD string format

@@ -1,10 +1,10 @@
 "use client"
 
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardFooter, CardHeader } from "../ui/card"
+import { Badge } from "../ui/badge"
 import { Truck, Calendar, Gauge, AlertTriangle } from "lucide-react"
-import { formatDate } from "@/lib/utils"
-import { StatusBadge } from "@/components/ui/status-badge"
+import { formatDate } from "../../lib/utils"
+import { StatusBadge } from "../ui/status-badge"
 
 interface Vehicle {
     id: string

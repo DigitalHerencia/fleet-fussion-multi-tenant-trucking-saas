@@ -1,9 +1,9 @@
 "use server"
 
-import { db } from "@/db"
-import { companies, companyUsers } from "@/db/schema"
+import { db } from "../../db"
+import { companies, companyUsers } from "../../db/schema"
 import { eq, and } from "drizzle-orm"
-import { type SettingsFormData } from "@/lib/validation/settings-schema"
+import { type SettingsFormData } from "../validation/settings-schema"
 
 export async function getCompanyDetails(companyId: string) {
     try {

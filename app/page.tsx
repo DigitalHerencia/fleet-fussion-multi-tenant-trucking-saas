@@ -11,8 +11,8 @@ import {
     Calendar,
     CreditCard
 } from "lucide-react"
-import PricingSection from "@/components/pricing-section"
-import { PublicNav } from "@/components/public-nav"
+import PricingSection from "../components/pricing-section"
+import { PublicNav } from "../components/public-nav"
 
 export default function Home() {
     return (

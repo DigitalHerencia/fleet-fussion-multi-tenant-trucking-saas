@@ -6,9 +6,9 @@ import {
     DialogDescription,
     DialogFooter,
     DialogClose
-} from "@/components/ui/dialog"
-import { DialogCard } from "@/components/ui/dialog-card"
-import type { Vehicle } from "@/types/types"
+} from "../ui/dialog"
+import { DialogCard } from "../ui/dialog-card"
+import type { Vehicle } from "../../types/types"
 import { type ReactNode } from "react"
 import { Button } from "../ui/button"
 

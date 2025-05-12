@@ -1,6 +1,6 @@
 "use client"
 
-import { useAuth } from "@/context/auth-context"
+import { useAuth } from "../context/auth-context"
 
 /**
  * Custom hook to access the currently authenticated user's data

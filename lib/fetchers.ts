@@ -1,4 +1,4 @@
-import { db } from "@/db"
+import { db } from "../db"
 
 // Get KPIs for the dashboard
 export async function getKPIs(companyId: string) {

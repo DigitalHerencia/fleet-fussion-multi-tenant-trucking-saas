@@ -1,7 +1,7 @@
 "use server"
 
 // Import server actions from the dedicated file
-import { createLoad, getLoadsForCompany, getLoadById, updateLoad } from "@/lib/actions/load-actions"
+import { createLoad, getLoadsForCompany, getLoadById, updateLoad } from "./actions/load-actions"
 
 // Export assignment function, with the same signature as previous code for backward compatibility
 export async function assignLoad(

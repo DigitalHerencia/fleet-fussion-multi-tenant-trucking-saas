@@ -1,4 +1,4 @@
-import { MainNav } from "@/components/dashboard/main-nav"
+import { MainNav } from "../../components/dashboard/main-nav"
 
 export default function ServicesPage() {
     return (

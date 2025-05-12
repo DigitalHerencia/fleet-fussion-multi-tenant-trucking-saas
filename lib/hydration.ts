@@ -1,6 +1,6 @@
-export { useHydrationSafeValue } from "@/hooks/use-hydration-safe"
-export { HydrationSafe } from "@/components/ui/hydration-safe"
-export { SafeDate } from "@/components/ui/safe-date"
+export { useHydrationSafeValue } from "../hooks/use-hydration-safe"
+export { HydrationSafe } from "../components/ui/hydration-safe"
+export { SafeDate } from "../components/ui/safe-date"
 
 /**
  * Formats a utility to detect if code is running on the client

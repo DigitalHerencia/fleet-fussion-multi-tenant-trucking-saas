@@ -1,4 +1,4 @@
-import { ComplianceForm } from "@/features/compliance/ComplianceForm"
+import { ComplianceForm } from "../../../features/compliance/ComplianceForm"
 
 export default function NewCompliancePage() {
     return (

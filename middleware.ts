@@ -1,8 +1,8 @@
 // middleware.ts
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server"
 import { NextRequest, NextResponse } from "next/server"
-import { addSecurityHeaders } from "@/lib/security"
-import { rateLimit } from "@/lib/rate-limit"
+import { addSecurityHeaders } from "./lib/security"
+import { rateLimit } from "./lib/rate-limit"
 
 const isOnboardingRoute = createRouteMatcher(["/onboarding"])
 // Define public routes that don't require authentication

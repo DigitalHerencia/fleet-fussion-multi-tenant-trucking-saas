@@ -1,4 +1,4 @@
-import { checkRole } from "@/lib/utils/roles"
+import { checkRole } from "../../lib/utils/roles"
 import { redirect } from "next/navigation"
 import { SearchUsers } from "./SearchUsers"
 import { clerkClient } from "@clerk/nextjs/server"

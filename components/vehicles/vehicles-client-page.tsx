@@ -3,9 +3,9 @@
 import { useState } from "react"
 import { VehicleCard } from "./vehicle-card"
 import { VehicleDetailsDialog } from "./vehicle-details-dialog"
-import { getDocumentsForVehicle } from "@/lib/fetchers/documents"
-import VehicleDocuments from "@/features/vehicles/VehicleDocuments"
-import type { Vehicle, Document } from "@/types/types"
+import { getDocumentsForVehicle } from "../../lib/fetchers/documents"
+import VehicleDocuments from "../../features/vehicles/VehicleDocuments"
+import type { Vehicle, Document } from "../../types/types"
 
 interface VehiclesClientProps {
     vehicles: Vehicle[]

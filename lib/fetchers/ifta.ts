@@ -1,10 +1,10 @@
-import { db } from "@/db"
-import { iftaTrips, iftaReports, vehicles, drivers } from "@/db/schema"
+import { db } from "../../db"
+import { iftaTrips, iftaReports, vehicles, drivers } from "../../db/schema"
 import { eq, and, between, desc, sql, gte, lte } from "drizzle-orm"
 import { endOfQuarter, startOfQuarter, format } from "date-fns"
-import { getCurrentCompanyId } from "@/lib/auth"
+import { getCurrentCompanyId } from "../auth"
 import { cache } from "react"
-import { calculateJurisdictionTax } from "@/lib/utils"
+import { calculateJurisdictionTax } from "../utils"
 
 // Helper function to get current company ID
 async function getCompanyId(): Promise<string> {

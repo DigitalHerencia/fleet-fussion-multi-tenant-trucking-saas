@@ -1,5 +1,5 @@
-import { PublicNav } from "@/components/public-nav"
-import PricingSection from "@/components/pricing-section"
+import { PublicNav } from "../../components/public-nav"
+import PricingSection from "../../components/pricing-section"
 import Link from "next/link"
 
 export default function PricingPage() {
