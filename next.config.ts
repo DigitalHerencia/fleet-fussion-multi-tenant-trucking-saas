@@ -54,7 +54,7 @@ const nextConfig: NextConfig = {
         "@/constants": path.resolve(__dirname, "lib/constants"),
         "@/fetchers": path.resolve(__dirname, "lib/fetchers"),
         "@/validations": path.resolve(__dirname, "lib/validations"),
-        "@app": path.resolve(__dirname, "app"),
+        "@/app": path.resolve(__dirname, "app"), 
       },
     };
     return config;
