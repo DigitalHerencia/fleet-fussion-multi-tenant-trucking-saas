@@ -6,7 +6,7 @@ import { VehicleDetailsDialog } from "./vehicle-details-dialog";
 import { getDocumentsForVehicle } from "@/lib/fetchers/documents";
 import VehicleDocuments from "@/features/vehicles/VehicleDocuments";
 import type { Document } from "@/types/types";
-import { Vehicle } from "@/types/types";
+import {type Vehicle } from "@/types/types";
 
 
 interface VehiclesClientProps {

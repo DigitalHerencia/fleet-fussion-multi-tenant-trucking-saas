@@ -2,7 +2,7 @@ import { Webhook } from "svix";
 import { headers } from "next/headers";
 import { db } from "@/db/index";
 import { companies } from "@/db/schema";
-import { ClerkWebhookEvent } from "@/types/clerk-webhook";
+import { type ClerkWebhookEvent } from "@/types/clerk-webhook";
 
 export async function POST(req: Request) {
   // Get the headers
