@@ -7,6 +7,93 @@
 @import "../styles/tokens.css";
 @import "tailwindcss";
 
-body {
-  font-family: system-ui, sans-serif;
+/**
+ * This file contains all CSS custom properties (variables) and design tokens for FleetFusion.
+ *   Move all :root and @media (prefers-color-scheme: dark) variable definitions here from app/globals.css.
+ *
+ * @format
+ */
+
+@theme {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --primary: 0 0% 9%;
+    --secondary: 0 0% 96.1%;
+    --border: 0 0% 89.8%;
+    --radius: 0.5rem;
+    --chart-1: 221 83% 53%;
+    --chart-2: 162 70% 51%;
+    --chart-3: 41 97% 56%;
+    --chart-4: 340 82% 52%;
+    --chart-5: 271 91% 65%;
+    --chart-6: 0 78% 63%;
+    --chart-7: 192 100% 44%;
+    --chart-8: 120 61% 50%;
+    --sidebar-width-icon: 3rem;
+    --sidebar-width: 15rem;
+    --sidebar-width-expanded: 20rem;
+    --sidebar-width-collapsed: 5rem;
+    --sidebar-transition-duration: 0.3s;
+    --sidebar: 0 0% 100%;
+    --sidebar-foreground: 0 0% 3.9%;
+    --sidebar-border: 0 0% 89.8%;
+    --sidebar-accent: 221 83% 53%;
+    --color-revenue:  221 83% 53%;
+    --color-expenses: 162 70% 51%;
+    --color-profit: 41 97% 56%;
+    --color-value: 340 82% 52%;
+    --status-active-bg: 120 60% 90%;
+    --status-active-fg: 120 40% 30%;
+    --status-inactive-bg: 0 80% 95%;
+    --status-inactive-fg: 0 60% 40%;
+    --status-on-leave-bg: 45 100% 90%;
+    --status-on-leave-fg: 45 80% 40%;
+    --status-pending-bg: 45 100% 90%;
+    --status-pending-fg: 45 80% 40%;
+    --status-assigned-bg: 221 83% 95%;
+    --status-assigned-fg: 221 83% 40%;
+    --status-in-transit-bg: 271 91% 95%;
+    --status-in-transit-fg: 271 91% 40%;
+    --status-completed-bg: 120 60% 90%;
+    --status-completed-fg: 120 40% 30%;
+    --status-cancelled-bg: 0 80% 95%;
+    --status-cancelled-fg: 0 60% 40%;
+    --status-maintenance-bg: 45 100% 90%;
+    --status-maintenance-fg: 45 80% 40%;
+    --status-default-bg: 0 0% 90%;
+    --status-default-fg: 0 0% 30%;
+    --radix-select-trigger-width: 12rem;
+    --radix-select-trigger-height: 2.5rem;
+}
+
+@media (prefers-color-scheme: dark) {
+    @theme {
+        --background: 0 0% 3.9%;
+        --foreground: 0 0% 98%;
+        --card: 0 0% 3.9%;
+        --primary: 0 0% 98%;
+        --secondary: 0 0% 14.9%;
+        --border: 0 0% 14.9%;
+   }
+}
+
+}
+@media (prefers-color-scheme: light) {
+    @theme {
+        --background: 0 0% 100%;
+        --foreground: 0 0% 3.9%;
+        --card: 0 0% 100%;
+        --primary: 0 0% 9%;
+        --secondary: 0 0% 96.1%;
+        --border: 0 0% 89.8%;
+    }
+}
+
+@layer base {
+    body {
+        font-family: system-ui, sans-serif;
+        background-color: var(--background);
+        color: var(--foreground);
+    }
 }

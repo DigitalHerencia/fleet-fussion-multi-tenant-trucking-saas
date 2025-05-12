@@ -22,25 +22,72 @@
       }
     ],
     "paths": {
-      "@/styles/*": ["./styles/*"],
-      "@/components/*": ["./components/*"],
-      "@/lib/*": ["./lib/*"],
-      "@/types/*": ["./types/*"],
-      "@/hooks/*": ["./hooks/*"],
-      "@/features/*": ["./features/*"],
-      "@/app/*": ["./app/*"],
-      "@/db/*": ["./db/*"],
-      "@/db": ["./db/index.ts"],
-      "@/utils/*": ["./utils/*"],
-      "@/docs/*": ["./docs/*"],
-      "@/public/*": ["./public/*"],
-      "@/context/*": ["./context/*"]
+      "@/styles/*": [
+        "./styles/*"
+      ],
+      "@/components/*": [
+        "./components/*"
+      ],
+      "@/lib/*": [
+        "./lib/*"
+      ],
+      "@/types/*": [
+        "./types/*"
+      ],
+      "@/hooks/*": [
+        "./hooks/*"
+      ],
+      "@/features/*": [
+        "./features/*"
+      ],
+      "@app/*": [
+        "./app/*"
+      ],
+      "@/db/*": [
+        "./db/*"
+      ],
+      "@/db": [
+        "./db/index.ts"
+      ],
+      "@/utils/*": [
+        "./utils/*"
+      ],
+      "@/docs/*": [
+        "./docs/*"
+      ],
+      "@/public/*": [
+        "./public/*"
+      ],
+      "@/context/*": [
+        "./context/*"
+      ],
+      "@/settings/*": [
+        "./settings/*"
+      ],
+      "@/dashboard/*": [
+        "./app/dashboard/*"
+      ],
+      "@/ui/*": [
+        "./components/ui/*"
+      ],
+      "@/actions/*": [
+        "./lib/actions/*"
+      ],
+      "@/constants/*": [
+        "./lib/constants/*"
+      ],
+      "@/fetchers/*": [
+        "./lib/fetchers/*"
+      ],
+      "@/validations/*": [
+        "./lib/validations/*"
+      ],
+      "@/dashboard/[companyId]/*": [
+        "./app/dashboard/[companyId]/*"
+      ]
     },
     "forceConsistentCasingInFileNames": true,
-    "allowSyntheticDefaultImports": true,
-    "allowJs": true,
-    "baseUrl": "."
-  },
+    "allowSyntheticDefaultImports": true    },
   "exclude": [
     "node_modules",
     ".next",
@@ -50,6 +97,26 @@
     "next-env.d.ts",
     ".next/types/**/*.ts",
     "**/*.ts",
-    "**/*.tsx"
+    "**/*.tsx",
+    "app/**/*",
+    "components/**/*",
+    "postcss.config.mjs",
+    "tailwind.config.ts",
+    "lib/**/*",
+    "hooks/**/*",
+    "features/**/*",
+    "types/**/*",
+    "utils/**/*",
+    "docs/**/*",
+    "public/**/*",
+    "context/**/*",
+    "settings/**/*",
+    "db/**/*",
+    "actions/**/*",
+    "constants/**/*",
+    "fetchers/**/*",
+    "validations/**/*",
+    "dashboard/**/*",
+    "next.config.ts"
   ]
 }
