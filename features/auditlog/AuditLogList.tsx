@@ -1,8 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { getAuditLogs } from "@/lib/fetchers/auditlog"
-import { LoadingSkeleton } from "@/components/ui/loading-skeleton"
+import { getAuditLogs } from "../../lib/fetchers/auditlog"
+import { LoadingSkeleton } from "../../components/ui/loading-skeleton"
 
 export function AuditLogList({ companyId }: { companyId: string }) {
     const [logs, setLogs] = useState<any[]>([])

@@ -3,10 +3,10 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useActionState } from "react"
-import { settlementSchema, type SettlementFormValues } from "@/lib/validation/settlement-schema"
-import { createSettlement } from "@/lib/actions/settlement-actions"
-import { FormError } from "@/components/ui/form-error"
-import { Button } from "@/components/ui/button"
+import { settlementSchema, type SettlementFormValues } from "../../lib/validation/settlement-schema"
+import { createSettlement } from "../../lib/actions/settlement-actions"
+import { FormError } from "../../components/ui/form-error"
+import { Button } from "../../components/ui/button"
 
 export function SettlementForm() {
     const [state, formAction] = useActionState(

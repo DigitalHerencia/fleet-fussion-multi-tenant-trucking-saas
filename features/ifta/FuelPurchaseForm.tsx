@@ -3,9 +3,9 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useActionState } from "react"
-import { fuelPurchaseSchema, type FuelPurchaseFormData } from "@/lib/validation/fuel-schema"
-import { createFuelPurchaseAction } from "@/lib/actions/ifta-actions"
-import { FormError } from "@/components/ui/form-error"
+import { fuelPurchaseSchema, type FuelPurchaseFormData } from "../../lib/validation/fuel-schema"
+import { createFuelPurchaseAction } from "../../lib/actions/ifta-actions"
+import { FormError } from "../../components/ui/form-error"
 
 type FuelPurchaseFormState = {
     success: boolean

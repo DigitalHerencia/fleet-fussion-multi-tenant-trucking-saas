@@ -1,10 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { DriverDetailsDialog } from "@/components/drivers/driver-details-dialog"
-import { getDocumentsForDriver } from "@/lib/fetchers/documents"
-import DriverDocuments from "@/features/drivers/DriverDocuments"
-import type { Driver, Document } from "@/types/types"
+import { DriverDetailsDialog } from "../../components/drivers/driver-details-dialog"
+import { getDocumentsForDriver } from "../../lib/fetchers/documents"
+import DriverDocuments from "../../features/drivers/DriverDocuments"
+import type { Driver, Document } from "../../types/types"
 
 interface DriversListClientProps {
     drivers: Driver[]

@@ -3,12 +3,12 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useActionState } from "react"
-import { vehicleSchema, type VehicleFormData } from "@/lib/validation/vehicle-schema"
-import { addVehicle } from "@/lib/actions/vehicles"
-import { FormError } from "@/components/ui/form-error"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
+import { vehicleSchema, type VehicleFormData } from "../../lib/validation/vehicle-schema"
+import { addVehicle } from "../../lib/actions/vehicles"
+import { FormError } from "../../components/ui/form-error"
+import { Input } from "../../components/ui/input"
+import { Label } from "../../components/ui/label"
+import { Button } from "../../components/ui/button"
 
 export function VehicleFormClient() {
     const [state, formAction] = useActionState(

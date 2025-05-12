@@ -6,9 +6,9 @@ import { useActionState } from "react"
 import {
     insurancePolicySchema,
     type InsurancePolicyFormValues
-} from "@/lib/validation/insurance-schema"
-import { createInsurancePolicy } from "@/lib/actions/insurance-actions"
-import { FormError } from "@/components/ui/form-error"
+} from "../../lib/validation/insurance-schema"
+import { createInsurancePolicy } from "../../lib/actions/insurance-actions"
+import { FormError } from "../../components/ui/form-error"
 
 export function InsuranceForm() {
     const [state, formAction] = useActionState(

@@ -3,9 +3,9 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useActionState } from "react"
-import { invoiceSchema, type InvoiceFormValues } from "@/lib/validation/invoice-schema"
-import { createInvoice } from "@/lib/actions/invoice-actions"
-import { FormError } from "@/components/ui/form-error"
+import { invoiceSchema, type InvoiceFormValues } from "../../lib/validation/invoice-schema"
+import { createInvoice } from "../../lib/actions/invoice-actions"
+import { FormError } from "../../components/ui/form-error"
 
 export function InvoiceForm() {
     const [state, formAction] = useActionState(

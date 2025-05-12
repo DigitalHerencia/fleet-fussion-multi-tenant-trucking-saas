@@ -1,10 +1,9 @@
 "use client"
 
 import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
 import { useActionState } from "react"
-import { driverCoreSchema } from "@/lib/validation/driver-schema"
-import { FormError } from "@/components/ui/form-error"
+import { driverCoreSchema } from "../../lib/validation/driver-schema"
+import { FormError } from "../../components/ui/form-error"
 import { isValid } from "zod"
 import { z } from "zod"
 

@@ -1,10 +1,10 @@
 "use client"
 
 import { useState, useRef } from "react"
-import { Button } from "@/components/ui/button"
+import { Button } from "../../components/ui/button"
 import { FileText, Download, Eye } from "lucide-react"
-import { uploadDocument } from "@/lib/actions/document-actions"
-import type { Document } from "@/types/types"
+import { uploadDocument } from "../../lib/actions/document-actions"
+import type { Document } from "../../types/types"
 
 interface DriverDocumentsProps {
     driverId: string

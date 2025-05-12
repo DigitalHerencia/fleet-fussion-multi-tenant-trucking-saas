@@ -14,11 +14,11 @@
  * ```
  */
 import { useState, useRef } from "react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { Button } from "../../components/ui/button"
+import { Badge } from "../../components/ui/badge"
 import { Eye, Download, FileText } from "lucide-react"
-import { createComplianceDocument } from "@/lib/actions/compliance-actions"
-import type { ComplianceDocument } from "@/types/types"
+import { createComplianceDocument } from "../../lib/actions/compliance-actions"
+import type { ComplianceDocument } from "../../types/types"
 
 interface ComplianceDocumentsProps {
     documents: ComplianceDocument[]

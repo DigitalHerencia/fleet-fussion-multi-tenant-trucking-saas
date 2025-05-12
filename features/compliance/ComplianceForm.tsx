@@ -3,10 +3,9 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useActionState } from "react"
-import { complianceSchema } from "@/lib/validation/compliance-schema"
-import type { ComplianceFormData } from "@/lib/validation/compliance-schema"
-import { createComplianceAction } from "@/lib/actions/compliance-actions"
-import { FormError } from "@/components/ui/form-error"
+import { complianceSchema } from "../../lib/validation/compliance-schema"
+import type { ComplianceFormData } from "../../lib/validation/compliance-schema"
+import { FormError } from "../../components/ui/form-error"
 
 type FormErrors = {
     title?: string[]

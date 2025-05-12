@@ -3,9 +3,8 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useActionState } from "react"
-import { iftaSchema, type IFTAFormData } from "@/lib/validation/ifta-schema"
-import { createIFTAAction } from "@/lib/actions/ifta-actions"
-import { FormError } from "@/components/ui/form-error"
+import { iftaSchema, type IFTAFormData } from "../../lib/validation/ifta-schema"
+import { FormError } from "../../components/ui/form-error"
 
 export function IFTAForm() {
     const [state, formAction] = useActionState(

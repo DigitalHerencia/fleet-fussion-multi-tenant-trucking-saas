@@ -3,9 +3,8 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useActionState } from "react"
-import { settingsSchema, type SettingsFormData } from "@/lib/validation/settings-schema"
-import { updateSettingsAction } from "@/lib/actions/settings-actions"
-import { FormError } from "@/components/ui/form-error"
+import { settingsSchema, type SettingsFormData } from "../../lib/validation/settings-schema"
+import { FormError } from "../../components/ui/form-error"
 import { isValid } from "zod"
 
 export function SettingsForm({ defaultValues }: { defaultValues: SettingsFormData }) {

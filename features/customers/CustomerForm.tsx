@@ -3,9 +3,9 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useActionState } from "react"
-import { customerCoreSchema } from "@/lib/validation/customer-schema"
-import { createCustomer } from "@/lib/actions/customer-actions"
-import { FormError } from "@/components/ui/form-error"
+import { customerCoreSchema } from "../../lib/validation/customer-schema"
+import { createCustomer } from "../../lib/actions/customer-actions"
+import { FormError } from "../../components/ui/form-error"
 import { z } from "zod"
 
 // Infer the form values type from the schema
