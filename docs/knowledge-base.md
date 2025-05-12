@@ -46,13 +46,13 @@ Welcome to the FleetFusion Knowledge Base. Here you can find answers to common q
 
 - **Cannot upload a document?**
 
-    - Check file type and size limits.
-    - Ensure all required fields are filled.
-    - Contact support if the issue persists.
+  - Check file type and size limits.
+  - Ensure all required fields are filled.
+  - Contact support if the issue persists.
 
 - **Not receiving email invitations or password resets?**
-    - Check your spam or junk folder.
-    - Confirm your email address is correct.
+  - Check your spam or junk folder.
+  - Confirm your email address is correct.
 
 ---
 

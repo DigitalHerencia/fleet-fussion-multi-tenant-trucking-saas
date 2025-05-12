@@ -1,23 +1,27 @@
-import { Suspense } from "react"
-import { DashboardHeader } from "../../../../components/dashboard/dashboard-header"
-import { DashboardShell } from "../../../../components/dashboard/dashboard-shell"
-import { getCompanyById } from "../../../../lib/actions/companies"
-import { getLoadsByCompanyId } from "../../../../lib/actions/loads"
-import Loading from "./loading"
+import { Suspense } from "react";
+import { DashboardHeader } from "@/components/dashboard/dashboard-header";
+import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { getCompanyById } from "@/lib/actions/companies";
+import { getLoadsByCompanyId } from "@/lib/actions/loads";
+import Loading from "./loading";
 
 export default async function CompanyLoadsPage({
-  params
+  params,
 }: {
-  params: { companyId: string }
+  params: { companyId: string };
 }) {
-  const companyId = params.companyId
+  const companyId = params.companyId;
   const [company, loads] = await Promise.all([
     getCompanyById(companyId),
-    getLoadsByCompanyId(companyId)
-  ])
+    getLoadsByCompanyId(companyId),
+  ]);
 
   if (!company) {
-    return <div>Company not found. Please check the URL or select a different company.</div>
+    return (
+      <div>
+        Company not found. Please check the URL or select a different company.
+      </div>
+    );
   }
 
   return (
@@ -48,13 +52,24 @@ export default async function CompanyLoadsPage({
                   <td className="p-2 capitalize">{load.status}</td>
                   <td className="p-2">{`${load.originCity}, ${load.originState}`}</td>
                   <td className="p-2">{`${load.destinationCity}, ${load.destinationState}`}</td>
-                  <td className="p-2">{load.pickupDate ? new Date(load.pickupDate).toLocaleDateString() : "-"}</td>
-                  <td className="p-2">{load.deliveryDate ? new Date(load.deliveryDate).toLocaleDateString() : "-"}</td>
+                  <td className="p-2">
+                    {load.pickupDate
+                      ? new Date(load.pickupDate).toLocaleDateString()
+                      : "-"}
+                  </td>
+                  <td className="p-2">
+                    {load.deliveryDate
+                      ? new Date(load.deliveryDate).toLocaleDateString()
+                      : "-"}
+                  </td>
                 </tr>
               ))}
               {loads.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-4 text-center text-muted-foreground">
+                  <td
+                    colSpan={7}
+                    className="py-4 text-center text-muted-foreground"
+                  >
                     No loads found
                   </td>
                 </tr>
@@ -64,5 +79,5 @@ export default async function CompanyLoadsPage({
         </div>
       </DashboardShell>
     </Suspense>
-  )
+  );
 }

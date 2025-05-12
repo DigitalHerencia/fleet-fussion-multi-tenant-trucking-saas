@@ -1,13 +1,13 @@
 // components/dashboard/dashboard-shell.tsx
 "use client";
 
-import type { ReactNode } from "react"
-import { MainNav } from "../../components/dashboard/main-nav"
-import { UserNav } from "../../components/dashboard/user-nav"
-import { MobileNav } from "../../components/dashboard/mobile-nav"
+import type { ReactNode } from "react";
+import { MainNav } from "@/components/dashboard/main-nav";
+import { UserNav } from "@/components/dashboard/user-nav";
+import { MobileNav } from "@/components/dashboard/mobile-nav";
 
 interface DashboardShellProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
 export function DashboardShell({ children }: DashboardShellProps) {
@@ -26,5 +26,5 @@ export function DashboardShell({ children }: DashboardShellProps) {
         {children}
       </main>
     </div>
-  )
+  );
 }

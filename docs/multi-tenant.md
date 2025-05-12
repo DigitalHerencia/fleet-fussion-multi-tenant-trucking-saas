@@ -27,6 +27,7 @@ Each tenant (trucking company) is represented by:
 - Database constraints enforce referential integrity within tenant boundaries
 
 Example table relationships:
+
 ```
 companies
 └── vehicles (companyId)
@@ -40,10 +41,12 @@ companies
 The application enforces tenant isolation through:
 
 1. **Company Context Provider**: Maintains the selected company in state
+
    - Located at: `context/company-context.tsx`
    - Exposes: `useCompany()` hook for components
 
 2. **Auth-Aware Fetchers**: All data fetchers verify the user has access to the requested company
+
    - Example: `getCompanyByClerkOrgId()` in `lib/actions/companies.ts`
 
 3. **Server Actions**: All mutations validate company access before executing

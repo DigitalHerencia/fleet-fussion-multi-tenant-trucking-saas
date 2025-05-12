@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
+import { useState, useEffect } from "react";
 
 /**
  * Hook to safely handle values that might cause hydration mismatches
@@ -16,14 +16,17 @@ import { useState, useEffect } from "react"
  *   return <span>{formattedDate}</span>
  * }
  */
-export function useHydrationSafeValue<T>(getValue: () => T, initialValue: T): T {
-    const [value, setValue] = useState<T>(initialValue)
-    const [isHydrated, setIsHydrated] = useState(false)
+export function useHydrationSafeValue<T>(
+  getValue: () => T,
+  initialValue: T,
+): T {
+  const [value, setValue] = useState<T>(initialValue);
+  const [isHydrated, setIsHydrated] = useState(false);
 
-    useEffect(() => {
-        setIsHydrated(true)
-        setValue(getValue())
-    }, [getValue])
+  useEffect(() => {
+    setIsHydrated(true);
+    setValue(getValue());
+  }, [getValue]);
 
-    return isHydrated ? value : initialValue
+  return isHydrated ? value : initialValue;
 }

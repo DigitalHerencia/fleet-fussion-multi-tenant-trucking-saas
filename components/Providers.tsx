@@ -1,10 +1,10 @@
 // Centralized Providers component for all context and theme providers
 "use client";
 
-import { ThemeProvider } from "../components/theme-provider";
-import { AuthProvider } from "../context/auth-context";
-import { CompanyProvider } from "../context/company-context";
-import { Toaster } from "../components/ui/toaster";
+import { ThemeProvider } from "@/components/theme-provider";
+import { AuthProvider } from "@/context/auth-context";
+import { CompanyProvider } from "@/context/company-context";
+import { Toaster } from "@/components/ui/toaster";
 import { ReactNode } from "react";
 
 interface ProvidersProps {

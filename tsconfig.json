@@ -1,9 +1,11 @@
 {
   "compilerOptions": {
-    "forceConsistentCasingInFileNames": true,
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "target": "ESNext",
+    "target": "ES2022",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
@@ -19,11 +21,35 @@
         "name": "next"
       }
     ],
-    "baseUrl": "./",
     "paths": {
-      "../../*": ["./*"]
-    }
+      "@/styles/*": ["./styles/*"],
+      "@/components/*": ["./components/*"],
+      "@/lib/*": ["./lib/*"],
+      "@/types/*": ["./types/*"],
+      "@/hooks/*": ["./hooks/*"],
+      "@/features/*": ["./features/*"],
+      "@/app/*": ["./app/*"],
+      "@/db/*": ["./db/*"],
+      "@/db": ["./db/index.ts"],
+      "@/utils/*": ["./utils/*"],
+      "@/docs/*": ["./docs/*"],
+      "@/public/*": ["./public/*"],
+      "@/context/*": ["./context/*"]
+    },
+    "forceConsistentCasingInFileNames": true,
+    "allowSyntheticDefaultImports": true,
+    "allowJs": true,
+    "baseUrl": "."
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "next.config.ts", "postcss.config.ts"],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    ".next",
+    "out"
+  ],
+  "include": [
+    "next-env.d.ts",
+    ".next/types/**/*.ts",
+    "**/*.ts",
+    "**/*.tsx"
+  ]
 }

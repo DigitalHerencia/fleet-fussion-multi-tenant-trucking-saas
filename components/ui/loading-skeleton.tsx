@@ -1,6 +1,6 @@
 // components/ui/loading-skeleton.tsx
 "use client";
-import { Skeleton } from "../../components/ui/skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { ReactNode } from "react";
 
 interface LoadingSkeletonProps {
@@ -8,7 +8,10 @@ interface LoadingSkeletonProps {
   className?: string;
 }
 
-export function LoadingSkeleton({ lines = 3, className }: LoadingSkeletonProps) {
+export function LoadingSkeleton({
+  lines = 3,
+  className,
+}: LoadingSkeletonProps) {
   return (
     <div className={className || "space-y-2"}>
       {Array.from({ length: lines }).map((_, i) => (

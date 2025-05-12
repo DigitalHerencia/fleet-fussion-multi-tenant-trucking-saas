@@ -105,23 +105,27 @@ FleetFusion is a modern, production-ready, multi-tenant SaaS platform for compre
 ### Installation
 
 1. Clone the repository
+
 ```bash
 git clone https://github.com/your-username/fleet-fusion.git
 cd fleet-fusion
 ```
 
 2. Install dependencies
+
 ```bash
 npm install
 ```
 
 3. Set up environment variables
+
 ```bash
 cp .env.example .env.local
 # Edit .env.local with your configuration
 ```
 
 4. Run the development server
+
 ```bash
 npm run dev
 ```
@@ -131,6 +135,7 @@ npm run dev
 ### Environment Variables
 
 Key environment variables required:
+
 - `DATABASE_URL`: PostgreSQL connection string
 - `CLERK_SECRET_KEY`: Clerk API secret key
 - `CLERK_PUBLISHABLE_KEY`: Clerk publishable key

@@ -36,6 +36,7 @@ FleetFusion uses a modern Next.js 15 and React 19 architecture with:
 3. No client-side fetching via useEffect or SWR
 
 Example:
+
 ```tsx
 // Server Component (e.g., app/vehicles/page.tsx)
 export default async function VehiclesPage() {
@@ -44,7 +45,7 @@ export default async function VehiclesPage() {
 }
 
 // Client Component (e.g., components/vehicles/vehicles-client.tsx)
-"use client"
+("use client");
 export function VehiclesClient({ vehicles }) {
   // Client-side interactivity, but no data fetching
 }
@@ -61,10 +62,11 @@ For global state that is needed across multiple routes:
 - **ToastContext**: Application notifications
 
 Example usage:
+
 ```tsx
-"use client"
-import { useAuth } from "../../context/auth-context";
-import { useCompany } from "../../context/company-context";
+"use client";
+import { useAuth } from "@/context/auth-context";
+import { useCompany } from "@/context/company-context";
 
 export function MyComponent() {
   const { user } = useAuth();
@@ -82,15 +84,16 @@ For data mutations (create, update, delete):
 3. Use `useOptimistic` for immediate UI feedback
 
 Example:
+
 ```tsx
-"use client"
-import { updateVehicle } from "../../lib/actions/vehicles";
+"use client";
+import { updateVehicle } from "@/lib/actions/vehicles";
 import { useOptimistic } from "react";
 
 export function VehicleForm({ vehicle }) {
   const [optimisticVehicle, updateOptimisticVehicle] = useOptimistic(
     vehicle,
-    (state, newData) => ({ ...state, ...newData })
+    (state, newData) => ({ ...state, ...newData }),
   );
 
   async function handleSubmit(formData) {
@@ -99,12 +102,8 @@ export function VehicleForm({ vehicle }) {
     // Actual server action
     await updateVehicle(formData);
   }
-  
-  return (
-    <form action={handleSubmit}>
-      {/* Form fields */}
-    </form>
-  );
+
+  return <form action={handleSubmit}>{/* Form fields */}</form>;
 }
 ```
 

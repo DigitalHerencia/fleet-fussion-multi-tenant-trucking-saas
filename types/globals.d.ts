@@ -1,14 +1,14 @@
-export {}
+export {};
 
-export type Roles = "admin" | "moderator"
+export type Roles = "admin" | "moderator";
 
 declare global {
-    interface CustomJwtSessionClaims {
-        metadata: {
-            onboardingComplete?: boolean
-            applicationName?: string
-            applicationType?: string
-            role?: Roles
-        }
-    }
+  interface CustomJwtSessionClaims {
+    metadata: {
+      onboardingComplete?: boolean;
+      applicationName?: string;
+      applicationType?: string;
+      role?: Roles;
+    };
+  }
 }

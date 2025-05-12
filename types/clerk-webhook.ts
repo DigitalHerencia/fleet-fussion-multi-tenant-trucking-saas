@@ -11,7 +11,10 @@ export type ClerkWebhookEventType =
   | "organizationMembership.updated"
   | "organizationMembership.deleted";
 
-export interface ClerkWebhookBaseEvent<TType extends ClerkWebhookEventType, TData = any> {
+export interface ClerkWebhookBaseEvent<
+  TType extends ClerkWebhookEventType,
+  TData = Record<string, unknown>
+> {
   object: "event";
   type: TType;
   data: TData;
@@ -48,6 +51,15 @@ export type ClerkWebhookEvent =
   | ClerkWebhookBaseEvent<"organization.created", ClerkOrganizationEventData>
   | ClerkWebhookBaseEvent<"organization.updated", ClerkOrganizationEventData>
   | ClerkWebhookBaseEvent<"organization.deleted", ClerkOrganizationEventData>
-  | ClerkWebhookBaseEvent<"organizationMembership.created", ClerkOrganizationMembershipEventData>
-  | ClerkWebhookBaseEvent<"organizationMembership.updated", ClerkOrganizationMembershipEventData>
-  | ClerkWebhookBaseEvent<"organizationMembership.deleted", ClerkOrganizationMembershipEventData>;
+  | ClerkWebhookBaseEvent<
+      "organizationMembership.created",
+      ClerkOrganizationMembershipEventData
+    >
+  | ClerkWebhookBaseEvent<
+      "organizationMembership.updated",
+      ClerkOrganizationMembershipEventData
+    >
+  | ClerkWebhookBaseEvent<
+      "organizationMembership.deleted",
+      ClerkOrganizationMembershipEventData
+    >;
