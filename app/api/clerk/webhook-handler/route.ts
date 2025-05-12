@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { Webhook } from "svix"
-import { db, getCompanyIdFromClerkOrgId } from "@/db"
-import { companies, companyUsers } from "@/db/schema"
+import { db, getCompanyIdFromClerkOrgId } from "../../../../db"
+import { companies, companyUsers } from "../../../../db/schema"
 import { eq, and } from "drizzle-orm"
 
 // Clerk will POST events to this endpoint. Handle user/org events here.

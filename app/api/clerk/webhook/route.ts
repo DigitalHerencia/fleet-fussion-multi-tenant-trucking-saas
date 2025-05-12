@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { createClerkWebhook } from "@/lib/clerk-webhook"
+import { createClerkWebhook } from "../../../../lib/clerk-webhook"
 
 // POST /api/clerk/webhook
 export async function POST(req: NextRequest) {

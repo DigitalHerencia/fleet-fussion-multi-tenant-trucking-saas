@@ -2,11 +2,11 @@
 
 import { useParams } from "next/navigation"
 import { useEffect, useState } from "react"
-import { DashboardHeader } from "@/components/dashboard/dashboard-header"
-import { DashboardShell } from "@/components/dashboard/dashboard-shell"
+import { DashboardHeader } from "../../../../components/dashboard/dashboard-header"
+import { DashboardShell } from "../../../../components/dashboard/dashboard-shell"
 import { Loader2 } from "lucide-react"
-import { Button, Input, Label } from "@/components/ui"
-import { getCompanyById } from "@/lib/actions/companies"
+import { Button, Input, Label } from "../../../../components/ui"
+import { getCompanyById } from "../../../../lib/actions/companies"
 
 export default function CompanySettingsPage() {
     const { companyId } = useParams() as { companyId: string }

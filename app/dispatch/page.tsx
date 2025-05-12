@@ -1,13 +1,13 @@
-import { DashboardHeader } from "@/components/dashboard/dashboard-header"
-import { DashboardShell } from "@/components/dashboard/dashboard-shell"
-import { DispatchBoard } from "@/components/dispatch/dispatch-board"
-import { Button } from "@/components/ui/button"
+import { DashboardHeader } from "../../components/dashboard/dashboard-header"
+import { DashboardShell } from "../../components/dashboard/dashboard-shell"
+import { DispatchBoard } from "../../components/dispatch/dispatch-board"
+import { Button } from "../../components/ui/button"
 import { Plus } from "lucide-react"
 import Link from "next/link"
-import { getCurrentCompanyId } from "@/lib/auth"
-import { getLoadsForCompany } from "@/lib/loads"
+import { getCurrentCompanyId } from "../../lib/auth"
+import { getLoadsForCompany } from "../../lib/loads"
 import { Suspense } from "react"
-import { DispatchSkeleton } from "@/components/dispatch/dispatch-skeleton"
+import { DispatchSkeleton } from "../../components/dispatch/dispatch-skeleton"
 
 // Redefine types to match DispatchBoard expectations
 interface Driver {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import PDFDocument from "pdfkit"
-import { getIftaReports } from "@/lib/actions/ifta-actions"
+import { getIftaReports } from "../../../lib/actions/ifta-actions"
 
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url)

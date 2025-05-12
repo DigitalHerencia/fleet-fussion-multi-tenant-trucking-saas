@@ -1,8 +1,8 @@
 import { Suspense } from "react"
-import { DashboardHeader } from "@/components/dashboard/dashboard-header"
-import { DashboardShell } from "@/components/dashboard/dashboard-shell"
-import { getCompanyById } from "@/lib/actions/companies"
-import { getLoadsByCompanyId } from "@/lib/actions/loads"
+import { DashboardHeader } from "../../../../components/dashboard/dashboard-header"
+import { DashboardShell } from "../../../../components/dashboard/dashboard-shell"
+import { getCompanyById } from "../../../../lib/actions/companies"
+import { getLoadsByCompanyId } from "../../../../lib/actions/loads"
 import Loading from "./loading"
 
 export default async function CompanyLoadsPage({

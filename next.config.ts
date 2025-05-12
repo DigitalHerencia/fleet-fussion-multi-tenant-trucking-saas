@@ -1,4 +1,4 @@
-/** @type {import('next').NextConfig} */
+
 const nextConfig = {
     eslint: {
         ignoreDuringBuilds: true
@@ -24,6 +24,5 @@ const nextConfig = {
             allowedOrigins: ["localhost:3000", "fleet-fusion.vercel.app"]
         }
     }
-} satisfies import("next").NextConfig;
-
+}
 export default nextConfig

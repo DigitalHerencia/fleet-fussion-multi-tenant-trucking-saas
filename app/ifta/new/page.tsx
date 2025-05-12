@@ -1,4 +1,4 @@
-import { IFTAForm } from "@/features/ifta/IFTAForm"
+import { IFTAForm } from "../../../features/ifta/IFTAForm"
 
 export default function NewIFTARecordPage() {
     return (

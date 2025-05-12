@@ -1,9 +1,9 @@
-import { getVehiclesForCompany } from "@/lib/fetchers/vehicles"
-import { PageHeader } from "@/components/ui/page-header"
-import { Button } from "@/components/ui/button"
+import { getVehiclesForCompany } from "../../lib/fetchers/vehicles"
+import { PageHeader } from "../../components/ui/page-header"
+import { Button } from "../../components/ui/button"
 import { Link, PlusCircle } from "lucide-react"
-import { VehiclesClient } from "@/components/vehicles/vehicles-client-page"
-import { getCurrentUserId, getCurrentCompanyId } from "@/lib/auth"
+import { VehiclesClient } from "../../components/vehicles/vehicles-client-page"
+import { getCurrentUserId, getCurrentCompanyId } from "../../lib/auth"
 
 export default async function VehiclesPage() {
     // Get current user for permissions checks

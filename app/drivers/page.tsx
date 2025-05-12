@@ -1,10 +1,8 @@
-import { getDriversForCompany } from "@/lib/fetchers/drivers"
-import { DashboardShell } from "@/components/dashboard/dashboard-shell"
-import { PageHeader } from "@/components/ui/page-header"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { DriversListClient } from "@/features/drivers/drivers-list-client"
-import { getCurrentCompanyId } from "@/lib/auth"
+import { getDriversForCompany } from "../../lib/fetchers/drivers"
+import { DashboardShell } from "../../components/dashboard/dashboard-shell"
+import { PageHeader } from "../../components/ui/page-header"
+import { DriversListClient } from "../../features/drivers/drivers-list-client"
+import { getCurrentCompanyId } from "../../lib/auth"
 
 // Server Component: Fetches drivers and renders the client list UI
 export default async function DriversPage() {

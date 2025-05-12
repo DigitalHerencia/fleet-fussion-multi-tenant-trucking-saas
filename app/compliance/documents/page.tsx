@@ -1,6 +1,6 @@
-import { getComplianceDocuments } from "@/lib/fetchers/compliance-documents"
-import ComplianceDocuments from "@/features/compliance/ComplianceDocuments"
-import { getCurrentCompanyId } from "@/lib/auth"
+import { getComplianceDocuments } from "../../../lib/fetchers/compliance-documents"
+import ComplianceDocuments from "../../../features/compliance/ComplianceDocuments"
+import { getCurrentCompanyId } from "../../../lib/auth"
 
 export default async function ComplianceDocumentsPage() {
     const companyId = await getCurrentCompanyId()

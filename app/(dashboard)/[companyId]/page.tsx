@@ -1,8 +1,8 @@
 // app/(dashboard)/[companyId]/page.tsx
 import { redirect } from "next/navigation"
-import { getUserRoleInCompany, getCurrentUserId } from "@/lib/auth"
-import { UserRole } from "@/db/schema"
-import { Card, CardContent } from "@/components/ui/card"
+import { getUserRoleInCompany, getCurrentUserId } from "../../../lib/auth"
+import { UserRole } from "../../../db/schema"
+import { Card, CardContent } from "../../../components/ui/card"
 
 interface DashboardPageProps {
     params: {

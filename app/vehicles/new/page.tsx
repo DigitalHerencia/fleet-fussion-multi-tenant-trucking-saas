@@ -1,5 +1,5 @@
-import {VehicleFormClient} from "@/features/vehicles/VehicleForm"
-import { PageHeader } from "@/components/ui/page-header"
+import {VehicleFormClient} from "../../../features/vehicles/VehicleForm"
+import { PageHeader } from "../../../components/ui/page-header"
 
 export default function NewVehiclePage() {
     return (

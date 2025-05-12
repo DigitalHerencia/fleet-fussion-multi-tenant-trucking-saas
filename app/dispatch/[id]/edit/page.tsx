@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation"
-import { DashboardHeader } from "@/components/dashboard/dashboard-header"
-import { DashboardShell } from "@/components/dashboard/dashboard-shell"
-import LoadForm from "@/features/dispatch/LoadForm"
-import { getLoadById, getAvailableDrivers, getAvailableVehicles } from "@/lib/actions/load-actions"
+import { DashboardHeader } from "../../../../components/dashboard/dashboard-header"
+import { DashboardShell } from "../../../../components/dashboard/dashboard-shell"
+import LoadForm from "../../../../features/dispatch/LoadForm"
+import { getLoadById, getAvailableDrivers, getAvailableVehicles } from "../../../../lib/actions/load-actions"
 import { Suspense } from "react"
-import { Skeleton } from "@/components/ui/skeleton"
+import { Skeleton } from "../../../../components/ui/skeleton"
 
 interface EditLoadPageProps {
     params: { id: string }

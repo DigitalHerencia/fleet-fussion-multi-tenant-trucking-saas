@@ -3,7 +3,7 @@
 import * as React from "react"
 import { useUser } from "@clerk/nextjs"
 import { useRouter } from "next/navigation"
-import { completeOnboarding } from "./_actions"
+import { completeOnboarding } from "./actions"
 
 export default function OnboardingComponent() {
     const [error, setError] = React.useState("")

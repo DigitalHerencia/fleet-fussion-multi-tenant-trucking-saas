@@ -1,7 +1,7 @@
-import { getDriversForCompany } from "@/lib/fetchers/drivers"
-import { getVehiclesForCompany } from "@/lib/fetchers/vehicles"
-import LoadForm from "@/features/dispatch/LoadForm"
-import { getCurrentCompanyId } from "@/lib/auth"
+import { getDriversForCompany } from "../../../lib/fetchers/drivers"
+import { getVehiclesForCompany } from "../../../lib/fetchers/vehicles"
+import LoadForm from "../../../features/dispatch/LoadForm"
+import { getCurrentCompanyId } from "../../../lib/auth"
 
 export default async function NewLoadPage() {
     const companyIdStr = await getCurrentCompanyId()

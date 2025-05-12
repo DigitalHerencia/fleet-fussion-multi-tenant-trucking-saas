@@ -1,6 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
-import { PublicNav } from "@/components/public-nav"
+import { PublicNav } from "../../components/public-nav"
 
 export default function AboutPage() {
     return (

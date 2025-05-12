@@ -1,6 +1,6 @@
-import { SettingsForm } from "@/features/settings/SettingsForm"
-import { getCompanySettings } from "@/lib/fetchers/settings"
-import { getCurrentCompanyId } from "@/lib/auth"
+import { SettingsForm } from "../../features/settings/SettingsForm"
+import { getCompanySettings } from "../../lib/fetchers/settings"
+import { getCurrentCompanyId } from "../../lib/auth"
 
 export default async function SettingsPage() {
     const companyId = await getCurrentCompanyId()

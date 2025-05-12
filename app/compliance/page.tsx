@@ -1,24 +1,24 @@
 export const dynamic = "force-dynamic"
 
 import { Suspense } from "react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { AlertTriangle, ClipboardCheck } from "lucide-react"
-import { DataTable } from "@/components/ui/data-table"
-import { columns as driverColumns } from "@/components/compliance/driver-compliance-table"
-import { columns as vehicleColumns } from "@/components/compliance/vehicle-compliance-table"
-import { columns as documentColumns } from "@/components/compliance/compliance-documents"
-import { PageHeader } from "@/components/ui/page-header"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
+import { Button } from "../../components/ui/button"
+import { AlertTriangle } from "lucide-react"
+import { DataTable } from "../../components/ui/data-table"
+import { columns as driverColumns } from "../../components/compliance/driver-compliance-table"
+import { columns as vehicleColumns } from "../../components/compliance/vehicle-compliance-table"
+import { columns as documentColumns } from "../../components/compliance/compliance-documents"
+import { PageHeader } from "../../components/ui/page-header"
 import {
     getDriverComplianceData,
     getVehicleComplianceData,
     getComplianceDocumentData
-} from "@/lib/fetchers/compliance"
-import { getCurrentCompanyId } from "@/lib/auth"
-import { ComplianceDashboard } from "@/components/compliance/compliance-dashboard"
+} from "../../lib/fetchers/compliance"
+import { getCurrentCompanyId } from "../../lib/auth"
+import { ComplianceDashboard } from "../../components/compliance/compliance-dashboard"
 import { type ColumnDef } from "@tanstack/react-table"
-import type { ComplianceDriver, ComplianceVehicle, ComplianceDocument } from "@/types/compliance"
+import type { ComplianceDriver, ComplianceVehicle, ComplianceDocument } from "../../types/compliance"
 
 // Ensure the documentColumns are properly typed as ComplianceDocument
 const typedDocumentColumns = documentColumns as unknown as ColumnDef<ComplianceDocument, unknown>[]

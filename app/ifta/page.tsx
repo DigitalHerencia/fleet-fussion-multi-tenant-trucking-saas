@@ -1,16 +1,16 @@
 export const dynamic = "force-dynamic"
 
 import { Suspense } from "react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
+import { Button } from "../../components/ui/button"
 import { BarChart3, CalendarIcon, FileText, MapPin } from "lucide-react"
-import { PageHeader } from "@/components/ui/page-header"
-import { IftaTripTable } from "@/components/ifta/ifta-trip-table"
-import type { IftaTrip } from "@/components/ifta/ifta-trip-table"
-import { IftaReportTable } from "@/components/ifta/ifta-report-table"
-import type { IftaReport } from "@/components/ifta/ifta-report-table"
-import { getIftaTrips, getIftaReports, getIftaSummaryMetrics } from "@/lib/fetchers/ifta"
+import { PageHeader } from "../../components/ui/page-header"
+import { IftaTripTable } from "../../components/ifta/ifta-trip-table"
+import type { IftaTrip } from "../../components/ifta/ifta-trip-table"
+import { IftaReportTable } from "../../components/ifta/ifta-report-table"
+import type { IftaReport } from "../../components/ifta/ifta-report-table"
+import { getIftaTrips, getIftaReports, getIftaSummaryMetrics } from "../../lib/fetchers/ifta"
 
 export default async function IFTAPage() {
     // Fetch summary metrics for dashboard cards

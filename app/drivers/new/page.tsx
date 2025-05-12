@@ -1,4 +1,4 @@
-import { DriverForm } from "@/features/drivers/DriverForm"
+import { DriverForm } from "../../../features/drivers/DriverForm"
 
 export default function NewDriverPage() {
     return (
