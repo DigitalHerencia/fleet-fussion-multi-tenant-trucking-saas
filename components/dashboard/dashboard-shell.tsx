@@ -2,9 +2,9 @@
 "use client";
 
 import type { ReactNode } from "react"
-import { MainNav } from "@/components/dashboard/main-nav"
-import { UserNav } from "@/components/dashboard/user-nav"
-import { MobileNav } from "@/components/dashboard/mobile-nav"
+import { MainNav } from "../../components/dashboard/main-nav"
+import { UserNav } from "../../components/dashboard/user-nav"
+import { MobileNav } from "../../components/dashboard/mobile-nav"
 
 interface DashboardShellProps {
   children: ReactNode

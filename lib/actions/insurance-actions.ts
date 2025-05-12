@@ -1,11 +1,11 @@
 "use server"
 
-import { db } from "@/db"
-import { insurancePolicies } from "@/db/schema"
-import { insurancePolicySchema } from "@/lib/validation/insurance-schema"
-import { getCurrentCompanyId } from "@/lib/auth"
+import { db } from "../../db"
+import { insurancePolicies } from "../../db/schema"
+import { insurancePolicySchema } from "../../lib/validation/insurance-schema"
+import { getCurrentCompanyId } from "../../lib/auth"
 import { eq } from "drizzle-orm"
-import type { ApiResult } from "@/types/api"
+import type { ApiResult } from "../../types/api"
 
 export async function createInsurancePolicy(formData: FormData): Promise<ApiResult<any>> {
     try {

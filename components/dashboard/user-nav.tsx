@@ -1,7 +1,7 @@
 "use client"
 
-import { ThemeToggle } from "@/components/theme-toggle"
-import { useAuth } from "@/context/auth-context"
+import { ThemeToggle } from "../../components/theme-toggle"
+import { useAuth } from "../../context/auth-context"
 import { useUser, UserButton, OrganizationSwitcher } from "@clerk/nextjs"
 import { useTheme } from "next-themes"
 

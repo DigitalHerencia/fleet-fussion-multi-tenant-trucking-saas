@@ -1,13 +1,13 @@
 "use server"
 
-import { db } from "@/db"
-import { complianceDocuments, hosLogs, complianceRecords } from "@/db/schema"
+import { db } from "../../db"
+import { complianceDocuments, hosLogs, complianceRecords } from "../../db/schema"
 import { eq, and } from "drizzle-orm"
 import { z } from "zod"
-import { complianceSchema } from "@/lib/validation/compliance-schema"
-import { uploadToVercelBlob } from "@/lib/blob"
-import { getCurrentCompanyId } from "@/lib/auth"
-import type { ApiResult } from "@/types/api"
+import { complianceSchema } from "../../lib/validation/compliance-schema"
+import { uploadToVercelBlob } from "../../lib/blob"
+import { getCurrentCompanyId } from "../../lib/auth"
+import type { ApiResult } from "../../types/api"
 
 // Zod schema for server-side validation
 const hosLogSchema = z.object({

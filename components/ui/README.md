@@ -18,8 +18,8 @@ This directory contains reusable UI components built with React and Tailwind CSS
 Import components as needed in feature modules or pages:
 
 ```tsx
-import { Button } from "@/components/ui/button"
-import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet"
+import { Button } from "../../components/ui/button"
+import { Sheet, SheetTrigger, SheetContent } from "../../components/ui/sheet"
 ```
 
 ## Button Component API

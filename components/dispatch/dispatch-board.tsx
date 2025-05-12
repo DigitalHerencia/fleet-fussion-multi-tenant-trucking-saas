@@ -1,11 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { LoadCard } from "@/components/dispatch/load-card"
-import { LoadDetailsDialog } from "@/components/dispatch/load-details-dialog"
+import { Badge } from "../../components/ui/badge"
+import { Button } from "../../components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs"
+import { LoadCard } from "../../components/dispatch/load-card"
+import { LoadDetailsDialog } from "../../components/dispatch/load-details-dialog"
 import { PlusCircle, Filter } from "lucide-react"
 import Link from "next/link"
 

@@ -1,5 +1,5 @@
 // The server wrapper for vehicle utilization metrics that fetches data
-import { getVehicleUtilization } from "@/lib/fetchers/analytics"
+import { getVehicleUtilization } from "../../lib/fetchers/analytics"
 import { VehicleUtilization } from "./vehicle-utilization"
 
 interface VehicleUtilizationServerProps {

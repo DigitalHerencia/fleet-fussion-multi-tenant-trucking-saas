@@ -8,19 +8,19 @@ import {
     DialogTitle,
     DialogFooter,
     DialogDescription
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+} from "../../components/ui/dialog"
+import { Button } from "../../components/ui/button"
+import { Badge } from "../../components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue
-} from "@/components/ui/select"
-import { Label } from "@/components/ui/label"
+} from "../../components/ui/select"
+import { Label } from "../../components/ui/label"
 import {
     MapPin,
     Calendar,
@@ -32,10 +32,10 @@ import {
     Weight,
     Route
 } from "lucide-react"
-import { formatDate, formatCurrency } from "@/lib/utils"
+import { formatDate, formatCurrency } from "../../lib/utils"
 import Link from "next/link"
-import { toast } from "@/components/ui/use-toast"
-import { updateLoad } from "@/lib/actions/load-actions"
+import { toast } from "../../components/ui/use-toast"
+import { updateLoad } from "../../lib/actions/load-actions"
 
 interface Driver {
     id: string

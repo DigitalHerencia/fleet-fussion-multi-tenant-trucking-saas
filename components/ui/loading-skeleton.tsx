@@ -1,6 +1,6 @@
 // components/ui/loading-skeleton.tsx
 "use client";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "../../components/ui/skeleton";
 import type { ReactNode } from "react";
 
 interface LoadingSkeletonProps {

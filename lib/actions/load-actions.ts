@@ -2,15 +2,15 @@
 
 import { z } from "zod"
 import { revalidatePath } from "next/cache"
-import { db } from "@/db"
+import { db } from "../../db"
 import {
     loads as loadsSchema,
     drivers as driversSchema,
     vehicles as vehiclesSchema,
     UserRole
-} from "@/db/schema"
+} from "../../db/schema"
 import { eq, and } from "drizzle-orm"
-import { getCurrentCompanyId, authorizeRoles } from "@/lib/auth"
+import { getCurrentCompanyId, authorizeRoles } from "../../lib/auth"
 import { v4 as uuidv4 } from "uuid"
 
 // Helper function to protect routes based on role

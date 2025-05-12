@@ -1,12 +1,12 @@
 "use server"
 
-import { db } from "@/db"
-import { companies, companyUsers } from "@/db/schema"
+import { db } from "../../db"
+import { companies, companyUsers } from "../../db/schema"
 import { eq, and, desc } from "drizzle-orm"
 import { z } from "zod"
 import { cookies } from "next/headers"
 import { revalidatePath } from "next/cache"
-import { getCurrentUserId } from "@/lib/auth"
+import { getCurrentUserId } from "../../lib/auth"
 import { clerkClient } from "@clerk/nextjs/server"
 
 const COMPANY_COOKIE_NAME = "selectedCompany"

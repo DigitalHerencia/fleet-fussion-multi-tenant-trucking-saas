@@ -8,16 +8,16 @@ import {
     TableHead,
     TableHeader,
     TableRow
-} from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+} from "../../components/ui/table"
+import { Badge } from "../../components/ui/badge"
+import { Button } from "../../components/ui/button"
+import { Input } from "../../components/ui/input"
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu"
+} from "../../components/ui/dropdown-menu"
 import { AlertCircle, CheckCircle, Clock, MoreHorizontal, Search } from "lucide-react"
 import type { ColumnDef } from "@tanstack/react-table"
 

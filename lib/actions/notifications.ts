@@ -1,8 +1,8 @@
-import { db } from "@/db"
-import { notifications } from "@/db/schema"
+import { db } from "../../db"
+import { notifications } from "../../db/schema"
 import { eq, and, desc, sql } from "drizzle-orm"
 import { z } from "zod"
-import type { ApiResult } from "@/types/api"
+import type { ApiResult } from "../../types/api"
 
 export const notificationInputSchema = z.object({
     userId: z.string().min(1),

@@ -6,6 +6,7 @@
 
 @import "../styles/tokens.css";
 @import "tailwindcss";
+@import "@tailwindcss/postcss";
 
 body {
     font-family: system-ui, sans-serif;

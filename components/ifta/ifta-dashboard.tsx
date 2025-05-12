@@ -1,21 +1,21 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs"
+import { Button } from "../../components/ui/button"
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue
-} from "@/components/ui/select"
-import { Progress } from "@/components/ui/progress"
+} from "../../components/ui/select"
+import { Progress } from "../../components/ui/progress"
 import { IftaReportTable } from "./ifta-report-table"
 import { IftaTripTable } from "./ifta-trip-table"
 import { BarChart, Calendar, Download, FileText, TrendingUp } from "lucide-react"
-import { FuelPurchaseForm } from "@/features/ifta/FuelPurchaseForm"
+import { FuelPurchaseForm } from "../../features/ifta/FuelPurchaseForm"
 
 export function IftaDashboard() {
     const [quarter, setQuarter] = useState("2023-Q2")

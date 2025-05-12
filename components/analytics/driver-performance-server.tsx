@@ -1,5 +1,5 @@
 // The server wrapper for driver performance metrics that fetches data
-import { getDriverPerformance } from "@/lib/fetchers/analytics"
+import { getDriverPerformance } from "../../lib/fetchers/analytics"
 import { DriverPerformance } from "./driver-performance"
 
 interface DriverPerformanceServerProps {

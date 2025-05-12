@@ -1,11 +1,11 @@
 "use server"
 
-import { db } from "@/db"
-import { companies, companyUsers } from "@/db/schema"
+import { db } from "../../db"
+import { companies, companyUsers } from "../../db/schema"
 import { eq, and } from "drizzle-orm"
 import { z } from "zod"
-import { settingsSchema } from "@/lib/validation/settings-schema"
-import { getCurrentCompanyId } from "@/lib/auth"
+import { settingsSchema } from "../../lib/validation/settings-schema"
+import { getCurrentCompanyId } from "../../lib/auth"
 
 // Zod schema for server-side validation
 const companySchema = z.object({

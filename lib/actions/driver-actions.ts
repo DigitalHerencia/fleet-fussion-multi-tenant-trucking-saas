@@ -1,11 +1,11 @@
 "use server"
 
-import { db } from "@/db"
-import { drivers } from "@/db/schema"
-import { driverCoreSchema } from "@/lib/validation/driver-schema"
-import { getCurrentCompanyId } from "@/lib/auth"
+import { db } from "../../db"
+import { drivers } from "../../db/schema"
+import { driverCoreSchema } from "../../lib/validation/driver-schema"
+import { getCurrentCompanyId } from "../../lib/auth"
 import { revalidatePath } from "next/cache"
-import type { ApiResult } from "@/types/api"
+import type { ApiResult } from "../../types/api"
 
 export async function createDriverAction(_: any, formData: FormData): Promise<ApiResult<any>> {
     try {

@@ -1,10 +1,10 @@
 "use client"
 
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../../components/ui/card"
 import { MapPin, Calendar, User, Truck } from "lucide-react"
-import { formatDate } from "@/lib/utils"
-import { StatusBadge } from "@/components/ui/status-badge"
-import type { Load, LoadCardProps } from "@/types/dispatch"
+import { formatDate } from "../../lib/utils"
+import { StatusBadge } from "../../components/ui/status-badge"
+import type { Load, LoadCardProps } from "../../types/dispatch"
 
 export function LoadCard({ load, onClick }: LoadCardProps) {
     return (

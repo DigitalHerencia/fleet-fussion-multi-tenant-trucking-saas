@@ -1,7 +1,7 @@
 "use client"
 
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, XAxis, YAxis } from "recharts"
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "../../components/ui/chart"
 import {
     Table,
     TableBody,
@@ -9,8 +9,8 @@ import {
     TableHead,
     TableHeader,
     TableRow
-} from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
+} from "../../components/ui/table"
+import { Badge } from "../../components/ui/badge"
 
 interface DriverPerformanceProps {
     timeRange: string

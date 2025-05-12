@@ -1,4 +1,4 @@
-import { db } from "@/db"
+import { db } from "../../db"
 import { cache } from "react"
 
 export const getDocumentsForVehicle = cache(async function getDocumentsForVehicle(

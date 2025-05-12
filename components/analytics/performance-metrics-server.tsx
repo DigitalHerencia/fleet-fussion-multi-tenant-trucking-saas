@@ -1,5 +1,5 @@
 // The server wrapper for performance metrics that fetches data
-import { getRevenueMetrics, getDailyRevenueTimeline } from "@/lib/fetchers/analytics"
+import { getRevenueMetrics, getDailyRevenueTimeline } from "../../lib/fetchers/analytics"
 import { PerformanceMetrics } from "./performance-metrics"
 
 interface PerformanceMetricsServerProps {

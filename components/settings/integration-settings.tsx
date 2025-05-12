@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
+import { Button } from "../../components/ui/button"
 import {
     Card,
     CardContent,
@@ -9,9 +9,9 @@ import {
     CardFooter,
     CardHeader,
     CardTitle
-} from "@/components/ui/card"
-import { Switch } from "@/components/ui/switch"
-import { Badge } from "@/components/ui/badge"
+} from "../../components/ui/card"
+import { Switch } from "../../components/ui/switch"
+import { Badge } from "../../components/ui/badge"
 import { AlertCircle, CheckCircle, ExternalLink, Clock } from "lucide-react"
 
 // Updated with real-world integrations

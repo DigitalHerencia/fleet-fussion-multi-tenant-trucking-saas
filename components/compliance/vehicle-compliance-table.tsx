@@ -1,13 +1,13 @@
 "use client"
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { Badge } from "../../components/ui/badge"
+import { Button } from "../../components/ui/button"
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu"
+} from "../../components/ui/dropdown-menu"
 import { MoreHorizontal, AlertCircle, CheckCircle, Clock } from "lucide-react"
 import type { ColumnDef } from "@tanstack/react-table"
 import {
@@ -17,7 +17,7 @@ import {
     TableHead,
     TableHeader,
     TableRow
-} from "@/components/ui/table"
+} from "../../components/ui/table"
 
 // Vehicle interface definition
 interface Vehicle {

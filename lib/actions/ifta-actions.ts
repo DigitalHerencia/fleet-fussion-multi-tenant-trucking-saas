@@ -1,13 +1,13 @@
 "use server"
 
-import { db } from "@/db"
-import { iftaTrips, iftaReports, fuelPurchases } from "@/db/schema"
+import { db } from "../../db"
+import { iftaTrips, iftaReports, fuelPurchases } from "../../db/schema"
 import { eq, and, sql } from "drizzle-orm"
 import { z } from "zod"
-import { iftaSchema } from "@/lib/validation/ifta-schema"
-import { fuelPurchaseSchema } from "@/lib/validation/fuel-schema"
-import { getCurrentCompanyId } from "@/lib/auth"
-import { getIftaReports as fetchIftaReports } from "@/lib/fetchers/ifta"
+import { iftaSchema } from "../../lib/validation/ifta-schema"
+import { fuelPurchaseSchema } from "../../lib/validation/fuel-schema"
+import { getCurrentCompanyId } from "../../lib/auth"
+import { getIftaReports as fetchIftaReports } from "../../lib/fetchers/ifta"
 
 const getIftaReportsParamsSchema = z.object({
     year: z.number().int().min(2000),

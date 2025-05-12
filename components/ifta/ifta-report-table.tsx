@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { Badge } from "../../components/ui/badge"
+import { Button } from "../../components/ui/button"
 import { Download, Eye } from "lucide-react"
 
 export type IftaReport = {

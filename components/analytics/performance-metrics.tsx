@@ -1,7 +1,7 @@
 "use client"
 
 import { Line, LineChart, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer } from "recharts"
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "../../components/ui/chart"
 
 interface PerformanceMetricsProps {
     timeRange: string

@@ -1,7 +1,7 @@
-import { db } from "@/db"
-import { complianceDocuments } from "@/db/schema"
+import { db } from "../../db"
+import { complianceDocuments } from "../../db/schema"
 import { eq, and, ilike, sql } from "drizzle-orm"
-import type { ComplianceDocument } from "@/types/types"
+import type { ComplianceDocument } from "../../types/types"
 
 /**
  * Fetch compliance documents for a company, with optional search/filter.

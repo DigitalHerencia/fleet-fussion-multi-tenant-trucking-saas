@@ -11,7 +11,7 @@ import {
     Bar,
     BarChart
 } from "recharts"
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "../../components/ui/chart"
 
 interface FinancialMetricsProps {
     timeRange: string

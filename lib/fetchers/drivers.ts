@@ -1,5 +1,5 @@
-import { db } from "@/db"
-import { drivers } from "@/db/schema"
+import { db } from "../../db"
+import { drivers } from "../../db/schema"
 import { eq } from "drizzle-orm"
 import { cache } from "react"
 

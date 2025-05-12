@@ -1,6 +1,6 @@
 "use client"
 
-import { useHydrationSafeValue } from "@/hooks/use-hydration-safe"
+import { useHydrationSafeValue } from "../../hooks/use-hydration-safe"
 
 interface SafeDateProps {
     date: string | Date

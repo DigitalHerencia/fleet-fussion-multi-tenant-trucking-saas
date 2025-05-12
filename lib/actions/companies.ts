@@ -1,7 +1,7 @@
 "use server"
 
-import { db } from "@/db"
-import { companies } from "@/db/schema"
+import { db } from "../../db"
+import { companies } from "../../db/schema"
 import { eq } from "drizzle-orm"
 import { auth } from "@clerk/nextjs/server"
 

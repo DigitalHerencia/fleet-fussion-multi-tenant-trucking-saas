@@ -1,4 +1,4 @@
-import { db } from "@/db"
+import { db } from "../../db"
 import { cache } from "react"
 
 export const getAuditLogs = cache(async function getAuditLogs(companyId: string) {

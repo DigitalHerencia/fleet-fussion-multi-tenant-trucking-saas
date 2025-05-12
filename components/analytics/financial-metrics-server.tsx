@@ -1,5 +1,5 @@
 // The server wrapper for financial metrics that fetches data
-import { getRevenueMetrics, getDailyRevenueTimeline } from "@/lib/fetchers/analytics"
+import { getRevenueMetrics, getDailyRevenueTimeline } from "../../lib/fetchers/analytics"
 import { FinancialMetrics } from "./financial-metrics"
 
 interface FinancialMetricsServerProps {

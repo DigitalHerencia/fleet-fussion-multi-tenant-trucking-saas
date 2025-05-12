@@ -1,10 +1,10 @@
 "use server"
 
-import { db } from "@/db"
-import { documents } from "@/db/schema"
-import { uploadToVercelBlob } from "@/lib/blob"
+import { db } from "../../db"
+import { documents } from "../../db/schema"
+import { uploadToVercelBlob } from "../../lib/blob"
 import { z } from "zod"
-import { getCurrentCompanyId } from "@/lib/auth"
+import { getCurrentCompanyId } from "../../lib/auth"
 
 const documentSchema = z.object({
     name: z.string().min(1),

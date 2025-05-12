@@ -1,17 +1,17 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { Badge } from "../../components/ui/badge"
+import { Button } from "../../components/ui/button"
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu"
+} from "../../components/ui/dropdown-menu"
 import { MoreHorizontal, FileText, Download, Eye } from "lucide-react"
 import type { ColumnDef } from "@tanstack/react-table"
-import { createComplianceDocument } from "@/lib/actions/compliance-actions"
+import { createComplianceDocument } from "../../lib/actions/compliance-actions"
 import {
     Table,
     TableBody,
@@ -19,7 +19,7 @@ import {
     TableHead,
     TableHeader,
     TableRow
-} from "@/components/ui/table"
+} from "../../components/ui/table"
 import {
     Dialog,
     DialogContent,
@@ -27,8 +27,8 @@ import {
     DialogTitle,
     DialogDescription,
     DialogFooter
-} from "@/components/ui/dialog"
-import type { ComplianceDocument } from "@/types/compliance"
+} from "../../components/ui/dialog"
+import type { ComplianceDocument } from "../../types/compliance"
 
 // Export the columns definition
 export const columns: ColumnDef<ComplianceDocument>[] = [

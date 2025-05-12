@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Button } from "../../components/ui/button"
+import { Input } from "../../components/ui/input"
 import {
     Table,
     TableBody,
@@ -10,14 +10,14 @@ import {
     TableHead,
     TableHeader,
     TableRow
-} from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
+} from "../../components/ui/table"
+import { Badge } from "../../components/ui/badge"
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu"
+} from "../../components/ui/dropdown-menu"
 import {
     Dialog,
     DialogContent,
@@ -26,15 +26,15 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
+} from "../../components/ui/dialog"
+import { Label } from "../../components/ui/label"
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue
-} from "@/components/ui/select"
+} from "../../components/ui/select"
 import { MoreHorizontal, Plus, Search } from "lucide-react"
 
 export function UserSettings({ users }: { users: any[] }) {

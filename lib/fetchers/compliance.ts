@@ -1,5 +1,5 @@
-import { db } from "@/db"
-import { complianceDocuments, hosLogs, drivers, vehicles, inspections } from "@/db/schema"
+import { db } from "../../db"
+import { complianceDocuments, hosLogs, drivers, vehicles, inspections } from "../../db/schema"
 import { eq, and, gte, count, sql } from "drizzle-orm"
 import { addDays, isAfter, isBefore } from "date-fns"
 

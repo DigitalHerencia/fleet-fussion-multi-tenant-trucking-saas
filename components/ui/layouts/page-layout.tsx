@@ -1,5 +1,5 @@
 import * as React from "react"
-import { cn } from "@/lib/utils"
+import { cn } from "../../../lib/utils"
 
 interface PageLayoutProps extends React.HTMLAttributes<HTMLDivElement> {
     header?: React.ReactNode

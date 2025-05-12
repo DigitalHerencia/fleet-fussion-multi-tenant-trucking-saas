@@ -63,8 +63,8 @@ For global state that is needed across multiple routes:
 Example usage:
 ```tsx
 "use client"
-import { useAuth } from "@/context/auth-context";
-import { useCompany } from "@/context/company-context";
+import { useAuth } from "../../context/auth-context";
+import { useCompany } from "../../context/company-context";
 
 export function MyComponent() {
   const { user } = useAuth();
@@ -84,7 +84,7 @@ For data mutations (create, update, delete):
 Example:
 ```tsx
 "use client"
-import { updateVehicle } from "@/lib/actions/vehicles";
+import { updateVehicle } from "../../lib/actions/vehicles";
 import { useOptimistic } from "react";
 
 export function VehicleForm({ vehicle }) {

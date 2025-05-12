@@ -1,11 +1,11 @@
 "use server"
 
-import { db } from "@/db"
-import { customers } from "@/db/schema"
-import { customerCoreSchema } from "@/lib/validation/customer-schema"
-import { getCurrentCompanyId } from "@/lib/auth"
+import { db } from "../../db"
+import { customers } from "../../db/schema"
+import { customerCoreSchema } from "../../lib/validation/customer-schema"
+import { getCurrentCompanyId } from "../../lib/auth"
 import { eq } from "drizzle-orm"
-import type { ApiResult } from "@/types/api"
+import type { ApiResult } from "../../types/api"
 
 export async function createCustomer(formData: FormData): Promise<ApiResult<any>> {
     try {

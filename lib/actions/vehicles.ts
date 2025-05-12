@@ -1,10 +1,10 @@
 "use server"
 
-import { db } from "@/db"
-import { vehicles } from "@/db/schema"
+import { db } from "../../db"
+import { vehicles } from "../../db/schema"
 import { z } from "zod"
-import { getCurrentCompanyId } from "@/lib/auth"
-import type { ApiResult } from "@/types/api"
+import { getCurrentCompanyId } from "../../lib/auth"
+import type { ApiResult } from "../../types/api"
 
 const vehicleSchema = z.object({
     type: z.string().min(1, "Type is required"),

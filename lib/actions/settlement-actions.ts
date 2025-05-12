@@ -1,11 +1,11 @@
 "use server"
 
-import { db } from "@/db"
-import { settlements } from "@/db/schema"
-import { settlementSchema } from "@/lib/validation/settlement-schema"
-import { getCurrentCompanyId } from "@/lib/auth"
+import { db } from "../../db"
+import { settlements } from "../../db/schema"
+import { settlementSchema } from "../../lib/validation/settlement-schema"
+import { getCurrentCompanyId } from "../../lib/auth"
 import { eq } from "drizzle-orm"
-import type { ApiResult } from "@/types/api"
+import type { ApiResult } from "../../types/api"
 
 export async function createSettlement(formData: FormData): Promise<ApiResult<any>> {
     try {

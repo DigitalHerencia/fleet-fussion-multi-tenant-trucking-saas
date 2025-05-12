@@ -1,11 +1,11 @@
 "use server"
 
-import { db } from "@/db"
-import { invoices } from "@/db/schema"
-import { invoiceSchema } from "@/lib/validation/invoice-schema"
-import { getCurrentCompanyId } from "@/lib/auth"
+import { db } from "../../db"
+import { invoices } from "../../db/schema"
+import { invoiceSchema } from "../../lib/validation/invoice-schema"
+import { getCurrentCompanyId } from "../../lib/auth"
 import { eq } from "drizzle-orm"
-import type { ApiResult } from "@/types/api"
+import type { ApiResult } from "../../types/api"
 
 export async function createInvoice(formData: FormData): Promise<ApiResult<any>> {
     try {

@@ -5,12 +5,12 @@ import {
     DialogTitle,
     DialogDescription,
     DialogFooter
-} from "@/components/ui/dialog"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import type { Driver } from "@/types/types"
+} from "../../components/ui/dialog"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs"
+import type { Driver } from "../../types/types"
 import React from "react"
-import { Button } from "@/components/ui/button"
-import { DialogCard } from "@/components/ui/dialog-card"
+import { Button } from "../../components/ui/button"
+import { DialogCard } from "../../components/ui/dialog-card"
 
 interface DriverDetailsDialogProps {
     driver: Driver

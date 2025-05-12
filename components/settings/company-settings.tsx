@@ -2,31 +2,31 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { Button } from "../../components/ui/button"
+import { Input } from "../../components/ui/input"
+import { Label } from "../../components/ui/label"
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue
-} from "@/components/ui/select"
-import { Separator } from "@/components/ui/separator"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+} from "../../components/ui/select"
+import { Separator } from "../../components/ui/separator"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs"
+import { Alert, AlertDescription, AlertTitle } from "../../components/ui/alert"
 import { AlertCircle, CheckCircle2, Upload, UserPlus, Trash2, Users } from "lucide-react"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { useToast } from "@/hooks/use-toast"
+import { Avatar, AvatarFallback } from "../../components/ui/avatar"
+import { useToast } from "../../hooks/use-toast"
 import {
     getCompanyDetails,
     updateCompany,
     inviteOrganizationMember,
     deleteCompany,
     getUserRole
-} from "@/lib/actions/company-actions"
-import { useAuth } from "@/context/auth-context"
+} from "../../lib/actions/company-actions"
+import { useAuth } from "../../context/auth-context"
 import {
     Dialog,
     DialogContent,
@@ -35,8 +35,8 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger
-} from "@/components/ui/dialog"
-import type { CompanyUser } from "@/types/types"
+} from "../../components/ui/dialog"
+import type { CompanyUser } from "../../types/types"
 
 export function CompanySettings() {
     const { toast } = useToast()

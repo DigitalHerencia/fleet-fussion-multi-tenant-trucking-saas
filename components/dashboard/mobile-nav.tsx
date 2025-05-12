@@ -2,9 +2,9 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Button, Sheet, SheetContent, SheetTrigger } from "@/components/ui"
+import { Button, Sheet, SheetContent, SheetTrigger } from "../../components/ui"
 import { Menu } from "lucide-react"
-import { ThemeToggle } from "@/components/theme-toggle"
+import { ThemeToggle } from "../../components/theme-toggle"
 
 export function MobileNav() {
     const [open, setOpen] = useState(false)

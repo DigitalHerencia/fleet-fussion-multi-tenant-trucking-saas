@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { BellIcon, CheckCheckIcon } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Button } from "../../components/ui/button"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -10,17 +10,17 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu"
-import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
+} from "../../components/ui/dropdown-menu"
+import { Badge } from "../../components/ui/badge"
+import { ScrollArea } from "../../components/ui/scroll-area"
 import {
     getUserNotifications,
     markNotificationRead,
     markAllNotificationsRead,
     getUnreadNotificationCount
-} from "@/lib/actions/notifications"
-import { useCurrentUser } from "@/hooks/use-current-user"
-import { useCurrentCompany } from "@/hooks/use-current-company"
+} from "../../lib/actions/notifications"
+import { useCurrentUser } from "../../hooks/use-current-user"
+import { useCurrentCompany } from "../../hooks/use-current-company"
 import { formatDistanceToNow } from "date-fns"
 
 interface Notification {

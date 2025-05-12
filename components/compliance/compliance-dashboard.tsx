@@ -1,16 +1,16 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs"
+import { Button } from "../../components/ui/button"
+import { Badge } from "../../components/ui/badge"
 import { AlertTriangle, CheckCircle, Clock, FileText, TrendingUp, AlertCircle } from "lucide-react"
-import { Progress } from "@/components/ui/progress"
+import { Progress } from "../../components/ui/progress"
 import { DriverComplianceTable } from "./driver-compliance-table"
 import { VehicleComplianceTable } from "./vehicle-compliance-table"
 import { ComplianceDocuments } from "./compliance-documents"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "../../hooks/use-toast"
 
 type ComplianceMetrics = {
     driverCompliance: {
