@@ -21,7 +21,10 @@ const nextConfig = {
   },
   experimental: {
     serverActions: {
-      allowedOrigins: ["localhost:3000", "fleet-fusion.vercel.app"],
+      allowedOrigins: [
+        "http://localhost:3000",
+        "https://fleet-fusion.vercel.app",
+      ],
     },
   },
   webpack: (config) => {

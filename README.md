@@ -60,8 +60,17 @@ FleetFusion is a modern, production-ready, multi-tenant SaaS platform for compre
 
 ## Clerk Webhook Setup
 
-- Endpoint: `/api/clerk/webhook-handler`
+- Endpoint: https://fleet-fusion.vercel.app/api/clerk/webhook-handler
 - Subscribed to all organization, user, and session events
+- Sign-in URL: https://fleet-fusion.vercel.app/sign-in
+- Sign-up URL: https://fleet-fusion.vercel.app/sign-up
+- After sign-in: https://fleet-fusion.vercel.app/sign-in
+- After sign-up: https://fleet-fusion.vercel.app/sign-up
+- After sign-out: https://fleet-fusion.vercel.app/sign-in
+- After logo click: https://fleet-fusion.vercel.app/org-selection
+- After sign-in fallback: https://fleet-fusion.vercel.app/org-selection
+- After org create: https://fleet-fusion.vercel.app/onboarding
+- After org leave: https://fleet-fusion.vercel.app/sign-in
 
 ---
 

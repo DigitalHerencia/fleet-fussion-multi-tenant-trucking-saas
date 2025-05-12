@@ -110,7 +110,7 @@ export default function PrivacyPage() {
                 correct, delete, or restrict the use of your personal
                 information. Contact{" "}
                 <a
-                  href="mailto:support@fleetfusion.app"
+                  href="mailto:digitalherencia@outlook.com"
                   className="text-primary underline"
                 >
                   support@fleetfusion.app
@@ -135,7 +135,7 @@ export default function PrivacyPage() {
                 <br />
                 For any privacy-related inquiries, contact{" "}
                 <a
-                  href="mailto:support@fleetfusion.app"
+                  href="digitalherence@outlook.com"
                   className="text-primary underline"
                 >
                   support@fleetfusion.app

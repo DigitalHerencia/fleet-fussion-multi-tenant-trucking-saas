@@ -23,7 +23,7 @@ export default function ServicesPage() {
               <strong>Overview</strong>
               <br />
               This Service Level Agreement (“SLA”) outlines the service
-              performance standards that Fleet Fusion, LLC ("Fleet Fusion")
+              performance standards that Fleet Fusion, LLC (&quot;Fleet Fusion&quot;)
               guarantees to its customers (“Customer”) subscribing to our
               Transportation Management System (“TMS”) services.
               <br />
@@ -46,7 +46,7 @@ export default function ServicesPage() {
             <li>
               <strong>Scheduled Maintenance</strong>
               <br />
-              Scheduled maintenance will be announced with at least 48 hours'
+              Scheduled maintenance will be announced with at least 48 hours&apos;
               notice via email or platform notification.
               <br />
               Fleet Fusion will attempt to perform maintenance during off-peak
@@ -190,7 +190,7 @@ export default function ServicesPage() {
             <li>
               <strong>Changes to SLA</strong>
               <br />
-              Fleet Fusion reserves the right to modify this SLA with 30 days'
+              Fleet Fusion reserves the right to modify this SLA with 30 days&apos;
               notice. Continued use of the Services after changes constitutes
               acceptance.
             </li>

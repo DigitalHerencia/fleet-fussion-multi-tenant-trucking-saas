@@ -60,7 +60,7 @@ export default function RefundPolicyPage() {
               All refund requests must be submitted within 30 days of the
               billing event via{" "}
               <a
-                href="mailto:support@fleetfusion.app"
+                href="mailto:digitalherencia@outlook.com"
                 className="text-primary underline"
               >
                 support@fleetfusion.app

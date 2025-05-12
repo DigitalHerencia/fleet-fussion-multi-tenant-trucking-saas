@@ -39,8 +39,8 @@ export default function TermsPage() {
               <li>
                 <strong>Acceptance of Terms</strong>
                 <br />
-                By accessing or using Fleet Fusion's services ("Services"), you
-                agree to be bound by these Terms of Service ("Terms"). If you do
+                By accessing or using Fleet Fusion&apos;s services (&quot;Services&quot;), you
+                agree to be bound by these Terms of Service (&quot;Terms&quot;). If you do
                 not agree to these Terms, you may not access or use the
                 Services.
               </li>
@@ -124,7 +124,7 @@ export default function TermsPage() {
               <li>
                 <strong>Warranties and Disclaimers</strong>
                 <br />
-                Fleet Fusion provides Services "as is." We disclaim all
+                Fleet Fusion provides Services &quot;as is.&quot; We disclaim all
                 warranties, express or implied, including merchantability and
                 fitness for a particular purpose.
               </li>
@@ -153,7 +153,7 @@ export default function TermsPage() {
                 <br />
                 Questions about these Terms? Email us at{" "}
                 <a
-                  href="mailto:support@fleetfusion.app"
+                  href="digitalherence@outlook.com"
                   className="text-primary underline"
                 >
                   support@fleetfusion.app

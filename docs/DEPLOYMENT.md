@@ -31,7 +31,7 @@ SENTRY_AUTH_TOKEN=your-sentry-auth-token
 
 # Application Settings
 NODE_ENV=production
-NEXT_PUBLIC_APP_URL=https://your-production-domain.com
+NEXT_PUBLIC_APP_URL=https://fleet-fusion.vercel.app
 ```
 
 ## Deployment Steps
