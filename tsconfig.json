@@ -3,7 +3,7 @@
         "target": "ES2022",
         "lib": ["dom", "dom.iterable", "esnext"],
         "skipLibCheck": true,
-        "strict": true,
+        "strict": true, // strict mode enabled for type safety
         "noEmit": true,
         "esModuleInterop": true,
         "module": "esnext",
@@ -17,7 +17,7 @@
                 "name": "next"
             }
         ],
-        "baseUrl": ".",
+        "baseUrl": ".", // project root
         "paths": {
             "@/*": ["./*"],
             "@/components/*": ["./components/*"],

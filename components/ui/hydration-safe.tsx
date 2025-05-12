@@ -33,18 +33,16 @@ type HydrationSafeProps = {
  */
 export function HydrationSafe({ children, fallback, skipSSR = false }: HydrationSafeProps) {
     // Start with hydrated false during SSR, early client render
-    const [isHydrated, setIsHydrated] = useState(false)
+    const [hydrated, setHydrated] = useState(false)
 
-    // This effect runs only after hydration is complete
     useEffect(() => {
-        setIsHydrated(true)
+        setHydrated(true)
     }, [])
 
-    // If skipSSR is true and we're not hydrated, render nothing
-    if (skipSSR && !isHydrated) {
-        return null
-    }
-
-    // Otherwise show fallback until hydration completes
-    return isHydrated ? <>{children}</> : <>{fallback}</>
+    // If skipSSR is true and we're not hydrated, render nothing (never SSR)
+    if (skipSSR && !hydrated) return null
+    // If not hydrated, render fallback if provided
+    if (!hydrated) return fallback ?? null
+    // Only render children after hydration
+    return <>{children}</>
 }

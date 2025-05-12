@@ -1,19 +1,24 @@
-# Compliance Guide
+# Compliance Feature
 
-## Overview
+This directory contains components and logic related to compliance management, including document uploads, compliance dashboards, and related utilities.
 
-Centralized dashboard for compliance documents and alerts.
+## Key Files
 
-## Key Features
+- `ComplianceDocuments.tsx`: React component for listing, searching, uploading, and previewing compliance documents.
+- `ComplianceForm.tsx`: Form for creating or editing compliance records.
 
-- Upload and manage compliance documents
-- Automated expiration alerts
+## Responsibilities
 
-## How to Use
+- Manage compliance document lifecycle (upload, preview, filter, download)
+- Integrate with backend actions for document storage and retrieval
+- Provide UI for compliance status and alerts
 
-1. Open the Compliance module.
-2. Upload new documents or review expiring ones.
+## Related Modules
 
-## Tips
+- `/lib/actions/compliance-actions.ts`: Server actions for compliance document CRUD
+- `/lib/fetchers/compliance-documents.ts`: Fetchers for compliance document data
+- `/db/schema.ts`: Database schema for compliance documents
 
-- Check the status column for 'Expiring Soon' or 'Expired'.
+---
+
+See the main project [README](../README.md) for architecture and best practices.

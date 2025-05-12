@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { Webhook } from "svix"
 import { db, getCompanyIdFromClerkOrgId } from "@/db"
 import { companies, companyUsers } from "@/db/schema"
 import { eq, and } from "drizzle-orm"
@@ -6,9 +7,26 @@ import { eq, and } from "drizzle-orm"
 // Clerk will POST events to this endpoint. Handle user/org events here.
 export async function POST(req: NextRequest) {
     try {
-        const event = await req.json()
-        // TODO: Validate Clerk signature for production security
-        // const signature = req.headers.get('clerk-signature');
+        // Clerk signature validation
+        const svixId = req.headers.get("svix-id")
+        const svixTimestamp = req.headers.get("svix-timestamp")
+        const svixSignature = req.headers.get("svix-signature")
+        if (!svixId || !svixTimestamp || !svixSignature) {
+            return NextResponse.json({ error: "Missing Clerk webhook headers" }, { status: 400 })
+        }
+        const body = await req.text()
+        let event: any
+        try {
+            const wh = new Webhook(process.env.CLERK_WEBHOOK_SECRET || "")
+            event = wh.verify(body, {
+                "svix-id": svixId,
+                "svix-timestamp": svixTimestamp,
+                "svix-signature": svixSignature
+            }) as any // Type assertion to avoid 'unknown' errors
+        } catch (err) {
+            console.error("[ClerkWebhook] Invalid signature", err)
+            return NextResponse.json({ error: "Invalid webhook signature" }, { status: 400 })
+        }
 
         switch (event.type) {
             case "user.created": {
@@ -96,6 +114,7 @@ export async function POST(req: NextRequest) {
         }
         return NextResponse.json({ received: true })
     } catch (error) {
+        console.error("[ClerkWebhook] Handler error:", error)
         const message = error instanceof Error ? error.message : "Unknown error"
         return NextResponse.json({ error: message }, { status: 500 })
     }

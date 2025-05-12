@@ -7,6 +7,7 @@ import { z } from "zod"
 import { complianceSchema } from "@/lib/validation/compliance-schema"
 import { uploadToVercelBlob } from "@/lib/blob"
 import { getCurrentCompanyId } from "@/lib/auth"
+import type { ApiResult } from "@/types/api"
 
 // Zod schema for server-side validation
 const hosLogSchema = z.object({
@@ -122,7 +123,7 @@ export async function deleteHosLog(id: string) {
  * @param {FormData} formData - The form data containing document fields and file.
  * @returns {Promise<{success: boolean, document?: any, error?: string, errors?: any}>}
  */
-export async function createComplianceDocument(formData: FormData) {
+export async function createComplianceDocument(formData: FormData): Promise<ApiResult<any>> {
     try {
         let fileUrl = formData.get("documentUrl")?.toString() || ""
         const file = formData.get("file") as File | null
@@ -132,45 +133,33 @@ export async function createComplianceDocument(formData: FormData) {
         }
         const result = complianceDocSchema.safeParse(Object.fromEntries(formData))
         if (!result.success) {
-            return {
-                success: false,
-                error: "Validation failed",
-                errors: result.error.flatten().fieldErrors
-            }
+            return { success: false, error: "Validation failed", errors: result.error.flatten().fieldErrors }
         }
         const data = result.data as ComplianceDocForm
         const companyId = await getCompanyId()
         const [inserted] = await db
             .insert(complianceDocuments)
             .values({
-                type: data.documentType,
+                type: data.documentType, // maps to 'type' column
                 expirationDate: data.expiryDate ? new Date(data.expiryDate) : null,
                 status: data.status,
-                fileUrl,
-                name: data.documentType, // Required field
+                fileUrl: fileUrl || data.documentUrl || "", // fileUrl is required
+                name: data.documentType, // fallback for name, adjust if needed
                 companyId
             })
             .returning()
-        return { success: true, document: inserted }
+        return { success: true, data: inserted }
     } catch (error) {
         console.error("[ComplianceActions] createComplianceDocument error:", error)
-        return {
-            success: false,
-            error: error instanceof Error ? error.message : "Failed to create compliance document",
-            errors: { form: ["Failed to create compliance document"] }
-        }
+        return { success: false, error: error instanceof Error ? error.message : "Failed to create compliance document", errors: { form: ["Failed to create compliance document"] } }
     }
 }
 
-export async function updateComplianceDocument(id: string, formData: FormData) {
+export async function updateComplianceDocument(id: string, formData: FormData): Promise<ApiResult<undefined>> {
     try {
         const result = complianceDocSchema.safeParse(Object.fromEntries(formData))
         if (!result.success) {
-            return {
-                success: false,
-                error: "Validation failed",
-                errors: result.error.flatten().fieldErrors
-            }
+            return { success: false, error: "Validation failed", errors: result.error.flatten().fieldErrors }
         }
         const data = result.data as ComplianceDocForm
         const companyId = await getCompanyId()
@@ -185,18 +174,14 @@ export async function updateComplianceDocument(id: string, formData: FormData) {
             .where(
                 and(eq(complianceDocuments.id, id), eq(complianceDocuments.companyId, companyId))
             )
-        return { success: true }
+        return { success: true, data: undefined }
     } catch (error) {
         console.error("[ComplianceActions] updateComplianceDocument error:", error)
-        return {
-            success: false,
-            error: error instanceof Error ? error.message : "Failed to update compliance document",
-            errors: { form: ["Failed to update compliance document"] }
-        }
+        return { success: false, error: error instanceof Error ? error.message : "Failed to update compliance document", errors: { form: ["Failed to update compliance document"] } }
     }
 }
 
-export async function deleteComplianceDocument(id: string) {
+export async function deleteComplianceDocument(id: string): Promise<ApiResult<undefined>> {
     try {
         const companyId = await getCompanyId()
         const result = await db
@@ -205,26 +190,18 @@ export async function deleteComplianceDocument(id: string) {
                 and(eq(complianceDocuments.id, id), eq(complianceDocuments.companyId, companyId))
             )
         if (!result) throw new Error()
-        return { success: true }
+        return { success: true, data: undefined }
     } catch (error) {
         console.error("[ComplianceActions] deleteComplianceDocument error:", error)
-        return {
-            success: false,
-            error: error instanceof Error ? error.message : "Failed to delete compliance document",
-            errors: { form: ["Failed to delete compliance document"] }
-        }
+        return { success: false, error: error instanceof Error ? error.message : "Failed to delete compliance document", errors: { form: ["Failed to delete compliance document"] } }
     }
 }
 
-export async function createComplianceAction(_: any, formData: FormData) {
+export async function createComplianceAction(_: any, formData: FormData): Promise<ApiResult<undefined>> {
     try {
         const result = complianceSchema.safeParse(Object.fromEntries(formData))
         if (!result.success) {
-            return {
-                success: false,
-                error: "Validation failed",
-                errors: result.error.flatten().fieldErrors
-            }
+            return { success: false, error: "Validation failed", errors: result.error.flatten().fieldErrors }
         }
         const data = result.data
         const companyId = await getCompanyId()
@@ -234,13 +211,9 @@ export async function createComplianceAction(_: any, formData: FormData) {
             dueDate: new Date(data.dueDate),
             companyId
         })
-        return { success: true }
+        return { success: true, data: undefined }
     } catch (error) {
         console.error("[ComplianceActions] createComplianceAction error:", error)
-        return {
-            success: false,
-            error: error instanceof Error ? error.message : "Failed to create compliance record",
-            errors: { form: ["Failed to create compliance record"] }
-        }
+        return { success: false, error: error instanceof Error ? error.message : "Failed to create compliance record", errors: { form: ["Failed to create compliance record"] } }
     }
 }

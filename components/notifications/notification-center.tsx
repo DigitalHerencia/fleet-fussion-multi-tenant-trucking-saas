@@ -40,10 +40,9 @@ export function NotificationCenter() {
 
     // Get user and company from hooks
     const { user } = useCurrentUser()
-    const { company } = useCurrentCompany()
+    const { companyId } = useCurrentCompany()
 
     const userId = user?.id
-    const companyId = company?.id
 
     const fetchNotifications = async () => {
         if (!userId || !companyId) return

@@ -32,7 +32,7 @@ export function CustomerForm() {
             <div>
                 <label>Name</label>
                 <input {...register("name")} className="input" />
-                <FormError message={errors.name?.message || state.errors?.name?.[0]} />
+                <FormError message={errors.name?.message || (!state.success ? state.errors?.name?.[0] : undefined)} />
             </div>
             <div>
                 <label>Contact Person</label>
@@ -41,7 +41,7 @@ export function CustomerForm() {
             <div>
                 <label>Contact Email</label>
                 <input {...register("email")} className="input" />
-                <FormError message={errors.email?.message || state.errors?.email?.[0]} />
+                <FormError message={errors.email?.message || (!state.success ? state.errors?.email?.[0] : undefined)} />
             </div>
             <div>
                 <label>Contact Phone</label>
@@ -66,7 +66,7 @@ export function CustomerForm() {
             <button type="submit" className="btn btn-primary w-full" disabled={isSubmitting}>
                 {isSubmitting ? "Submitting..." : "Add Customer"}
             </button>
-            <FormError message={state.error} />
+            <FormError message={!state.success ? state.error : undefined} />
         </form>
     )
 }

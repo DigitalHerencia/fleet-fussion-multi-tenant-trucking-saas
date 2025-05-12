@@ -5,6 +5,8 @@
  *
  * - Use UUIDs for primary keys
  * - All major tables reference companyId for multi-tenancy
+ * - All foreign keys referencing companyId use onDelete: "cascade" for multi-tenant data integrity
+ * - This is a required pattern for all future tables: always use onDelete: "cascade" for companyId and other parent-entity FKs
  * - Relations are defined using Drizzle's relations() helper
  * - Timestamps: createdAt, updatedAt on most tables
  *

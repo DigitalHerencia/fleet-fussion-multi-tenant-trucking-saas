@@ -6,6 +6,7 @@ import { useActionState } from "react"
 import { settlementSchema, type SettlementFormValues } from "@/lib/validation/settlement-schema"
 import { createSettlement } from "@/lib/actions/settlement-actions"
 import { FormError } from "@/components/ui/form-error"
+import { Button } from "@/components/ui/button"
 
 export function SettlementForm() {
     const [state, formAction] = useActionState(
@@ -28,7 +29,7 @@ export function SettlementForm() {
             <div>
                 <label>Amount</label>
                 <input type="number" step="0.01" {...register("amount")} className="input" />
-                <FormError message={errors.amount?.message || state.errors?.amount?.[0]} />
+                <FormError message={errors.amount?.message || (!state.success ? state.errors?.amount?.[0] : undefined)} />
             </div>
             <div>
                 <label>Status</label>
@@ -41,10 +42,10 @@ export function SettlementForm() {
                 <label>Notes</label>
                 <textarea {...register("notes")} className="input" />
             </div>
-            <button type="submit" className="btn btn-primary w-full" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting} className="w-full">
                 {isSubmitting ? "Submitting..." : "Add Settlement"}
-            </button>
-            <FormError message={state.error} />
+            </Button>
+            <FormError message={!state.success ? state.error : undefined} />
         </form>
     )
 }

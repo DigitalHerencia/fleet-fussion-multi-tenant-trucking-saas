@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { getAuditLogs } from "@/lib/fetchers/auditlog"
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton"
 
 export function AuditLogList({ companyId }: { companyId: string }) {
     const [logs, setLogs] = useState<any[]>([])
@@ -17,7 +18,7 @@ export function AuditLogList({ companyId }: { companyId: string }) {
         fetchLogs()
     }, [companyId])
 
-    if (loading) return <div>Loading audit logs...</div>
+    if (loading) return <LoadingSkeleton lines={4} />
 
     return (
         <div className="space-y-2">

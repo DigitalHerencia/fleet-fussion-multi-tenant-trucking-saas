@@ -5,53 +5,77 @@ import { invoices } from "@/db/schema"
 import { invoiceSchema } from "@/lib/validation/invoice-schema"
 import { getCurrentCompanyId } from "@/lib/auth"
 import { eq } from "drizzle-orm"
+import type { ApiResult } from "@/types/api"
 
-export async function createInvoice(formData: FormData) {
-    const companyId = await getCurrentCompanyId()
-    const parsed = invoiceSchema.safeParse(Object.fromEntries(formData))
-    if (!parsed.success) {
+export async function createInvoice(formData: FormData): Promise<ApiResult<any>> {
+    try {
+        const companyId = await getCurrentCompanyId()
+        const parsed = invoiceSchema.safeParse(Object.fromEntries(formData))
+        if (!parsed.success) {
+            return {
+                success: false,
+                error: "Validation failed",
+                errors: parsed.error.flatten().fieldErrors
+            }
+        }
+        // Convert amount to string and ensure date fields are Date objects
+        const invoiceToInsert = {
+            ...parsed.data,
+            companyId,
+            amount: parsed.data.amount.toString(),
+            issuedDate: parsed.data.issuedDate ? new Date(parsed.data.issuedDate) : undefined,
+            dueDate: parsed.data.dueDate ? new Date(parsed.data.dueDate) : undefined,
+            paidDate: parsed.data.paidDate ? new Date(parsed.data.paidDate) : undefined
+        }
+        const [invoice] = await db
+            .insert(invoices)
+            .values(invoiceToInsert)
+            .returning()
+        return { success: true, data: invoice }
+    } catch (error) {
+        console.error("[InvoiceActions] createInvoice error:", error)
         return {
             success: false,
-            error: "Validation failed",
-            errors: parsed.error.flatten().fieldErrors
+            error: error instanceof Error ? error.message : "Failed to create invoice",
+            errors: undefined
         }
     }
-    // Convert amount to string and ensure date fields are Date objects
-    const invoiceToInsert = {
-        ...parsed.data,
-        amount: parsed.data.amount.toString(),
-        issuedDate: parsed.data.issuedDate ? new Date(parsed.data.issuedDate) : undefined,
-        dueDate: parsed.data.dueDate ? new Date(parsed.data.dueDate) : undefined,
-        paidDate: parsed.data.paidDate ? new Date(parsed.data.paidDate) : undefined,
-        companyId
-    }
-    const [invoice] = await db.insert(invoices).values(invoiceToInsert).returning()
-    return { success: true, invoice }
 }
 
-export async function updateInvoice(id: string, formData: FormData) {
-    const parsed = invoiceSchema.safeParse(Object.fromEntries(formData))
-    if (!parsed.success) {
+export async function updateInvoice(id: string, formData: FormData): Promise<ApiResult<any>> {
+    try {
+        const parsed = invoiceSchema.safeParse(Object.fromEntries(formData))
+        if (!parsed.success) {
+            return {
+                success: false,
+                error: "Validation failed",
+                errors: parsed.error.flatten().fieldErrors
+            }
+        }
+        // Convert amount to string and ensure date fields are Date objects
+        const invoiceToUpdate = {
+            ...parsed.data,
+            amount: parsed.data.amount.toString(),
+            issuedDate: parsed.data.issuedDate ? new Date(parsed.data.issuedDate) : undefined,
+            dueDate: parsed.data.dueDate ? new Date(parsed.data.dueDate) : undefined,
+            paidDate: parsed.data.paidDate ? new Date(parsed.data.paidDate) : undefined
+        }
+        const [invoice] = await db
+            .update(invoices)
+            .set(invoiceToUpdate)
+            .where(eq(invoices.id, id))
+            .returning()
+        return { success: true, data: invoice }
+    } catch (error) {
+        console.error("[InvoiceActions] updateInvoice error:", error)
         return {
             success: false,
-            error: "Validation failed",
-            errors: parsed.error.flatten().fieldErrors
+            error: error instanceof Error ? error.message : "Failed to update invoice",
+            errors: undefined
         }
     }
-    // Convert amount to string and ensure date fields are Date objects
-    const invoiceToUpdate = {
-        ...parsed.data,
-        amount: parsed.data.amount.toString(),
-        issuedDate: parsed.data.issuedDate ? new Date(parsed.data.issuedDate) : undefined,
-        dueDate: parsed.data.dueDate ? new Date(parsed.data.dueDate) : undefined,
-        paidDate: parsed.data.paidDate ? new Date(parsed.data.paidDate) : undefined
-    }
-    const [invoice] = await db
-        .update(invoices)
-        .set(invoiceToUpdate)
-        .where(eq(invoices.id, id))
-        .returning()
-    return { success: true, invoice }
+    // fallback (should never hit)
+    return { success: false, error: "Unknown error" }
 }
 
 export async function deleteInvoice(id: string) {

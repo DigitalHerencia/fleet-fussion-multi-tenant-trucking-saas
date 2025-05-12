@@ -2,15 +2,28 @@
 
 import { db } from "@/db"
 import { vehicles } from "@/db/schema"
-import { vehicleSchema, type VehicleFormData } from "@/lib/validation/vehicle-schema"
-import { getAuthCompanyId } from "@/lib/auth"
 import { z } from "zod"
+import { getCurrentCompanyId } from "@/lib/auth"
+import type { ApiResult } from "@/types/api"
 
-export async function addVehicle(formData: FormData) {
+const vehicleSchema = z.object({
+    type: z.string().min(1, "Type is required"),
+    unitNumber: z.string().min(1, "Unit number is required"),
+    make: z.string().min(1, "Make is required"),
+    model: z.string().min(1, "Model is required"),
+    year: z.coerce.number().min(1900).max(new Date().getFullYear() + 1),
+    vin: z.string().min(1, "VIN is required"),
+    licensePlate: z.string().min(1, "License plate is required"),
+    color: z.string().optional(),
+    notes: z.string().optional(),
+    fuelType: z.string().optional()
+})
+
+type VehicleForm = z.infer<typeof vehicleSchema>
+
+export async function addVehicle(formData: FormData): Promise<ApiResult<any>> {
     try {
-        // Parse and validate form data
-        const raw = Object.fromEntries(formData.entries())
-        const parsed = vehicleSchema.safeParse(raw)
+        const parsed = vehicleSchema.safeParse(Object.fromEntries(formData))
         if (!parsed.success) {
             return {
                 success: false,
@@ -18,33 +31,14 @@ export async function addVehicle(formData: FormData) {
                 errors: parsed.error.flatten().fieldErrors
             }
         }
-        const data = parsed.data as VehicleFormData
-
-        // Get company context
-        const companyId = await getAuthCompanyId()
-        if (!companyId) {
-            return {
-                success: false,
-                error: "Not authenticated or no company selected.",
-                errors: { company: ["Not authenticated or no company selected."] }
-            }
-        }
-
-        // Insert vehicle
-        await db.insert(vehicles).values({
-            companyId,
-            unitNumber: data.unitNumber,
-            type: data.type,
-            status: data.status,
-            make: data.make,
-            model: data.model,
-            year: data.year,
-            vin: data.vin,
-            licensePlate: data.licensePlate,
-            state: data.state
-        })
-
-        return { success: true }
+        const data = parsed.data as VehicleForm
+        const companyId = await getCurrentCompanyId()
+        const result = await db
+            .insert(vehicles)
+            .values({ ...data, companyId })
+            .returning()
+        const vehicle = Array.isArray(result) ? result[0] : result
+        return { success: true, data: vehicle }
     } catch (err) {
         console.error("[VehicleActions] Error adding vehicle:", err)
         return {

@@ -16,9 +16,9 @@ export function addSecurityHeaders(request: NextRequest, response: NextResponse)
         "font-src": ["'self'", "data:"],
         "connect-src": [
             "'self'",
-            "https://*.clerk.accounts",
-            "https://api.clerk.dev",
             "https://clerk.fleetfusion.app",
+            "https://api.clerk.dev",
+            "https://clerk.accounts",
             process.env.NEXT_PUBLIC_APP_URL || "",
             "vitals.vercel-insights.com"
         ],

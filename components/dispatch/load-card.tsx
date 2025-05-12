@@ -4,33 +4,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { MapPin, Calendar, User, Truck } from "lucide-react"
 import { formatDate } from "@/lib/utils"
 import { StatusBadge } from "@/components/ui/status-badge"
-
-interface Load {
-    id: string
-    referenceNumber: string
-    status: string
-    customerName: string
-    originCity: string
-    originState: string
-    destinationCity: string
-    destinationState: string
-    pickupDate: Date
-    deliveryDate: Date
-    driver?: {
-        id: string
-        firstName: string
-        lastName: string
-    } | null
-    vehicle?: {
-        id: string
-        unitNumber: string
-    } | null
-}
-
-interface LoadCardProps {
-    load: Load
-    onClick: () => void
-}
+import type { Load, LoadCardProps } from "@/types/dispatch"
 
 export function LoadCard({ load, onClick }: LoadCardProps) {
     return (

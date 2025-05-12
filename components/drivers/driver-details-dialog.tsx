@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { Driver } from "@/types/types"
 import React from "react"
 import { Button } from "@/components/ui/button"
+import { DialogCard } from "@/components/ui/dialog-card"
 
 interface DriverDetailsDialogProps {
     driver: Driver
@@ -25,32 +26,25 @@ export function DriverDetailsDialog({
     children
 }: DriverDetailsDialogProps) {
     return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                    <DialogTitle>
-                        {driver.firstName} {driver.lastName}
-                    </DialogTitle>
-                    <DialogDescription>Status: {driver.status}</DialogDescription>
-                </DialogHeader>
-                <Tabs defaultValue="details" className="w-full">
-                    <TabsList className="grid grid-cols-2 w-full">
-                        <TabsTrigger value="details">Details</TabsTrigger>
-                        <TabsTrigger value="documents">Documents</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="details" className="space-y-4 mt-4">
-                        {/* Additional driver details can go here */}
-                    </TabsContent>
-                    <TabsContent value="documents" className="space-y-4 mt-4">
-                        {children}
-                    </TabsContent>
-                </Tabs>
-                <DialogFooter>
-                    <Button variant="outline" onClick={onClose}>
-                        Close
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+        <DialogCard
+            open={isOpen}
+            onOpenChange={onClose}
+            title={`${driver.firstName} ${driver.lastName}`}
+            description={`Status: ${driver.status}`}
+            className="max-w-2xl max-h-[90vh] overflow-y-auto"
+        >
+            <Tabs defaultValue="details" className="w-full">
+                <TabsList className="grid grid-cols-2 w-full">
+                    <TabsTrigger value="details">Details</TabsTrigger>
+                    <TabsTrigger value="documents">Documents</TabsTrigger>
+                </TabsList>
+                <TabsContent value="details" className="space-y-4 mt-4">
+                    {/* Additional driver details can go here */}
+                </TabsContent>
+                <TabsContent value="documents" className="space-y-4 mt-4">
+                    {children}
+                </TabsContent>
+            </Tabs>
+        </DialogCard>
     )
 }

@@ -23,7 +23,7 @@ This directory contains the Drizzle ORM schema definitions for all database tabl
 ## Best Practices
 
 - Use UUIDs for primary keys
-- Use `onDelete: "cascade"` for dependent records
+- Use `onDelete: "cascade"` for dependent records (all major tables referencing `companyId` or other parent entities use this for multi-tenant data integrity; this is required for all future tables)
 - Keep schema and relations in sync with business logic
 
 ---

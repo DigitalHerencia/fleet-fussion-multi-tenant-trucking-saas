@@ -28,21 +28,10 @@ import {
     DialogDescription,
     DialogFooter
 } from "@/components/ui/dialog"
-
-// Define the Document type
-interface Document {
-    id: string
-    name: string
-    type: string
-    lastUpdated: string
-    status: string
-    assignedTo: string
-    expirationDate?: string
-    fileUrl?: string
-}
+import type { ComplianceDocument } from "@/types/compliance"
 
 // Export the columns definition
-export const columns: ColumnDef<Document>[] = [
+export const columns: ColumnDef<ComplianceDocument>[] = [
     {
         accessorKey: "name",
         header: "Document Name",
@@ -136,7 +125,7 @@ export const columns: ColumnDef<Document>[] = [
 ]
 
 export function ComplianceDocuments() {
-    const [documents, setDocuments] = useState<Document[]>([])
+    const [documents, setDocuments] = useState<ComplianceDocument[]>([])
     const [search, setSearch] = useState("")
     const [typeFilter, setTypeFilter] = useState<string>("")
     const [statusFilter, setStatusFilter] = useState<string>("")

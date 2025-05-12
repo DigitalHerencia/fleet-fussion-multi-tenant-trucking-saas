@@ -298,7 +298,7 @@ export async function createCompany(data: CreateCompanyFormValues) {
             return {
                 success: false,
                 error: "Invalid company data",
-                validationErrors: error.errors
+                errors: error.errors
             }
         }
         return {
@@ -480,7 +480,7 @@ export async function updateCompany(data: UpdateCompanyFormValues) {
             return {
                 success: false,
                 error: "Invalid company data",
-                validationErrors: error.errors
+                errors: error.errors
             }
         }
         return {
@@ -610,26 +610,21 @@ export async function deleteCompany() {
     try {
         // Get the current user ID using our custom auth helper
         const userId = await getCurrentUserId()
-
         if (!userId) {
             return {
                 success: false,
                 error: "Not authenticated"
             }
         }
-
         // Get the current company
         const currentCompanyResult = await getCurrentCompany()
-
         if (!currentCompanyResult.success || !currentCompanyResult.data) {
             return {
                 success: false,
                 error: currentCompanyResult.error || "No company selected"
             }
         }
-
         const companyId = currentCompanyResult.data.id
-
         // Ensure user has permission to delete this company
         const userRole = await getUserRole()
         if (!userRole.success || userRole.data !== "owner") {
@@ -638,27 +633,25 @@ export async function deleteCompany() {
                 error: "Only the owner can delete a company"
             }
         }
-
-        // Delete company users first (to maintain referential integrity)
-        await db.delete(companyUsers).where(eq(companyUsers.companyId, companyId))
-
-        // Delete the company
-        await db.delete(companies).where(eq(companies.id, companyId))
-
+        // Use a transaction to ensure atomicity
+        await db.transaction(async (tx) => {
+            // Delete company users first (to maintain referential integrity)
+            await tx.delete(companyUsers).where(eq(companyUsers.companyId, companyId))
+            // Delete the company (cascades to all related data)
+            await tx.delete(companies).where(eq(companies.id, companyId))
+        })
         // Clear the selected company cookie
         const cookieStore = await cookies()
         cookieStore.delete(COMPANY_COOKIE_NAME)
-
         revalidatePath("/")
-
         return {
             success: true
         }
     } catch (error) {
-        console.error("Error deleting company:", error)
+        console.error("[CompanyActions] Error deleting company:", error)
         return {
             success: false,
-            error: "Failed to delete company"
+            error: error instanceof Error ? error.message : "Failed to delete company"
         }
     }
 }

@@ -5,8 +5,9 @@ import { drivers } from "@/db/schema"
 import { driverCoreSchema } from "@/lib/validation/driver-schema"
 import { getCurrentCompanyId } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
+import type { ApiResult } from "@/types/api"
 
-export async function createDriverAction(_: any, formData: FormData) {
+export async function createDriverAction(_: any, formData: FormData): Promise<ApiResult<any>> {
     try {
         const result = driverCoreSchema.safeParse(Object.fromEntries(formData))
         if (!result.success) {

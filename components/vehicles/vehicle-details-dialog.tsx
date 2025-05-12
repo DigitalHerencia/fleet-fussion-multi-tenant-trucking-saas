@@ -7,6 +7,7 @@ import {
     DialogFooter,
     DialogClose
 } from "@/components/ui/dialog"
+import { DialogCard } from "@/components/ui/dialog-card"
 import type { Vehicle } from "@/types/types"
 import { type ReactNode } from "react"
 import { Button } from "../ui/button"
@@ -25,36 +26,28 @@ export function VehicleDetailsDialog({
     children
 }: VehicleDetailsDialogProps) {
     return (
-        <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
-            <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                    <DialogTitle>Vehicle Details: {vehicle.unitNumber}</DialogTitle>
-                    <DialogDescription>View and manage vehicle information.</DialogDescription>
-                </DialogHeader>
-                <div className="space-y-2">
-                    <div>
-                        <strong>Type:</strong> {vehicle.type}
-                    </div>
-                    <div>
-                        <strong>Status:</strong> {vehicle.status}
-                    </div>
-                    <div>
-                        <strong>Make:</strong> {(vehicle as any).make ?? ""}
-                    </div>
-                    <div>
-                        <strong>Model:</strong> {(vehicle as any).model ?? ""}
-                    </div>
-                    <div>
-                        <strong>Year:</strong> {(vehicle as any).year ?? ""}
-                    </div>
-                </div>
-                {children}
-                <DialogFooter>
-                    <Button variant="outline" onClick={onClose}>
-                        Close
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+        <DialogCard
+            open={isOpen}
+            onOpenChange={open => !open && onClose()}
+            title={`Vehicle Details: ${vehicle.unitNumber}`}
+            description="View and manage vehicle information."
+        >
+            <div>
+                <strong>Type:</strong> {vehicle.type}
+            </div>
+            <div>
+                <strong>Status:</strong> {vehicle.status}
+            </div>
+            <div>
+                <strong>Make:</strong> {(vehicle as any).make ?? ""}
+            </div>
+            <div>
+                <strong>Model:</strong> {(vehicle as any).model ?? ""}
+            </div>
+            <div>
+                <strong>Year:</strong> {(vehicle as any).year ?? ""}
+            </div>
+            {children}
+        </DialogCard>
     )
 }

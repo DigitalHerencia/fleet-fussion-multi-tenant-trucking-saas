@@ -7,11 +7,11 @@ import { getDocumentsForVehicle } from "@/lib/fetchers/documents"
 import VehicleDocuments from "@/features/vehicles/VehicleDocuments"
 import type { Vehicle, Document } from "@/types/types"
 
-interface VehiclesClientPageProps {
+interface VehiclesClientProps {
     vehicles: Vehicle[]
 }
 
-export function VehiclesClientPage({ vehicles }: VehiclesClientPageProps) {
+export function VehiclesClient({ vehicles }: VehiclesClientProps) {
     const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null)
     const [documents, setDocuments] = useState<Document[]>([])
     const [dialogOpen, setDialogOpen] = useState(false)

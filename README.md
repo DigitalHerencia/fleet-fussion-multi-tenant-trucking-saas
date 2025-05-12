@@ -80,7 +80,64 @@ FleetFusion is a modern, production-ready, multi-tenant SaaS platform for compre
 
 - [Product Requirements (PRD)](.github/PRD.md)
 - [Technical Requirements](.github/TECHNICAL_REQUIREMENTS.md)
+- [Multi-Tenant Architecture](docs/multi-tenant.md)
+- [Data Flow & State Management](docs/data-flow.md)
+- [Analytics](docs/analytics.md)
+- [Compliance](docs/compliance.md)
+- [Dispatch](docs/dispatch.md)
+- [Drivers](docs/drivers.md)
+- [IFTA](docs/ifta.md)
+- [Settings](docs/settings.md)
+- [Vehicles](docs/vehicles.md)
+- [Deployment](docs/DEPLOYMENT.md)
 
 ---
 
-For more details, see the PRD and Technical Requirements in `.github/`.
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18.x or later
+- npm 9.x or later
+- PostgreSQL database (or Neon.tech account)
+- Clerk account for authentication
+
+### Installation
+
+1. Clone the repository
+```bash
+git clone https://github.com/your-username/fleet-fusion.git
+cd fleet-fusion
+```
+
+2. Install dependencies
+```bash
+npm install
+```
+
+3. Set up environment variables
+```bash
+cp .env.example .env.local
+# Edit .env.local with your configuration
+```
+
+4. Run the development server
+```bash
+npm run dev
+```
+
+5. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+### Environment Variables
+
+Key environment variables required:
+- `DATABASE_URL`: PostgreSQL connection string
+- `CLERK_SECRET_KEY`: Clerk API secret key
+- `CLERK_PUBLISHABLE_KEY`: Clerk publishable key
+- `NEXT_PUBLIC_CLERK_SIGN_IN_URL`: Sign-in URL for Clerk
+- `NEXT_PUBLIC_CLERK_SIGN_UP_URL`: Sign-up URL for Clerk
+- `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL`: Redirect URL after sign-in
+- `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL`: Redirect URL after sign-up
+- `CLERK_WEBHOOK_SECRET`: Secret for webhook signature verification
+
+For more details, see the documentation in `docs/` directory.

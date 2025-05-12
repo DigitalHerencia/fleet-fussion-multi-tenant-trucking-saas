@@ -6,6 +6,7 @@ import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { Loader2 } from "lucide-react"
 import { Button, Input, Label } from "@/components/ui"
+import { getCompanyById } from "@/lib/actions/companies"
 
 export default function CompanySettingsPage() {
     const { companyId } = useParams() as { companyId: string }
@@ -26,11 +27,8 @@ export default function CompanySettingsPage() {
     useEffect(() => {
         async function fetchCompanyData() {
             try {
-                const res = await fetch(`/api/companies/${companyId}`)
-                if (!res.ok) throw new Error("Failed to fetch company")
-                const data = await res.json()
-
-                // Populate form with company data
+                // Use server action instead of API route
+                const data = await getCompanyById(companyId)
                 setFormData({
                     name: data.name || "",
                     dotNumber: data.dotNumber || "",

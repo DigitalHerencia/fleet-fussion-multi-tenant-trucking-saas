@@ -5,39 +5,58 @@ import { customers } from "@/db/schema"
 import { customerCoreSchema } from "@/lib/validation/customer-schema"
 import { getCurrentCompanyId } from "@/lib/auth"
 import { eq } from "drizzle-orm"
+import type { ApiResult } from "@/types/api"
 
-export async function createCustomer(formData: FormData) {
-    const companyId = await getCurrentCompanyId()
-    const parsed = customerCoreSchema.safeParse(Object.fromEntries(formData))
-    if (!parsed.success) {
+export async function createCustomer(formData: FormData): Promise<ApiResult<any>> {
+    try {
+        const companyId = await getCurrentCompanyId()
+        const parsed = customerCoreSchema.safeParse(Object.fromEntries(formData))
+        if (!parsed.success) {
+            return {
+                success: false,
+                error: "Validation failed",
+                errors: parsed.error.flatten().fieldErrors
+            }
+        }
+        const [customer] = await db
+            .insert(customers)
+            .values({ ...parsed.data, companyId })
+            .returning()
+        return { success: true, data: customer }
+    } catch (error) {
+        console.error("[CustomerActions] createCustomer error:", error)
         return {
             success: false,
-            error: "Validation failed",
-            errors: parsed.error.flatten().fieldErrors
+            error: error instanceof Error ? error.message : "Failed to create customer",
+            errors: undefined
         }
     }
-    const [customer] = await db
-        .insert(customers)
-        .values({ ...parsed.data, companyId })
-        .returning()
-    return { success: true, customer }
 }
 
-export async function updateCustomer(id: string, formData: FormData) {
-    const parsed = customerCoreSchema.safeParse(Object.fromEntries(formData))
-    if (!parsed.success) {
+export async function updateCustomer(id: string, formData: FormData): Promise<ApiResult<any>> {
+    try {
+        const parsed = customerCoreSchema.safeParse(Object.fromEntries(formData))
+        if (!parsed.success) {
+            return {
+                success: false,
+                error: "Validation failed",
+                errors: parsed.error.flatten().fieldErrors
+            }
+        }
+        const [customer] = await db
+            .update(customers)
+            .set(parsed.data)
+            .where(eq(customers.id, id))
+            .returning()
+        return { success: true, data: customer }
+    } catch (error) {
+        console.error("[CustomerActions] updateCustomer error:", error)
         return {
             success: false,
-            error: "Validation failed",
-            errors: parsed.error.flatten().fieldErrors
+            error: error instanceof Error ? error.message : "Failed to update customer",
+            errors: undefined
         }
     }
-    const [customer] = await db
-        .update(customers)
-        .set(parsed.data)
-        .where(eq(customers.id, id))
-        .returning()
-    return { success: true, customer }
 }
 
 export async function deleteCustomer(id: string) {

@@ -4,6 +4,8 @@ import { eq } from "drizzle-orm"
 import { cache } from "react"
 
 /**
+ * Fetches all vehicles for a company.
+ * @param companyId The company ID
  * Retrieves all vehicles for a specific company with pagination, filtering, and sorting
  */
 export const getVehiclesForCompany = cache(async function getVehiclesForCompany(

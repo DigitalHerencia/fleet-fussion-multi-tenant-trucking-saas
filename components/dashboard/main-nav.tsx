@@ -19,6 +19,8 @@ export function MainNav({ className }: MainNavProps) {
                     width={28}
                     height={28}
                     className="rounded"
+                    priority={false}
+                    quality={80}
                 />
                 FleetFusion
             </Link>

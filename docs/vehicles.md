@@ -1,22 +1,24 @@
-# Vehicle Management Guide
+# Vehicle Feature
 
-## Overview
+This directory contains components and logic for vehicle management, including document uploads, vehicle forms, and related utilities.
 
-Track vehicle details, maintenance, inspections, and compliance documents.
+## Key Files
 
-## Key Features
+- `VehicleDocuments.tsx`: Component for uploading, listing, and previewing vehicle-specific documents.
+- `VehicleForm.tsx`: Form for creating or editing vehicle records.
 
-- Add/edit vehicle details
-- Upload and manage documents
-- Schedule maintenance
+## Responsibilities
 
-## How to Use
+- Manage vehicle document lifecycle (upload, preview, download)
+- Integrate with backend actions for vehicle document storage
+- Provide UI for vehicle document status
 
-1. Navigate to Vehicles from the dashboard.
-2. Click 'Add Vehicle' to register a new vehicle.
-3. Use the 'Documents' tab to upload compliance files.
+## Related Modules
 
-## Tips
+- `/lib/actions/document-actions.ts`: Server actions for document CRUD
+- `/lib/fetchers/documents.ts`: Fetchers for vehicle document data
+- `/db/schema.ts`: Database schema for vehicles and documents
 
-- Set reminders for upcoming maintenance.
-- Preview documents before downloading.
+---
+
+See the main project [README](../README.md) for architecture and best practices.

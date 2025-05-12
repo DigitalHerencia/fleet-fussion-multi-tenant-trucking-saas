@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss"
 
-const config: Config = {
+// Use CSS variable-based theming. See styles/tokens.css for design tokens.
+const config = {
     content: [
         "./src/**/*.{js,ts,jsx,tsx}",
         "./app/**/*.{js,ts,jsx,tsx}",
@@ -11,5 +12,6 @@ const config: Config = {
         extend: {}
     },
     plugins: []
-}
+} satisfies Config;
+
 export default config

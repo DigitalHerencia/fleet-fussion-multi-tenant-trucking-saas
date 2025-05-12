@@ -101,6 +101,29 @@ After deploying, perform these checks:
     - Verify Sentry is capturing errors correctly
     - Check test errors are reported in the Sentry dashboard
 
+---
+
+### Backend Modernization Verification (Critical)
+
+- **Error Handling:**
+  - All server actions and database operations must return standardized `ApiResult<T>` objects for both success and error cases.
+  - Errors must be logged with clear, contextual messages (see `[Feature]Actions` files for patterns).
+  - Test error scenarios (invalid input, DB failures) and confirm errors are surfaced in the UI and Sentry.
+
+- **Database Transactions:**
+  - All multi-table operations (e.g., company deletion) must use database transactions to ensure atomicity and data integrity.
+  - Review and test that partial updates/deletes do not occur on failure (see `deleteCompany` in `company-actions.ts`).
+
+- **Multi-Tenant Data Integrity:**
+  - All major tables must use `onDelete: "cascade"` for FKs referencing `companyId` (see `db/schema.ts`).
+  - Test that deleting a company or user cascades deletes to all related data, with no orphaned records.
+
+- **API Consistency:**
+  - All server actions must use the shared `ApiResult<T>` type from `types/api.ts`.
+  - All error and success responses must be predictable and type-safe.
+
+---
+
 ## Database Migration Considerations
 
 When deploying database schema changes:

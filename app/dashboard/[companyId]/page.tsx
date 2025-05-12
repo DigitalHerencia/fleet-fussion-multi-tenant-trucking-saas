@@ -2,6 +2,7 @@
 import { redirect } from "next/navigation"
 import { getUserRoleInCompany, getCurrentUserId } from "@/lib/auth"
 import { UserRole } from "@/db/schema"
+import { Card, CardContent } from "@/components/ui/card"
 
 interface DashboardPageProps {
     params: {
@@ -29,7 +30,8 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
         return (
             <div className="p-6">
                 <h1 className="text-2xl font-bold mb-4">Company Dashboard</h1>
-                <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-6">
+                <Card>
+                  <CardContent className="p-6">
                     <p className="mb-2">
                         <span className="font-medium">Company ID:</span> {companyId}
                     </p>
@@ -48,7 +50,8 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                             </p>
                         </div>
                     )}
-                </div>
+                  </CardContent>
+                </Card>
             </div>
         )
     } catch {

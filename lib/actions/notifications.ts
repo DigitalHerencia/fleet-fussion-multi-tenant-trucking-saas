@@ -2,6 +2,7 @@ import { db } from "@/db"
 import { notifications } from "@/db/schema"
 import { eq, and, desc, sql } from "drizzle-orm"
 import { z } from "zod"
+import type { ApiResult } from "@/types/api"
 
 export const notificationInputSchema = z.object({
     userId: z.string().min(1),
@@ -15,18 +16,29 @@ export const notificationInputSchema = z.object({
 
 export type NotificationInput = z.infer<typeof notificationInputSchema>
 
-export async function createNotification(input: NotificationInput) {
+export async function createNotification(input: NotificationInput): Promise<ApiResult<any>> {
     const parsed = notificationInputSchema.safeParse(input)
     if (!parsed.success) {
-        throw new Error("Invalid notification input")
+        return {
+            success: false,
+            error: "Invalid notification input",
+            errors: parsed.error.flatten().fieldErrors
+        }
     }
-    const [notification] = await db
-        .insert(notifications)
-        .values(
-            parsed.data // Corrected: use the full parsed.data object
-        )
-        .returning()
-    return notification
+    try {
+        const [notification] = await db
+            .insert(notifications)
+            .values(parsed.data)
+            .returning()
+        return { success: true, data: notification }
+    } catch (error) {
+        console.error("[NotificationActions] createNotification error:", error)
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : "Failed to create notification",
+            errors: { form: ["Failed to create notification"] }
+        }
+    }
 }
 
 export async function getUserNotifications(userId: string, companyId: string, limit = 20) {
@@ -38,15 +50,35 @@ export async function getUserNotifications(userId: string, companyId: string, li
         .limit(limit)
 }
 
-export async function markNotificationRead(notificationId: string) {
-    await db.update(notifications).set({ read: true }).where(eq(notifications.id, notificationId))
+export async function markNotificationRead(notificationId: string): Promise<ApiResult<undefined>> {
+    try {
+        await db.update(notifications).set({ read: true }).where(eq(notifications.id, notificationId))
+        return { success: true, data: undefined }
+    } catch (error) {
+        console.error("[NotificationActions] markNotificationRead error:", error)
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : "Failed to mark notification as read",
+            errors: { form: ["Failed to mark notification as read"] }
+        }
+    }
 }
 
-export async function markAllNotificationsRead(userId: string, companyId: string) {
-    await db
-        .update(notifications)
-        .set({ read: true })
-        .where(and(eq(notifications.userId, userId), eq(notifications.companyId, companyId)))
+export async function markAllNotificationsRead(userId: string, companyId: string): Promise<ApiResult<undefined>> {
+    try {
+        await db
+            .update(notifications)
+            .set({ read: true })
+            .where(and(eq(notifications.userId, userId), eq(notifications.companyId, companyId)))
+        return { success: true, data: undefined }
+    } catch (error) {
+        console.error("[NotificationActions] markAllNotificationsRead error:", error)
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : "Failed to mark all notifications as read",
+            errors: { form: ["Failed to mark all notifications as read"] }
+        }
+    }
 }
 
 export async function getUnreadNotificationCount(userId: string, companyId: string) {

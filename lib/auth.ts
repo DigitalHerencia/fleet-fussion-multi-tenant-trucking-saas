@@ -20,6 +20,7 @@ export async function getCurrentUserId(): Promise<string> {
 }
 
 /**
+ * Returns the current company ID for the authenticated user, or null if not authenticated.
  * Get the current company ID based on the selected Clerk organization.
  * First checks for an explicitly selected company in the cookie (for multi-company scenarios),
  * then falls back to looking up the company using the current Clerk organization ID.

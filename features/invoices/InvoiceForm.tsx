@@ -28,7 +28,7 @@ export function InvoiceForm() {
             <div>
                 <label>Amount</label>
                 <input type="number" step="0.01" {...register("amount")} className="input" />
-                <FormError message={errors.amount?.message || state.errors?.amount?.[0]} />
+                <FormError message={errors.amount?.message || (!state.success ? state.errors?.amount?.[0] : undefined)} />
             </div>
             <div>
                 <label>Status</label>
@@ -45,7 +45,7 @@ export function InvoiceForm() {
             <button type="submit" className="btn btn-primary w-full" disabled={isSubmitting}>
                 {isSubmitting ? "Submitting..." : "Add Invoice"}
             </button>
-            <FormError message={state.error} />
+            <FormError message={!state.success ? state.error : undefined} />
         </form>
     )
 }

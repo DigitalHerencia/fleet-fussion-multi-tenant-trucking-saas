@@ -18,47 +18,7 @@ import {
 import { getCurrentCompanyId } from "@/lib/auth"
 import { ComplianceDashboard } from "@/components/compliance/compliance-dashboard"
 import { type ColumnDef } from "@tanstack/react-table"
-
-// Define types for our compliance data
-type ComplianceDriver = {
-    id: string
-    name: string
-    status: string
-    licenseExpiry: string
-    medicalExpiry: string
-    lastHosViolation: string
-    dutyStatus: string
-    availableHours: number
-}
-
-type ComplianceVehicle = {
-    id: string
-    unitNumber: string
-    unit: string
-    status: string
-    type: string
-    make: string | null
-    model: string | null
-    year: number | null
-    vin: string | null
-    licensePlate: string | null
-    state: string | null
-    currentOdometer: number | null
-    lastOdometerUpdate: Date | null
-    lastInspection: string
-    nextInspection: string
-    defects: string
-    registrationExpiry: string
-}
-
-type ComplianceDocument = {
-    id: string
-    name: string
-    type: string
-    lastUpdated: string | undefined
-    status: string
-    assignedTo: string
-}
+import type { ComplianceDriver, ComplianceVehicle, ComplianceDocument } from "@/types/compliance"
 
 // Ensure the documentColumns are properly typed as ComplianceDocument
 const typedDocumentColumns = documentColumns as unknown as ColumnDef<ComplianceDocument, unknown>[]

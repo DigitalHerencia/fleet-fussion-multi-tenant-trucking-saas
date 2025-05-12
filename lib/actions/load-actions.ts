@@ -213,7 +213,10 @@ export async function getLoadById(loadId: string, companyId: string): Promise<Lo
     }
 }
 
-// Create a new load
+/**
+ * Creates a new load for the company. Validates input and returns result.
+ * @param formData FormData containing load fields
+ */
 export async function createLoad(formData: FormData): Promise<LoadResponse<any>> {
     try {
         await protectRoute(UserRole.DISPATCHER)

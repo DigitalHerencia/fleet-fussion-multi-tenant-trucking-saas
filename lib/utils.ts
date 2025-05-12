@@ -2,6 +2,12 @@ import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { IFTA_TAX_RATES } from "@/lib/constants/ifta-tax-rates"
 
+/**
+ * Formats a date to YYYY-MM-DD string format
+ * 
+ * @param date - Date to format (Date object or string)
+ * @returns Formatted date string in YYYY-MM-DD format
+ */
 export function formatDate(date: Date | string): string {
     const d = new Date(date)
     const year = d.getFullYear()
@@ -10,6 +16,12 @@ export function formatDate(date: Date | string): string {
     return `${year}-${month}-${day}`
 }
 
+/**
+ * Formats a number as USD currency
+ * 
+ * @param amount - Numeric amount to format
+ * @returns Formatted currency string (e.g., $1,234.56)
+ */
 export function formatCurrency(amount: number): string {
     return amount.toLocaleString("en-US", {
         style: "currency",
@@ -17,10 +29,26 @@ export function formatCurrency(amount: number): string {
     })
 }
 
+/**
+ * Utility for combining Tailwind CSS classes with proper deduplication
+ * 
+ * @param inputs - List of class values to be combined
+ * @returns Optimized class string with duplicates removed
+ */
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs))
 }
 
+/**
+ * Calculates IFTA tax for a jurisdiction based on miles driven and gallons consumed
+ * 
+ * @param options - Calculation parameters
+ * @param options.miles - Miles driven in jurisdiction
+ * @param options.gallons - Gallons consumed in jurisdiction
+ * @param options.state - State code (e.g., "CA", "TX")
+ * @param options.county - Optional county name (special handling for some jurisdictions)
+ * @returns Tax calculation result with rates and totals
+ */
 export function calculateJurisdictionTax({
     miles,
     gallons,

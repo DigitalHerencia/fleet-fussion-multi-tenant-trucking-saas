@@ -52,7 +52,7 @@ export async function uploadDocument(formData: FormData) {
                 updatedAt: new Date()
             })
             .returning()
-        return { success: true, document: inserted }
+        return { success: true, data: inserted }
     } catch (error) {
         console.error("[DocumentActions] uploadDocument error:", error)
         return {

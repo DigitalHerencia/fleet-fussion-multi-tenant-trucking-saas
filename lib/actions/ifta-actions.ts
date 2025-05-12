@@ -7,6 +7,30 @@ import { z } from "zod"
 import { iftaSchema } from "@/lib/validation/ifta-schema"
 import { fuelPurchaseSchema } from "@/lib/validation/fuel-schema"
 import { getCurrentCompanyId } from "@/lib/auth"
+import { getIftaReports as fetchIftaReports } from "@/lib/fetchers/ifta"
+
+const getIftaReportsParamsSchema = z.object({
+    year: z.number().int().min(2000),
+    quarter: z.number().int().min(1).max(4),
+    limit: z.number().int().min(1).max(100).optional(),
+})
+
+export type ApiResult<T> = { success: true; data: T } | { success: false; error: string; errors?: any }
+
+export async function getIftaReports(params: { year: number; quarter: number; limit?: number }) {
+    const parsed = getIftaReportsParamsSchema.safeParse(params)
+    if (!parsed.success) {
+        console.error("[IFTA-Actions] getIftaReports validation error:", parsed.error.flatten())
+        throw new Error("Invalid parameters for getIftaReports")
+    }
+    try {
+        const reports = await fetchIftaReports({ year: params.year, quarter: params.quarter, limit: params.limit })
+        return reports
+    } catch (error) {
+        console.error("[IFTA-Actions] getIftaReports error:", error)
+        throw new Error("Failed to fetch IFTA reports")
+    }
+}
 
 // Zod schema for server-side validation
 const iftaTripSchema = z.object({

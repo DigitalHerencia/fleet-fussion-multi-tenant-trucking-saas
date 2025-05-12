@@ -1,11 +1,13 @@
 "use client"
 
 import { useParams } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { Loader2 } from "lucide-react"
 import type { Company } from "@/types/types"
+import { getCompanyById } from "@/lib/actions/companies"
+import Loading from "./loading"
 
 interface Load {
     id: string
@@ -30,11 +32,15 @@ export default function CompanyLoadsPage() {
         async function fetchData() {
             setIsLoading(true)
             try {
-                // Fetch company data
-                const companyRes = await fetch(`/api/companies/${companyId}`)
-                if (!companyRes.ok) throw new Error("Failed to fetch company")
-                const companyData = await companyRes.json()
-                setCompany(companyData)
+                // Use server action instead of API route
+                const companyData = await getCompanyById(companyId)
+                // Patch for isActive and date fields to match Company type
+                setCompany({
+                    ...companyData,
+                    isActive: companyData.isActive ?? false,
+                    createdAt: companyData.createdAt ? new Date(companyData.createdAt).toISOString() : new Date().toISOString(),
+                    updatedAt: companyData.updatedAt ? new Date(companyData.updatedAt).toISOString() : new Date().toISOString()
+                })
 
                 // In a real app, you'd fetch loads specific to this company
                 // For now, we're using mock data
@@ -90,51 +96,53 @@ export default function CompanyLoadsPage() {
     }
 
     return (
-        <DashboardShell>
-            <DashboardHeader
-                heading={`${company.name} Loads`}
-                text="Manage and track all your shipments"
-            />
+        <Suspense fallback={<Loading />}>
+            <DashboardShell>
+                <DashboardHeader
+                    heading={`${company.name} Loads`}
+                    text="Manage and track all your shipments"
+                />
 
-            <div className="rounded-md border">
-                <table className="w-full">
-                    <thead>
-                        <tr className="border-b bg-muted/50">
-                            <th className="p-2 text-left font-medium">Ref #</th>
-                            <th className="p-2 text-left font-medium">Customer</th>
-                            <th className="p-2 text-left font-medium">Status</th>
-                            <th className="p-2 text-left font-medium">Origin</th>
-                            <th className="p-2 text-left font-medium">Destination</th>
-                            <th className="p-2 text-left font-medium">Pickup</th>
-                            <th className="p-2 text-left font-medium">Delivery</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {loads.map(load => (
-                            <tr key={load.id} className="border-b">
-                                <td className="p-2">{load.referenceNumber}</td>
-                                <td className="p-2">{load.customerName}</td>
-                                <td className="p-2 capitalize">{load.status}</td>
-                                <td className="p-2">{`${load.originCity}, ${load.originState}`}</td>
-                                <td className="p-2">{`${load.destinationCity}, ${load.destinationState}`}</td>
-                                <td className="p-2">
-                                    {new Date(load.pickupDate).toLocaleDateString()}
-                                </td>
-                                <td className="p-2">
-                                    {new Date(load.deliveryDate).toLocaleDateString()}
-                                </td>
+                <div className="rounded-md border">
+                    <table className="w-full">
+                        <thead>
+                            <tr className="border-b bg-muted/50">
+                                <th className="p-2 text-left font-medium">Ref #</th>
+                                <th className="p-2 text-left font-medium">Customer</th>
+                                <th className="p-2 text-left font-medium">Status</th>
+                                <th className="p-2 text-left font-medium">Origin</th>
+                                <th className="p-2 text-left font-medium">Destination</th>
+                                <th className="p-2 text-left font-medium">Pickup</th>
+                                <th className="p-2 text-left font-medium">Delivery</th>
                             </tr>
-                        ))}
-                        {loads.length === 0 && (
-                            <tr>
-                                <td colSpan={7} className="py-4 text-center text-muted-foreground">
-                                    No loads found
-                                </td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-            </div>
-        </DashboardShell>
+                        </thead>
+                        <tbody>
+                            {loads.map(load => (
+                                <tr key={load.id} className="border-b">
+                                    <td className="p-2">{load.referenceNumber}</td>
+                                    <td className="p-2">{load.customerName}</td>
+                                    <td className="p-2 capitalize">{load.status}</td>
+                                    <td className="p-2">{`${load.originCity}, ${load.originState}`}</td>
+                                    <td className="p-2">{`${load.destinationCity}, ${load.destinationState}`}</td>
+                                    <td className="p-2">
+                                        {new Date(load.pickupDate).toLocaleDateString()}
+                                    </td>
+                                    <td className="p-2">
+                                        {new Date(load.deliveryDate).toLocaleDateString()}
+                                    </td>
+                                </tr>
+                            ))}
+                            {loads.length === 0 && (
+                                <tr>
+                                    <td colSpan={7} className="py-4 text-center text-muted-foreground">
+                                        No loads found
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </DashboardShell>
+        </Suspense>
     )
 }

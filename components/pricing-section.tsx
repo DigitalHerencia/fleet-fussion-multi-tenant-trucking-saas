@@ -1,5 +1,6 @@
 // Shared pricing section for landing and pricing pages
 import React from "react"
+import Image from "next/image";
 
 const plans = [
     {
@@ -48,10 +49,14 @@ export default function PricingSection({ showTitle = true }: { showTitle?: boole
         <section className="w-full py-12 md:py-24 lg:py-32 relative overflow-hidden">
             {/* Background image */}
             <div className="absolute inset-0 w-full h-full z-0">
-                <img
+                <Image
                     src="/tiers-bg.png"
                     alt="Pricing Background"
-                    className="w-full h-full object-cover object-center"
+                    fill
+                    className="object-cover object-center"
+                    priority={false}
+                    quality={80}
+                    sizes="100vw"
                 />
                 <div className="absolute inset-0 bg-white/80 dark:bg-zinc-900/20" />
             </div>

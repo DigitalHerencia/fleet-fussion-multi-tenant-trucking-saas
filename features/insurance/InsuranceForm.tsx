@@ -31,14 +31,12 @@ export function InsuranceForm() {
             <div>
                 <label>Provider</label>
                 <input {...register("provider")} className="input" />
-                <FormError message={errors.provider?.message || state.errors?.provider?.[0]} />
+                <FormError message={errors.provider?.message || (!state.success ? state.errors?.provider?.[0] : undefined)} />
             </div>
             <div>
                 <label>Policy Number</label>
                 <input {...register("policyNumber")} className="input" />
-                <FormError
-                    message={errors.policyNumber?.message || state.errors?.policyNumber?.[0]}
-                />
+                <FormError message={errors.policyNumber?.message || (!state.success ? state.errors?.policyNumber?.[0] : undefined)} />
             </div>
             <div>
                 <label>Coverage Type</label>
@@ -59,7 +57,7 @@ export function InsuranceForm() {
             <button type="submit" className="btn btn-primary w-full" disabled={isSubmitting}>
                 {isSubmitting ? "Submitting..." : "Add Policy"}
             </button>
-            <FormError message={state.error} />
+            <FormError message={!state.success ? state.error : undefined} />
         </form>
     )
 }

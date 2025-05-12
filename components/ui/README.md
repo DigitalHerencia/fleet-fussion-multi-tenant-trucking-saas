@@ -22,11 +22,38 @@ import { Button } from "@/components/ui/button"
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet"
 ```
 
+## Button Component API
+
+The `Button` component supports multiple variants and sizes for consistent UI. Use the `variant` and `size` props to control appearance.
+
+| Prop      | Type     | Default   | Description                                      |
+|-----------|----------|-----------|--------------------------------------------------|
+| `variant` | string   | "default" | One of: `default`, `destructive`, `outline`, `secondary`, `ghost`, `link` |
+| `size`    | string   | "default" | One of: `default`, `sm`, `lg`, `icon`           |
+| `asChild` | boolean  | false     | Render as child element (for custom wrappers)     |
+| ...rest   | button props |         | All standard button props supported              |
+
+### Examples
+
+```tsx
+<Button>Default</Button>
+<Button variant="destructive">Delete</Button>
+<Button variant="outline" size="sm">Small Outline</Button>
+<Button variant="icon" aria-label="Menu"><MenuIcon /></Button>
+<Button asChild><a href="/docs">Docs Link</a></Button>
+```
+
+- Use `variant` and `size` for visual consistency.
+- Use `asChild` to render a custom element (e.g., `<a>`, `<Link>`).
+- All buttons are accessible and keyboard-friendly by default.
+
 ## Best Practices
 
 - Prefer composition over inheritance
 - Use Tailwind utility classes for styling
 - Document props and usage for complex components
+- Use the provided variants and sizes for all Button usages
+- Avoid custom button styles outside the Button component
 
 ---
 
