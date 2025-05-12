@@ -20,7 +20,7 @@ export default async function EditLoadPage({ params }: EditLoadPageProps) {
     return <div>Company not found. Please create a company first.</div>;
   }
 
-  const [loadRes, driversRes, vehiclesRes] = await Promise.all([
+  const [loadRes] = await Promise.all([
     getLoadById(params.id, company.id),
     getAvailableDrivers(),
     getAvailableVehicles(),
@@ -31,8 +31,6 @@ export default async function EditLoadPage({ params }: EditLoadPageProps) {
   }
 
   const load = loadRes.data;
-  const drivers = driversRes.success ? driversRes.data : [];
-  const vehicles = vehiclesRes.success ? vehiclesRes.data : [];
 
   return (
     <DashboardShell>

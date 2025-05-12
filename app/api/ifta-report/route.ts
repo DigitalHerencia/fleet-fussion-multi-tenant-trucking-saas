@@ -2,6 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import PDFDocument from "pdfkit";
 import { getIftaReports } from "@/lib/actions/ifta-actions";
 
+// Local RawIftaReport type (copied from app/ifta/page.tsx)
+type RawIftaReport = {
+  id: string;
+  quarter: number;
+  dueDate: string;
+  status: string | null;
+  totalMiles: number | null;
+  totalGallons: number | null;
+  reportData?: {
+    taxPaid?: number;
+  };
+};
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const year = Number(searchParams.get("year"));
@@ -15,13 +28,13 @@ export async function GET(req: NextRequest) {
   }
 
   // Fetch the report data
-  let reports: any[] = [];
+  let reports: RawIftaReport[] = [];
   if (typeof getIftaReports === "function") {
-    reports = await getIftaReports({ year, quarter, limit: 1 });
+    reports = await getIftaReports({ year, quarter, limit: 10 });
   } else {
     throw new Error("getIftaReports is not implemented or not exported.");
   }
-  const report = reports.find((r: any) => r.id === id);
+  const report = reports.find((r) => r.id === id);
   if (!report) {
     return NextResponse.json({ error: "Report not found" }, { status: 404 });
   }

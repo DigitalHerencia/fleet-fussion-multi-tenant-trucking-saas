@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, ClipboardCheck } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { DataTable } from "@/components/ui/data-table";
 import { columns as driverColumns } from "@/components/compliance/driver-compliance-table";
 import { columns as vehicleColumns } from "@/components/compliance/vehicle-compliance-table";

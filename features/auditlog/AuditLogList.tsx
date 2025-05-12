@@ -4,15 +4,27 @@ import { useEffect, useState } from "react";
 import { getAuditLogs } from "@/lib/fetchers/auditlog";
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
 
+// Define the AuditLog type for type safety
+interface AuditLog {
+  companyId: string;
+  id: string;
+  createdAt: Date | null;
+  userId: string | null;
+  action: string;
+  targetTable: string | null;
+  targetId: string | null;
+  details: unknown;
+}
+
 export function AuditLogList({ companyId }: { companyId: string }) {
-  const [logs, setLogs] = useState<any[]>([]);
+  const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchLogs() {
       setLoading(true);
       const data = await getAuditLogs(companyId);
-      setLogs(data);
+      setLogs(  data);
       setLoading(false);
     }
     fetchLogs();
@@ -27,7 +39,11 @@ export function AuditLogList({ companyId }: { companyId: string }) {
         {logs.map((log) => (
           <li key={log.id} className="py-2 text-xs">
             <span className="font-mono text-muted-foreground">
-              {log.createdAt}
+              {log.createdAt ?
+                typeof log.createdAt === "string"
+                  ? log.createdAt
+                  : log.createdAt.toLocaleString()
+                : ""}
             </span>{" "}
             &mdash; <b>{log.action}</b>{" "}
             {log.targetTable && (
@@ -35,11 +51,7 @@ export function AuditLogList({ companyId }: { companyId: string }) {
                 on <span className="font-mono">{log.targetTable}</span>
               </>
             )}{" "}
-            {log.details && (
-              <span className="text-muted-foreground">
-                ({JSON.stringify(log.details)})
-              </span>
-            )}
+            
           </li>
         ))}
       </ul>

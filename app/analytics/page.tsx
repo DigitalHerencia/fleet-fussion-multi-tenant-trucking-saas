@@ -21,14 +21,13 @@ import { PerformanceMetricsServer } from "@/components/analytics/performance-met
 import { DriverPerformanceServer } from "@/components/analytics/driver-performance-server";
 import { VehicleUtilizationServer } from "@/components/analytics/vehicle-utilization-server";
 import { FinancialMetricsServer } from "@/components/analytics/financial-metrics-server";
-import { getCurrentUserId, getCurrentCompanyId } from "@/lib/auth";
+import { getCurrentCompanyId } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { getRevenueMetrics } from "@/lib/fetchers/analytics";
 
 export default async function AnalyticsPage() {
   // Get current user and company ID
   try {
-    const userId = await getCurrentUserId();
     const companyId = await getCurrentCompanyId();
 
     // Hard-code time range for now, in the future this could be a state in the URL
@@ -293,7 +292,7 @@ export default async function AnalyticsPage() {
         </Tabs>
       </div>
     );
-  } catch (error) {
+  } catch  {
     // Redirect to company selection if we can't get user or company ID
     redirect("/company-selection");
     return null;

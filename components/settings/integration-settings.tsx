@@ -13,6 +13,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { AlertCircle, CheckCircle, ExternalLink, Clock } from "lucide-react";
+import Image from "next/image";
 
 // Updated with real-world integrations
 const realIntegrations = [
@@ -129,7 +130,7 @@ export function IntegrationSettings() {
             <CardHeader className="flex flex-row items-start justify-between space-y-0">
               <div className="flex items-start gap-3">
                 <div className="flex-shrink-0 w-10 h-10">
-                  <img
+                  <Image
                     src={integration.logo || "/placeholder.svg"}
                     alt={`${integration.name} logo`}
                     className="w-full h-full object-contain"
@@ -198,7 +199,7 @@ export function IntegrationSettings() {
           Integration Roadmap
         </h3>
         <p className="text-blue-700 mb-3">
-          We're constantly expanding our integration capabilities. Have a
+          We&apos;re constantly expanding our integration capabilities. Have a
           specific integration request?
         </p>
         <Button variant="outline" className="bg-white hover:bg-blue-50">

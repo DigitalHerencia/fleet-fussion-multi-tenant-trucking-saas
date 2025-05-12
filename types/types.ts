@@ -74,6 +74,14 @@ export type Vehicle = {
   type: "tractor" | "trailer";
   /** Vehicle status (active/inactive) */
   status: "active" | "inactive";
+  /** Vehicle make (e.g., Freightliner, Volvo) */
+  make: string;
+  /** Vehicle model (e.g., Cascadia, VNL) */
+  model: string;
+  /** Vehicle year (e.g., 2020) */
+  year: number;
+  /** Vehicle VIN (optional) */
+  vin?: string;
 };
 
 // Load represents a shipment or job assigned to a driver/vehicle

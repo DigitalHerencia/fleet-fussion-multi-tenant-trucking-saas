@@ -224,7 +224,7 @@ export function NotificationSettings() {
               onChange={(e) => handleContactInfoChange("email", e.target.value)}
             />
             <p className="text-xs text-muted-foreground">
-              This is the email address where you'll receive notifications.
+              This is the email address where you&apos;ll receive notifications.
             </p>
           </div>
         </TabsContent>
@@ -304,7 +304,7 @@ export function NotificationSettings() {
               onChange={(e) => handleContactInfoChange("phone", e.target.value)}
             />
             <p className="text-xs text-muted-foreground">
-              This is the phone number where you'll receive SMS notifications.
+              This is the phone number where you&apos;ll receive SMS notifications.
             </p>
           </div>
         </TabsContent>

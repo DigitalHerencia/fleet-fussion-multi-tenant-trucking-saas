@@ -37,7 +37,16 @@ import {
 } from "@/components/ui/select";
 import { MoreHorizontal, Plus, Search } from "lucide-react";
 
-export function UserSettings({ users }: { users: any[] }) {
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  status: string;
+  lastLogin: string;
+}
+
+export function UserSettings({ users }: { users: User[] }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
   const [newUser, setNewUser] = useState({
@@ -47,7 +56,7 @@ export function UserSettings({ users }: { users: any[] }) {
   });
 
   const filteredUsers = users.filter(
-    (user) =>
+    (user: User) =>
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.role.toLowerCase().includes(searchTerm.toLowerCase()),

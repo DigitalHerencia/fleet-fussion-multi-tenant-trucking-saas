@@ -5,7 +5,9 @@ import { VehicleCard } from "./vehicle-card";
 import { VehicleDetailsDialog } from "./vehicle-details-dialog";
 import { getDocumentsForVehicle } from "@/lib/fetchers/documents";
 import VehicleDocuments from "@/features/vehicles/VehicleDocuments";
-import type { Vehicle, Document } from "@/types/types";
+import type { Document } from "@/types/types";
+import { Vehicle } from "@/types/types";
+
 
 interface VehiclesClientProps {
   vehicles: Vehicle[];
@@ -45,27 +47,19 @@ export function VehiclesClient({ vehicles }: VehiclesClientProps) {
   }
 
   return (
-    <div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {vehicles.map((vehicle) => (
-          <VehicleCard
-            key={vehicle.id}
-            vehicle={{
-              ...vehicle,
-              make: (vehicle as any).make ?? "",
-              model: (vehicle as any).model ?? "",
-              year: (vehicle as any).year ?? 0,
-            }}
-            onClick={() => handleOpen(vehicle)}
-          />
-        ))}
-      </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {vehicles.map((vehicle) => (
+        <VehicleCard
+          key={vehicle.id}
+          vehicle={vehicle}
+          onClick={() => handleOpen(vehicle)}
+        />
+      ))}
       {selectedVehicle && (
         <VehicleDetailsDialog
           vehicle={selectedVehicle}
           isOpen={dialogOpen}
           onClose={() => setDialogOpen(false)}
-          // ...pass other props as needed
         >
           <VehicleDocuments
             vehicleId={selectedVehicle.id}

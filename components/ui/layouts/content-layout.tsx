@@ -38,7 +38,6 @@ export function ContentLayout({
   );
 }
 
-type DivProps = Omit<React.HTMLAttributes<HTMLDivElement>, "title">;
 
 interface ContentSectionProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {

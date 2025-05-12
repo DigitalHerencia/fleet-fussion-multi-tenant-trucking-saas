@@ -63,9 +63,7 @@ export function VehiclesClient({ vehicles }: VehiclesClientProps) {
             key={vehicle.id}
             vehicle={{
               ...vehicle,
-              make: (vehicle as any).make ?? "",
-              model: (vehicle as any).model ?? "",
-              year: (vehicle as any).year ?? 0,
+            
             }}
             onClick={() => handleOpen(vehicle)}
           />

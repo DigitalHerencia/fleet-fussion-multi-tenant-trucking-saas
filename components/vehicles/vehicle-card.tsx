@@ -6,7 +6,6 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Truck, Calendar, Gauge, AlertTriangle } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -28,7 +27,7 @@ interface Vehicle {
   maintenanceRecords?: {
     status: string;
     scheduledDate?: Date;
-    [key: string]: any;
+    [key: string]: unknown;
   }[];
 }
 
@@ -38,7 +37,7 @@ interface VehicleCardProps {
 }
 
 export function VehicleCard({ vehicle, onClick }: VehicleCardProps) {
-  const getTypeIcon = (type: string) => {
+  const getTypeIcon = () => {
     return <Truck className="h-4 w-4 text-muted-foreground" />;
   };
 
@@ -54,7 +53,7 @@ export function VehicleCard({ vehicle, onClick }: VehicleCardProps) {
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-2">
-            {getTypeIcon(vehicle.type)}
+            {getTypeIcon()}
             <h3 className="font-medium">{vehicle.unitNumber}</h3>
           </div>
           <StatusBadge status={vehicle.status} />

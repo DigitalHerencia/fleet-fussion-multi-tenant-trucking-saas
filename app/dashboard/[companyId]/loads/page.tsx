@@ -45,7 +45,7 @@ export default async function CompanyLoadsPage({
               </tr>
             </thead>
             <tbody>
-              {loads.map((load: any) => (
+              {loads.map((load) => (
                 <tr key={load.id} className="border-b">
                   <td className="p-2">{load.referenceNumber}</td>
                   <td className="p-2">{load.customerName}</td>

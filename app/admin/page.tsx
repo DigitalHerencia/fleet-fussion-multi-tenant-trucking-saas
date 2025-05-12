@@ -2,7 +2,7 @@ import { checkRole } from "@/lib/utils/roles";
 import { redirect } from "next/navigation";
 import { SearchUsers } from "./SearchUsers";
 import { clerkClient } from "@clerk/nextjs/server";
-import { setRole, removeRole, setRoleVoid, removeRoleVoid } from "./_actions";
+import { setRoleVoid, removeRoleVoid } from "./_actions";
 
 export default async function AdminDashboard({
   searchParams,

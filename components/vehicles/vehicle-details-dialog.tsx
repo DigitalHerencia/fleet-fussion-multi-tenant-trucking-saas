@@ -1,16 +1,7 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-  DialogClose,
-} from "@/components/ui/dialog";
+
 import { DialogCard } from "@/components/ui/dialog-card";
 import type { Vehicle } from "@/types/types";
 import { type ReactNode } from "react";
-import { Button } from "../ui/button";
 
 interface VehicleDetailsDialogProps {
   vehicle: Vehicle;
@@ -38,15 +29,8 @@ export function VehicleDetailsDialog({
       <div>
         <strong>Status:</strong> {vehicle.status}
       </div>
-      <div>
-        <strong>Make:</strong> {(vehicle as any).make ?? ""}
-      </div>
-      <div>
-        <strong>Model:</strong> {(vehicle as any).model ?? ""}
-      </div>
-      <div>
-        <strong>Year:</strong> {(vehicle as any).year ?? ""}
-      </div>
+      
+      
       {children}
     </DialogCard>
   );
