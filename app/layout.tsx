@@ -1,7 +1,7 @@
 import type React from "react";
-import "@/globals.css";
+import "../app/globals.css";
 import type { Metadata } from "next";
-import { Providers } from "@/components/Providers";
+import { Providers } from "../components/Providers";
 
 export const metadata: Metadata = {
   title: "FleetFusion - Enterprise-Grade Fleet Management",
