@@ -1,7 +1,8 @@
 import { Webhook } from "svix";
 import { headers } from "next/headers";
 import { db } from "@/db/index";
-import { companies } from "@/db/schema";
+import { companies, companyUsers } from "@/db/schema";
+import { eq, and } from "drizzle-orm";
 import { type ClerkWebhookEvent } from "@/types/clerk-webhook";
 
 export async function POST(req: Request) {
@@ -46,19 +47,78 @@ export async function POST(req: Request) {
   const eventType = (evt as ClerkWebhookEvent).type;
 
   if (eventType === "organization.created") {
-    // Create a new company when an organization is created
-    const { name } = evt.data as { name: string };
+    const { id: orgId, name } = evt.data as { id: string; name: string };
     try {
       await db.insert(companies).values({
-        name: name,
-        // ...other fields as needed
+        name,
+        clerkOrgId: orgId,
       });
     } catch {
       return new Response("Error creating company", { status: 500 });
     }
+  } else if (eventType === "organization.updated") {
+    const { id: orgId, name } = evt.data as { id: string; name: string };
+    try {
+      await db.update(companies)
+        .set({ name })
+        .where(eq(companies.clerkOrgId, orgId));
+    } catch {
+      return new Response("Error updating company", { status: 500 });
+    }
+  } else if (eventType === "organizationMembership.created") {
+    const { organization: { id: orgId }, publicUserData: { userId }, role } = evt.data as any;
+    try {
+      const company = await db.select({ id: companies.id })
+        .from(companies)
+        .where(eq(companies.clerkOrgId, orgId));
+      if (company.length) {
+        await db.insert(companyUsers).values({
+          userId,
+          companyId: company[0].id,
+          role,
+        });
+      }
+    } catch {
+      return new Response("Error adding company user", { status: 500 });
+    }
+  } else if (eventType === "organizationMembership.updated") {
+    const { organization: { id: orgId }, publicUserData: { userId }, role } = evt.data as any;
+    try {
+      const company = await db.select({ id: companies.id })
+        .from(companies)
+        .where(eq(companies.clerkOrgId, orgId));
+      if (company.length) {
+        await db.update(companyUsers)
+          .set({ role })
+          .where(
+            and(
+              eq(companyUsers.userId, userId),
+              eq(companyUsers.companyId, company[0].id)
+            )
+          );
+      }
+    } catch {
+      return new Response("Error updating company user", { status: 500 });
+    }
+  } else if (eventType === "organizationMembership.deleted") {
+    const { organization: { id: orgId }, publicUserData: { userId } } = evt.data as any;
+    try {
+      const company = await db.select({ id: companies.id })
+        .from(companies)
+        .where(eq(companies.clerkOrgId, orgId));
+      if (company.length) {
+        await db.delete(companyUsers)
+          .where(
+            and(
+              eq(companyUsers.userId, userId),
+              eq(companyUsers.companyId, company[0].id)
+            )
+          );
+      }
+    } catch {
+      return new Response("Error removing company user", { status: 500 });
+    }
   }
-
-  // Add more event handling as needed
 
   return new Response("Webhook received", { status: 200 });
 }
