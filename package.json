@@ -6,12 +6,10 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "dev:ngrok": "sh ./scripts/dev-with-ngrok.sh",
     "check-types": "tsc --noEmit",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "prettier": "prettier \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
-    "prettier:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
     "prettier:write": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\""
   },
   "dependencies": {
