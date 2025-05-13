@@ -13,7 +13,13 @@ export function addSecurityHeaders(
   // Define CSP directives
   const cspDirectives = {
     "default-src": ["'self'"],
-    "script-src": ["'self'", "'unsafe-inline'", "clerk.fleetfusion.app"],
+    "script-src": [
+      "'self'",
+      "'unsafe-inline'",
+      "clerk.fleetfusion.app",
+      "https://*.clerk.accounts.dev",
+      "https://vercel.live"
+    ],
     "style-src": ["'self'", "'unsafe-inline'"],
     "img-src": [
       "'self'",
