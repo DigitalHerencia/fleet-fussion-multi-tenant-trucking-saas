@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "concurrently \"next dev --turbopack\" \"ngrok http --url=liberal-gull-quietly.ngrok-free.app 3000\"",
     "build": "next build",
     "start": "next start",
     "check-types": "tsc --noEmit",
@@ -91,6 +91,7 @@
     "@typescript-eslint/parser": "^8.32.0",
     "archiver": "^7.0.1",
     "autoprefixer": "^10.4.21",
+    "concurrently": "^9.1.2",
     "eslint": "^9.26.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-jsx-a11y": "^6.10.2",

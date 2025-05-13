@@ -125,10 +125,6 @@ export default function SignInPage() {
             {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
-        {/* Optionally, show Clerk's <SignIn /> for social/magic link */}
-        <div className="mt-6">
-          <SignIn afterSignInUrl={process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL || "/org-selection"} />
-        </div>
       </div>
     </div>
   );

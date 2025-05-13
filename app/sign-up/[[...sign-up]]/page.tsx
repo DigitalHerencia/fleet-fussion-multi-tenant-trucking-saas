@@ -145,7 +145,6 @@ export default function SignUpPage() {
         </form>
         {/* Optionally, show Clerk's <SignUp /> for social/magic link */}
         <div className="mt-6">
-          <SignUp afterSignUpUrl={process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL || "/onboarding"} />
         </div>
       </div>
     </div>
