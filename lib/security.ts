@@ -37,9 +37,12 @@ export function addSecurityHeaders(
       process.env.NEXT_PUBLIC_APP_URL || "https://fleet-fusion.vercel.app",
       "https://fleet-fusion.vercel.app",
       "vitals.vercel-insights.com",
+      "https://*.clerk.accounts.dev",
+      "https://clerk-telemetry.com"
     ],
     "frame-src": ["'self'", "clerk.fleetfusion.app"],
     "object-src": ["'none'"],
+    "worker-src": ["'self'", "blob:"],
   };
 
   // Build the CSP header value
