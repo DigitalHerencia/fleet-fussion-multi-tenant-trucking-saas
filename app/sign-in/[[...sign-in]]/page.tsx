@@ -21,15 +21,31 @@ export default function SignInPage() {
     setLoading(true);
     setError("");
     if (!isLoaded) return;
+    // Enforce Clerk CAPTCHA if present
+    const captcha = (window as any).Clerk?.captcha;
+    if (captcha && !captcha.isSolved()) {
+      setError("Please complete the CAPTCHA challenge.");
+      setLoading(false);
+      return;
+    }
     try {
       const res = await signIn.create({ identifier: email, password });
       if (res.status === "complete") {
-        router.push("/org-selection"); // Always go to org-selection, middleware will handle onboarding if needed
+        router.push(process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL || "/org-selection");
       } else {
         setError("Sign in failed. Please check your credentials.");
       }
     } catch (err: any) {
-      setError(err?.errors?.[0]?.message || "Sign in failed.");
+      // Clerk error handling
+      if (err?.errors?.[0]?.code === "form_password_incorrect") {
+        setError("Incorrect password. Try again or reset your password.");
+      } else if (err?.errors?.[0]?.code === "form_identifier_not_found") {
+        setError("No account found with that email.");
+      } else if (err?.errors?.[0]?.code === "form_identifier_not_verified") {
+        setError("Please verify your email before signing in.");
+      } else {
+        setError(err?.errors?.[0]?.message || "Sign in failed.");
+      }
     } finally {
       setLoading(false);
     }
@@ -110,7 +126,9 @@ export default function SignInPage() {
           </button>
         </form>
         {/* Optionally, show Clerk's <SignIn /> for social/magic link */}
-        {/* <SignIn afterSignInUrl="/org-selection" /> */}
+        <div className="mt-6">
+          <SignIn afterSignInUrl={process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL || "/org-selection"} />
+        </div>
       </div>
     </div>
   );

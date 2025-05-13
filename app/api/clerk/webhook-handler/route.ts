@@ -115,7 +115,8 @@ export async function POST(req: Request) {
             )
           );
       }
-    } catch {
+    } catch (err) {
+      console.error("Error removing company user:", err);
       return new Response("Error removing company user", { status: 500 });
     }
   }

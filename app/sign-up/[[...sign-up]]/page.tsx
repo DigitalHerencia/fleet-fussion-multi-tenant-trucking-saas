@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useSignUp } from "@clerk/nextjs";
+import { useSignUp, SignUp } from "@clerk/nextjs";
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("");
@@ -20,6 +20,13 @@ export default function SignUpPage() {
     setLoading(true);
     setError("");
     if (!isLoaded) return;
+    // Enforce Clerk CAPTCHA if present
+    const captcha = (window as any).Clerk?.captcha;
+    if (captcha && !captcha.isSolved()) {
+      setError("Please complete the CAPTCHA challenge.");
+      setLoading(false);
+      return;
+    }
     try {
       const res = await signUp.create({
         emailAddress: email,
@@ -28,14 +35,23 @@ export default function SignUpPage() {
         lastName: name.split(" ").slice(1).join(" ") || undefined,
       });
       if (res.status === "complete") {
-        router.push("/onboarding");
+        router.push(process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL || "/onboarding");
       } else {
         setError(
           "Sign up incomplete. Please check your email to verify your account and then sign in.",
         );
       }
-    } catch (err: unknown) {
-      setError((err as Error)?.message || "Sign up failed.");
+    } catch (err: any) {
+      // Clerk error handling
+      if (err?.errors?.[0]?.code === "form_password_pwned") {
+        setError("This password is too common. Please choose a stronger password.");
+      } else if (err?.errors?.[0]?.code === "form_password_length") {
+        setError("Password is too short. Minimum 8 characters required.");
+      } else if (err?.errors?.[0]?.code === "form_identifier_exists") {
+        setError("An account with this email already exists. Please sign in.");
+      } else {
+        setError((err as Error)?.message || "Sign up failed.");
+      }
     } finally {
       setLoading(false);
     }
@@ -128,7 +144,9 @@ export default function SignUpPage() {
           </button>
         </form>
         {/* Optionally, show Clerk's <SignUp /> for social/magic link */}
-        {/* <SignUp afterSignUpUrl="/onboarding" /> */}
+        <div className="mt-6">
+          <SignUp afterSignUpUrl={process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL || "/onboarding"} />
+        </div>
       </div>
     </div>
   );
