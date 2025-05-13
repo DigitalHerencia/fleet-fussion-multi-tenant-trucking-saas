@@ -130,8 +130,8 @@ export const columns: ColumnDef<ComplianceDocument>[] = [
   },
 ];
 
-export function ComplianceDocuments() {
-  const [documents, setDocuments] = useState<ComplianceDocument[]>([]);
+export function ComplianceDocuments({ documents: initialDocuments }: { documents: ComplianceDocument[] }) {
+  const [documents, setDocuments] = useState<ComplianceDocument[]>(initialDocuments);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("");
@@ -139,14 +139,6 @@ export function ComplianceDocuments() {
   const [showUpload, setShowUpload] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Fetch documents from backend (replace with real fetcher)
-  useEffect(() => {
-    fetch("/api/compliance/documents")
-      .then((res) => res.json())
-      .then((data) => setDocuments(data))
-      .catch(() => setDocuments([]));
-  }, []);
 
   // Listen for the custom event to set previewUrl
   useEffect(() => {

@@ -433,7 +433,7 @@ export function ComplianceDashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ComplianceDocuments />
+              <ComplianceDocuments documents={ [] } />
             </CardContent>
           </Card>
         </TabsContent>

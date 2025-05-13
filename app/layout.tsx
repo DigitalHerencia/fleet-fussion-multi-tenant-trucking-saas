@@ -2,6 +2,7 @@ import type React from "react";
 import "../app/globals.css";
 import type { Metadata } from "next";
 import { Providers } from "../components/Providers";
+import { ClerkProvider } from "@clerk/nextjs";
 
 export const metadata: Metadata = {
   title: "FleetFusion - Enterprise-Grade Fleet Management",
@@ -22,7 +23,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Providers>{children}</Providers>
+        <ClerkProvider>
+          <Providers>{children}</Providers>
+        </ClerkProvider>
       </body>
     </html>
   );

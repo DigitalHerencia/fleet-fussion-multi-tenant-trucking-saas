@@ -14,7 +14,6 @@ import { AlertTriangle } from "lucide-react";
 import { DataTable } from "@/components/ui/data-table";
 import { columns as driverColumns } from "@/components/compliance/driver-compliance-table";
 import { columns as vehicleColumns } from "@/components/compliance/vehicle-compliance-table";
-import { columns as documentColumns } from "@/components/compliance/compliance-documents";
 import { PageHeader } from "@/components/ui/page-header";
 import {
   getDriverComplianceData,
@@ -23,18 +22,13 @@ import {
 } from "@/lib/fetchers/compliance";
 import { getCurrentCompanyId } from "@/lib/auth";
 import { ComplianceDashboard } from "@/components/compliance/compliance-dashboard";
+import ComplianceDocumentsServer from "@/components/compliance/compliance-documents-server";
 import { type ColumnDef } from "@tanstack/react-table";
 import type {
   ComplianceDriver,
   ComplianceVehicle,
   ComplianceDocument,
 } from "@/types/compliance";
-
-// Ensure the documentColumns are properly typed as ComplianceDocument
-const typedDocumentColumns = documentColumns as unknown as ColumnDef<
-  ComplianceDocument,
-  unknown
->[];
 
 async function getComplianceData() {
   try {
@@ -167,13 +161,8 @@ export default async function CompliancePage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="overflow-x-auto">
-                  <Suspense
-                    fallback={<div>Loading compliance documents...</div>}
-                  >
-                    <DataTable
-                      columns={typedDocumentColumns}
-                      data={complianceDocumentsData}
-                    />
+                  <Suspense fallback={<div>Loading compliance documents...</div>}>
+                    <ComplianceDocumentsServer companyId={await getCurrentCompanyId()} />
                   </Suspense>
                 </CardContent>
               </Card>
