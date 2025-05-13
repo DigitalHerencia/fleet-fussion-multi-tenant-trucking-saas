@@ -26,7 +26,11 @@ export function addSecurityHeaders(
       "data:",
       "blob:",
       "images.clerk.dev",
+      "https://img.clerk.com",
+      "https://www.gravatar.com",
       "*.cloudinary.com",
+      "https://fleet-fusion.vercel.app",
+      "https://fleet-fusion-dri1xn1m9-digital-herencia.vercel.app"
     ],
     "font-src": ["'self'", "data:"],
     "connect-src": [
@@ -34,8 +38,8 @@ export function addSecurityHeaders(
       "https://clerk.fleetfusion.app",
       "https://api.clerk.dev",
       "https://clerk.accounts",
-      process.env.NEXT_PUBLIC_APP_URL || "https://fleet-fusion.vercel.app",
       "https://fleet-fusion.vercel.app",
+      "https://fleet-fusion-dri1xn1m9-digital-herencia.vercel.app",
       "vitals.vercel-insights.com",
       "https://*.clerk.accounts.dev",
       "https://clerk-telemetry.com"
