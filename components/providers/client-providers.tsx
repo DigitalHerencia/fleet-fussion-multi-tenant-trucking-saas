@@ -1,7 +1,7 @@
 // Centralized Providers component for all context and theme providers
 "use client";
 
-import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 import { AuthProvider } from "@/context/auth-context";
 import { CompanyProvider } from "@/context/company-context";
 import { Toaster } from "@/components/ui/toaster";

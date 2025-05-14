@@ -1,11 +1,11 @@
 "use server";
 
-import { db } from "@/db";
+import { db } from "@/db/db";
 import { complianceDocuments, hosLogs, complianceRecords } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { z } from "zod";
 import { complianceSchema } from "@/lib/validation/compliance-schema";
-import { uploadToVercelBlob } from "@/lib/blob";
+import { uploadToVercelBlob } from "@/db/blob";
 import { getCurrentCompanyId } from "@/lib/auth";
 import type { ApiResult } from "@/types/api";
 

@@ -1,10 +1,7 @@
-// middleware.ts
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
-import { addSecurityHeaders } from "@/lib/security";
-import { rateLimit } from "@/lib/rate-limit";
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
-const isOnboardingRoute = createRouteMatcher(["/onboarding"]);
 // Define public routes that don't require authentication
 const isPublicRoute = createRouteMatcher([
   "/",
@@ -20,69 +17,87 @@ const isPublicRoute = createRouteMatcher([
   "/contact",
   "/api(.*)",
 ]);
-const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
 
-export default clerkMiddleware(async (auth, req: NextRequest) => {
-  const { userId, sessionClaims } = await auth();
+// Define onboarding routes
+const isOnboardingRoute = createRouteMatcher([
+  "/onboarding(.*)"
+]);
 
-  // For users visiting /onboarding, don't try to redirect
-  if (userId && isOnboardingRoute(req)) {
-    const response = NextResponse.next();
-    const securityHeaders = addSecurityHeaders(req, response);
+// Define admin routes
+const isAdminRoute = createRouteMatcher([
+  "/admin(.*)"
+]);
+
+// Determine if we're in development mode
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+// Add security headers to the response
+function addSecurityHeaders(req: NextRequest, res: NextResponse): Headers {
+  const headers = new Headers(res.headers);
+  headers.set("X-Content-Type-Options", "nosniff");
+  headers.set("X-Frame-Options", "DENY");
+  headers.set("X-XSS-Protection", "1; mode=block");
+  headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  return headers;
+}
+
+// Use the authMiddleware pattern recommended by Clerk
+export default clerkMiddleware((auth, req) => {
+  // First apply security headers to all requests
+  const secureResponse = (res: NextResponse) => {
+    const securityHeaders = addSecurityHeaders(req, res);
     return NextResponse.next({ headers: securityHeaders });
+  };
+
+  // Handle requests to public routes - allow access without authentication
+  if (isPublicRoute(req)) {
+    return secureResponse(NextResponse.next());
   }
 
-  // If the user isn't signed in and the route is private, redirect to sign-in
-  if (!userId && !isPublicRoute(req)) {
-    const signInUrl = new URL("/sign-in", req.url); // Construct base sign-in URL
-    const returnUrl = new URL(req.url);
+  // For all other routes, we need to check authentication
+  return auth().then(({ userId, sessionClaims }) => {
+    // If no user and not on public route, redirect to sign-in
+    if (!userId && !isPublicRoute(req)) {
+      const signInUrl = new URL("/sign-in", req.url);
+      const returnUrl = new URL(req.url);
 
-    // Remove potentially problematic query parameters to avoid nesting/loops
-    returnUrl.searchParams.delete("redirect_url");
-    returnUrl.searchParams.delete("returnBackUrl");
+      // Clean returnUrl to avoid redirect loops
+      returnUrl.searchParams.delete("redirect_url");
+      returnUrl.searchParams.delete("returnBackUrl");
 
-    // Set the cleaned returnBackUrl
-    signInUrl.searchParams.set("returnBackUrl", returnUrl.toString());
-    return NextResponse.redirect(signInUrl);
-  }
-
-  // Catch users who do not have `onboardingComplete: true` in their publicMetadata
-  // Redirect them to the /onboarding route to complete onboarding
-  if (userId && !sessionClaims?.metadata?.onboardingComplete) {
-    const onboardingUrl = new URL("/onboarding", req.url);
-    return NextResponse.redirect(onboardingUrl);
-  }
-
-  // Protect /admin routes for admin users only
-  if (isAdminRoute(req) && sessionClaims?.metadata?.role !== "admin") {
-    const url = new URL("/", req.url);
-    return NextResponse.redirect(url);
-  }
-
-  // If the user is logged in and the route is protected, let them view.
-  if (userId && !isPublicRoute(req)) {
-    const response = NextResponse.next();
-    const securityHeaders = addSecurityHeaders(req, response);
-    return NextResponse.next({ headers: securityHeaders });
-  }
-  // Check for rate limits on API routes
-  if (req.url.includes("/api/")) {
-    const rateLimitResponse = rateLimit(req);
-    // If rate limit is exceeded, return the 429 response
-    if (rateLimitResponse.headers?.get("status") === "429") {
-      return rateLimitResponse;
+      // Set the returnUrl parameter
+      signInUrl.searchParams.set("returnBackUrl", returnUrl.toString());
+      return NextResponse.redirect(signInUrl);
     }
-  }
 
-  // For public routes, still add security headers
-  const response = NextResponse.next();
-  const securityHeaders = addSecurityHeaders(req, response);
-  return NextResponse.next({ headers: securityHeaders });
+    // Check if user needs to complete onboarding (safe access with optional chaining)
+    const onboardingComplete = sessionClaims?.onboardingComplete === true;
+    
+    // For users on onboarding route, let them proceed regardless of onboarding status
+    if (userId && isOnboardingRoute(req)) {
+      return secureResponse(NextResponse.next());
+    }
+
+    // If user is authenticated but hasn't completed onboarding, redirect to onboarding
+    if (userId && !onboardingComplete && !isOnboardingRoute(req)) {
+      const onboardingUrl = new URL("/onboarding", req.url);
+      return NextResponse.redirect(onboardingUrl);
+    }
+
+    // Protect /admin routes for admin users only
+    if (isAdminRoute(req) && sessionClaims?.role !== "admin") {
+      const url = new URL("/admin", req.url);
+      return NextResponse.redirect(url);
+    }
+
+    // If we get here, the user is authenticated and has completed onboarding
+    return secureResponse(NextResponse.next());
+  });
 });
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
+    // Skip Next.js internals and all static files
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
     // Always run for API routes
     "/(api|trpc)(.*)",

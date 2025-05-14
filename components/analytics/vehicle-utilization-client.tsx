@@ -23,8 +23,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ContentSection } from "@/components/ui/layouts/content-layout";
-import { FlexLayout } from "@/components/ui/flex-layout";
+import { ContentSection } from "@/components/layouts/content-layout";
+import { FlexLayout } from "@/components/layouts/flex-layout";
 
 interface VehicleUtilizationClientProps {
   timeRange: string;

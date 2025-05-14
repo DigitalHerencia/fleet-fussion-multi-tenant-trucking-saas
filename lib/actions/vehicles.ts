@@ -1,6 +1,6 @@
 "use server";
 
-import { db } from "@/db";
+import { db } from "@/db/db";
 import { vehicles } from "@/db/schema";
 import { z } from "zod";
 import { getCurrentCompanyId } from "@/lib/auth";

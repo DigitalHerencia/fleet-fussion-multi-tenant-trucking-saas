@@ -1,4 +1,4 @@
-import { db } from "@/db";
+import { db } from "@/db/db";
 import { complianceDocuments } from "@/db/schema";
 import { eq, and, ilike, sql } from "drizzle-orm";
 import type { ComplianceDocument } from "@/types/types";

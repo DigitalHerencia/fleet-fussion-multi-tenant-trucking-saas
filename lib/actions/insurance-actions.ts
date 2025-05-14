@@ -1,6 +1,6 @@
 "use server";
 
-import { db } from "@/db";
+import { db } from "@/db/db";
 import { insurancePolicies } from "@/db/schema";
 import { insurancePolicySchema } from "@/lib/validation/insurance-schema";
 import { getCurrentCompanyId } from "@/lib/auth";

@@ -4,13 +4,16 @@
   "private": true,
   "scripts": {
     "dev": "concurrently \"next dev --turbopack\" \"ngrok http --url=liberal-gull-quietly.ngrok-free.app 3000\"",
+    "dev:local": "next dev --turbopack",
+    "dev:ngrok": "concurrently \"next dev\" \"ngrok http 3000\"",
     "build": "next build",
     "start": "next start",
     "check-types": "tsc --noEmit",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "prettier": "prettier \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
-    "prettier:write": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\""
+    "prettier:write": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
+    "env:switch": "node scripts/env-switcher.js"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.19.1",

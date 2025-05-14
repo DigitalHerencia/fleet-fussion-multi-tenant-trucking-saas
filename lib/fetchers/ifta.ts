@@ -1,4 +1,4 @@
-import { db } from "@/db";
+import { db } from "@/db/db";
 import { iftaTrips, iftaReports, vehicles, drivers } from "@/db/schema";
 import { eq, and, between, desc, sql, gte, lte } from "drizzle-orm";
 import { endOfQuarter, startOfQuarter, format } from "date-fns";

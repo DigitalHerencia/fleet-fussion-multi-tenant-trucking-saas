@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import { db } from "@/db";
+import { db } from "@/db/db";
 import {
   loads as loadsSchema,
   drivers as driversSchema,

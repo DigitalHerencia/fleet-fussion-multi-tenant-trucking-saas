@@ -1,6 +1,6 @@
 "use server";
 
-import { db } from "@/db";
+import { db } from "@/db/db";
 import { drivers } from "@/db/schema";
 import { driverCoreSchema } from "@/lib/validation/driver-schema";
 import { getCurrentCompanyId } from "@/lib/auth";

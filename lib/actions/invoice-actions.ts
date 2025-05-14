@@ -1,6 +1,6 @@
 "use server";
 
-import { db } from "@/db";
+import { db } from "@/db/db";
 import { invoices } from "@/db/schema";
 import { invoiceSchema } from "@/lib/validation/invoice-schema";
 import { getCurrentCompanyId } from "@/lib/auth";

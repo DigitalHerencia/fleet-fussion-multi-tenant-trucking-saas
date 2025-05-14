@@ -1,6 +1,6 @@
 "use server";
 
-import { db } from "@/db";
+import { db } from "@/db/db";
 import { customers } from "@/db/schema";
 import { customerCoreSchema } from "@/lib/validation/customer-schema";
 import { getCurrentCompanyId } from "@/lib/auth";

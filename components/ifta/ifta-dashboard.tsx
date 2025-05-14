@@ -1,6 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useCurrentCompany } from "@/hooks/use-current-company";
+import { getVehiclesForCompany } from "@/lib/fetchers/vehicles";
+import { getDriversForCompany } from "@/lib/fetchers/drivers";
 import {
   Card,
   CardContent,
@@ -32,16 +35,27 @@ import { FuelPurchaseForm } from "@/features/ifta/FuelPurchaseForm";
 export function IftaDashboard() {
   const [quarter, setQuarter] = useState("2023-Q2");
   const [showFuelModal, setShowFuelModal] = useState(false);
+  const [vehicles, setVehicles] = useState<{ id: string; unitNumber: string }[]>([]);
+  const [drivers, setDrivers] = useState<{ id: string; name: string }[]>([]);
+  const { companyId } = useCurrentCompany();
 
-  // TODO: Replace with real fetchers
-  const vehicles = [
-    { id: "1", unitNumber: "T-101" },
-    { id: "2", unitNumber: "T-102" },
-  ];
-  const drivers = [
-    { id: "1", name: "John Doe" },
-    { id: "2", name: "Jane Smith" },
-  ];
+  useEffect(() => {
+    if (!companyId) return;
+    (async () => {
+      try {
+        const v = await getVehiclesForCompany(Number(companyId));
+        setVehicles(
+          v.map((veh: any) => ({ id: veh.id, unitNumber: veh.unitNumber }))
+        );
+        const d = await getDriversForCompany(Number(companyId));
+        setDrivers(
+          d.map((drv: any) => ({ id: drv.id, name: drv.firstName + " " + drv.lastName }))
+        );
+      } catch (err) {
+        // Optionally handle error
+      }
+    })();
+  }, [companyId]);
 
   return (
     <div className="space-y-6">

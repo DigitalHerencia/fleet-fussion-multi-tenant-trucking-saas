@@ -5,7 +5,7 @@ import { VehicleCard } from "./vehicle-card";
 import { VehicleDetailsDialog } from "./vehicle-details-dialog";
 import { getDocumentsForVehicle } from "@/lib/fetchers/documents";
 import VehicleDocuments from "@/features/vehicles/VehicleDocuments";
-import { FlexLayout } from "@/components/ui/flex-layout";
+import { FlexLayout } from "@/components/layouts/flex-layout";
 import type { Vehicle, Document } from "@/types/types";
 
 interface VehiclesClientProps {

@@ -1,4 +1,4 @@
-import { db } from "./index";
+import { db } from "./db";
 import { promises as fs } from "fs";
 import path from "path";
 import { sql } from "drizzle-orm";

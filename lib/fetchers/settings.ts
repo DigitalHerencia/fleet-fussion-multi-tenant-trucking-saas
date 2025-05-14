@@ -1,6 +1,6 @@
 "use server";
 
-import { db } from "@/db";
+import { db } from "@/db/db";
 import { companies, companyUsers } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { type SettingsFormData } from "@/lib/validation/settings-schema";

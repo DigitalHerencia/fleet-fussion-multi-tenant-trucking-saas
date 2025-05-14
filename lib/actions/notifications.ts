@@ -1,4 +1,4 @@
-import { db } from "@/db";
+import { db } from "@/db/db";
 import { notifications } from "@/db/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
 import { z } from "zod";

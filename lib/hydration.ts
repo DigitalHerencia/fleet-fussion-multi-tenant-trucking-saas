@@ -1,5 +1,4 @@
 export { useHydrationSafeValue } from "@/hooks/use-hydration-safe";
-export { HydrationSafe } from "@/components/ui/hydration-safe";
 export { SafeDate } from "@/components/ui/safe-date";
 
 /**

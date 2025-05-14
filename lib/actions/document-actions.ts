@@ -1,8 +1,8 @@
 "use server";
 
-import { db } from "@/db";
+import { db } from "@/db/db";
 import { documents } from "@/db/schema";
-import { uploadToVercelBlob } from "@/lib/blob";
+import { uploadToVercelBlob } from "@/db/blob";
 import { z } from "zod";
 import { getCurrentCompanyId } from "@/lib/auth";
 

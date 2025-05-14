@@ -1,4 +1,4 @@
-import { db } from "@/db";
+import { db } from "@/db/db";
 import { loads, drivers, vehicles, iftaTrips } from "@/db/schema";
 import { eq, and, gte, lte, sql } from "drizzle-orm";
 import { cache } from "react";

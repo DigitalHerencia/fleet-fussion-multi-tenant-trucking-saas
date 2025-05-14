@@ -1,6 +1,6 @@
 "use server";
 
-import { db } from "@/db";
+import { db } from "@/db/db";
 import { auditLogs } from "@/db/schema";
 import {
   auditLogSchema,

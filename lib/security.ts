@@ -16,8 +16,9 @@ export function addSecurityHeaders(
     "script-src": [
       "'self'",
       "'unsafe-inline'",
-      "clerk.fleetfusion.app",
+      "driving-gelding-14.clerk.accounts.dev",
       "https://*.clerk.accounts.dev",
+      "https://*.ngrok-free.app",
       "https://vercel.live"
     ],
     "style-src": ["'self'", "'unsafe-inline'"],
@@ -30,21 +31,19 @@ export function addSecurityHeaders(
       "https://www.gravatar.com",
       "*.cloudinary.com",
       "https://fleet-fusion.vercel.app",
-      "https://fleet-fusion-dri1xn1m9-digital-herencia.vercel.app"
     ],
     "font-src": ["'self'", "data:"],
     "connect-src": [
       "'self'",
-      "https://clerk.fleetfusion.app",
       "https://api.clerk.dev",
-      "https://clerk.accounts",
-      "https://fleet-fusion.vercel.app",
-      "https://fleet-fusion-dri1xn1m9-digital-herencia.vercel.app",
-      "vitals.vercel-insights.com",
       "https://*.clerk.accounts.dev",
+      "https://driving-gelding-14.clerk.accounts.dev",
+      "https://fleet-fusion.vercel.app",
+      "vitals.vercel-insights.com",
+      "https://clerk.accounts",
       "https://clerk-telemetry.com"
     ],
-    "frame-src": ["'self'", "clerk.fleetfusion.app"],
+    "frame-src": ["'self'", "driving-gelding-14.clerk.accounts.dev"],
     "object-src": ["'none'"],
     "worker-src": ["'self'", "blob:"],
   };

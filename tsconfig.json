@@ -17,6 +17,7 @@
     "jsx": "preserve",
     "verbatimModuleSyntax": true,
     "incremental": true,
+    "baseUrl": ".",
     "plugins": [
       {
         "name": "next"
@@ -49,9 +50,6 @@
       ],
       "@/db/*": [
         "./db/*"
-      ],
-      "@/db": [
-        "./db/index.ts"
       ],
       "@/utils/*": [
         "./utils/*"

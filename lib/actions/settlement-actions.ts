@@ -1,6 +1,6 @@
 "use server";
 
-import { db } from "@/db";
+import { db } from "@/db/db";
 import { settlements } from "@/db/schema";
 import { settlementSchema } from "@/lib/validation/settlement-schema";
 import { getCurrentCompanyId } from "@/lib/auth";

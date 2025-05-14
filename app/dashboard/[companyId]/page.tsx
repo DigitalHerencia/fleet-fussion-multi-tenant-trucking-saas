@@ -56,6 +56,6 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     );
   } catch {
     // 5) On any error (e.g. no membership), redirect to unauthorized
-    redirect("/unauthorized");
+    redirect("/");
   }
 }
