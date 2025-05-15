@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { getCurrentCompanyId } from "@/lib/auth";
-import { getLoadsForCompany } from "@/lib/loads";
+import { getLoadsForCompany } from "@/lib/actions/load-actions";
 import { Suspense } from "react";
 import { DispatchSkeleton } from "@/components/dispatch/dispatch-skeleton";
 import type { LoadWithRelations } from "@/lib/actions/load-actions";
@@ -28,6 +28,7 @@ interface Vehicle {
   year: number;
   status: string;
   type: string;
+  companyId: string;
 }
 
 interface Load {
@@ -142,6 +143,7 @@ export default async function DispatchPage() {
           year: 0,
           status: "active",
           type: "tractor",
+          companyId: companyId!,
         });
       }
       if (load.trailer) {
@@ -153,6 +155,7 @@ export default async function DispatchPage() {
           year: 0,
           status: "active",
           type: "trailer",
+          companyId: companyId!,
         });
       }
     });
@@ -173,7 +176,7 @@ export default async function DispatchPage() {
         </Link>
       </DashboardHeader>
       <Suspense fallback={<DispatchSkeleton />}>
-        <DispatchBoard drivers={drivers} vehicles={vehicles} loads={loads} />
+        <DispatchBoard drivers={ drivers } vehicles={ vehicles } loads={ loads } loadStatuses={ [] } vehicleStatuses={ [] } loadStatusUpdates={ [] } documents={ [] } complianceDocuments={ [] } complianceDrivers={ [] } complianceVehicles={ [] } iftaReports={ [] } />
       </Suspense>
     </DashboardShell>
   );

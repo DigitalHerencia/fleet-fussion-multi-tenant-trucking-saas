@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useActionState } from "react";
 import {
-  settingsSchema,
+  settingsCoreSchema,
   type SettingsFormData,
 } from "@/lib/validation/settings-schema";
 import { FormError } from "@/components/ui/form-error";
@@ -30,7 +30,7 @@ export function SettingsForm({
     register,
     formState: { errors, isSubmitting },
   } = useForm<SettingsFormData>({
-    resolver: zodResolver(settingsSchema),
+    resolver: zodResolver(settingsCoreSchema),
     defaultValues,
   });
 

@@ -1,5 +1,3 @@
-"use client";
-
 import {
   Card,
   CardContent,
@@ -11,22 +9,15 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Phone, Mail, Calendar, FileText } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { StatusBadge } from "@/components/ui/status-badge";
-
-interface Driver {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email?: string;
-  phone?: string;
-  status: string;
-  licenseState?: string;
-  licenseExpiration?: Date;
-  medicalCardExpiration?: Date;
-  hireDate?: Date;
-}
+import type { Driver } from "@/types/types";
 
 interface DriverCardProps {
-  driver: Driver;
+  driver: Driver & {
+    licenseState?: string;
+    licenseExpiration?: Date;
+    medicalCardExpiration?: Date;
+    hireDate?: Date;
+  };
   onClick: () => void;
 }
 

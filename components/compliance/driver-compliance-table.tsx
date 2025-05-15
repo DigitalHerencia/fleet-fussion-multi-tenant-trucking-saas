@@ -26,21 +26,10 @@ import {
   Search,
 } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
-
-// Define the Driver type
-interface Driver {
-  id: string;
-  name: string;
-  status: string;
-  licenseExpiry: string;
-  medicalExpiry: string;
-  lastHosViolation: string;
-  dutyStatus: string;
-  availableHours: number;
-}
+import type { ComplianceDriver } from "@/types/types";
 
 // Export the columns definition
-export const columns: ColumnDef<Driver>[] = [
+export const columns: ColumnDef<ComplianceDriver>[] = [
   {
     accessorKey: "name",
     header: "Driver Name",
@@ -134,7 +123,7 @@ export const columns: ColumnDef<Driver>[] = [
   },
 ];
 
-export function DriverComplianceTable({ drivers }: { drivers: any[] }) {
+export function DriverComplianceTable({ drivers }: { drivers: ComplianceDriver[] }) {
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredDrivers = drivers.filter((driver) =>
@@ -232,41 +221,15 @@ export function DriverComplianceTable({ drivers }: { drivers: any[] }) {
                 <TableCell className="font-medium">{driver.name}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    {getStatusIcon(driver.cdlStatus)}
-                    <div>
-                      {getStatusBadge(driver.cdlStatus)}
-                      <div className="text-xs text-muted-foreground mt-1">
-                        Exp:{" "}
-                        {new Date(driver.cdlExpiration).toLocaleDateString()}
-                      </div>
-                    </div>
+                    {getStatusIcon(driver.status)}
+                    {getStatusBadge(driver.status)}
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div className="flex items-center gap-2">
-                    {getStatusIcon(driver.medicalStatus)}
-                    <div>
-                      {getStatusBadge(driver.medicalStatus)}
-                      <div className="text-xs text-muted-foreground mt-1">
-                        Exp:{" "}
-                        {new Date(
-                          driver.medicalExpiration,
-                        ).toLocaleDateString()}
-                      </div>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    {getStatusIcon(driver.hosStatus)}
-                    {getStatusBadge(driver.hosStatus)}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  {driver.lastViolation === "None" ? (
+                  {driver.lastHosViolation === "None" ? (
                     <span className="text-muted-foreground">None</span>
                   ) : (
-                    new Date(driver.lastViolation).toLocaleDateString()
+                    new Date(driver.lastHosViolation).toLocaleDateString()
                   )}
                 </TableCell>
                 <TableCell>

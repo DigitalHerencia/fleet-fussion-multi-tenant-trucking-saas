@@ -22,16 +22,7 @@ import {
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useCurrentCompany } from "@/hooks/use-current-company";
 import { formatDistanceToNow } from "date-fns";
-
-interface Notification {
-  id: string;
-  title: string;
-  body: string;
-  read: boolean;
-  createdAt: Date;
-  type: string;
-  data?: any;
-}
+import type { Notification } from "@/types/types";
 
 export function NotificationCenter() {
   const [notifications, setNotifications] = useState<Notification[]>([]);

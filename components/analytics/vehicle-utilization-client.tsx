@@ -4,7 +4,6 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  Legend,
   ResponsiveContainer,
   XAxis,
   YAxis,
@@ -14,32 +13,8 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { ContentSection } from "@/components/layouts/content-layout";
 import { FlexLayout } from "@/components/layouts/flex-layout";
-
-interface VehicleUtilizationClientProps {
-  timeRange: string;
-  data: Array<{
-    number: string;
-    type: string;
-    miles: number;
-    utilization: number;
-    fuelEfficiency: number | string;
-    maintenance: number;
-    status: string;
-    id: string;
-    unitNumber: string;
-  }>;
-}
 
 /**
  * Client component for displaying vehicle utilization data
@@ -48,7 +23,20 @@ interface VehicleUtilizationClientProps {
 export function VehicleUtilizationClient({
   timeRange,
   data,
-}: VehicleUtilizationClientProps) {
+}: {
+  timeRange: string;
+  data: Array<{
+    number: string;
+    type: string;
+    miles: number;
+    utilization: number;
+    fuelEfficiency: string | number;
+    maintenance: number;
+    status: string;
+    id: string;
+    unitNumber: string;
+  }>;
+}) {
   return (
     <div className="space-y-6">
       <FlexLayout direction="row" gap="md" className="grid md:grid-cols-2">
@@ -163,51 +151,34 @@ export function VehicleUtilizationClient({
         title="Fleet Performance Details"
         description={`Data for the last ${timeRange}`}
       >
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Vehicle</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Miles</TableHead>
-              <TableHead className="text-right">Utilization</TableHead>
-              <TableHead className="text-right">MPG</TableHead>
-              <TableHead className="text-right">Maintenance</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data.map((vehicle) => (
-              <TableRow key={vehicle.id}>
-                <TableCell className="font-medium">{vehicle.number}</TableCell>
-                <TableCell>{vehicle.type}</TableCell>
-                <TableCell>
-                  <Badge
-                    variant={
-                      vehicle.status === "Active" ? "outline" : "secondary"
-                    }
-                    className={vehicle.status === "Active" ? "bg-green-50" : ""}
-                  >
-                    {vehicle.status}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  {vehicle.miles.toLocaleString()}
-                </TableCell>
-                <TableCell className="text-right">
-                  {vehicle.utilization}%
-                </TableCell>
-                <TableCell className="text-right">
-                  {typeof vehicle.fuelEfficiency === "number"
-                    ? vehicle.fuelEfficiency.toFixed(1)
-                    : vehicle.fuelEfficiency}
-                </TableCell>
-                <TableCell className="text-right">
-                  ${vehicle.maintenance}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-xs border">
+            <thead>
+              <tr>
+                <th>Unit Number</th>
+                <th>Type</th>
+                <th>Miles</th>
+                <th>Utilization</th>
+                <th>Fuel Efficiency</th>
+                <th>Maintenance</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((vehicle) => (
+                <tr key={vehicle.id}>
+                  <td>{vehicle.unitNumber}</td>
+                  <td>{vehicle.type}</td>
+                  <td>{vehicle.miles}</td>
+                  <td>{vehicle.utilization}</td>
+                  <td>{vehicle.fuelEfficiency}</td>
+                  <td>{vehicle.maintenance}</td>
+                  <td>{vehicle.status}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </ContentSection>
     </div>
   );

@@ -24,6 +24,10 @@ import { FinancialMetricsServer } from "@/components/analytics/financial-metrics
 import { getCurrentCompanyId } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { getRevenueMetrics } from "@/lib/fetchers/analytics";
+import { PerformanceMetrics } from "@/components/analytics/performance-metrics";
+import { FinancialMetrics } from "@/components/analytics/financial-metrics";
+import { DriverPerformance } from "@/components/analytics/driver-performance";
+import { VehicleUtilization } from "@/components/analytics/vehicle-utilization";
 
 export default async function AnalyticsPage() {
   // Get current user and company ID
@@ -223,9 +227,28 @@ export default async function AnalyticsPage() {
               </CardHeader>
               <CardContent className="overflow-x-auto">
                 <Suspense fallback={<div>Loading performance metrics...</div>}>
-                  <PerformanceMetricsServer
-                    companyId={companyId}
-                    timeRange={timeRange}
+                  <PerformanceMetrics timeRange={ "" } data={ [] } comparisonData={ {
+                    loadCount: {
+                      current: 0,
+                      previous: 0,
+                      change: ""
+                    },
+                    miles: {
+                      current: 0,
+                      previous: 0,
+                      change: ""
+                    },
+                    onTimeDelivery: {
+                      current: 0,
+                      previous: 0,
+                      change: ""
+                    },
+                    utilization: {
+                      current: 0,
+                      previous: 0,
+                      change: ""
+                    }
+                  } }                    
                   />
                 </Suspense>
               </CardContent>
@@ -241,9 +264,33 @@ export default async function AnalyticsPage() {
               </CardHeader>
               <CardContent className="overflow-x-auto">
                 <Suspense fallback={<div>Loading financial metrics...</div>}>
-                  <FinancialMetricsServer
-                    companyId={companyId}
-                    timeRange={timeRange}
+                  <FinancialMetrics timeRange={ "" } financialData={ [] } expenseBreakdown={ [] } financialSummary={ {
+                    revenue: {
+                      current: 0,
+                      previous: 0,
+                      change: ""
+                    },
+                    expenses: {
+                      current: 0,
+                      previous: 0,
+                      change: ""
+                    },
+                    profit: {
+                      current: 0,
+                      previous: 0,
+                      change: ""
+                    },
+                    margin: {
+                      current: "",
+                      previous: "",
+                      change: ""
+                    },
+                    ratePerMile: {
+                      current: "",
+                      previous: "",
+                      change: ""
+                    }
+                  } }                    
                   />
                 </Suspense>
               </CardContent>
@@ -261,9 +308,7 @@ export default async function AnalyticsPage() {
                 <Suspense
                   fallback={<div>Loading driver performance data...</div>}
                 >
-                  <DriverPerformanceServer
-                    companyId={companyId}
-                    timeRange={timeRange}
+                  <DriverPerformance timeRange={ "" } data={ [] }                    
                   />
                 </Suspense>
               </CardContent>
@@ -281,9 +326,7 @@ export default async function AnalyticsPage() {
                 <Suspense
                   fallback={<div>Loading vehicle utilization data...</div>}
                 >
-                  <VehicleUtilizationServer
-                    companyId={companyId}
-                    timeRange={timeRange}
+                  <VehicleUtilization timeRange={ "" } data={ [] }                    
                   />
                 </Suspense>
               </CardContent>
@@ -292,7 +335,7 @@ export default async function AnalyticsPage() {
         </Tabs>
       </div>
     );
-  } catch  {
+  } catch {
     // Redirect to company selection if we can't get user or company ID
     redirect("/company-selection");
     return null;

@@ -217,7 +217,7 @@ export async function getCurrentCompany() {
     if (!userCompany) {
       // If the selected company doesn't exist or user doesn't belong to it,
       // clear the cookie and try again with most recent company
-      const store = await cookieStore;
+      const store = cookieStore;
       store.delete(COMPANY_COOKIE_NAME);
       return await getCurrentCompany();
     }

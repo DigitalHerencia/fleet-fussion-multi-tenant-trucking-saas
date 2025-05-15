@@ -1,7 +1,8 @@
 import { db } from "@/db/db";
+import type { KPI } from "@/types/types";
 
 // Get KPIs for the dashboard
-export async function getKPIs(companyId: string) {
+export async function getKPIs(companyId: string): Promise<KPI> {
   const today = new Date();
   const thirtyDaysAgo = new Date(today);
   thirtyDaysAgo.setDate(today.getDate() - 30);

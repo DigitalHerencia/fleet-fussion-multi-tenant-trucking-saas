@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect, useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,14 +26,14 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import type { ComplianceDocument } from "@/types/compliance";
+import type { ComplianceDocument } from "@/types/types";
 
 // Export the columns definition
 export const columns: ColumnDef<ComplianceDocument>[] = [
   {
     accessorKey: "name",
     header: "Document Name",
-    cell: ({ row }) => {
+    cell: ({ row }: { row: any }) => {
       return (
         <div className="flex items-center gap-2">
           <FileText className="h-4 w-4 text-muted-foreground" />
@@ -47,7 +45,7 @@ export const columns: ColumnDef<ComplianceDocument>[] = [
   {
     accessorKey: "type",
     header: "Type",
-    cell: ({ row }) => {
+    cell: ({ row }: { row: any }) => {
       const type = row.getValue("type") as string;
       return (
         <Badge variant={type === "Required" ? "default" : "outline"}>
@@ -59,7 +57,7 @@ export const columns: ColumnDef<ComplianceDocument>[] = [
   {
     accessorKey: "lastUpdated",
     header: "Last Updated",
-    cell: ({ row }) => {
+    cell: ({ row }: { row: any }) => {
       return (
         <div>{new Date(row.getValue("lastUpdated")).toLocaleDateString()}</div>
       );
@@ -68,7 +66,7 @@ export const columns: ColumnDef<ComplianceDocument>[] = [
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => {
+    cell: ({ row }: { row: any }) => {
       const status = row.getValue("status") as string;
       return (
         <Badge
@@ -89,7 +87,7 @@ export const columns: ColumnDef<ComplianceDocument>[] = [
   },
   {
     id: "actions",
-    cell: ({ row }) => {
+    cell: ({ row }: { row: any }) => {
       const fileUrl = row.original.fileUrl;
       // Use a custom event to trigger preview from the DataTable context
       return (
@@ -130,7 +128,7 @@ export const columns: ColumnDef<ComplianceDocument>[] = [
   },
 ];
 
-export function ComplianceDocuments({ documents: initialDocuments }: { documents: ComplianceDocument[] }) {
+export default function ComplianceDocuments({ documents: initialDocuments }: { documents: ComplianceDocument[] }) {
   const [documents, setDocuments] = useState<ComplianceDocument[]>(initialDocuments);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("");

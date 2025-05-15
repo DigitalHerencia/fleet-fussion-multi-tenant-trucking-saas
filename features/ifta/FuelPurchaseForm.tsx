@@ -23,6 +23,8 @@ type FuelPurchaseFormState = {
     pricePerGallon?: string[];
     totalAmount?: string[];
     notes?: string[];
+    fuelType?: string[];
+    receiptId?: string[];
     form?: string[];
   };
 };
@@ -54,7 +56,7 @@ export function FuelPurchaseForm({
   const {
     register,
     formState: { errors, isSubmitting },
-  } = useForm<FuelPurchaseFormData>({
+  } = useForm({
     resolver: zodResolver(fuelPurchaseSchema),
   });
 
@@ -146,6 +148,20 @@ export function FuelPurchaseForm({
         />
         <FormError
           message={errors.totalAmount?.message || state.errors.totalAmount?.[0]}
+        />
+      </div>
+      <div>
+        <label>Fuel Type</label>
+        <input type="text" {...register("fuelType")} className="input" />
+        <FormError
+          message={errors.fuelType?.message || state.errors.fuelType?.[0]}
+        />
+      </div>
+      <div>
+        <label>Receipt ID</label>
+        <input type="text" {...register("receiptId")} className="input" />
+        <FormError
+          message={errors.receiptId?.message || state.errors.receiptId?.[0]}
         />
       </div>
       <div>

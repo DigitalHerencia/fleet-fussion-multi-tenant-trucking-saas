@@ -3,8 +3,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { SignIn, useSignIn } from "@clerk/nextjs";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useSignIn } from "@clerk/nextjs";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
@@ -12,6 +12,7 @@ export default function SignInPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { signIn, isLoaded } = useSignIn();
 
   // Optionally, you can use Clerk's <SignIn /> component for magic link/social
@@ -31,7 +32,13 @@ export default function SignInPage() {
     try {
       const res = await signIn.create({ identifier: email, password });
       if (res.status === "complete") {
-        router.push(process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL || "/org-selection");
+        // Get returnBackUrl from query params, fallback to /org-selection
+        const returnBackUrl = searchParams.get("returnBackUrl");
+        if (returnBackUrl) {
+          router.push(returnBackUrl);
+        } else {
+          router.push(process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL || "/org-selection");
+        }
       } else {
         setError("Sign in failed. Please check your credentials.");
       }

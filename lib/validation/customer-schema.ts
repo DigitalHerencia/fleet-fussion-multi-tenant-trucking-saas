@@ -1,34 +1,60 @@
+/**
+ * Customer validation schemas
+ * 
+ * Validation for customer data with:
+ * - Required customer name
+ * - Optional contact information
+ * - Address fields
+ */
 import { z } from "zod";
+import { 
+  uuidSchema,
+  requiredString,
+  optionalString,
+  optionalPhoneSchema,
+  optionalStateCodeSchema
+} from "./common-schemas";
 
-// Schema for creating a customer
-// This is a generic customer schema, adjust if you have a specific table in db/schema.ts
-// If customers are tied to companies (multi-tenancy), companyId will be added server-side.
+// Core schema for customer data
 export const customerCoreSchema = z.object({
-  name: z
-    .string()
-    .min(2, { message: "Customer name must be at least 2 characters." })
-    .max(255),
-  contactPerson: z.string().max(255).optional().nullable(),
-  email: z
-    .string()
-    .email({ message: "Invalid email address." })
-    .max(255)
-    .optional()
-    .nullable(),
-  phone: z.string().max(30).optional().nullable(), // Consider more specific phone validation
-  address: z.string().max(255).optional().nullable(),
-  city: z.string().max(100).optional().nullable(),
-  state: z.string().max(50).optional().nullable(),
-  zip: z.string().max(20).optional().nullable(),
-  country: z.string().max(50).optional().nullable(),
-  taxId: z.string().max(50).optional().nullable(), // e.g., VAT ID, EIN
-  notes: z.string().max(2000).optional().nullable(),
+  // Required fields
+  name: requiredString.min(2, "Customer name must be at least 2 characters").max(255).describe("Customer name"),
+  
+  // Contact information
+  contactPerson: optionalString.describe("Contact person"),
+  email: z.string().email("Invalid email address").max(255).optional()
+    .or(z.literal("").transform(() => undefined))
+    .describe("Email address"),
+  phone: optionalPhoneSchema.describe("Phone number"),
+  
+  // Address fields
+  address: optionalString.describe("Street address"),
+  city: optionalString.describe("City"),
+  state: optionalStateCodeSchema.describe("State"),
+  zip: optionalString.describe("ZIP/Postal code"),
+  country: optionalString.default("USA").describe("Country"),
+  
+  // Additional fields
+  taxId: optionalString.describe("Tax ID / EIN"),
+  notes: optionalString.describe("Notes"),
 });
 
+// Schema for creating a new customer
 export const createCustomerSchema = customerCoreSchema;
+
+// Schema for updating an existing customer
 export const updateCustomerSchema = customerCoreSchema.extend({
-  id: z.string().uuid({ message: "Invalid customer ID for update." }),
+  id: uuidSchema.describe("Customer ID"),
+});
+
+// Schema for filtering customers
+export const customerFilterSchema = z.object({
+  name: optionalString,
+  contactPerson: optionalString,
+  city: optionalString,
+  state: optionalString,
 });
 
 export type CreateCustomerInput = z.infer<typeof createCustomerSchema>;
 export type UpdateCustomerInput = z.infer<typeof updateCustomerSchema>;
+export type CustomerFilterInput = z.infer<typeof customerFilterSchema>;

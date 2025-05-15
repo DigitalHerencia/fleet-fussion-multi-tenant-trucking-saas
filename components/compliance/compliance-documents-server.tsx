@@ -1,4 +1,4 @@
-import { ComplianceDocuments } from "./compliance-documents";
+import  ComplianceDocuments from "./compliance-documents";
 import { getComplianceDocumentData } from "@/lib/fetchers/compliance";
 import type { ComplianceDocument } from "@/types/compliance";
 

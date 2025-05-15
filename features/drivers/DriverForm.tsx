@@ -27,7 +27,10 @@ export function DriverForm() {
     formState: { errors, isSubmitting },
   } = useForm<DriverFormData>({
     defaultValues: {
-      status: "ACTIVE",
+      firstName: "",
+      lastName: "",
+      licenseNumber: "",
+      
     },
   });
 

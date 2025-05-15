@@ -1,21 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import PDFDocument from "pdfkit";
+import { auth } from "@clerk/nextjs/server";
 import { getIftaReports } from "@/lib/actions/ifta-actions";
-
-// Local RawIftaReport type (copied from app/ifta/page.tsx)
-type RawIftaReport = {
-  id: string;
-  quarter: number;
-  dueDate: string;
-  status: string | null;
-  totalMiles: number | null;
-  totalGallons: number | null;
-  reportData?: {
-    taxPaid?: number;
-  };
-};
+import type { RawIftaReport } from "@/types/ifta-report";
 
 export async function GET(req: NextRequest) {
+  // Require authenticated user
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const { searchParams } = new URL(req.url);
   const year = Number(searchParams.get("year"));
   const quarter = Number(searchParams.get("quarter"));
@@ -28,11 +22,16 @@ export async function GET(req: NextRequest) {
   }
 
   // Fetch the report data
-  let reports: RawIftaReport[] = [];
-  if (typeof getIftaReports === "function") {
+  let reports: RawIftaReport[];
+  try {
     reports = await getIftaReports({ year, quarter, limit: 10 });
-  } else {
-    throw new Error("getIftaReports is not implemented or not exported.");
+  } catch (err) {
+    console.error("Error fetching IFTA reports:", err);
+    // TODO: integrate alerting for fetch failures
+    return NextResponse.json(
+      { error: "Failed to fetch IFTA reports" },
+      { status: 500 }
+    );
   }
   const report = reports.find((r) => r.id === id);
   if (!report) {

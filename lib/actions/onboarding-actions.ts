@@ -9,20 +9,33 @@ export const completeOnboarding = async (formData: FormData) => {
   }
   try {
     const client = await clerkClient();
-    
     // Extract form values
-    const applicationName = formData.get("applicationName")?.toString() || "";
-    const applicationType = formData.get("applicationType")?.toString() || "";
-    
+    const companyName = formData.get("companyName")?.toString() || "";
+    const dotNumber = formData.get("dotNumber")?.toString() || "";
+    const mcNumber = formData.get("mcNumber")?.toString() || "";
+    const address = formData.get("address")?.toString() || "";
+    const city = formData.get("city")?.toString() || "";
+    const state = formData.get("state")?.toString() || "";
+    const zip = formData.get("zip")?.toString() || "";
+    const phone = formData.get("phone")?.toString() || "";
+    const email = formData.get("email")?.toString() || "";
+
     // Update user metadata
     const res = await client.users.updateUser(userId, {
       publicMetadata: {
         onboardingComplete: true,
-        applicationName,
-        applicationType,
+        companyName,
+        dotNumber,
+        mcNumber,
+        address,
+        city,
+        state,
+        zip,
+        phone,
+        email,
       },
     });
-    
+
     // Verify the update was successful
     if (res.publicMetadata && (res.publicMetadata as any).onboardingComplete === true) {
       return { message: res.publicMetadata, success: true };

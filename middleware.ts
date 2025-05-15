@@ -7,6 +7,7 @@ const isPublicRoute = createRouteMatcher([
   "/",
   "/sign-in(.*)",
   "/sign-up(.*)",
+  "/forgot-password(.*)",
   "/about",
   "/features",
   "/services",
@@ -43,6 +44,7 @@ function addSecurityHeaders(req: NextRequest, res: NextResponse): Headers {
 
 // Use the authMiddleware pattern recommended by Clerk
 export default clerkMiddleware((auth, req) => {
+
   // First apply security headers to all requests
   const secureResponse = (res: NextResponse) => {
     const securityHeaders = addSecurityHeaders(req, res);
@@ -85,9 +87,13 @@ export default clerkMiddleware((auth, req) => {
     }
 
     // Protect /admin routes for admin users only
-    if (isAdminRoute(req) && sessionClaims?.role !== "admin") {
-      const url = new URL("/admin", req.url);
-      return NextResponse.redirect(url);
+    if (isAdminRoute(req)) {
+      // Allow only users with admin or org:admin claims
+      const userRoleClaim = sessionClaims?.role || sessionClaims?.orgRole;
+      if (userRoleClaim !== "admin" && userRoleClaim !== "org:admin") {
+        const url = new URL("/admin", req.url);
+        return NextResponse.redirect(url);
+      }
     }
 
     // If we get here, the user is authenticated and has completed onboarding

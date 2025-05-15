@@ -9,23 +9,10 @@ import {
   TrendingUp,
   Clock,
 } from "lucide-react";
+import type { KPI } from "@/types/types";
 
 interface DashboardCardsProps {
-  kpis: {
-    activeVehicles: number;
-    activeDrivers: number;
-    totalLoads: number;
-    completedLoads: number;
-    pendingLoads: number;
-    inTransitLoads: number;
-    totalMiles: number;
-    totalRevenue: number;
-    upcomingMaintenance: number;
-    recentInspections: number;
-    failedInspections: number;
-    utilizationRate: string | number;
-    revenuePerMile: string | number;
-  };
+  kpis: KPI;
 }
 
 export function DashboardCards({ kpis }: DashboardCardsProps) {

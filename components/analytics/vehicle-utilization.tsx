@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Bar,
   BarChart,
@@ -31,7 +32,7 @@ interface VehicleUtilizationProps {
     type: string;
     miles: number;
     utilization: number;
-    fuelEfficiency: number | string;
+    fuelEfficiency: string | number;
     maintenance: number;
     status: string;
     id: string;
@@ -114,19 +115,19 @@ export function VehicleUtilization({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Vehicle #</TableHead>
+              <TableHead>Unit Number</TableHead>
               <TableHead>Type</TableHead>
               <TableHead className="text-right">Miles</TableHead>
               <TableHead className="text-right">Utilization</TableHead>
-              <TableHead className="text-right">MPG</TableHead>
-              <TableHead className="text-right">Maintenance Cost</TableHead>
+              <TableHead className="text-right">Fuel Efficiency</TableHead>
+              <TableHead className="text-right">Maintenance</TableHead>
               <TableHead>Status</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {data.map((vehicle) => (
-              <TableRow key={vehicle.number}>
-                <TableCell className="font-medium">{vehicle.number}</TableCell>
+              <TableRow key={vehicle.id}>
+                <TableCell className="font-medium">{vehicle.unitNumber}</TableCell>
                 <TableCell>{vehicle.type}</TableCell>
                 <TableCell className="text-right">
                   {vehicle.miles.toLocaleString()}

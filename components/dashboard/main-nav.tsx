@@ -66,6 +66,13 @@ export function MainNav({ className }: MainNavProps) {
       >
         Settings
       </Link>
+      {/* Sign Out Button (Clerk) */}
+      <div className="ml-2">
+        {/* Only show on client side, so dynamic import is recommended for SSR safety */}
+        {typeof window !== "undefined" && require("@/components/sign-out-button").SignOutButton ? (
+          require("@/components/sign-out-button").SignOutButton()
+        ) : null}
+      </div>
     </nav>
   );
 }

@@ -1,3 +1,5 @@
+// DEPRECATED: All types have been consolidated into types/types.ts. Please import from there.
+
 export {};
 
 export type Roles = "admin" | "moderator";

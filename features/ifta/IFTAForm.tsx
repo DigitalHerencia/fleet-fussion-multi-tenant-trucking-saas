@@ -3,7 +3,8 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useActionState } from "react";
-import { iftaSchema, type IFTAFormData } from "@/lib/validation/ifta-schema";
+import { iftaCoreSchema } from "@/lib/validation/ifta-schema";
+import type { IFTAFilterData } from "@/lib/validation/ifta-schema";
 import { FormError } from "@/components/ui/form-error";
 
 export function IFTAForm() {
@@ -17,7 +18,8 @@ export function IFTAForm() {
   const {
     register,
     formState: { errors, isSubmitting },
-  } = useForm<IFTAFormData>({ resolver: zodResolver(iftaSchema) });
+  } = useForm<IFTAFilterData>({
+  });
 
   return (
     <form {...formAction} className="space-y-6">
@@ -49,6 +51,12 @@ export function IFTAForm() {
         <label>Total Gallons</label>
         <input type="number" {...register("totalGallons")} className="input" />
         <FormError message={errors.totalGallons?.message} />
+      </div>
+
+      <div>
+        <label>Submission Date</label>
+        <input type="date" {...register("submissionDate")} className="input" />
+        <FormError message={errors.submissionDate?.message} />
       </div>
 
       <button

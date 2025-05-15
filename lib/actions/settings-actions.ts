@@ -4,7 +4,10 @@ import { db } from "@/db/db";
 import { companies, companyUsers } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { z } from "zod";
-import { settingsSchema } from "@/lib/validation/settings-schema";
+import { 
+  settingsCoreSchema, 
+  settingsUpdateSchema 
+} from "@/lib/validation/settings-schema";
 import { getCurrentCompanyId } from "@/lib/auth";
 
 // Zod schema for server-side validation
@@ -42,7 +45,15 @@ async function getCompanyId(): Promise<string> {
 
 export async function updateCompanyDetails(formData: FormData) {
   try {
-    const result = companySchema.safeParse(Object.fromEntries(formData));
+    // Use our updated settings schema
+    const formDataWithId = new FormData();
+    formData.forEach((value, key) => {
+      formDataWithId.append(key, value);
+    });
+    const companyId = await getCompanyId();
+    formDataWithId.set("id", companyId);
+    
+    const result = settingsUpdateSchema.safeParse(Object.fromEntries(formDataWithId));
     if (!result.success) {
       return {
         success: false,
@@ -50,9 +61,20 @@ export async function updateCompanyDetails(formData: FormData) {
         errors: result.error.flatten().fieldErrors,
       };
     }
-    const data = result.data as CompanyForm;
-    const companyId = await getCompanyId();
-    await db.update(companies).set(data).where(eq(companies.id, companyId));
+    
+    // Extract id from validated data and prepare update data
+    const { id, ...updateData } = result.data;
+    
+    // Map form fields to database fields
+    const dbData = {
+      name: updateData.companyName,
+      dotNumber: updateData.dotNumber,
+      address: updateData.address,
+      phone: updateData.phone,
+      email: updateData.email,
+    };
+    
+    await db.update(companies).set(dbData).where(eq(companies.id, companyId));
     return { success: true };
   } catch (error) {
     console.error("[SettingsActions] updateCompanyDetails error:", error);
@@ -181,7 +203,6 @@ export async function deleteUser(id: string) {
 // Since we don't have user preferences in our schema, this would need a separate table or field
 // For now, we'll implement a placeholder that returns success
 export async function updateUserPreferences(
-  userId: string,
   formData: FormData,
 ) {
   try {
@@ -210,7 +231,7 @@ export async function updateUserPreferences(
 
 export async function updateSettingsAction( formData: FormData) {
   try {
-    const result = settingsSchema.safeParse(Object.fromEntries(formData));
+    const result = settingsCoreSchema.safeParse(Object.fromEntries(formData));
     if (!result.success) {
       return {
         success: false,

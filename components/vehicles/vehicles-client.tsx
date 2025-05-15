@@ -58,30 +58,19 @@ export function VehiclesClient({ vehicles }: VehiclesClientProps) {
         gap="md"
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
       >
-        {vehicles.map((vehicle) => (
-          <VehicleCard
-            key={vehicle.id}
-            vehicle={{
-              ...vehicle,
-            
-            }}
-            onClick={() => handleOpen(vehicle)}
-          />
-        ))}
-      </FlexLayout>
-
       {selectedVehicle && (
         <VehicleDetailsDialog
-          vehicle={selectedVehicle}
-          isOpen={dialogOpen}
-          onClose={() => setDialogOpen(false)}
+        vehicle={selectedVehicle}
+        isOpen={dialogOpen}
+        onClose={() => setDialogOpen(false)}
         >
           <VehicleDocuments
             vehicleId={selectedVehicle.id}
             documents={documents}
-          />
+            />
         </VehicleDetailsDialog>
       )}
+      </FlexLayout>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 // Shared types for compliance feature
+// DEPRECATED: All types have been consolidated into types/types.ts. Please import from there.
 
 export interface ComplianceDocument {
   id: string;

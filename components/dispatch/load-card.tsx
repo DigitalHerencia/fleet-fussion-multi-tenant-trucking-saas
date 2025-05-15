@@ -10,7 +10,12 @@ import {
 import { MapPin, Calendar, User, Truck } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { StatusBadge } from "@/components/ui/status-badge";
-import type { Load, LoadCardProps } from "@/types/dispatch";
+import {type Load } from "@/types/types";
+
+interface LoadCardProps {
+  load: Load;
+  onClick?: () => void;
+}
 
 export function LoadCard({ load, onClick }: LoadCardProps) {
   return (

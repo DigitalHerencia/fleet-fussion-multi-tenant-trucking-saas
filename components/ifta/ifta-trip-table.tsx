@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 
+// TODO: Replace local IftaTrip type with canonical type from types/types.ts when available
 export type IftaTrip = {
   id: string | number;
   date: string;
@@ -12,7 +13,7 @@ export type IftaTrip = {
   vehicle: string;
   origin: string;
   destination: string;
-  miles: number;
+  miles: number; // Ensure this property exists
   jurisdictions: string;
 };
 

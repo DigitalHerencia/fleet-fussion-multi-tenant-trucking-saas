@@ -1,79 +1,98 @@
+/**
+ * Company validation schemas
+ *
+ * Aligned with db schema:
+ * - UUID for company IDs
+ * - Proper validation for contact information
+ * - Role-based access control
+ */
 import { z } from "zod";
+import { 
+  uuidSchema,
+  externalIdSchema,
+  requiredString,
+  optionalString,
+  optionalPhoneSchema,
+  optionalStateCodeSchema
+} from "./common-schemas";
+
+// Enum for user roles matching database UserRole enum
+export const userRoleEnum = z.enum([
+  "OWNER",
+  "ADMIN",
+  "DISPATCHER",
+  "SAFETY_MANAGER",
+  "ACCOUNTANT",
+  "DRIVER",
+  "VIEWER",
+]);
 
 // Corresponds to the 'companies' table in db/schema.ts
 export const companyCoreSchema = z.object({
-  name: z
-    .string()
-    .min(2, { message: "Company name must be at least 2 characters." })
-    .max(255),
-  dotNumber: z.string().max(50).optional().nullable(),
-  mcNumber: z.string().max(50).optional().nullable(),
-  address: z.string().max(255).optional().nullable(),
-  city: z.string().max(100).optional().nullable(),
-  state: z.string().max(50).optional().nullable(), // Could be an enum if you have a fixed list
-  zip: z.string().max(20).optional().nullable(),
-  phone: z.string().max(30).optional().nullable(), // Consider more specific phone validation if needed
-  email: z
-    .string()
-    .email({ message: "Invalid email address." })
-    .max(255)
-    .optional()
-    .nullable(),
-  logoUrl: z
-    .string()
-    .url({ message: "Invalid URL for logo." })
-    .max(1024)
-    .optional()
-    .nullable(),
-  primaryColor: z
-    .string()
-    .regex(/^#([0-9A-Fa-f]{3}){1,2}$/, { message: "Invalid hex color code." })
-    .optional()
-    .nullable(),
-  // clerkOrgId is usually system-assigned, not part of user input for creation/update directly by typical users
+  name: requiredString.min(2, "Company name must be at least 2 characters").max(255).describe("Company name"),
+  
+  // Optional fields
+  dotNumber: z.string().max(50).optional().describe("DOT number"),
+  mcNumber: z.string().max(50).optional().describe("MC number"),
+  
+  // Address fields
+  address: z.string().max(255).optional().describe("Street address"),
+  city: z.string().max(100).optional().describe("City"),
+  state: optionalStateCodeSchema.describe("State"),
+  zip: z.string().max(20).optional().describe("ZIP/Postal code"),
+  
+  // Contact information
+  phone: optionalPhoneSchema.describe("Phone number"),
+  email: z.string().email("Invalid email address").max(255).optional()
+    .or(z.literal("").transform(() => undefined))
+    .describe("Email address"),
+  
+  // Branding
+  logoUrl: z.string().url("Invalid URL for logo").max(1024).optional()
+    .or(z.literal("").transform(() => undefined))
+    .describe("Logo URL"),
+    
+  primaryColor: z.string()
+    .regex(/^#([0-9A-Fa-f]{3}){1,2}$/, "Invalid hex color code")
+    .default("#0f766e")
+    .describe("Primary brand color"),
 });
 
+// Schema for creating a new company
 export const createCompanySchema = companyCoreSchema.extend({
-  // userId of the creator, will be associated with Clerk user and become OWNER
-  creatorUserId: z.string({ required_error: "Creator user ID is required." }),
-  // clerkOrgId might be created by a backend process after successful company creation
-  // and Clerk organization creation. Or, if an org exists, it could be linked.
+  // User ID of the creator - will become OWNER
+  creatorUserId: externalIdSchema.describe("Creator's Clerk user ID"),
 });
 
+// Schema for updating an existing company
 export const updateCompanySchema = companyCoreSchema.partial().extend({
-  id: z.string().uuid({ message: "Invalid company ID for update." }),
-  isActive: z.boolean().optional(),
+  id: uuidSchema.describe("Company ID"),
+  isActive: z.boolean().optional().describe("Company active status"),
 });
 
+// Schema for company settings
 export const companySettingsSchema = z.object({
-  id: z.string().uuid(),
-  primaryColor: z
-    .string()
-    .regex(/^#([0-9A-Fa-f]{3}){1,2}$/, { message: "Invalid hex color code." })
-    .optional(),
-  logoUrl: z
-    .string()
-    .url({ message: "Invalid URL for logo." })
-    .max(1024)
+  id: uuidSchema.describe("Company ID"),
+  
+  primaryColor: z.string()
+    .regex(/^#([0-9A-Fa-f]{3}){1,2}$/, "Invalid hex color code")
     .optional()
-    .nullable(),
-  // Add other company-specific settings here
+    .describe("Primary brand color"),
+    
+  logoUrl: z.string().url("Invalid URL for logo").max(1024).optional()
+    .or(z.literal("").transform(() => undefined))
+    .describe("Logo URL"),
 });
 
+// Schema for inviting users to a company
 export const companyUserInviteSchema = z.object({
-  companyId: z.string().uuid(),
-  email: z.string().email(),
-  role: z.enum([
-    "ADMIN",
-    "DISPATCHER",
-    "SAFETY_MANAGER",
-    "ACCOUNTANT",
-    "DRIVER",
-    "VIEWER",
-  ]), // From your UserRole enum
+  companyId: uuidSchema.describe("Company ID"),
+  email: z.string().email("Invalid email address").describe("Email address"),
+  role: userRoleEnum.describe("User role"),
 });
 
 export type CreateCompanyInput = z.infer<typeof createCompanySchema>;
 export type UpdateCompanyInput = z.infer<typeof updateCompanySchema>;
 export type CompanySettingsInput = z.infer<typeof companySettingsSchema>;
 export type CompanyUserInviteInput = z.infer<typeof companyUserInviteSchema>;
+export type UserRole = z.infer<typeof userRoleEnum>;

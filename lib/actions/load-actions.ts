@@ -1,6 +1,5 @@
 "use server";
 
-import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { db } from "@/db/db";
 import {
@@ -12,47 +11,14 @@ import {
 import { eq, and } from "drizzle-orm";
 import { getCurrentCompanyId, authorizeRoles } from "@/lib/auth";
 import { v4 as uuidv4 } from "uuid";
+import { 
+  createLoadSchema, 
+  updateLoadSchema} from "@/lib/validation/load-schema";
 
 // Helper function to protect routes based on role
 async function protectRoute(role: UserRole) {
   await authorizeRoles([role]);
 }
-
-// Helper for descending order (Drizzle ORM style)
-
-// Schema for load validation
-const loadInputSchema = z.object({
-  driverId: z.string().uuid().nullable().optional(),
-  vehicleId: z.string().uuid().nullable().optional(),
-  trailerId: z.string().uuid().nullable().optional(),
-  status: z.enum([
-    "pending",
-    "assigned",
-    "in_transit",
-    "completed",
-    "cancelled",
-  ]),
-  referenceNumber: z.string().optional(),
-  customerName: z.string().min(1, "Customer name is required"),
-  customerContact: z.string().optional(),
-  customerPhone: z.string().optional(),
-  customerEmail: z.string().email().optional().nullable(),
-  originAddress: z.string().min(1, "Origin address is required"),
-  originCity: z.string().min(1, "Origin city is required"),
-  originState: z.string().min(1, "Origin state is required"),
-  originZip: z.string().min(1, "Origin ZIP is required"),
-  destinationAddress: z.string().min(1, "Destination address is required"),
-  destinationCity: z.string().min(1, "Destination city is required"),
-  destinationState: z.string().min(1, "Destination state is required"),
-  destinationZip: z.string().min(1, "Destination ZIP is required"),
-  pickupDate: z.string().or(z.date()).optional(),
-  deliveryDate: z.string().or(z.date()).optional(),
-  commodity: z.string().optional(),
-  weight: z.number().or(z.string()).optional(),
-  rate: z.number().or(z.string()).optional(),
-  miles: z.number().optional(),
-  notes: z.string().optional(),
-});
 // Types for function returns
 
 type SuccessResponse<T> = {
@@ -242,36 +208,24 @@ export async function createLoad(
       };
     }
 
-    const validatedFields = loadInputSchema.safeParse({
-      driverId: formData.get("driverId") || null,
-      vehicleId: formData.get("vehicleId") || null,
-      trailerId: formData.get("trailerId") || null,
-      status: formData.get("status") || "pending",
-      referenceNumber:
-        formData.get("referenceNumber") ||
-        `L-${Math.floor(10000 + Math.random() * 90000)}`,
-      customerName: formData.get("customerName"),
-      customerContact: formData.get("customerContact"),
-      customerPhone: formData.get("customerPhone"),
-      customerEmail: formData.get("customerEmail"),
-      originAddress: formData.get("originAddress"),
-      originCity: formData.get("originCity"),
-      originState: formData.get("originState"),
-      originZip: formData.get("originZip"),
-      destinationAddress: formData.get("destinationAddress"),
-      destinationCity: formData.get("destinationCity"),
-      destinationState: formData.get("destinationState"),
-      destinationZip: formData.get("destinationZip"),
-      pickupDate: formData.get("pickupDate"),
-      deliveryDate: formData.get("deliveryDate"),
-      commodity: formData.get("commodity"),
-      weight: formData.get("weight")
-        ? Number(formData.get("weight"))
-        : undefined,
-      rate: formData.get("rate") ? Number(formData.get("rate")) : undefined,
-      miles: formData.get("miles") ? Number(formData.get("miles")) : undefined,
-      notes: formData.get("notes"),
+    // Generate reference number if not provided
+    const formDataObject = Object.fromEntries(formData);
+    const formDataWithDefaults = new FormData();
+
+    Object.entries(formDataObject).forEach(([key, value]) => {
+      formDataWithDefaults.append(key, value as string);
     });
+
+    if (!formDataWithDefaults.get("referenceNumber")) {
+      formDataWithDefaults.set(
+        "referenceNumber", 
+        `L-${Math.floor(10000 + Math.random() * 90000)}`
+      );
+    }
+    
+    const validatedFields = createLoadSchema.safeParse(
+      Object.fromEntries(formDataWithDefaults)
+    );
 
     if (!validatedFields.success) {
       return {
@@ -409,34 +363,24 @@ export async function updateLoad(
       };
     }
 
-    const validatedFields = loadInputSchema.safeParse({
-      driverId: formData.get("driverId") || null,
-      vehicleId: formData.get("vehicleId") || null,
-      trailerId: formData.get("trailerId") || null,
-      status: formData.get("status"),
-      referenceNumber: formData.get("referenceNumber"),
-      customerName: formData.get("customerName"),
-      customerContact: formData.get("customerContact"),
-      customerPhone: formData.get("customerPhone"),
-      customerEmail: formData.get("customerEmail"),
-      originAddress: formData.get("originAddress"),
-      originCity: formData.get("originCity"),
-      originState: formData.get("originState"),
-      originZip: formData.get("originZip"),
-      destinationAddress: formData.get("destinationAddress"),
-      destinationCity: formData.get("destinationCity"),
-      destinationState: formData.get("destinationState"),
-      destinationZip: formData.get("destinationZip"),
-      pickupDate: formData.get("pickupDate"),
-      deliveryDate: formData.get("deliveryDate"),
-      commodity: formData.get("commodity"),
-      weight: formData.get("weight")
-        ? Number(formData.get("weight"))
-        : undefined,
-      rate: formData.get("rate") ? Number(formData.get("rate")) : undefined,
-      miles: formData.get("miles") ? Number(formData.get("miles")) : undefined,
-      notes: formData.get("notes"),
-    });
+    // Create a new FormData with ID and other properties
+    const formDataWithProperties = new FormData(undefined);
+    formDataWithProperties.set("id", id);
+    
+    // Set driver, vehicle and trailer IDs from params if not in formData
+    if (driverId !== undefined && !formDataWithProperties.get("driverId")) {
+      formDataWithProperties.set("driverId", driverId || "");
+    }
+    if (vehicleId !== undefined && !formDataWithProperties.get("vehicleId")) {
+      formDataWithProperties.set("vehicleId", vehicleId || "");
+    }
+    if (trailerId !== undefined && !formDataWithProperties.get("trailerId")) {
+      formDataWithProperties.set("trailerId", trailerId || "");
+    }
+    
+    const validatedFields = updateLoadSchema.safeParse(
+      Object.fromEntries(formDataWithProperties)
+    );
 
     if (!validatedFields.success) {
       return {

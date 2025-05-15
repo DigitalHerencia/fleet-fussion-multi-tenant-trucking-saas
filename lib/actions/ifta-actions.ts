@@ -4,7 +4,6 @@ import { db } from "@/db/db";
 import { iftaTrips, iftaReports, fuelPurchases } from "@/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { z } from "zod";
-import { iftaSchema } from "@/lib/validation/ifta-schema";
 import { fuelPurchaseSchema } from "@/lib/validation/fuel-schema";
 import { getCurrentCompanyId } from "@/lib/auth";
 import { getIftaReports as fetchIftaReports } from "@/lib/fetchers/ifta";
@@ -165,7 +164,12 @@ export async function generateIftaReport(formData: FormData) {
 
 export async function createIFTAAction(formData: FormData) {
   try {
-    const result = iftaSchema.safeParse(Object.fromEntries(formData));
+    const result = z.object({
+      quarter: z.number().int().min(1).max(4),
+      year: z.number().int().min(2000),
+      totalMiles: z.coerce.number().min(0),
+      totalGallons: z.coerce.number().min(0),
+    }).safeParse(Object.fromEntries(formData));
     if (!result.success) {
       return {
         success: false,

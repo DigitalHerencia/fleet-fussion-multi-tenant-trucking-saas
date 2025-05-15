@@ -1,4 +1,5 @@
 // Strong Clerk webhook event types for use in API handlers
+// DEPRECATED: All types have been consolidated into types/types.ts. Please import from there.
 
 export type ClerkWebhookEventType =
   | "user.created"

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -21,18 +22,80 @@ import { FinancialMetrics } from "./financial-metrics";
 import { DriverPerformance } from "./driver-performance";
 import { VehicleUtilization } from "./vehicle-utilization";
 import { Download, Filter } from "lucide-react";
-import { useState } from "react";
+
+interface PerformanceData {
+  date: string;
+  loads: number;
+  miles: number;
+  onTimeDelivery: number;
+  utilization: number;
+}
+
+interface PerformanceComparisonData {
+  loadCount: { current: number; previous: number; change: string };
+  miles: { current: number; previous: number; change: string };
+  onTimeDelivery: { current: number; previous: number; change: string };
+  utilization: { current: number; previous: number; change: string };
+}
+
+interface FinancialData {
+  date: string | undefined;
+  revenue: number;
+  expenses: number;
+  profit: number;
+}
+
+interface ExpenseBreakdown {
+  category: string;
+  value: number;
+}
+
+interface FinancialSummary {
+  revenue: { current: number; previous: number; change: string };
+  expenses: { current: number; previous: number; change: string };
+  profit: { current: number; previous: number; change: string };
+  margin: { current: string; previous: string; change: string };
+  ratePerMile: { current: string; previous: string; change: string };
+}
+
+interface DriverPerformanceDatum {
+  name: string;
+  miles: number;
+  loads: number;
+  onTime: number;
+  fuelEfficiency: number;
+  safetyScore: number;
+  violations: number;
+}
+
+interface VehicleUtilizationDatum {
+  number: string;
+  type: string;
+  miles: number;
+  utilization: number;
+  fuelEfficiency: string | number;
+  maintenance: number;
+  status: string;
+  id: string;
+  unitNumber: string;
+}
 
 export function AnalyticsDashboard({
-
+  performanceData,
+  performanceComparisonData,
+  financialData,
+  expenseBreakdown,
+  financialSummary,
+  driverPerformanceData,
+  vehicleUtilizationData,
 }: {
-  performanceData: unknown[];
-  performanceComparisonData: unknown[];
-  financialData: unknown[];
-  expenseBreakdown: unknown[];
-  financialSummary: unknown[];
-  driverPerformanceData: unknown[];
-  vehicleUtilizationData: unknown[];
+  performanceData: PerformanceData[];
+  performanceComparisonData: PerformanceComparisonData;
+  financialData: FinancialData[];
+  expenseBreakdown: ExpenseBreakdown[];
+  financialSummary: FinancialSummary;
+  driverPerformanceData: DriverPerformanceDatum[];
+  vehicleUtilizationData: VehicleUtilizationDatum[];
 }) {
   const [timeRange, setTimeRange] = useState("30d");
 
@@ -141,28 +204,7 @@ export function AnalyticsDashboard({
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <PerformanceMetrics timeRange={ "" } data={ [] } comparisonData={ {
-                loadCount: {
-                  current: 0,
-                  previous: 0,
-                  change: ""
-                },
-                miles: {
-                  current: 0,
-                  previous: 0,
-                  change: ""
-                },
-                onTimeDelivery: {
-                  current: 0,
-                  previous: 0,
-                  change: ""
-                },
-                utilization: {
-                  current: 0,
-                  previous: 0,
-                  change: ""
-                }
-              } }              />
+              <PerformanceMetrics timeRange={timeRange} data={performanceData} comparisonData={performanceComparisonData} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -176,34 +218,7 @@ export function AnalyticsDashboard({
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <FinancialMetrics timeRange={ "" } financialData={ [] } expenseBreakdown={ [] } financialSummary={ {
-                revenue: {
-                  current: 0,
-                  previous: 0,
-                  change: ""
-                },
-                expenses: {
-                  current: 0,
-                  previous: 0,
-                  change: ""
-                },
-                profit: {
-                  current: 0,
-                  previous: 0,
-                  change: ""
-                },
-                margin: {
-                  current: "",
-                  previous: "",
-                  change: ""
-                },
-                ratePerMile: {
-                  current: "",
-                  previous: "",
-                  change: ""
-                }
-              } }                
-              />
+              <FinancialMetrics timeRange={timeRange} financialData={financialData} expenseBreakdown={expenseBreakdown} financialSummary={financialSummary} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -217,8 +232,7 @@ export function AnalyticsDashboard({
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <DriverPerformance
-                timeRange={ timeRange } data={ [] }              />
+              <DriverPerformance timeRange={timeRange} data={driverPerformanceData} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -232,9 +246,7 @@ export function AnalyticsDashboard({
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <VehicleUtilization
-                timeRange={ timeRange } data={ [] }                
-              />
+              <VehicleUtilization timeRange={timeRange} data={vehicleUtilizationData} />
             </CardContent>
           </Card>
         </TabsContent>

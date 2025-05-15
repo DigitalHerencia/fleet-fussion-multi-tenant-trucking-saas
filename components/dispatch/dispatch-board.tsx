@@ -8,61 +8,9 @@ import { LoadCard } from "@/components/dispatch/load-card";
 import { LoadDetailsDialog } from "@/components/dispatch/load-details-dialog";
 import { PlusCircle, Filter } from "lucide-react";
 import Link from "next/link";
+import { type Load } from "@/types/types";
 
-interface Load {
-  id: string;
-  referenceNumber: string;
-  status: string;
-  customerName: string;
-  originCity: string;
-  originState: string;
-  destinationCity: string;
-  destinationState: string;
-  pickupDate: Date;
-  deliveryDate: Date;
-  driver?: {
-    id: string;
-    firstName: string;
-    lastName: string;
-  } | null;
-  vehicle?: {
-    id: string;
-    unitNumber: string;
-  } | null;
-  trailer?: {
-    id: string;
-    unitNumber: string;
-  } | null;
-  commodity?: string;
-  weight?: number;
-  rate?: number;
-  miles?: number;
-}
-
-interface Driver {
-  id: string;
-  firstName: string;
-  lastName: string;
-  status: string;
-  email?: string;
-  phone?: string;
-}
-
-interface Vehicle {
-  id: string;
-  unitNumber: string;
-  make: string;
-  model: string;
-  year: number;
-  status: string;
-  type: string;
-}
-
-interface DispatchBoardProps {
-  loads: Load[];
-  drivers: Driver[];
-  vehicles: Vehicle[];
-}
+import { type DispatchBoardProps } from "@/types/types";
 
 export function DispatchBoard({
   loads,

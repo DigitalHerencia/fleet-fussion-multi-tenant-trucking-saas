@@ -1,9 +1,25 @@
 import { z } from "zod";
+import { 
+  requiredString,
+  optionalString,
+  uuidSchema
+} from "./common-schemas";
 
-export const settingsSchema = z.object({
-  companyName: z.string().min(1, "Company name is required"),
-  dotNumber: z.string().optional(),
-  address: z.string().optional(),
+// Core schema for company settings
+export const settingsCoreSchema = z.object({
+  companyName: requiredString.describe("Company name"),
+  dotNumber: optionalString.describe("DOT number"),
+  address: optionalString.describe("Address"),
+  phone: optionalString.describe("Phone"),
+  email: z.string().email("Invalid email address").optional()
+    .or(z.literal("").transform(() => undefined))
+    .describe("Email address"),
 });
 
-export type SettingsFormData = z.infer<typeof settingsSchema>;
+// Schema for updating settings
+export const settingsUpdateSchema = settingsCoreSchema.extend({
+  id: uuidSchema.describe("Company ID"),
+});
+
+export type SettingsFormData = z.infer<typeof settingsCoreSchema>;
+export type SettingsUpdateInput = z.infer<typeof settingsUpdateSchema>;

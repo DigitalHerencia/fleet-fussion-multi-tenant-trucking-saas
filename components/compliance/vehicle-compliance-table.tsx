@@ -1,5 +1,3 @@
-"use client";
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,21 +16,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-// Vehicle interface definition
-interface Vehicle {
-  id: string;
-  unit: string;
-  status: string;
-  lastInspection: string;
-  nextInspection: string;
-  defects: string;
-  registrationExpiry: string;
-  type: string;
-}
+import type { ComplianceVehicle } from "@/types/types";
 
 // Export the columns definition
-export const columns: ColumnDef<Vehicle>[] = [
+export const columns: ColumnDef<ComplianceVehicle>[] = [
   {
     accessorKey: "unit",
     header: "Unit Number",
@@ -141,7 +128,7 @@ export const columns: ColumnDef<Vehicle>[] = [
   },
 ];
 
-export function VehicleComplianceTable({ vehicles }: { vehicles: Vehicle[] }) {
+export function VehicleComplianceTable({ vehicles }: { vehicles: ComplianceVehicle[] }) {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">

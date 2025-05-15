@@ -22,7 +22,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { DriverComplianceTable } from "./driver-compliance-table";
 import { VehicleComplianceTable } from "./vehicle-compliance-table";
-import { ComplianceDocuments } from "./compliance-documents";
+import  ComplianceDocuments  from "./compliance-documents";
 import { useToast } from "@/hooks/use-toast";
 
 type ComplianceMetrics = {

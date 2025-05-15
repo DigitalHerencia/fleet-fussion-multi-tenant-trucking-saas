@@ -1,49 +1,50 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useActionState } from "react";
-import {
-  vehicleSchema,
-  type VehicleFormData,
-} from "@/lib/validation/vehicle-schema";
-import { addVehicle } from "@/lib/actions/vehicles";
+import type { VehicleFilterData } from "@/lib/validation/vehicle-schema";
 import { FormError } from "@/components/ui/form-error";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
 export function VehicleFormClient() {
-  const [formActions] = useActionState(
-    async (_prevState: unknown, formData: FormData) => {
-      return await addVehicle(formData);
-    },
-    { success: false, error: "", errors: {} },
-  );
-
   const {
     register,
     formState: { errors, isSubmitting },
-  } = useForm<VehicleFormData>({
-    resolver: zodResolver(vehicleSchema),
+  } = useForm<VehicleFilterData>({
   });
 
+
   return (
-    <form {...formActions} className="space-y-6">
+    <form className="space-y-6">
       <div>
-        <Label htmlFor="licensePlate">License Plate</Label>
-        <Input {...register("licensePlate")} type="text" id="licensePlate" />
-        <FormError message={errors.licensePlate?.message} />
+        <Label htmlFor="unitNumber">Unit Number</Label>
+        <Input {...register("unitNumber")} type="text" id="unitNumber" />
+        <FormError message={errors.unitNumber?.message} />
       </div>
 
       <div>
         <Label htmlFor="make">Make</Label>
         <Input {...register("make")} type="text" id="make" />
+        <FormError message={errors.make?.message} />
       </div>
 
       <div>
         <Label htmlFor="model">Model</Label>
         <Input {...register("model")} type="text" id="model" />
+        <FormError message={errors.model?.message} />
+      </div>
+
+      <div>
+        <Label htmlFor="type">Type</Label>
+        <Input {...register("type")} type="text" id="type" />
+        <FormError message={errors.type?.message} />
+      </div>
+
+      <div>
+        <Label htmlFor="status">Status</Label>
+        <Input {...register("status")} type="text" id="status" />
+        <FormError message={errors.status?.message} />
       </div>
 
       <Button type="submit" disabled={isSubmitting} className="w-full">

@@ -22,8 +22,10 @@ export function CustomerForm() {
   const {
     register,
     formState: { errors, isSubmitting },
-  } = useForm<CustomerFormValues>({
-    resolver: zodResolver(customerCoreSchema),
+  } = useForm<z.infer<typeof customerCoreSchema>>({
+    defaultValues: {
+      country: "", // Ensure 'country' is required in the form default values
+    },
   });
 
   return (
@@ -69,6 +71,15 @@ export function CustomerForm() {
       <div>
         <label>Zip</label>
         <input {...register("zip")} className="input" />
+      </div>
+      <div>
+        <label>Country</label>
+        <input {...register("country")} className="input" />
+        <FormError
+          message={
+            errors.country?.message
+          }
+        />
       </div>
       <button
         type="submit"

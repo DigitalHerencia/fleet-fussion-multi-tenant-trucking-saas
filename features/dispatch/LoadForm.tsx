@@ -1,9 +1,10 @@
 "use client";
 
+import type { z } from "zod";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { loadSchema, type LoadFormData } from "@/lib/validation/load-schema";
 import { FormError } from "@/components/ui/form-error";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { createLoadSchema } from "@/lib/validation/load-schema";
 
 export default function LoadForm({
   drivers,
@@ -15,22 +16,66 @@ export default function LoadForm({
   const {
     register,
     formState: { errors, isSubmitting },
-  } = useForm<LoadFormData>({
-    resolver: zodResolver(loadSchema),
+  } = useForm<any>({
+    resolver: zodResolver(createLoadSchema) as any,
   });
 
   return (
     <>
       <div>
-        <label htmlFor="origin">Origin</label>
-        <input {...register("origin")} type="text" className="input" />
-        <FormError message={errors.origin?.message} />
+        <label htmlFor="originAddress">Origin Address</label>
+        <input {...register("originAddress")} type="text" className="input" />
+        <FormError
+          message={
+            typeof errors.originAddress?.message === "string"
+              ? errors.originAddress?.message
+              : undefined
+          }
+        />
       </div>
 
       <div>
-        <label htmlFor="destination">Destination</label>
-        <input {...register("destination")} type="text" className="input" />
-        <FormError message={errors.destination?.message} />
+        <label htmlFor="originCity">Origin City</label>
+        <input {...register("originCity")} type="text" className="input" />
+        <FormError
+          message={
+            typeof errors.originCity?.message === "string"
+              ? errors.originCity?.message
+              : undefined
+          }
+        />
+      </div>
+
+      <div>
+        <label htmlFor="destinationAddress">Destination Address</label>
+        <input
+          {...register("destinationAddress")}
+          type="text"
+          className="input"
+        />
+        <FormError
+          message={
+            typeof errors.destinationAddress?.message === "string"
+              ? errors.destinationAddress?.message
+              : undefined
+          }
+        />
+      </div>
+
+      <div>
+        <label htmlFor="destinationCity">Destination City</label>
+        <input
+          {...register("destinationCity")}
+          type="text"
+          className="input"
+        />
+        <FormError
+          message={
+            typeof errors.destinationCity?.message === "string"
+              ? errors.destinationCity?.message
+              : undefined
+          }
+        />
       </div>
 
       <div>
@@ -43,7 +88,13 @@ export default function LoadForm({
             </option>
           ))}
         </select>
-        <FormError message={errors.driverId?.message} />
+        <FormError
+          message={
+            typeof errors.driverId?.message === "string"
+              ? errors.driverId?.message
+              : undefined
+          }
+        />
       </div>
 
       <div>
@@ -56,7 +107,13 @@ export default function LoadForm({
             </option>
           ))}
         </select>
-        <FormError message={errors.vehicleId?.message} />
+        <FormError
+          message={
+            typeof errors.vehicleId?.message === "string"
+              ? errors.vehicleId?.message
+              : undefined
+          }
+        />
       </div>
 
       <button

@@ -1,0 +1,45 @@
+{
+  "object": "organization",
+  "id": "org_2wvjE9wZPYD3ueqyWk08KritcJX",
+  "name": "FleetFusion Test Org",
+  "slug": "fleetfusion-test-org-1746928827",
+  "image_url": "https://img.clerk.com/eyJ0eXBlIjoiZGVmYXVsdCIsImlpZCI6Imluc18yd0JoTHNieURXRzJmV0FIZjJYNnFvQmQ4SUgiLCJyaWQiOiJvcmdfMnd2akU5d1pQWUQzdWVxeVdrMDhLcml0Y0pYIiwiaW5pdGlhbHMiOiJGIn0",
+  "has_image": false,
+  "members_count": 4,
+  "max_allowed_memberships": 5,
+  "admin_delete_enabled": true,
+  "public_metadata": {
+    "roles": [
+      "admin",
+      "dispatcher",
+      "driver",
+      "compliance"
+    ],
+    "customPermissions": [
+      {
+        "key": "deleteOrganization",
+        "description": "Permission to delete an organization."
+      },
+      {
+        "key": "manageBilling",
+        "description": "Permission to manage the billing information of an organization."
+      },
+      {
+        "key": "manageDomains",
+        "description": "Permission to manage the domains of an organization."
+      },
+      {
+        "key": "manageMembers",
+        "description": "Permission to manage the members of an organization."
+      },
+      {
+        "key": "readMembers",
+        "description": "Permission to read the members of an organization."
+      }
+    ]
+  },
+  "private_metadata": {},
+  "created_by": "",
+  "created_at": 1746928827417,
+  "updated_at": 1747181474999
+}
