@@ -5,6 +5,7 @@ import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { completeOnboarding } from "../../lib/actions/onboarding-actions";
 import Image from "next/image";
+import { Button } from "@/components/ui/button";
 
 export default function OnboardingComponent() {
   const [error, setError] = React.useState("");
@@ -20,7 +21,10 @@ export default function OnboardingComponent() {
       if (res?.success) {
         await user?.reload();
         await new Promise(resolve => setTimeout(resolve, 1000));
-        if (user?.publicMetadata && (user.publicMetadata as any).onboardingComplete === true) {
+        const companyId = res.companyId || (user?.publicMetadata && (user.publicMetadata as any).orgId) || (user?.publicMetadata && (user.publicMetadata as any).companyId);
+        if (companyId) {
+          router.push(`/dashboard/${companyId}`);
+        } else if (user?.publicMetadata && (user.publicMetadata as any).onboardingComplete === true) {
           router.push("/dashboard");
         } else {
           window.location.href = "/dashboard";
@@ -103,10 +107,10 @@ export default function OnboardingComponent() {
                 id="city"
                 name="city"
                 type="text"
-                className="rounded-md border border-neutral-700 bg-black text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="rounded-md border border-neutral-700 bg-black text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
               />
             </div>
-            <div className="flex-1">
+            <div className="w-20">
               <label className="text-gray-200 text-sm font-medium" htmlFor="state">
                 State
               </label>
@@ -114,10 +118,10 @@ export default function OnboardingComponent() {
                 id="state"
                 name="state"
                 type="text"
-                className="rounded-md border border-neutral-700 bg-black text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="rounded-md border border-neutral-700 bg-black text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
               />
             </div>
-            <div className="flex-1">
+            <div className="w-28">
               <label className="text-gray-200 text-sm font-medium" htmlFor="zip">
                 ZIP
               </label>
@@ -125,7 +129,7 @@ export default function OnboardingComponent() {
                 id="zip"
                 name="zip"
                 type="text"
-                className="rounded-md border border-neutral-700 bg-black text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="rounded-md border border-neutral-700 bg-black text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
               />
             </div>
           </div>
@@ -148,13 +152,13 @@ export default function OnboardingComponent() {
             className="rounded-md border border-neutral-700 bg-black text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           {error && <div className="text-red-400 text-sm mt-2">{error}</div>}
-          <button
+          <Button
             type="submit"
             className="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 rounded-md transition-colors disabled:opacity-60"
             disabled={loading}
           >
             {loading ? "Submitting..." : "Complete Onboarding"}
-          </button>
+          </Button>
         </form>
       </div>
     </div>

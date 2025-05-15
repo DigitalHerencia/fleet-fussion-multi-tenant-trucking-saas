@@ -3,6 +3,7 @@
 import { createContext, useContext, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useUser, useOrganization } from "@clerk/nextjs";
+import logger from "@/lib/utils/logger";
 
 export interface AuthContextType {
   user: ReturnType<typeof useUser>["user"];
@@ -29,11 +30,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user?.organizationMemberships?.find((m) => m.organization.id === orgId)
       ?.role ?? null;
 
+  logger.debug("AuthContext: provider initialized", { userId, orgId, orgRole });
+
   const redirectToSignIn = (redirectUrl?: string) => {
     const baseUrl = "/sign-in";
     const url = redirectUrl
       ? `${baseUrl}?redirect_url=${encodeURIComponent(redirectUrl)}`
       : baseUrl;
+    logger.info("AuthContext: redirectToSignIn", { url });
     router.push(url);
   };
 

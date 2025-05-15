@@ -8,6 +8,7 @@ import {
 } from "@/db/schema";
 import { eq, and, gte, count, sql } from "drizzle-orm";
 import { addDays, isAfter, isBefore } from "date-fns";
+import logger from "@/lib/utils/logger";
 
 type DeadlineItem = {
   type: string;
@@ -29,13 +30,15 @@ type DeadlineItem = {
  */
 export async function getHosLogById(id: string, companyId: string) {
   try {
+    logger.debug("getHosLogById called", { id, companyId });
     const log = await db.query.hosLogs.findFirst({
       where: and(eq(hosLogs.id, id), eq(hosLogs.companyId, companyId)),
     });
     if (!log) throw new Error("HOS log not found");
+    logger.info("getHosLogById success", { id, companyId });
     return log;
   } catch (error) {
-    console.error("getHosLogById error:", error);
+    logger.error("getHosLogById error", error);
     throw new Error("Unable to load that HOS log");
   }
 }
@@ -45,6 +48,7 @@ export async function getHosLogById(id: string, companyId: string) {
  */
 export async function getDriverComplianceData(companyId: string) {
   try {
+    logger.debug("getDriverComplianceData called", { companyId });
     // Get all drivers for the company
     const driversData = await db
       .select({
@@ -86,6 +90,7 @@ export async function getDriverComplianceData(companyId: string) {
     });
 
     // Map driver data to compliance format
+    logger.info("getDriverComplianceData success", { companyId });
     return driversData.map((d) => {
       const name = `${d.firstName} ${d.lastName}`;
       const licenseExpiry = d.licenseExpiration;
@@ -137,7 +142,7 @@ export async function getDriverComplianceData(companyId: string) {
       };
     });
   } catch (error) {
-    console.error("getDriverComplianceData error:", error);
+    logger.error("getDriverComplianceData error", error);
     throw new Error("Unable to load driver compliance data");
   }
 }
@@ -147,6 +152,7 @@ export async function getDriverComplianceData(companyId: string) {
  */
 export async function getVehicleComplianceData(companyId: string) {
   try {
+    logger.debug("getVehicleComplianceData called", { companyId });
     // Get all vehicles for the company
     const vehiclesData = await db
       .select({
@@ -187,6 +193,7 @@ export async function getVehicleComplianceData(companyId: string) {
     });
 
     // Map vehicle data to compliance format
+    logger.info("getVehicleComplianceData success", { companyId });
     return vehiclesData.map((v) => {
       const inspection = inspectionMap.get(v.id);
 
@@ -251,7 +258,7 @@ export async function getVehicleComplianceData(companyId: string) {
       };
     });
   } catch (error) {
-    console.error("getVehicleComplianceData error:", error);
+    logger.error("getVehicleComplianceData error", error);
     throw new Error("Unable to load vehicle compliance data");
   }
 }
@@ -261,6 +268,7 @@ export async function getVehicleComplianceData(companyId: string) {
  */
 export async function getComplianceDocumentData(companyId: string) {
   try {
+    logger.debug("getComplianceDocumentData called", { companyId });
     const documents = await db
       .select({
         id: complianceDocuments.id,
@@ -275,6 +283,7 @@ export async function getComplianceDocumentData(companyId: string) {
       .from(complianceDocuments)
       .where(eq(complianceDocuments.companyId, companyId));
 
+    logger.info("getComplianceDocumentData success", { companyId });
     return documents.map((doc) => {
       // Determine who the document is assigned to
       let assignedTo = "Company";
@@ -307,7 +316,7 @@ export async function getComplianceDocumentData(companyId: string) {
       };
     });
   } catch (error) {
-    console.error("getComplianceDocumentData error:", error);
+    logger.error("getComplianceDocumentData error", error);
     throw new Error("Unable to load compliance document data");
   }
 }
@@ -317,6 +326,7 @@ export async function getComplianceDocumentData(companyId: string) {
  */
 export async function getComplianceSummaryMetrics(companyId: string) {
   try {
+    logger.debug("getComplianceSummaryMetrics called", { companyId });
     // Get driver compliance metrics
     const driversData = await getDriverComplianceData(companyId);
     const totalDrivers = driversData.length;
@@ -369,6 +379,7 @@ export async function getComplianceSummaryMetrics(companyId: string) {
 
     const hosViolations = violations[0]?.count ?? 0;
 
+    logger.info("getComplianceSummaryMetrics success", { companyId });
     return {
       driverCompliance: {
         rate: driverComplianceRate,
@@ -391,7 +402,7 @@ export async function getComplianceSummaryMetrics(companyId: string) {
       hosViolations,
     };
   } catch (error) {
-    console.error("getComplianceSummaryMetrics error:", error);
+    logger.error("getComplianceSummaryMetrics error", error);
     throw new Error("Unable to load compliance summary metrics");
   }
 }
@@ -403,6 +414,7 @@ export async function getUpcomingComplianceDeadlines(
   companyId: string,
 ): Promise<DeadlineItem[]> {
   try {
+    logger.debug("getUpcomingComplianceDeadlines called", { companyId });
     const today = new Date();
     const thirtyDaysFromNow = addDays(today, 30);
     const deadlines: DeadlineItem[] = [];
@@ -536,9 +548,10 @@ export async function getUpcomingComplianceDeadlines(
     });
 
     // Sort deadlines by urgency (days until due)
+    logger.info("getUpcomingComplianceDeadlines success", { companyId });
     return deadlines.sort((a, b) => a.dueIn - b.dueIn);
   } catch (error) {
-    console.error("getUpcomingComplianceDeadlines error:", error);
+    logger.error("getUpcomingComplianceDeadlines error", error);
     throw new Error("Unable to load upcoming compliance deadlines");
   }
 }

@@ -24,68 +24,56 @@
       }
     ],
     "paths": {
-      "@/styles/*": [
-        "./styles/*"
+      "@/app/*": [
+        "./app/*"
       ],
       "@/components/*": [
         "./components/*"
       ],
-      "@/lib/*": [
-        "./lib/*"
-      ],
-      "@/types/*": [
-        "./types/*"
-      ],
-      "@/hooks/*": [
-        "./hooks/*"
-      ],
-      "@/features/*": [
-        "./features/*"
-      ],
-      "@/app/*": [
-        "./app/*"
-      ],
-      "@/app": [
-        "./app"
+      "@/context/*": [
+        "./context/*"
       ],
       "@/db/*": [
         "./db/*"
       ],
-      "@/utils/*": [
-        "./utils/*"
-      ],
       "@/docs/*": [
         "./docs/*"
+      ],
+      "@/features/*": [
+        "./features/*"
+      ],
+      "@/hooks/*": [
+        "./hooks/*"
+      ],
+      "@/lib/*": [
+        "./lib/*"
+      ],
+      "@/lib/actions/*": [
+        "./lib/actions/*"
+      ],
+      "@/lib/constants/*": [
+        "./lib/constants/*"
+      ],
+      "@/lib/fetchers/*": [
+        "./lib/fetchers/*"
+      ],
+      "@/lib/utils/*": [
+        "./lib/utils/*"
+      ],
+      "@/lib/validation/*": [
+        "./lib/validation/*"
       ],
       "@/public/*": [
         "./public/*"
       ],
-      "@/context/*": [
-        "./context/*"
+      "@/styles/*": [
+        "./styles/*"
       ],
-      "@/settings/*": [
-        "./settings/*"
+      "@/types/*": [
+        "./types/*"
       ],
-      "@/dashboard/*": [
-        "./app/dashboard/*"
-      ],
-      "@/ui/*": [
+      "@/components/ui/*": [
         "./components/ui/*"
-      ],
-      "@/actions/*": [
-        "./lib/actions/*"
-      ],
-      "@/constants/*": [
-        "./lib/constants/*"
-      ],
-      "@/fetchers/*": [
-        "./lib/fetchers/*"
-      ],
-      "@/validations/*": [
-        "./lib/validations/*"
-      ],
-      "@/dashboard/[companyId]/*": [
-        "./app/dashboard/[companyId]/*"
       ]
     },
     "forceConsistentCasingInFileNames": true,

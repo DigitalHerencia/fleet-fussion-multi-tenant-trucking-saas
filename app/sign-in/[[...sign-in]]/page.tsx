@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useSignIn } from "@clerk/nextjs";
+import { useSignIn, useUser } from "@clerk/nextjs";
+import logger from "@/lib/utils/logger";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
@@ -14,6 +15,15 @@ export default function SignInPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { signIn, isLoaded } = useSignIn();
+  const { user, isLoaded: userLoaded } = useUser();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (userLoaded && user) {
+      // Optionally, fetch companyId and redirect to /dashboard/[companyId]
+      router.replace("/dashboard");
+    }
+  }, [userLoaded, user, router]);
 
   // Optionally, you can use Clerk's <SignIn /> component for magic link/social
   // But here is a custom form for email/password
@@ -21,29 +31,41 @@ export default function SignInPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
+    logger.debug("SignIn: form submit", { email });
     if (!isLoaded) return;
     // Enforce Clerk CAPTCHA if present
     const captcha = (window as any).Clerk?.captcha;
     if (captcha && !captcha.isSolved()) {
       setError("Please complete the CAPTCHA challenge.");
+      logger.warn("SignIn: CAPTCHA not solved", { email });
       setLoading(false);
       return;
     }
     try {
       const res = await signIn.create({ identifier: email, password });
+      logger.info("SignIn: Clerk signIn.create result", { status: res.status, email });
       if (res.status === "complete") {
         // Get returnBackUrl from query params, fallback to /org-selection
         const returnBackUrl = searchParams.get("returnBackUrl");
         if (returnBackUrl) {
+          logger.info("SignIn: redirecting to returnBackUrl", { returnBackUrl });
           router.push(returnBackUrl);
         } else {
+          logger.info("SignIn: redirecting to default", { default: process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL || "/org-selection" });
           router.push(process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL || "/org-selection");
         }
       } else {
         setError("Sign in failed. Please check your credentials.");
+        logger.warn("SignIn: incomplete status", { email });
       }
     } catch (err: any) {
+      logger.error("SignIn: error", err);
       // Clerk error handling
+      if (err?.errors?.[0]?.code === "session_exists") {
+        // If session already exists, redirect to dashboard
+        router.replace("/dashboard");
+        return;
+      }
       if (err?.errors?.[0]?.code === "form_password_incorrect") {
         setError("Incorrect password. Try again or reset your password.");
       } else if (err?.errors?.[0]?.code === "form_identifier_not_found") {

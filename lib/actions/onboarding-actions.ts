@@ -25,6 +25,8 @@ export const completeOnboarding = async (formData: FormData) => {
       publicMetadata: {
         onboardingComplete: true,
         companyName,
+      },
+      privateMetadata: {
         dotNumber,
         mcNumber,
         address,
@@ -38,7 +40,9 @@ export const completeOnboarding = async (formData: FormData) => {
 
     // Verify the update was successful
     if (res.publicMetadata && (res.publicMetadata as any).onboardingComplete === true) {
-      return { message: res.publicMetadata, success: true };
+      // Use Clerk orgId if available, otherwise fallback to a generated companyId
+      const companyId = (res.publicMetadata as any).orgId || (res.publicMetadata as any).companyId || null;
+      return { message: res.publicMetadata, success: true, companyId, clerkId: userId };
     } else {
       console.error("Failed to set onboardingComplete flag", res);
       return { error: "Failed to set onboarding status. Please try again." };

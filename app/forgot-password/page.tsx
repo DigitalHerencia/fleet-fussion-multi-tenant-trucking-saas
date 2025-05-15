@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { useAuth, useSignIn } from '@clerk/nextjs'
 import type { NextPage } from 'next'
 import { useRouter } from 'next/navigation'
+import logger from "@/lib/utils/logger"
 
 const ForgotPasswordPage: NextPage = () => {
   const [email, setEmail] = useState('')
@@ -36,14 +37,17 @@ const ForgotPasswordPage: NextPage = () => {
     e.preventDefault()
     setLoading(true)
     setError('')
+    logger.debug("ForgotPassword: request reset code", { email })
     try {
       await signIn?.create({
         strategy: 'reset_password_email_code',
         identifier: email,
       })
+      logger.info("ForgotPassword: reset code sent", { email })
       setStep('reset')
     } catch (err: any) {
       setError(err?.errors?.[0]?.longMessage || 'Failed to send reset code.')
+      logger.error("ForgotPassword: error sending reset code", err)
     } finally {
       setLoading(false)
     }
@@ -53,22 +57,28 @@ const ForgotPasswordPage: NextPage = () => {
     e.preventDefault()
     setLoading(true)
     setError('')
+    logger.debug("ForgotPassword: attempt password reset", { email })
     try {
       const result = await signIn?.attemptFirstFactor({
         strategy: 'reset_password_email_code',
         code,
         password,
       })
+      logger.info("ForgotPassword: password reset result", { status: result?.status, email })
       if (result?.status === 'complete') {
         await setActive?.({ session: result?.createdSessionId }) 
+        logger.info("ForgotPassword: redirecting to dashboard", { email })
         router.push('/dashboard')
       } else if (result?.status === 'needs_second_factor') {
         setError('2FA is required. Please complete second factor authentication.')
+        logger.warn("ForgotPassword: needs second factor", { email })
       } else {
         setError('Password reset failed. Try again.')
+        logger.warn("ForgotPassword: reset failed", { email })
       }
     } catch (err: any) {
       setError(err?.errors?.[0]?.longMessage || 'Password reset failed.')
+      logger.error("ForgotPassword: error resetting password", err)
     } finally {
       setLoading(false)
     }

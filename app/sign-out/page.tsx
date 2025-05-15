@@ -1,13 +1,20 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import logger from "@/lib/utils/logger";
 
 export default function SignOutPage() {
   const router = useRouter();
 
   const handleSignOut = async () => {
-    await signOut();
-    router.push("/sign-in");
+    logger.debug("SignOut: sign out button clicked");
+    try {
+      await signOut();
+      logger.info("SignOut: sign out success");
+      router.push("/sign-in");
+    } catch (err) {
+      logger.error("SignOut: error", err);
+    }
   };
 
   return (

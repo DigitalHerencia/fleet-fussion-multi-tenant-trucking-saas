@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 import { toast } from "sonner";
+import logger from "@/lib/utils/logger";
 
 export default function OrgSelectionPage() {
   const router = useRouter();
@@ -34,22 +35,24 @@ export default function OrgSelectionPage() {
 
   const handleOrgSelect = async (orgId: string) => {
     try {
+      logger.debug("OrgSelection: selecting org", { orgId });
       // Set the active organization in Clerk
       await setActive({ organization: orgId });
-
+      logger.info("OrgSelection: org selected, redirecting to dashboard", { orgId });
       // Redirect to dashboard
       router.push("/dashboard");
     } catch (error) {
-      console.error("Error setting active organization:", error);
+      logger.error("OrgSelection: error setting active organization", error);
       toast.error("Failed to select organization. Please try again.");
     }
   };
 
   const handleCreateOrg = async () => {
     try {
+      logger.debug("OrgSelection: create new org");
       router.push("/onboarding");
     } catch (error) {
-      console.error("Error redirecting to create organization:", error);
+      logger.error("OrgSelection: error redirecting to create organization", error);
       toast.error("Failed to create new organization. Please try again.");
     }
   };

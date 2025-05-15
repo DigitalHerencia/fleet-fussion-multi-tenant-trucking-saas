@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSignUp, SignUp } from "@clerk/nextjs";
+import logger from "@/lib/utils/logger";
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("");
@@ -19,11 +20,13 @@ export default function SignUpPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
+    logger.debug("SignUp: form submit", { email });
     if (!isLoaded) return;
     // Enforce Clerk CAPTCHA if present
     const captcha = (window as any).Clerk?.captcha;
     if (captcha && !captcha.isSolved()) {
       setError("Please complete the CAPTCHA challenge.");
+      logger.warn("SignUp: CAPTCHA not solved", { email });
       setLoading(false);
       return;
     }
@@ -34,14 +37,18 @@ export default function SignUpPage() {
         firstName: name.split(" ")[0] || name,
         lastName: name.split(" ").slice(1).join(" ") || undefined,
       });
+      logger.info("SignUp: Clerk signUp.create result", { status: res.status, email });
       if (res.status === "complete") {
+        logger.info("SignUp: redirecting to onboarding", { onboarding: process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL || "/onboarding" });
         router.push(process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL || "/onboarding");
       } else {
         setError(
-          "Sign up incomplete. Please check your email to verify your account and then sign in.",
+          "Sign up incomplete. Please check your email to verify your account and then sign in."
         );
+        logger.warn("SignUp: incomplete status", { email });
       }
     } catch (err: any) {
+      logger.error("SignUp: error", err);
       // Clerk error handling
       if (err?.errors?.[0]?.code === "form_password_pwned") {
         setError("This password is too common. Please choose a stronger password.");

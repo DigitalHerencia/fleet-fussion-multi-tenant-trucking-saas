@@ -1,6 +1,7 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import logger from "./lib/utils/logger";
 
 // Define public routes that don't require authentication
 const isPublicRoute = createRouteMatcher([
@@ -44,6 +45,7 @@ function addSecurityHeaders(req: NextRequest, res: NextResponse): Headers {
 
 // Use the authMiddleware pattern recommended by Clerk
 export default clerkMiddleware((auth, req) => {
+  logger.debug("Middleware: request received", { url: req.url });
 
   // First apply security headers to all requests
   const secureResponse = (res: NextResponse) => {
@@ -53,36 +55,36 @@ export default clerkMiddleware((auth, req) => {
 
   // Handle requests to public routes - allow access without authentication
   if (isPublicRoute(req)) {
+    logger.debug("Middleware: public route", { url: req.url });
     return secureResponse(NextResponse.next());
   }
 
   // For all other routes, we need to check authentication
   return auth().then(({ userId, sessionClaims }) => {
-    // If no user and not on public route, redirect to sign-in
-    if (!userId && !isPublicRoute(req)) {
-      const signInUrl = new URL("/sign-in", req.url);
-      const returnUrl = new URL(req.url);
+    logger.debug("Middleware: auth check", { userId, sessionClaims });
+    // Log all sessionClaims for debugging
+    logger.debug("Middleware: full sessionClaims", sessionClaims);
+    // Log publicMetadata for debugging
+    logger.debug("Middleware: sessionClaims.publicMetadata", sessionClaims && typeof sessionClaims.publicMetadata === 'object' ? sessionClaims.publicMetadata : undefined);
 
-      // Clean returnUrl to avoid redirect loops
-      returnUrl.searchParams.delete("redirect_url");
-      returnUrl.searchParams.delete("returnBackUrl");
+    // Fix: Check onboardingComplete in both root and publicMetadata (safe type check)
+    const publicMetadata = sessionClaims && typeof sessionClaims.publicMetadata === 'object' && sessionClaims.publicMetadata !== null
+      ? sessionClaims.publicMetadata as Record<string, unknown>
+      : undefined;
+    const onboardingComplete =
+      sessionClaims?.onboardingComplete === true ||
+      publicMetadata?.onboardingComplete === true;
 
-      // Set the returnUrl parameter
-      signInUrl.searchParams.set("returnBackUrl", returnUrl.toString());
-      return NextResponse.redirect(signInUrl);
-    }
-
-    // Check if user needs to complete onboarding (safe access with optional chaining)
-    const onboardingComplete = sessionClaims?.onboardingComplete === true;
-    
     // For users on onboarding route, let them proceed regardless of onboarding status
     if (userId && isOnboardingRoute(req)) {
+      logger.debug("Middleware: onboarding route", { url: req.url });
       return secureResponse(NextResponse.next());
     }
 
     // If user is authenticated but hasn't completed onboarding, redirect to onboarding
     if (userId && !onboardingComplete && !isOnboardingRoute(req)) {
       const onboardingUrl = new URL("/onboarding", req.url);
+      logger.info("Middleware: redirect to onboarding", { onboardingUrl: onboardingUrl.toString() });
       return NextResponse.redirect(onboardingUrl);
     }
 
@@ -92,11 +94,13 @@ export default clerkMiddleware((auth, req) => {
       const userRoleClaim = sessionClaims?.role || sessionClaims?.orgRole;
       if (userRoleClaim !== "admin" && userRoleClaim !== "org:admin") {
         const url = new URL("/admin", req.url);
+        logger.warn("Middleware: unauthorized admin access", { url: url.toString(), userRoleClaim });
         return NextResponse.redirect(url);
       }
     }
 
     // If we get here, the user is authenticated and has completed onboarding
+    logger.debug("Middleware: access granted", { url: req.url });
     return secureResponse(NextResponse.next());
   });
 });

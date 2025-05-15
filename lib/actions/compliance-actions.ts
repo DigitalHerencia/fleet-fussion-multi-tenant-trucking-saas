@@ -8,6 +8,7 @@ import { complianceSchema } from "@/lib/validation/compliance-schema";
 import { uploadToVercelBlob } from "@/db/blob";
 import { getCurrentCompanyId } from "@/lib/auth";
 import type { ApiResult } from "@/types/api";
+import logger from "@/lib/utils/logger";
 
 // Zod schema for server-side validation
 const hosLogSchema = z.object({
@@ -35,6 +36,7 @@ async function getCompanyId(): Promise<string> {
 }
 
 export async function createHosLog(formData: FormData) {
+  logger.debug("createHosLog called");
   try {
     const result = hosLogSchema.safeParse(Object.fromEntries(formData));
     if (!result.success) {
@@ -56,8 +58,10 @@ export async function createHosLog(formData: FormData) {
         startTime: new Date(), // Required field, set default
       })
       .returning();
+    logger.info("createHosLog success");
     return { success: true, log: inserted };
   } catch (error) {
+    logger.error("createHosLog error", error);
     console.error("[ComplianceActions] createHosLog error:", error);
     return {
       success: false,
@@ -69,6 +73,7 @@ export async function createHosLog(formData: FormData) {
 }
 
 export async function updateHosLog(id: string, formData: FormData) {
+  logger.debug("updateHosLog called", { id });
   try {
     const result = hosLogSchema.safeParse(Object.fromEntries(formData));
     if (!result.success) {
@@ -89,8 +94,10 @@ export async function updateHosLog(id: string, formData: FormData) {
         driverId: data.driverId,
       })
       .where(and(eq(hosLogs.id, id), eq(hosLogs.companyId, companyId)));
+    logger.info("updateHosLog success", { id });
     return { success: true };
   } catch (error) {
+    logger.error("updateHosLog error", error);
     console.error("[ComplianceActions] updateHosLog error:", error);
     return {
       success: false,
@@ -102,14 +109,17 @@ export async function updateHosLog(id: string, formData: FormData) {
 }
 
 export async function deleteHosLog(id: string) {
+  logger.debug("deleteHosLog called", { id });
   try {
     const companyId = await getCompanyId();
     const result = await db
       .delete(hosLogs)
       .where(and(eq(hosLogs.id, id), eq(hosLogs.companyId, companyId)));
     if (!result) throw new Error();
+    logger.info("deleteHosLog success", { id });
     return { success: true };
   } catch (error) {
+    logger.error("deleteHosLog error", error);
     console.error("[ComplianceActions] deleteHosLog error:", error);
     return {
       success: false,
@@ -129,6 +139,7 @@ export async function deleteHosLog(id: string) {
 export async function createComplianceDocument(
   formData: FormData,
 ): Promise<ApiResult<unknown>> {
+  logger.debug("createComplianceDocument called");
   try {
     let fileUrl = formData.get("documentUrl")?.toString() || "";
     const file = formData.get("file") as File | null;
@@ -157,8 +168,10 @@ export async function createComplianceDocument(
         companyId,
       })
       .returning(); 
+    logger.info("createComplianceDocument success");
     return { success: true, data: inserted };
   } catch (error) {
+    logger.error("createComplianceDocument error", error);
     console.error("[ComplianceActions] createComplianceDocument error:", error);
     return {
       success: false,
@@ -175,6 +188,7 @@ export async function updateComplianceDocument(
   id: string,
   formData: FormData,
 ): Promise<ApiResult<undefined>> {
+  logger.debug("updateComplianceDocument called", { id });
   try {
     const result = complianceDocSchema.safeParse(Object.fromEntries(formData));
     if (!result.success) {
@@ -200,8 +214,10 @@ export async function updateComplianceDocument(
           eq(complianceDocuments.companyId, companyId),
         ),
       );
+    logger.info("updateComplianceDocument success", { id });
     return { success: true, data: undefined };
   } catch (error) {
+    logger.error("updateComplianceDocument error", error);
     console.error("[ComplianceActions] updateComplianceDocument error:", error);
     return {
       success: false,
@@ -217,6 +233,7 @@ export async function updateComplianceDocument(
 export async function deleteComplianceDocument(
   id: string,
 ): Promise<ApiResult<undefined>> {
+  logger.debug("deleteComplianceDocument called", { id });
   try {
     const companyId = await getCompanyId();
     const result = await db
@@ -228,8 +245,10 @@ export async function deleteComplianceDocument(
         ),
       );
     if (!result) throw new Error();
+    logger.info("deleteComplianceDocument success", { id });
     return { success: true, data: undefined };
   } catch (error) {
+    logger.error("deleteComplianceDocument error", error);
     console.error("[ComplianceActions] deleteComplianceDocument error:", error);
     return {
       success: false,
@@ -245,6 +264,7 @@ export async function deleteComplianceDocument(
 export async function createComplianceAction(
   formData: FormData,
 ): Promise<ApiResult<undefined>> {
+  logger.debug("createComplianceAction called");
   try {
     const result = complianceSchema.safeParse(Object.fromEntries(formData));
     if (!result.success) {
@@ -262,8 +282,10 @@ export async function createComplianceAction(
       dueDate: new Date(data.dueDate),
       companyId,
     });
+    logger.info("createComplianceAction success");
     return { success: true, data: undefined };
   } catch (error) {
+    logger.error("createComplianceAction error", error);
     console.error("[ComplianceActions] createComplianceAction error:", error);
     return {
       success: false,
