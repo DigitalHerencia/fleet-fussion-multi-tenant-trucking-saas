@@ -77,7 +77,6 @@
       ]
     },
     "forceConsistentCasingInFileNames": true,
-    "allowSyntheticDefaultImports": true,
     "allowJs": true
   },
   "exclude": [
@@ -90,23 +89,18 @@
     ".next/types/**/*.ts",
     "app/**/*",
     "components/**/*",
+    "context/**/*",
+    "db/**/*",
+    "docs/**/*",
+    "features/**/*",
+    "hooks/**/*",
+    "lib/**/*",
+    "styles/**/*",
+    "types/**/*",
+    "settings/**/*",
+    "dashboard/**/*",
     "postcss.config.mjs",
     "tailwind.config.ts",
-    "lib/**/*",
-    "hooks/**/*",
-    "features/**/*",
-    "types/**/*",
-    "utils/**/*",
-    "docs/**/*",
-    "public/**/*",
-    "context/**/*",
-    "settings/**/*",
-    "db/**/*",
-    "actions/**/*",
-    "constants/**/*",
-    "fetchers/**/*",
-    "validations/**/*",
-    "dashboard/**/*",
     "next.config.ts"
   ]
 }

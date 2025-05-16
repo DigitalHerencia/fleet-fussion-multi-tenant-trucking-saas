@@ -1,4 +1,7 @@
 // --- Company & User Types ---
+
+import type { DataKey } from "recharts/types/util/types";
+
 // Company represents a trucking company entity with core details and branding info
 export type Company = {
   /** Unique identifier for the company */
@@ -243,7 +246,7 @@ export interface Notification {
   type: string; // e.g. 'dispatch', 'compliance', 'system', etc.
   title: string;
   body: string;
-  data?: any;
+  data?: DataKey<Notification>;
   read: boolean;
   delivered: boolean;
   channel: "in-app" | "email" | "push" | "sms";

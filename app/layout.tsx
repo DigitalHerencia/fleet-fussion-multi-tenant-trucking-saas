@@ -1,8 +1,11 @@
-import type React from "react";
-import "../app/globals.css";
-import type { Metadata } from "next";
-import { Providers } from "../components/providers/client-providers";
+import { ThemeProvider } from "@/components/theme-provider";
+import { CompanyProvider } from "@/context/company-context";
+import { AuthProvider } from "@/context/auth-context";
+import { Toaster } from "@/components/ui/toaster";
 import { ClerkProvider } from "@clerk/nextjs";
+import { type ReactNode } from "react";
+import type { Metadata } from "next";
+import "../app/globals.css";
 
 export const metadata: Metadata = {
   title: "FleetFusion - Enterprise-Grade Fleet Management",
@@ -15,20 +18,22 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-    return (
-    <html lang="en">
-      <body>
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body className="antialiased">
         <ClerkProvider>
-          <Providers>
-            {children}
-          </Providers>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <AuthProvider>
+              <CompanyProvider>
+                {children}
+                <Toaster />
+              </CompanyProvider>
+            </AuthProvider>
+          </ThemeProvider>
         </ClerkProvider>
       </body>
     </html>
   );
 }
+

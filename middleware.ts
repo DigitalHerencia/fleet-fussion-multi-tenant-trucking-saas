@@ -30,8 +30,6 @@ const isAdminRoute = createRouteMatcher([
   "/admin(.*)"
 ]);
 
-// Determine if we're in development mode
-const isDevelopment = process.env.NODE_ENV === 'development';
 
 // Add security headers to the response
 function addSecurityHeaders(req: NextRequest, res: NextResponse): Headers {
@@ -59,7 +57,7 @@ export default clerkMiddleware((auth, req) => {
     return secureResponse(NextResponse.next());
   }
 
-  // For all other routes, we need to check authentication
+  //Logging for development mode
   return auth().then(({ userId, sessionClaims }) => {
     logger.debug("Middleware: auth check", { userId, sessionClaims });
     // Log all sessionClaims for debugging
@@ -67,7 +65,7 @@ export default clerkMiddleware((auth, req) => {
     // Log publicMetadata for debugging
     logger.debug("Middleware: sessionClaims.publicMetadata", sessionClaims && typeof sessionClaims.publicMetadata === 'object' ? sessionClaims.publicMetadata : undefined);
 
-    // Fix: Check onboardingComplete in both root and publicMetadata (safe type check)
+   // For all other routes, we need to check authentication
     const publicMetadata = sessionClaims && typeof sessionClaims.publicMetadata === 'object' && sessionClaims.publicMetadata !== null
       ? sessionClaims.publicMetadata as Record<string, unknown>
       : undefined;
@@ -83,6 +81,8 @@ export default clerkMiddleware((auth, req) => {
 
     // If user is authenticated but hasn't completed onboarding, redirect to onboarding
     if (userId && !onboardingComplete && !isOnboardingRoute(req)) {
+      // Redirect to onboarding if not completed and not already on the onboarding page.
+      // Ensures Clerk and Neon setup is initiated.
       const onboardingUrl = new URL("/onboarding", req.url);
       logger.info("Middleware: redirect to onboarding", { onboardingUrl: onboardingUrl.toString() });
       return NextResponse.redirect(onboardingUrl);

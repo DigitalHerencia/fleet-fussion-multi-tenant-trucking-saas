@@ -9,7 +9,7 @@ This document provides a comprehensive guide on how to configure Clerk authentic
 When developing locally, especially with ngrok tunneling:
 
 1. **Update the ngrok URL** in `.env.local`:
-   ```
+   ```env
    NEXT_PUBLIC_APP_URL=https://your-subdomain.ngrok-free.app
    # Update all NEXT_PUBLIC_CLERK_* URLs to use the same ngrok domain
    ```
@@ -24,7 +24,7 @@ When developing locally, especially with ngrok tunneling:
 For production deployment:
 
 1. **Use your production domain**:
-   ```
+   ```env
    NEXT_PUBLIC_APP_URL=https://fleet-fusion.vercel.app
    # All NEXT_PUBLIC_CLERK_* URLs should use the production domain
    ```

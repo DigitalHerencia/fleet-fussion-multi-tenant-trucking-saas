@@ -1,4 +1,4 @@
-"use server";
+
 
 import { db } from "@/db/db";
 import { companies, companyUsers } from "@/db/schema";
@@ -274,7 +274,7 @@ export async function createCompany(data: CreateCompanyFormValues) {
         phone: validatedData.phone,
         email: validatedData.email,
         primaryColor: validatedData.primaryColor || "#0f766e",
-        clerkOrgId: clerkOrg.id, // Link to Clerk organization ID
+        clerkOrgId: clerkOrg.id, // Link to Clerk organization ID, maps to a user userId
       })
       .returning();
 
@@ -323,6 +323,33 @@ async function createClerkOrganization(name: string) {
   const client = await clerkClient(); // Await the function to get the client
   const org = await client.organizations.createOrganization({ name });
   return org;
+}
+
+// New server action to get companyId by clerkOrgId
+export async function getCompanyIdByClerkOrgId(clerkOrgId: string): Promise<{ success: boolean; companyId?: string; error?: string }> {
+  if (!clerkOrgId) {
+    return { success: false, error: "Clerk Organization ID is required." };
+  }
+
+  try {
+    const company = await db.query.companies.findFirst({
+      where: eq(companies.clerkOrgId, clerkOrgId),
+      columns: {
+        id: true,
+      },
+    });
+
+    if (!company) {
+      return { success: false, error: "Company not found for the given Clerk Organization ID." };
+    }
+
+    return { success: true, companyId: company.id };
+  } catch (error) {
+    console.error("Error fetching company by Clerk Org ID:", error);
+    // It's good practice to not expose raw database errors to the client.
+    // Log the actual error for server-side debugging.
+    return { success: false, error: "Database error when fetching company by Clerk Org ID." };
+  }
 }
 
 // Get user's role in the current company
