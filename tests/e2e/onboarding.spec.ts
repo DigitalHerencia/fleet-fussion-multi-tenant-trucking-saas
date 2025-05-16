@@ -20,13 +20,13 @@ test.describe('Onboarding Flow', () => {
     // This is a placeholder test and needs to be adapted to the actual onboarding flow
 
     // Example: Fill out a form field
-    // await page.fill('input[name="companyName"]', 'Test Company');
+    await page.fill('input[name="companyName"]', 'Test Company');
 
     // Example: Click a submit button
-    // await page.click('button[type="submit"]');
+    await page.click('button[type="submit"]');
 
     // Example: Check for redirection to the dashboard
-    // await expect(page).toHaveURL(/.*\/dashboard/);
+    await expect(page).toHaveURL(/.*\/dashboard/);
 
     // Example: Check for a welcome message on the dashboard
     // await expect(page.locator('h1')).toContainText('Welcome to your Dashboard');
