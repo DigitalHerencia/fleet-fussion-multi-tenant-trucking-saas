@@ -1,4 +1,4 @@
-
+"use server"
 
 import { db } from "@/db/db";
 import { companies, companyUsers } from "@/db/schema";

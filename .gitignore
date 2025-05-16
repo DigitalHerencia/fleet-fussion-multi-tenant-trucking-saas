@@ -73,3 +73,9 @@ storybook-static/
 
 # Ignore todo
 TODO.md
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

@@ -82,6 +82,7 @@
     "@eslint/json": "^0.12.0",
     "@eslint/markdown": "^6.4.0",
     "@next/eslint-plugin-next": "^15.3.2",
+    "@playwright/test": "^1.52.0",
     "@tailwindcss/postcss": "^4.1.7",
     "@types/archiver": "^6.0.3",
     "@types/exceljs": "^0.5.3",
