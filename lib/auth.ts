@@ -1,6 +1,3 @@
-import { Users } from 'lucide-react';
-"use server";
-
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { clerkClient } from "@clerk/nextjs/server";
