@@ -73,23 +73,6 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ---
 
-## 📚 Documentation
-
-- [Product Requirements (PRD)](.github/PRD.md)
-- [Technical Requirements](.github/TECHNICAL_REQUIREMENTS.md)
-- [Multi-Tenant Architecture](docs/multi-tenant.md)
-- [Data Flow & State Management](docs/data-flow.md)
-- [Analytics](docs/analytics.md)
-- [Compliance](docs/compliance.md)
-- [Dispatch](docs/dispatch.md)
-- [Drivers](docs/drivers.md)
-- [IFTA](docs/ifta.md)
-- [Settings](docs/settings.md)
-- [Vehicles](docs/vehicles.md)
-- [Deployment](docs/DEPLOYMENT.md)
-
----
-
 ## 🆘 Help & Support
 
 - **Docs:** See the `/docs` folder for user guides and technical docs
