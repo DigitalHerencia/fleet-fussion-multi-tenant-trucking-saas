@@ -5,8 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { BarChart3, CalendarIcon, FileText, MapPin } from "lucide-react"
 import { DataTable } from "@/components/ui/data-table"
-import type { ColumnDef } from "@tanstack/react-table"
 import { PageHeader } from "@/components/ui/page-header"
+import { IftaTripTableClient, IftaReportTableClient } from "@/components/ifta/ifta-tables"
+import type { IFTATrip, IFTAReport } from "@/components/ifta/ifta-columns"
 
 // Define a custom FuelIcon component since it's not in lucide-react
 function FuelIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -33,125 +34,6 @@ function FuelIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   )
 }
-
-// Define types for IFTA data
-type IFTATrip = {
-  id: string
-  date: string
-  driver: string
-  vehicle: string
-  startLocation: string
-  endLocation: string
-  miles: number
-  gallons: number
-  state: string
-}
-
-type IFTAReport = {
-  id: string
-  quarter: string
-  year: string
-  totalMiles: number
-  totalGallons: number
-  avgMpg: number
-  status: string
-  dueDate: string
-}
-
-// Define columns for IFTA trips
-const tripColumns: ColumnDef<IFTATrip>[] = [
-  {
-    accessorKey: "date",
-    header: "Date",
-  },
-  {
-    accessorKey: "driver",
-    header: "Driver",
-  },
-  {
-    accessorKey: "vehicle",
-    header: "Vehicle",
-  },
-  {
-    accessorKey: "startLocation",
-    header: "Origin",
-  },
-  {
-    accessorKey: "endLocation",
-    header: "Destination",
-  },
-  {
-    accessorKey: "state",
-    header: "Jurisdiction",
-  },
-  {
-    accessorKey: "miles",
-    header: "Miles",
-  },
-  {
-    accessorKey: "gallons",
-    header: "Gallons",
-  },
-]
-
-// Define columns for IFTA reports
-const reportColumns: ColumnDef<IFTAReport>[] = [
-  {
-    accessorKey: "quarter",
-    header: "Quarter",
-  },
-  {
-    accessorKey: "year",
-    header: "Year",
-  },
-  {
-    accessorKey: "totalMiles",
-    header: "Total Miles",
-  },
-  {
-    accessorKey: "totalGallons",
-    header: "Total Gallons",
-  },
-  {
-    accessorKey: "avgMpg",
-    header: "Avg MPG",
-  },
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => {
-      const status = row.getValue("status") as string
-      return (
-        <div
-          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-            status === "Filed"
-              ? "bg-green-100 text-green-800"
-              : status === "Draft"
-                ? "bg-yellow-100 text-yellow-800"
-                : "bg-red-100 text-red-800"
-          }`}
-        >
-          {status}
-        </div>
-      )
-    },
-  },
-  {
-    accessorKey: "dueDate",
-    header: "Due Date",
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => {
-      const status = row.getValue("status") as string
-      return (
-        <Button variant="ghost" size="sm">
-          {status === "Filed" ? "View" : "Edit"}
-        </Button>
-      )
-    },
-  },
-]
 
 // Mock data for IFTA trips
 const iftaTripsData: IFTATrip[] = [
@@ -333,7 +215,7 @@ export default function IFTAPage() {
             </CardHeader>
             <CardContent className="overflow-x-auto">
               <Suspense fallback={<div>Loading IFTA trip data...</div>}>
-                <DataTable columns={tripColumns} data={iftaTripsData} />
+                <IftaTripTableClient data={iftaTripsData} />
               </Suspense>
             </CardContent>
           </Card>
@@ -346,7 +228,7 @@ export default function IFTAPage() {
             </CardHeader>
             <CardContent className="overflow-x-auto">
               <Suspense fallback={<div>Loading IFTA reports...</div>}>
-                <DataTable columns={reportColumns} data={iftaReportsData} />
+                <IftaReportTableClient data={iftaReportsData} />
               </Suspense>
             </CardContent>
           </Card>
