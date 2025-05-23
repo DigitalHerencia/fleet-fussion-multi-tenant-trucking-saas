@@ -1,63 +1,73 @@
-"use client"
 
-import type React from "react"
+// app/login/page.tsx
+'use client';
+export const dynamic = 'force-dynamic';
 
-import { useState, useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import { useAuth } from "@/lib/auth-context"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { AlertCircle } from "lucide-react"
+import React, { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useAuth } from "@/lib/auth-context";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 export default function LoginPage() {
-  const [username, setUsername] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const { login, userId } = useAuth()
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const redirectPath = searchParams.get("redirect") || "/dashboard"
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const { login, userId } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectPath = searchParams.get("redirect") || "/dashboard";
 
   // If already logged in, redirect
   useEffect(() => {
     if (userId) {
-      router.push(redirectPath)
+      router.push(redirectPath);
     }
-  }, [userId, router, redirectPath])
+  }, [userId, router, redirectPath]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError("")
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
 
     try {
-      const success = await login(username, password)
+      const success = await login(username, password);
       if (success) {
-        // Add a small delay to ensure cookie is set before redirect
+        // Small delay to ensure cookie is set before redirect
         setTimeout(() => {
-          router.push(redirectPath)
-        }, 100)
+          router.push(redirectPath);
+        }, 100);
       } else {
-        setError("Invalid username or password. Try using test/test")
+        setError("Invalid username or password. Try using test/test");
       }
     } catch (err) {
-      console.error("Login error:", err)
-      setError("An error occurred during login")
+      console.error("Login error:", err);
+      setError("An error occurred during login");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">Login to FleetFusion</CardTitle>
-          <CardDescription>Enter your credentials to access your account</CardDescription>
+          <CardDescription>
+            Enter your credentials to access your account
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {error && (
@@ -97,9 +107,12 @@ export default function LoginPage() {
           </div>
         </CardContent>
         <CardFooter className="flex justify-center">
-          <p className="text-center text-sm text-muted-foreground">&copy; 2025 FleetFusion. All rights reserved.</p>
+          <p className="text-center text-sm text-muted-foreground">
+            &copy; 2025 FleetFusion. All rights reserved.
+          </p>
         </CardFooter>
       </Card>
     </div>
-  )
+  );
 }
+
