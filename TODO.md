@@ -1,4 +1,4 @@
-# ✅ **FleetFusion Project Setup TODO (VS Code Copilot - Agentic Mode)**
+# ✅ **FleetFusion Project Setup TODO**
 
 ---
 
@@ -14,7 +14,7 @@ Ensure a complete integration using Clerk for Attribute-Based Access Control (AB
 
 ### 1️⃣ **Setup and Scaffolding:**
 
-* **Restructure your directory clearly by domain**, following this precise structure:
+* **Restructure my directory clearly by domain**, adapting this structure to align with modern standards:
 
   ```
   /

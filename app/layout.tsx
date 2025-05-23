@@ -1,7 +1,8 @@
 import type React from "react"
 import "@/app/globals.css"
-import { AuthProvider } from "@/lib/auth-context"
+import { AuthProvider } from "@/lib/auth/context"
 import { ThemeProvider } from "@/components/theme-provider"
+import { ClerkProvider } from "@clerk/nextjs"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 
@@ -18,20 +19,21 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  // Remove client-side hack. Navigation is rendered based on route segment in each layout/page.
   return (
-    <html lang="en">
-      <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <AuthProvider>
-            {/*
-              Navigation is now handled in feature layouts (e.g., /dashboard/layout.tsx) or per-page as needed.
-              Do not render MobileNav or PublicNav globally here.
-            */}
-            {children}
-          </AuthProvider>
-        </ThemeProvider>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en">
+        <body className={inter.className}>
+          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+            <AuthProvider>
+              {/*
+                Navigation is now handled in feature layouts (e.g., /dashboard/layout.tsx) or per-page as needed.
+                Do not render MobileNav or PublicNav globally here.
+              */}
+              {children}
+            </AuthProvider>
+          </ThemeProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   )
 }

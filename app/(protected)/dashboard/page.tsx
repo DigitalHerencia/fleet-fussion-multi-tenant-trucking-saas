@@ -1,6 +1,6 @@
 "use client"
 
-import { useAuth } from "@/lib/auth-context"
+import { useAuth } from "@/lib/auth/context"
 import { DashboardCards } from "@/components/dashboard/dashboard-cards"
 import { Loader2, TrendingUp, AlertTriangle, Calendar, Plus } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
