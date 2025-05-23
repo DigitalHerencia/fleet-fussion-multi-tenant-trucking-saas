@@ -1,11 +1,10 @@
-import { MainNav } from "@/components/main-nav"
 
 export default function ServicesPage() {
   return (
     <>
       <header className="sticky top-0 z-40 border-b bg-background">
         <div className="container flex h-16 items-center px-4 md:px-6">
-          <MainNav />
+          
         </div>
       </header>
       <main className="container mx-auto py-12 px-4 md:px-8">

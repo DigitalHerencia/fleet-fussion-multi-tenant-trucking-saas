@@ -115,10 +115,25 @@ export function DriverDetailsDialog({ driver, recentLoads = [], isOpen, onClose 
         </DialogHeader>
 
         <Tabs defaultValue="details" className="w-full">
-          <TabsList className="grid grid-cols-3 w-full">
-            <TabsTrigger value="details">Details</TabsTrigger>
-            <TabsTrigger value="loads">Loads</TabsTrigger>
-            <TabsTrigger value="documents">Documents</TabsTrigger>
+          <TabsList className="grid grid-cols-3 w-full justify-between bg-muted/50 p-1 rounded-lg">
+            <TabsTrigger 
+              value="details" 
+              className="data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm font-medium"
+            >
+              Details
+            </TabsTrigger>
+            <TabsTrigger 
+              value="loads" 
+              className="data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm font-medium"
+            >
+              Loads
+            </TabsTrigger>
+            <TabsTrigger 
+              value="documents" 
+              className="data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm font-medium"
+            >
+              Documents
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="details" className="space-y-4 mt-4">

@@ -130,7 +130,6 @@ export default function DriversPage() {
     const timer = setTimeout(() => {
       setIsLoading(false)
     }, 1000)
-
     return () => clearTimeout(timer)
   }, [])
 
@@ -153,90 +152,76 @@ export default function DriversPage() {
   )
 
   if (!company) {
-    return <div>Company not found. Please create a company first.</div>
+    return <div className="text-[hsl(var(--muted-foreground))]">Company not found. Please create a company first.</div>
   }
 
   return (
-        <><><Link href="/drivers/new">
-      <Button>
-        <Plus className="mr-2 h-4 w-4" />
-        Add Driver
-      </Button>
-    </Link>
+    <div className="drivers-page">
+      <div className="space-y-2 mb-2 mt-14">
+        <h1 className="page-title">Driver Roster</h1>
+        <p className="page-subtitle">Manage your driver roster</p>
+      </div>
       <div className="space-y-6 mt-6">
         <div className="flex flex-col sm:flex-row gap-4">
-          <Skeleton className="h-10 flex-1" />
-          <Skeleton className="h-10 w-full sm:w-10" />
-        </div>
-        <Skeleton className="h-10 w-full" />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          { Array( 6 )
-            .fill( 0 )
-            .map( ( _, i ) => (
-              <Skeleton key={ i } className="h-48 w-full" />
-            ) ) }
-        </div>
-      </div>
-    </><div className="space-y-6 mt-6">
-        <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-[hsl(var(--muted-foreground))]" />
             <Input
               type="search"
               placeholder="Search drivers..."
               className="pl-8 w-full"
-              value={ searchQuery }
-              onChange={ ( e ) => setSearchQuery( e.target.value ) } />
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
-          <Button variant="outline" size="icon" className="w-full sm:w-auto h-10 sm:h-10 sm:aspect-square">
+          <Button variant="outline" size="icon" className="btn btn-outline w-full sm:w-auto h-10 sm:h-10 sm:aspect-square">
             <Filter className="h-4 w-4" />
             <span className="sm:hidden ml-2">Filter</span>
           </Button>
         </div>
-
         <Tabs defaultValue="all" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="tabs grid w-full grid-cols-3">
             <TabsTrigger value="all">
-              All <Badge className="ml-2 bg-primary">{ filteredDrivers.length }</Badge>
+              All <Badge className="badge ml-2">{filteredDrivers.length}</Badge>
             </TabsTrigger>
             <TabsTrigger value="active">
-              Active <Badge className="ml-2 bg-green-500">{ filteredActiveDrivers.length }</Badge>
+              Active <Badge className="badge badge-success ml-2">{filteredActiveDrivers.length}</Badge>
             </TabsTrigger>
             <TabsTrigger value="inactive">
-              Inactive <Badge className="ml-2 bg-red-500">{ filteredInactiveDrivers.length }</Badge>
+              Inactive <Badge className="badge badge-danger ml-2">{filteredInactiveDrivers.length}</Badge>
             </TabsTrigger>
           </TabsList>
           <TabsContent value="all" className="mt-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              { filteredDrivers.map( ( driver ) => (
-                <DriverCard key={ driver.id } driver={ driver } onClick={ () => handleDriverClick( driver ) } />
-              ) ) }
+              {filteredDrivers.map((driver) => (
+                <DriverCard key={driver.id} driver={driver} onClick={() => handleDriverClick(driver)} />
+              ))}
             </div>
           </TabsContent>
           <TabsContent value="active" className="mt-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              { filteredActiveDrivers.map( ( driver ) => (
-                <DriverCard key={ driver.id } driver={ driver } onClick={ () => handleDriverClick( driver ) } />
-              ) ) }
+              {filteredActiveDrivers.map((driver) => (
+                <DriverCard key={driver.id} driver={driver} onClick={() => handleDriverClick(driver)} />
+              ))}
             </div>
           </TabsContent>
           <TabsContent value="inactive" className="mt-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              { filteredInactiveDrivers.map( ( driver ) => (
-                <DriverCard key={ driver.id } driver={ driver } onClick={ () => handleDriverClick( driver ) } />
-              ) ) }
+              {filteredInactiveDrivers.map((driver) => (
+                <DriverCard key={driver.id} driver={driver} onClick={() => handleDriverClick(driver)} />
+              ))}
             </div>
           </TabsContent>
         </Tabs>
-
-        { selectedDriver && (
+        {selectedDriver && (
           <DriverDetailsDialog
-            driver={ selectedDriver }
-            recentLoads={ mockRecentLoads }
-            isOpen={ isDetailsOpen }
-            onClose={ () => setIsDetailsOpen( false ) } />
-        ) }
-      </div></>
+            driver={selectedDriver}
+            recentLoads={mockRecentLoads}
+            isOpen={isDetailsOpen}
+            onClose={() => setIsDetailsOpen(false)}
+          />
+        )}
+      </div>
+    </div>
   )
 }
-  
+

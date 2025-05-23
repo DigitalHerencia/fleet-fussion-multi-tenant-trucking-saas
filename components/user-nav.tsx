@@ -29,34 +29,43 @@ export function UserNav() {
   }
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-2 sm:gap-4">
       <ThemeToggle />
-      <Button variant="ghost" className="relative h-8 rounded-full">
-        {company.name}
-      </Button>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-            <Avatar className="h-8 w-8">
+          <button
+            className="relative flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background shadow-sm transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+            aria-label="Open user menu"
+          >
+            <Avatar className="h-10 w-10">
               <AvatarImage src="/placeholder-user.png" alt={userId.name} />
               <AvatarFallback>
-                <User className="h-4 w-4" />
+                <User className="h-5 w-5 text-muted-foreground" />
               </AvatarFallback>
             </Avatar>
-          </Button>
+            {/* Status dot */}
+            <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full border-2 border-background bg-green-500" />
+          </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56" align="end" forceMount>
-          <DropdownMenuLabel className="font-normal">
-            <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">{userId.name}</p>
-              <p className="text-xs leading-none text-muted-foreground">{userId.email}</p>
+        <DropdownMenuContent className="w-64 p-2" align="end" forceMount>
+          <div className="flex items-center gap-3 px-2 py-2">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src="/placeholder-user.png" alt={userId.name} />
+              <AvatarFallback>
+                <User className="h-5 w-5 text-muted-foreground" />
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col min-w-0">
+              <span className="truncate text-sm font-semibold leading-tight">{userId.name}</span>
+              <span className="truncate text-xs text-muted-foreground">{userId.email}</span>
+              <span className="mt-1 inline-block rounded bg-accent px-2 py-0.5 text-xs font-medium text-accent-foreground">{company.name}</span>
             </div>
-          </DropdownMenuLabel>
+          </div>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>Profile</DropdownMenuItem>
-          <DropdownMenuItem>Settings</DropdownMenuItem>
+          <DropdownMenuItem className="rounded-md px-3 py-2 hover:bg-accent/60 transition-colors cursor-pointer">Profile</DropdownMenuItem>
+          <DropdownMenuItem className="rounded-md px-3 py-2 hover:bg-accent/60 transition-colors cursor-pointer">Settings</DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleLogout}>Log out</DropdownMenuItem>
+          <DropdownMenuItem onClick={handleLogout} className="rounded-md px-3 py-2 text-destructive hover:bg-destructive/10 cursor-pointer">Log out</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

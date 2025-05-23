@@ -5,9 +5,12 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { LoadCard } from "@/components/dispatch/load-card"
+import { LoadForm } from "@/components/dispatch/load-form"
 import { LoadDetailsDialog } from "@/components/dispatch/load-details-dialog"
 import { PlusCircle, Filter } from "lucide-react"
 import Link from "next/link"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
+import type { ReactNode } from "react"
 
 interface Driver {
   id: string
@@ -66,6 +69,8 @@ interface DispatchBoardProps {
 export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) {
   const [selectedLoad, setSelectedLoad] = useState<Load | null>(null)
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
+  const [isFormOpen, setIsFormOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState("all")
 
   const pendingLoads = loads.filter((load) => load.status === "pending")
   const assignedLoads = loads.filter((load) => load.status === "assigned")
@@ -77,40 +82,34 @@ export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) 
     setIsDetailsOpen(true)
   }
 
+  // Map vehicles to match LoadDetailsDialog expected type
+  const mappedVehicles = vehicles.map((v) => ({
+    ...v,
+    make: v.make as ReactNode,
+    model: v.model ?? "",
+  }))
+
   return (
     <div className="space-y-6 mt-6">
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-        <div className="w-full sm:w-auto">
-          <Button variant="outline" size="sm" className="w-full sm:w-auto">
-            <Filter className="h-4 w-4 mr-2" />
-            Filter
-          </Button>
-        </div>
-        <Link href="/dispatch/new" className="w-full sm:w-auto">
-          <Button size="sm" className="w-full sm:w-auto">
-            <PlusCircle className="h-4 w-4 mr-2" />
-            New Load
-          </Button>
-        </Link>
-      </div>
+    
 
-      <Tabs defaultValue="all" className="w-full">
+      <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="overflow-x-auto">
-          <TabsList className="grid grid-cols-5 w-full min-w-[500px]">
-            <TabsTrigger value="all">
-              All <Badge className="ml-2 bg-primary">{loads.length}</Badge>
+          <TabsList className="grid grid-cols-5 w-full min-w-[500px] bg-zinc-800 rounded-md p-1">
+            <TabsTrigger value="all" className={activeTab === "all" ? "font-bold border-b-2 border-primary bg-zinc-900" : ""}>
+              All <Badge className={`ml-2 ${activeTab === "all" ? "bg-primary text-white" : "bg-zinc-900 text-white"}`}>{loads.length}</Badge>
             </TabsTrigger>
-            <TabsTrigger value="pending">
-              Pending <Badge className="ml-2 bg-yellow-500">{pendingLoads.length}</Badge>
+            <TabsTrigger value="pending" className={activeTab === "pending" ? "font-bold border-b-2 border-yellow-500 bg-zinc-900" : ""}>
+              Pending <Badge className={`ml-2 ${activeTab === "pending" ? "bg-yellow-500 text-black" : "bg-yellow-500/30 text-yellow-200"}`}>{pendingLoads.length}</Badge>
             </TabsTrigger>
-            <TabsTrigger value="assigned">
-              Assigned <Badge className="ml-2 bg-blue-500">{assignedLoads.length}</Badge>
+            <TabsTrigger value="assigned" className={activeTab === "assigned" ? "font-bold border-b-2 border-blue-500 bg-zinc-900" : ""}>
+              Assigned <Badge className={`ml-2 ${activeTab === "assigned" ? "bg-blue-500 text-white" : "bg-blue-500/30 text-blue-200"}`}>{assignedLoads.length}</Badge>
             </TabsTrigger>
-            <TabsTrigger value="in_transit">
-              In Transit <Badge className="ml-2 bg-indigo-500">{inTransitLoads.length}</Badge>
+            <TabsTrigger value="in_transit" className={activeTab === "in_transit" ? "font-bold border-b-2 border-indigo-500 bg-zinc-900" : ""}>
+              In Transit <Badge className={`ml-2 ${activeTab === "in_transit" ? "bg-indigo-500 text-white" : "bg-indigo-500/30 text-indigo-200"}`}>{inTransitLoads.length}</Badge>
             </TabsTrigger>
-            <TabsTrigger value="completed">
-              Completed <Badge className="ml-2 bg-green-500">{completedLoads.length}</Badge>
+            <TabsTrigger value="completed" className={activeTab === "completed" ? "font-bold border-b-2 border-green-500 bg-zinc-900" : ""}>
+              Completed <Badge className={`ml-2 ${activeTab === "completed" ? "bg-green-500 text-white" : "bg-green-500/30 text-green-200"}`}>{completedLoads.length}</Badge>
             </TabsTrigger>
           </TabsList>
         </div>
@@ -175,6 +174,26 @@ export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) 
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Load Form Dialog for New Load */}
+      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <LoadForm drivers={drivers} vehicles={vehicles} />
+        </DialogContent>
+      </Dialog>
+      {/* Load Details Dialog for selected load */}
+      {selectedLoad && (
+        <LoadDetailsDialog
+          load={selectedLoad}
+          drivers={drivers}
+          vehicles={mappedVehicles}
+          isOpen={isDetailsOpen}
+          onClose={() => {
+            setIsDetailsOpen(false)
+            setSelectedLoad(null)
+          }}
+        />
+      )}
     </div>
   )
 }

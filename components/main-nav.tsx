@@ -1,29 +1,28 @@
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { Home, Truck, Users, ClipboardList, FileText, BarChart2, Settings, ChevronLeft, ChevronRight, Activity } from "lucide-react"
-import { useState } from "react"
 import { Button } from "./ui/button"
 
 interface MainNavProps {
   className?: string
+  collapsed: boolean
+  setCollapsed: (collapsed: boolean) => void
 }
 
-export function MainNav({ className }: MainNavProps) {
-  const [collapsed, setCollapsed] = useState(false)
-
+export function MainNav({ className, collapsed, setCollapsed }: MainNavProps) {
   return (
     <aside
       className={cn(
         // Modern glassmorphism sidebar
-        "fixed left-0 top-16 bottom-0 z-40 flex flex-col border-r border-zinc-800/80 bg-black/70 backdrop-blur-lg shadow-xl transition-all duration-300 ease-in-out",
-        collapsed ? "w-14" : "w-52",
+        "fixed left-0 top-16 bottom-0 z-40 flex flex-col border-r border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar-background))] backdrop-blur-lg shadow-xl transition-all duration-300 ease-in-out",
+        collapsed ? "w-20" : "w-72",
         className
       )}
       data-collapsed={collapsed}
     >
       <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
         {/* Navigation Links */}
-        <nav className="flex-1 px-2 py-4 space-y-1">
+        <nav className="flex-1 px-8 py-4 mt-6 space-y-4">
           <SidebarLink href="/dashboard" icon={<Home />} collapsed={collapsed}>Dashboard</SidebarLink>
           <SidebarLink href="/dispatch" icon={<ClipboardList />} collapsed={collapsed}>Dispatch</SidebarLink>
           <SidebarLink href="/drivers" icon={<Users />} collapsed={collapsed}>Drivers</SidebarLink>
@@ -34,7 +33,7 @@ export function MainNav({ className }: MainNavProps) {
         </nav>
 
         {/* Bottom Settings Link */}
-        <div className="px-2 py-4 border-t border-zinc-800/60">
+        <div className="px-2 py-4 border-t border-[hsl(var(--sidebar-border))]/60">
           <SidebarLink href="/settings" icon={<Settings />} collapsed={collapsed}>Settings</SidebarLink>
         </div>
 
@@ -42,7 +41,7 @@ export function MainNav({ className }: MainNavProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="absolute -right-4 top-6 h-8 w-8 rounded-full border border-zinc-800 bg-black/80 shadow-md hover:bg-zinc-900"
+          className="absolute -right-4 top-3 h-8 w-8 rounded-full border border-[hsl(var(--sidebar-border))] bg-black shadow-md hover:bg-[hsl(var(--sidebar-accent))]"
           onClick={() => setCollapsed(!collapsed)}
         >
           {collapsed ? (

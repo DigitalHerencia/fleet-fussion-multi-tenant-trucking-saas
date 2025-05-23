@@ -3,6 +3,7 @@
 @import "tailwindcss";
 
 :root {
+    /* Core tokens */
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
     --card: 0 0% 100%;
@@ -10,6 +11,9 @@
     --secondary: 0 0% 96.1%;
     --border: 0 0% 89.8%;
     --radius: 0.5rem;
+    --shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 4px 24px 0 rgba(0, 0, 0, 0.16);
+    /* Chart colors */
     --chart-1: 221 83% 53%;
     --chart-2: 162 70% 51%;
     --chart-3: 41 97% 56%;
@@ -18,6 +22,11 @@
     --chart-6: 0 78% 63%;
     --chart-7: 192 100% 44%;
     --chart-8: 120 61% 50%;
+    /* Status colors */
+    --success: 142 71% 45%;
+    --warning: 41 97% 56%;
+    --danger: 0 78% 63%;
+    --info: 221 83% 53%;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -54,11 +63,229 @@
         --sidebar-accent-foreground: 240 4.8% 95.9%;
         --sidebar-border: 240 3.7% 15.9%;
         --sidebar-ring: 217.2 91.2% 59.8%;
+        --success: 142 71% 45%;
+        --warning: 41 97% 56%;
+        --danger: 0 78% 63%;
+        --info: 221 83% 53%;
     }
+}
 
-    body {
-        background-color: var(--background);
-        color: var(--foreground);
-        font-family: system-ui, sans-serif;
+body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: "Inter", system-ui, sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+}
+
+/* --- Card & Section Utility --- */
+.card {
+    background: hsl(var(--card));
+    color: hsl(var(--foreground));
+    border-radius: var(--radius);
+    border: 1px solid hsl(var(--border));
+    box-shadow: var(--shadow);
+    padding: 1.5rem;
+}
+.card-lg {
+    padding: 2.5rem 2rem;
+    box-shadow: var(--shadow-lg);
+}
+.card-header {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+.card-metric {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+.card-subtext {
+    font-size: 0.95rem;
+    color: hsl(var(--muted-foreground));
+}
+
+/* --- Button Utility --- */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: calc(var(--radius) - 2px);
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 0.5rem 1.25rem;
+    transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+    border: none;
+    cursor: pointer;
+}
+.btn-primary {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+}
+.btn-primary:hover {
+    background: hsl(var(--primary) / 0.92);
+}
+.btn-outline {
+    background: transparent;
+    color: hsl(var(--primary));
+    border: 1.5px solid hsl(var(--primary));
+}
+.btn-outline:hover {
+    background: hsl(var(--primary) / 0.08);
+}
+.btn-danger {
+    background: hsl(var(--danger));
+    color: #fff;
+}
+
+/* --- Badge Utility --- */
+.badge {
+    display: inline-block;
+    border-radius: 9999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.15em 0.75em;
+    background: hsl(var(--secondary));
+    color: hsl(var(--primary));
+}
+.badge-success {
+    background: hsl(var(--success));
+    color: #fff;
+}
+.badge-warning {
+    background: hsl(var(--warning));
+    color: #fff;
+}
+.badge-danger {
+    background: hsl(var(--danger));
+    color: #fff;
+}
+.badge-info {
+    background: hsl(var(--info));
+    color: #fff;
+}
+
+/* --- Table Utility --- */
+.table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: hsl(var(--card));
+    border-radius: var(--radius);
+    overflow: hidden;
+    font-size: 1rem;
+}
+.table th,
+.table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid hsl(var(--border));
+}
+.table th {
+    font-weight: 600;
+    background: hsl(var(--secondary));
+    color: hsl(var(--primary));
+}
+.table tr:last-child td {
+    border-bottom: none;
+}
+
+/* --- Tabs Utility --- */
+.tabs {
+    display: flex;
+    gap: 1.5rem;
+    border-bottom: 2px solid hsl(var(--border));
+    margin-bottom: 1.5rem;
+}
+.tab {
+    font-size: 1rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    padding-bottom: 0.5rem;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+}
+.tab.active {
+    color: hsl(var(--primary));
+    border-bottom: 2px solid hsl(var(--primary));
+}
+
+/* --- Page Section Utility --- */
+.analytics-page {
+    background: hsl(var(--background));
+}
+.compliance-page {
+    background: hsl(var(--background));
+}
+.dashboard-page {
+    background: hsl(var(--background));
+}
+.dispatch-page {
+    background: hsl(var(--background));
+}
+.drivers-page {
+    background: hsl(var(--background));
+}
+.ifta-page {
+    background: hsl(var(--background));
+}
+.settings-page {
+    background: hsl(var(--background));
+}
+.vehicles-page {
+    background: hsl(var(--background));
+}
+
+/* --- Headings & Typography --- */
+.page-title {
+    font-size: 2.25rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.5rem;
+}
+.page-subtitle {
+    font-size: 1.15rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    margin-bottom: 2rem;
+}
+.section-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+/* --- Spacing Utility --- */
+.section {
+    margin-bottom: 2.5rem;
+}
+
+/* --- Misc Utility --- */
+.shadow {
+    box-shadow: var(--shadow);
+}
+.shadow-lg {
+    box-shadow: var(--shadow-lg);
+}
+.border {
+    border: 1px solid hsl(var(--border));
+}
+.rounded {
+    border-radius: var(--radius);
+}
+
+/* --- Responsive Utility --- */
+@media (max-width: 768px) {
+    .card,
+    .card-lg {
+        padding: 1rem;
+    }
+    .page-title {
+        font-size: 1.5rem;
+    }
+    .section-title {
+        font-size: 1.1rem;
     }
 }

@@ -15,26 +15,23 @@ export function IftaDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">IFTA Management</h2>
-          <p className="text-muted-foreground">Track fuel purchases, mileage, and generate IFTA reports</p>
+      <div className="flex flex-row flex-wrap items-center justify-between gap-6">
+        <div className="flex flex-col gap-1 min-w-0">
+          <h2 className="text-3xl font-bold tracking-tight whitespace-nowrap">IFTA Management</h2>
+          <p className="text-muted-foreground whitespace-nowrap">Track and manage International Fuel Tax Agreement reporting</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Select value={quarter} onValueChange={setQuarter}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Select quarter" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="2023-Q2">2023 - Q2</SelectItem>
-              <SelectItem value="2023-Q1">2023 - Q1</SelectItem>
-              <SelectItem value="2022-Q4">2022 - Q4</SelectItem>
-              <SelectItem value="2022-Q3">2022 - Q3</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button>
-            <FileText className="mr-2 h-4 w-4" />
-            Generate Report
+        <div className="flex flex-col gap-2 w-full max-w-xs sm:w-auto">
+          <Button variant="outline" size="sm" className="w-full">
+            <span className="flex items-center justify-center w-full">
+              <Calendar className="mr-2 h-4 w-4" />
+              Select Period
+            </span>
+          </Button>
+          <Button size="sm" className="w-full">
+            <span className="flex items-center justify-center w-full">
+              <FileText className="mr-2 h-4 w-4" />
+              Generate Report
+            </span>
           </Button>
         </div>
       </div>

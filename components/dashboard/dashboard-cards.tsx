@@ -1,19 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import {
-  Truck,
-  Users,
-  Package,
-  Calendar,
-  AlertTriangle,
-  DollarSign,
-  TrendingUp,
-  Clock,
-  ArrowUpRight,
-  Activity,
-} from "lucide-react"
-import { cn } from "@/lib/utils"
+import { Truck, Users, Package, DollarSign, TrendingUp, Wrench, AlertTriangle, CheckCircle, Clock } from "lucide-react"
 
 interface DashboardCardsProps {
   kpis: {
@@ -39,250 +26,181 @@ export function DashboardCards({ kpis }: DashboardCardsProps) {
   const inspectionSuccessRate = ((kpis.recentInspections - kpis.failedInspections) / kpis.recentInspections) * 100
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mt-2">
-      {/* Active Vehicles Card */}
-      <Card className="group transition-all duration-200 bg-white/50 dark:bg-zinc-900/50 border-zinc-200/80 dark:border-zinc-800/80 hover:shadow-lg hover:bg-white dark:hover:bg-zinc-900">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-          <div className="space-y-1">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Active Vehicles</CardTitle>
-            <div className="flex items-center space-x-2">
-              <div className="text-3xl font-bold tracking-tight">{kpis.activeVehicles}</div>
-              <Badge variant="secondary" className="text-xs">
-                <TrendingUp className="w-3 h-3 mr-1" />
-                +2.1%
-              </Badge>
-            </div>
-          </div>
-          <div className="h-12 w-12 rounded-full bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-            <Truck className="h-6 w-6 text-blue-700 dark:text-blue-400" />
-          </div>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-0">
+      {/* Active Vehicles */}
+      <Card className="bg-black border-none shadow-lg">
+        <CardHeader className="pb-2 flex flex-row items-center justify-between">
+          <CardTitle className="text-base font-semibold text-zinc-100 flex items-center gap-2">
+            <Truck className="h-5 w-5 text-blue-400" />
+            Active Vehicles
+          </CardTitle>
         </CardHeader>
-        <CardContent className="pt-0">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Maintenance due</span>
-            <span className="font-medium text-amber-600">{kpis.upcomingMaintenance}</span>
+        <CardContent>
+          <div className="text-3xl font-bold text-white">{kpis.activeVehicles}</div>
+          <div className="text-xs text-zinc-400 mt-1">
+            Maintenance due:{" "}
+            <span className="text-orange-400 font-semibold">3</span>
           </div>
-          <Progress value={75} className="mt-2 h-2" />
         </CardContent>
       </Card>
-
-      {/* Active Drivers Card */}
-      <Card className="group transition-all duration-200 bg-white/50 dark:bg-zinc-900/50 border-zinc-200/80 dark:border-zinc-800/80 hover:shadow-lg hover:bg-white dark:hover:bg-zinc-900">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-          <div className="space-y-1">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Active Drivers</CardTitle>
-            <div className="flex items-center space-x-2">
-              <div className="text-3xl font-bold tracking-tight">{kpis.activeDrivers}</div>
-              <Badge variant="secondary" className="text-xs">
-                <TrendingUp className="w-3 h-3 mr-1" />
-                +5.2%
-              </Badge>
-            </div>
-          </div>
-          <div className="h-12 w-12 rounded-full bg-green-50 dark:bg-green-950/50 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-            <Users className="h-6 w-6 text-green-700 dark:text-green-400" />
-          </div>
+      {/* Active Drivers */}
+      <Card className="bg-black border-none shadow-lg">
+        <CardHeader className="pb-2 flex flex-row items-center justify-between">
+          <CardTitle className="text-base font-semibold text-zinc-100 flex items-center gap-2">
+            <Users className="h-5 w-5 text-green-400" />
+            Active Drivers
+          </CardTitle>
         </CardHeader>
-        <CardContent className="pt-0">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Utilization rate</span>
-            <span className="font-medium text-green-600">{utilizationPercentage.toFixed(1)}%</span>
+        <CardContent>
+          <div className="text-3xl font-bold text-white">{kpis.activeDrivers}</div>
+          <div className="text-xs text-zinc-400 mt-1">Utilization rate</div>
+          <Progress
+            value={utilizationPercentage}
+            className="h-2 mt-2 bg-zinc-800"
+          />
+          <div className="text-xs text-green-400 mt-1">
+            {utilizationPercentage.toFixed(1)}%
           </div>
-          <Progress value={utilizationPercentage} className="mt-2 h-2" />
         </CardContent>
       </Card>
-
-      {/* Active Loads Card */}
-      <Card className="group transition-all duration-200 bg-white/50 dark:bg-zinc-900/50 border-zinc-200/80 dark:border-zinc-800/80 hover:shadow-lg hover:bg-white dark:hover:bg-zinc-900">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-          <div className="space-y-1">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Active Loads</CardTitle>
-            <div className="flex items-center space-x-2">
-              <div className="text-3xl font-bold tracking-tight">{kpis.totalLoads}</div>
-              <Badge variant="secondary" className="text-xs">
-                <Activity className="w-3 h-3 mr-1" />
-                Live
-              </Badge>
-            </div>
-          </div>
-          <div className="h-12 w-12 rounded-full bg-purple-50 dark:bg-purple-950/50 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-            <Package className="h-6 w-6 text-purple-700 dark:text-purple-400" />
-          </div>
+      {/* Active Loads */}
+      <Card className="bg-black border-none shadow-lg">
+        <CardHeader className="pb-2 flex flex-row items-center justify-between">
+          <CardTitle className="text-base font-semibold text-zinc-100 flex items-center gap-2">
+            <Package className="h-5 w-5 text-purple-400" />
+            Active Loads
+          </CardTitle>
         </CardHeader>
-        <CardContent className="pt-0">
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Completed</span>
-              <span className="font-medium text-green-600">{kpis.completedLoads}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">In Transit</span>
-              <span className="font-medium text-blue-600">{kpis.inTransitLoads}</span>
-            </div>
-          </div>
-          <Progress value={completionRate} className="mt-2 h-2" />
-        </CardContent>
-      </Card>
-
-      {/* Revenue Card */}
-      <Card className="group transition-all duration-200 bg-white/50 dark:bg-zinc-900/50 border-zinc-200/80 dark:border-zinc-800/80 hover:shadow-lg hover:bg-white dark:hover:bg-zinc-900">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-          <div className="space-y-1">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Revenue (30d)</CardTitle>
-            <div className="flex items-center space-x-2">
-              <div className="text-3xl font-bold tracking-tight">${(kpis.totalRevenue / 1000).toFixed(0)}k</div>
-              <Badge
-                variant="default"
-                className="text-xs bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400"
-              >
-                <ArrowUpRight className="w-3 h-3 mr-1" />
-                +12.5%
-              </Badge>
-            </div>
-          </div>
-          <div className="h-12 w-12 rounded-full bg-emerald-50 dark:bg-emerald-950/50 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-            <DollarSign className="h-6 w-6 text-emerald-700 dark:text-emerald-400" />
-          </div>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Per mile avg</span>
-            <span className="font-medium text-emerald-600">${kpis.revenuePerMile}</span>
-          </div>
-          <div className="mt-2 text-xs text-muted-foreground">Target: $2.50/mile</div>
-        </CardContent>
-      </Card>
-
-      {/* Total Miles Card */}
-      <Card className="group transition-all duration-200 bg-white/50 dark:bg-zinc-900/50 border-zinc-200/80 dark:border-zinc-800/80 hover:shadow-lg hover:bg-white dark:hover:bg-zinc-900">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-          <div className="space-y-1">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Miles (30d)</CardTitle>
-            <div className="flex items-center space-x-2">
-              <div className="text-3xl font-bold tracking-tight">{(kpis.totalMiles / 1000).toFixed(1)}k</div>
-              <Badge variant="secondary" className="text-xs">
-                <TrendingUp className="w-3 h-3 mr-1" />
-                +8.3%
-              </Badge>
-            </div>
-          </div>
-          <div className="h-12 w-12 rounded-full bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-            <TrendingUp className="h-6 w-6 text-orange-600 dark:text-orange-400" />
-          </div>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Per vehicle avg</span>
-            <span className="font-medium">
-              {Math.round(kpis.totalMiles / (kpis.activeVehicles || 1)).toLocaleString()}
+        <CardContent>
+          <div className="text-3xl font-bold text-white">{kpis.totalLoads}</div>
+          <div className="text-xs text-zinc-400 mt-1">
+            Completed:{" "}
+            <span className="text-emerald-400 font-semibold">
+              {kpis.completedLoads}
+            </span>{" "}
+            | In Transit:{" "}
+            <span className="text-blue-400 font-semibold">
+              {kpis.inTransitLoads}
             </span>
           </div>
-          <div className="mt-2 text-xs text-muted-foreground">Monthly target: 25k miles</div>
+          <div className="text-xs text-zinc-400 mt-1">Completion rate</div>
+          <Progress
+            value={completionRate}
+            className="h-2 mt-2 bg-zinc-800"
+          />
+          <div className="text-xs text-emerald-400 mt-1">
+            {completionRate.toFixed(1)}%
+          </div>
         </CardContent>
       </Card>
-
-      {/* Inspections Card */}
-      <Card className="group transition-all duration-200 bg-white/50 dark:bg-zinc-900/50 border-zinc-200/80 dark:border-zinc-800/80 hover:shadow-lg hover:bg-white dark:hover:bg-zinc-900">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-          <div className="space-y-1">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Inspections (30d)</CardTitle>
-            <div className="flex items-center space-x-2">
-              <div className="text-3xl font-bold tracking-tight">{kpis.recentInspections}</div>
-              <Badge
-                variant={kpis.failedInspections > 0 ? "destructive" : "default"}
-                className={cn(
-                  "text-xs",
-                  kpis.failedInspections === 0 &&
-                    "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400",
-                )}
-              >
-                {kpis.failedInspections === 0 ? "Perfect" : `${kpis.failedInspections} Failed`}
-              </Badge>
-            </div>
-          </div>
-          <div
-            className={cn(
-              "h-12 w-12 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300",
-              kpis.failedInspections > 0 ? "bg-red-100 dark:bg-red-900/20" : "bg-green-100 dark:bg-green-900/20",
-            )}
-          >
-            <AlertTriangle
-              className={cn(
-                "h-6 w-6",
-                kpis.failedInspections > 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400",
-              )}
-            />
-          </div>
+      {/* Revenue */}
+      <Card className="bg-black border-none shadow-lg">
+        <CardHeader className="pb-2 flex flex-row items-center justify-between">
+          <CardTitle className="text-base font-semibold text-zinc-100 flex items-center gap-2">
+            <DollarSign className="h-5 w-5 text-green-300" />
+            Revenue (30d)
+          </CardTitle>
         </CardHeader>
-        <CardContent className="pt-0">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Success rate</span>
-            <span className={cn("font-medium", inspectionSuccessRate === 100 ? "text-green-600" : "text-amber-600")}>
-              {inspectionSuccessRate.toFixed(1)}%
+        <CardContent>
+          <div className="text-3xl font-bold text-white">
+            ${(kpis.totalRevenue / 1000).toFixed(1)}k
+          </div>
+          <div className="text-xs text-zinc-400 mt-1">
+            Per mile avg:{" "}
+            <span className="text-green-400 font-semibold">
+              ${kpis.revenuePerMile}
             </span>
           </div>
-          <Progress value={inspectionSuccessRate} className="mt-2 h-2" />
         </CardContent>
       </Card>
-
-      {/* Upcoming Maintenance Card */}
-      <Card className="group transition-all duration-200 bg-white/50 dark:bg-zinc-900/50 border-zinc-200/80 dark:border-zinc-800/80 hover:shadow-lg hover:bg-white dark:hover:bg-zinc-900">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-          <div className="space-y-1">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Upcoming Maintenance</CardTitle>
-            <div className="flex items-center space-x-2">
-              <div className="text-3xl font-bold tracking-tight">{kpis.upcomingMaintenance}</div>
-              <Badge variant="outline" className="text-xs">
-                <Clock className="w-3 h-3 mr-1" />7 days
-              </Badge>
-            </div>
-          </div>
-          <div className="h-12 w-12 rounded-full bg-amber-100 dark:bg-amber-900/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-            <Calendar className="h-6 w-6 text-amber-600 dark:text-amber-400" />
-          </div>
+      {/* Total Miles */}
+      <Card className="bg-black border-none shadow-lg">
+        <CardHeader className="pb-2 flex flex-row items-center justify-between">
+          <CardTitle className="text-base font-semibold text-zinc-100 flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-orange-400" />
+            Total Miles (30d)
+          </CardTitle>
         </CardHeader>
-        <CardContent className="pt-0">
-          <div className="space-y-1 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Overdue</span>
-              <span className="font-medium text-red-600">0</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">This week</span>
-              <span className="font-medium text-amber-600">{kpis.upcomingMaintenance}</span>
-            </div>
+        <CardContent>
+          <div className="text-3xl font-bold text-white">
+            {(kpis.totalMiles / 1000).toFixed(1)}k
+          </div>
+          <div className="text-xs text-zinc-400 mt-1">
+            Per vehicle avg:{" "}
+            <span className="text-blue-400 font-semibold">2,468</span>
           </div>
         </CardContent>
       </Card>
-
-      {/* Pending Loads Card */}
-      <Card className="group transition-all duration-200 bg-white/50 dark:bg-zinc-900/50 border-zinc-200/80 dark:border-zinc-800/80 hover:shadow-lg hover:bg-white dark:hover:bg-zinc-900">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-          <div className="space-y-1">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Pending Loads</CardTitle>
-            <div className="flex items-center space-x-2">
-              <div className="text-3xl font-bold tracking-tight">{kpis.pendingLoads}</div>
-              <Badge variant="outline" className="text-xs">
-                <Clock className="w-3 h-3 mr-1" />
-                Urgent
-              </Badge>
-            </div>
-          </div>
-          <div className="h-12 w-12 rounded-full bg-indigo-100 dark:bg-indigo-900/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-            <Clock className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-          </div>
+      {/* Inspections */}
+      <Card className="bg-black border-none shadow-lg">
+        <CardHeader className="pb-2 flex flex-row items-center justify-between">
+          <CardTitle className="text-base font-semibold text-zinc-100 flex items-center gap-2">
+            <CheckCircle className="h-5 w-5 text-cyan-400" />
+            Inspections (30d)
+          </CardTitle>
         </CardHeader>
-        <CardContent className="pt-0">
-          <div className="space-y-1 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Awaiting pickup</span>
-              <span className="font-medium">{Math.floor(kpis.pendingLoads * 0.6)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Awaiting assignment</span>
-              <span className="font-medium">{Math.ceil(kpis.pendingLoads * 0.4)}</span>
-            </div>
+        <CardContent>
+          <div className="text-3xl font-bold text-white">{kpis.recentInspections}</div>
+          <div className="text-xs text-zinc-400 mt-1">
+            Failed:{" "}
+            <span className="text-red-400 font-semibold">
+              {kpis.failedInspections}
+            </span>
           </div>
+          <div className="text-xs text-zinc-400 mt-1">Success rate</div>
+          <Progress
+            value={inspectionSuccessRate}
+            className="h-2 mt-2 bg-zinc-800"
+          />
+          <div className="text-xs text-cyan-400 mt-1">
+            {inspectionSuccessRate.toFixed(1)}%
+          </div>
+        </CardContent>
+      </Card>
+      {/* Upcoming Maintenance */}
+      <Card className="bg-black border-none shadow-lg">
+        <CardHeader className="pb-2 flex flex-row items-center justify-between">
+          <CardTitle className="text-base font-semibold text-zinc-100 flex items-center gap-2">
+            <Wrench className="h-5 w-5 text-yellow-400" />
+            Upcoming Maintenance
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-3xl font-bold text-white">{kpis.upcomingMaintenance}</div>
+          <div className="text-xs text-zinc-400 mt-1">Next 7 days</div>
+        </CardContent>
+      </Card>
+      {/* Pending Loads */}
+      <Card className="bg-black border-none shadow-lg">
+        <CardHeader className="pb-2 flex flex-row items-center justify-between">
+          <CardTitle className="text-base font-semibold text-zinc-100 flex items-center gap-2">
+            <Clock className="h-5 w-5 text-violet-400" />
+            Pending Loads
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-3xl font-bold text-white">{kpis.pendingLoads}</div>
+          <div className="text-xs text-zinc-400 mt-1">
+            Awaiting pickup:{" "}
+            <span className="text-orange-400 font-semibold">4</span>
+          </div>
+          <div className="text-xs text-zinc-400 mt-1">
+            Awaiting assignment:{" "}
+            <span className="text-yellow-400 font-semibold">4</span>
+          </div>
+        </CardContent>
+      </Card>
+      {/* Alerts/Warnings */}
+      <Card className="bg-black border-none shadow-lg">
+        <CardHeader className="pb-2 flex flex-row items-center justify-between">
+          <CardTitle className="text-base font-semibold text-zinc-100 flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-red-400" />
+            Alerts
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-3xl font-bold text-white">1</div>
+          <div className="text-xs text-zinc-400 mt-1">See recent alerts above</div>
         </CardContent>
       </Card>
     </div>

@@ -5,14 +5,18 @@ import { Save } from "lucide-react"
 
 export default function SettingsPage() {
   return (
-    <div className="flex flex-col gap-6 p-4 md:p-6">
-      <PageHeader />
-        actions={
-          <Button size="sm">
-            <Save className="mr-2 h-4 w-4" />
-            Save Changes
-          </Button>
-        }
+    <div className="settings-page w-full max-w-4xl mx-auto flex flex-col gap-8">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mt-2">
+      <div className="space-y-2 mb-2 mt-8">
+        <h1 className="page-title">Settings</h1>
+        <p className="page-subtitle">Manage your account and application settings</p>
+      </div>
+        <PageHeader />
+        <Button size="sm" className="btn btn-primary">
+          <Save className="mr-2 h-4 w-4" />
+          Save Changes
+        </Button>
+      </div>
       <SettingsDashboard />
     </div>
   )
