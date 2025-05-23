@@ -14,6 +14,7 @@ export function PublicNav() {
       </div>
       <nav className="flex items-center gap-6">
         <Link className="text-sm font-medium hover:underline underline-offset-4" href="/features">
+          
           Features
         </Link>
         <Link className="text-sm font-medium hover:underline underline-offset-4" href="/pricing">

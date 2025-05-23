@@ -8,15 +8,15 @@ import { useEffect } from "react"
 import { Loader2 } from "lucide-react"
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, isLoading } = useAuth()
+  const { userId, isLoading } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
 
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (!isLoading && !userId) {
       router.push(`/login?redirect=${encodeURIComponent(pathname)}`)
     }
-  }, [user, isLoading, router, pathname])
+  }, [userId, isLoading, router, pathname])
 
   if (isLoading) {
     return (
@@ -26,7 +26,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     )
   }
 
-  if (!user) {
+  if (!userId) {
     return null
   }
 

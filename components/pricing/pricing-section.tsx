@@ -93,8 +93,8 @@ export default function PricingSection({ showTitle = true }: { showTitle?: boole
             </div>
           ))}
         </div>
-        <p className="text-center text-xs text-muted-foreground mt-8">All prices in USD. Taxes & SMS fees extra. Cancel anytime.</p>
-        <div className="text-center mt-16">
+        <p className="text-center text-xs text-muted-foreground mt-8 mb-10">All prices in USD. Taxes & SMS fees extra. Cancel anytime.</p>
+        <div className="text-center mt-4">
           <Link href="/refund" className="text-primary underline text-sm">
             View our Refund Policy
           </Link>

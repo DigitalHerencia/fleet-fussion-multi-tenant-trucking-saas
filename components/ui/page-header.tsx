@@ -1,51 +1,21 @@
-import type React from "react"
-import Link from "next/link"
-import { ChevronRight, Home } from "lucide-react"
+import Image from "next/image"
 import { cn } from "@/lib/utils"
+import { UserNav } from "@/components/user-nav"
+
 
 interface PageHeaderProps {
-  title: string
-  description?: string
-  breadcrumbs?: Array<{
-    label: string
-    href: string
-  }>
-  actions?: React.ReactNode
   className?: string
 }
 
-export function PageHeader({ title, description, breadcrumbs = [], actions, className }: PageHeaderProps) {
+export function PageHeader({ className }: PageHeaderProps) {
   return (
-    <div className={cn("mb-6 space-y-2", className)}>
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          {breadcrumbs.length > 0 && (
-            <nav className="mb-2 flex items-center space-x-1 text-sm text-muted-foreground">
-              <Link href="/dashboard" className="flex items-center hover:text-foreground">
-                <Home className="mr-1 h-4 w-4" />
-                Dashboard
-              </Link>
-              {breadcrumbs.map((breadcrumb, index) => (
-                <div key={breadcrumb.href} className="flex items-center">
-                  <ChevronRight className="h-4 w-4" />
-                  <Link
-                    href={breadcrumb.href}
-                    className={cn(
-                      "ml-1 hover:text-foreground",
-                      index === breadcrumbs.length - 1 && "text-foreground font-medium",
-                    )}
-                  >
-                    {breadcrumb.label}
-                  </Link>
-                </div>
-              ))}
-            </nav>
-          )}
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{title}</h1>
-          {description && <p className="text-muted-foreground">{description}</p>}
+    <header className="fixed top-0 left-0 right-0 bg-black border-b border-zinc-800 z-50">
+      <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-4">
+          <Image src="/white.png" alt="FleetFusion Logo" width={140} height={32} priority className="dark:invert-0"/>
         </div>
-        {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+        <UserNav />
       </div>
-    </div>
+    </header>
   )
 }

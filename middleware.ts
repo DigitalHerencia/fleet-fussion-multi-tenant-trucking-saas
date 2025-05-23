@@ -1,38 +1,40 @@
-import { NextResponse } from "next/server"
-import type { NextRequest } from "next/server"
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
-// Public routes that don't require authentication
-const publicRoutes = ["/", "/login", "/api/public(.*)", "/pricing", "/about", "/contact"]
+// Define public routes that don't require authentication
+const isPublicRoute = createRouteMatcher([
+  '/',
+  '/login',
+  '/sign-in(.*)',
+  '/sign-up(.*)',
+  '/about',
+  '/contact',
+  '/pricing',
+  '/features',
+  '/services',
+  '/privacy',
+  '/terms',
+  '/refund',
+  '/onboarding' // Add onboarding to public routes
+]);
 
-export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
-
-  // Check if the route is public
-  const isPublicRoute = publicRoutes.some((route) => {
-    if (route.includes("(.*)")) {
-      const baseRoute = route.replace("(.*)", "")
-      return pathname === baseRoute || pathname.startsWith(baseRoute)
-    }
-    return pathname === route
-  })
-
-  if (isPublicRoute) {
-    return NextResponse.next()
+export default clerkMiddleware(async (auth: { protect: () => any; }, req: any) => {
+  // If the request is for a public route, proceed without authentication
+  if (isPublicRoute(req)) {
+    return NextResponse.next();
   }
-
-  // Check if user is authenticated
-  const authCookie = request.cookies.get("fleetfusion_user")
-
-  if (!authCookie?.value) {
-    // Redirect to login if not authenticated
-    const loginUrl = new URL("/login", request.url)
-    loginUrl.searchParams.set("redirect", pathname)
-    return NextResponse.redirect(loginUrl)
-  }
-
-  return NextResponse.next()
-}
+  
+  // For all other routes, protect them
+  await auth.protect();
+  
+  return NextResponse.next();
+});
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.png$|.*\\.jpg$).*)"],
-}
+  matcher: [
+    // Skip Next.js internals and all static files
+    '/((?!_next|static|favicon.ico|logo|icons|images).*)',
+    // Force include paths with a dot, like API routes
+    '/(api|trpc)(.*)',
+  ],
+};

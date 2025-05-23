@@ -28,7 +28,7 @@ interface Company {
 }
 
 interface AuthContextType {
-  user: User | null
+  userId: User | null
   company: Company | null
   isLoading: boolean
   login: (username: string, password: string) => Promise<boolean>
@@ -111,7 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push("/login")
   }
 
-  return <AuthContext.Provider value={{ user, company, isLoading, login, logout }}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={{ userId: user, company, isLoading, login, logout }}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {
