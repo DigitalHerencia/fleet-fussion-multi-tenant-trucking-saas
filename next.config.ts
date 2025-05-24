@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+import path from "path"
+
 const nextConfig: import( 'next' ).NextConfig = {
   reactStrictMode: true,
   images: {
@@ -18,6 +20,13 @@ const nextConfig: import( 'next' ).NextConfig = {
     serverActions: {
       allowedOrigins: ['localhost:3000', 'fleet-fusion.vercel.app'],
     },
+  },
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      "@": path.resolve(__dirname),
+    }
+    return config
   },
 }
 
