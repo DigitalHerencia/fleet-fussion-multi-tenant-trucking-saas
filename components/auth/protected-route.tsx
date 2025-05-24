@@ -8,17 +8,17 @@ import { useEffect } from "react"
 import { Loader2 } from "lucide-react"
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { userId, isLoading } = useAuth()
+  const { user, isLoaded } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
 
   useEffect(() => {
-    if (!isLoading && !userId) {
+    if (isLoaded && !user) {
       router.push(`/login?redirect=${encodeURIComponent(pathname)}`)
     }
-  }, [userId, isLoading, router, pathname])
+  }, [user, isLoaded, router, pathname])
 
-  if (isLoading) {
+  if (!isLoaded) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -26,7 +26,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     )
   }
 
-  if (!userId) {
+  if (!user) {
     return null
   }
 

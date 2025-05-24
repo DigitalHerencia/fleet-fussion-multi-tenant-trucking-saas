@@ -17,6 +17,9 @@ import {
   BarChart3,
 } from 'lucide-react'
 import { usePermission, useRole } from '@/lib/auth/context'
+import { hasPermission } from '@/lib/auth/permissions'
+import { useAuth } from '@/lib/auth/context'
+import type { Permission } from '@/types/auth'
 
 interface NavItem {
   title: string
@@ -61,13 +64,9 @@ export function DashboardNav() {
   const pathname = usePathname()
   const isAdmin = useRole('admin')
 
-  const hasPermission = (permission?: string) => {
-    if (!permission) return true
-    if (isAdmin) return true
-    return usePermission(permission as any)
-  }
+  const { user } = useAuth()
 
-  const visibleItems = mobileNavItems.filter(item => hasPermission(item.permission))
+  const visibleItems = mobileNavItems.filter(item => hasPermission(user, item.permission as Permission))
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

@@ -52,7 +52,7 @@ export default function OnboardingPage() {
 
       // Update user metadata with role
       await user?.update({
-        publicMetadata: {
+        unsafeMetadata: {
           role: formData.role,
           onboardingCompleted: false, // Will be completed after organization setup
         }

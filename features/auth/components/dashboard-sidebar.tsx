@@ -29,7 +29,9 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { usePermission, useRole } from '@/lib/auth/context'
+import { hasPermission } from '@/lib/auth/permissions'
+import type { Permission } from '@/types/auth'
+import { useAuth } from '@/lib/auth/context'
 
 interface NavItem {
   title: string
@@ -128,7 +130,7 @@ const navigationItems: NavItem[] = [
 export function DashboardSidebar() {
   const pathname = usePathname()
   const [openItems, setOpenItems] = useState<string[]>([])
-  const isAdmin = useRole('admin')
+  const { user } = useAuth()
 
   const toggleItem = (href: string) => {
     setOpenItems(prev =>
@@ -138,10 +140,9 @@ export function DashboardSidebar() {
     )
   }
 
-  const hasPermission = (permission?: string) => {
+  const hasPermissionCheck = (permission?: string) => {
     if (!permission) return true
-    if (isAdmin) return true
-    return usePermission(permission as any)
+    return hasPermission(user, permission as Permission)
   }
 
   const NavItemComponent = ({ item, level = 0 }: { item: NavItem; level?: number }) => {
@@ -149,7 +150,7 @@ export function DashboardSidebar() {
     const isOpen = openItems.includes(item.href)
     const hasChildren = item.children && item.children.length > 0
 
-    if (!hasPermission(item.permission)) {
+    if (!hasPermissionCheck(item.permission)) {
       return null
     }
 

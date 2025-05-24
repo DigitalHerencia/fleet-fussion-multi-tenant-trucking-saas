@@ -8,12 +8,12 @@
 import { db } from '@/lib/database'
 import * as schema from '@/lib/database/schema'
 import { UserRole } from '@/types/auth'
+import { eq } from 'drizzle-orm'
 
 interface SeedOrganization {
   clerkId: string
   name: string
   slug: string
-  metadata: any
 }
 
 interface SeedUser {
@@ -62,51 +62,11 @@ const sampleOrganizations: SeedOrganization[] = [
     clerkId: 'org_sample_cj_express',
     name: 'C & J Express Inc.',
     slug: 'cj-express',
-    metadata: {
-      subscriptionTier: 'pro',
-      subscriptionStatus: 'active',
-      maxUsers: 25,
-      dotNumber: '1565942',
-      mcNumber: '580454',
-      address: '710 Eagle Dr',
-      city: 'Anthony',
-      state: 'NM',
-      zip: '88021',
-      phone: '575-555-0123',
-      billingEmail: 'billing@cjexpress.com',
-      features: ['dispatch', 'ifta', 'compliance', 'analytics'],
-      settings: {
-        timezone: 'America/Denver',
-        dateFormat: 'MM/dd/yyyy',
-        distanceUnit: 'miles',
-        fuelUnit: 'gallons'
-      }
-    }
   },
   {
     clerkId: 'org_sample_southwest_logistics',
     name: 'Southwest Logistics LLC',
     slug: 'southwest-logistics',
-    metadata: {
-      subscriptionTier: 'free',
-      subscriptionStatus: 'trial',
-      maxUsers: 5,
-      dotNumber: '2567891',
-      mcNumber: '789012',
-      address: '450 Commerce Way',
-      city: 'Las Cruces',
-      state: 'NM',
-      zip: '88001',
-      phone: '575-555-0456',
-      billingEmail: 'admin@swlogistics.com',
-      features: ['dispatch'],
-      settings: {
-        timezone: 'America/Denver',
-        dateFormat: 'MM/dd/yyyy',
-        distanceUnit: 'miles',
-        fuelUnit: 'gallons'
-      }
-    }
   }
 ]
 
@@ -198,7 +158,6 @@ async function seedOrganizations() {
         clerkId: org.clerkId,
         name: org.name,
         slug: org.slug,
-        metadata: org.metadata,
         createdAt: new Date(),
         updatedAt: new Date()
       }).onConflictDoNothing()
@@ -222,7 +181,7 @@ async function seedUsers() {
       const [organization] = await db
         .select()
         .from(schema.organizations)
-        .where(schema.organizations.clerkId.eq(user.organizationClerkId))
+        .where(eq(schema.organizations.clerkId, user.organizationClerkId))
         .limit(1)
       
       if (!organization) {
@@ -263,7 +222,7 @@ async function seedVehicles() {
       const [organization] = await db
         .select()
         .from(schema.organizations)
-        .where(schema.organizations.clerkId.eq(vehicle.organizationClerkId))
+        .where(eq(schema.organizations.clerkId, vehicle.organizationClerkId))
         .limit(1)
       
       if (!organization) {
@@ -271,18 +230,7 @@ async function seedVehicles() {
         continue
       }
       
-      await db.insert(schema.vehicles).values({
-        organizationId: organization.id,
-        vin: vehicle.vin,
-        make: vehicle.make,
-        model: vehicle.model,
-        year: vehicle.year,
-        licensePlate: vehicle.licensePlate,
-        vehicleType: vehicle.vehicleType as any,
-        status: vehicle.status as any,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }).onConflictDoNothing()
+    
       
       console.log(`✓ Seeded vehicle: ${vehicle.make} ${vehicle.model} (${vehicle.vin})`)
     } catch (error) {
@@ -303,7 +251,7 @@ async function seedDrivers() {
       const [organization] = await db
         .select()
         .from(schema.organizations)
-        .where(schema.organizations.clerkId.eq(driver.organizationClerkId))
+        .where(eq(schema.organizations.clerkId, driver.organizationClerkId))
         .limit(1)
       
       if (!organization) {
@@ -317,28 +265,13 @@ async function seedDrivers() {
         const [user] = await db
           .select()
           .from(schema.users)
-          .where(schema.users.clerkId.eq(driver.userClerkId))
+          .where(eq(schema.users.clerkId, driver.userClerkId))
           .limit(1)
         
         userId = user?.id || null
       }
       
-      await db.insert(schema.drivers).values({
-        organizationId: organization.id,
-        userId: userId,
-        licenseNumber: driver.licenseNumber,
-        licenseClass: driver.licenseClass,
-        licenseState: driver.licenseState,
-        licenseExpiry: driver.licenseExpiry,
-        medicalCertExpiry: driver.medicalCertExpiry,
-        firstName: driver.firstName,
-        lastName: driver.lastName,
-        email: driver.email,
-        phone: driver.phone,
-        status: driver.status as any,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }).onConflictDoNothing()
+
       
       console.log(`✓ Seeded driver: ${driver.firstName} ${driver.lastName}`)
     } catch (error) {

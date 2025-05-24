@@ -1,57 +1,43 @@
-import { db } from "@/db"
+import { db } from "@/lib/database"
 
 // Get KPIs for the dashboard
-export async function getKPIs(companyId: string) {
+export async function getKPIs(organizationId: string) {
   const today = new Date()
   const thirtyDaysAgo = new Date(today)
   thirtyDaysAgo.setDate(today.getDate() - 30)
 
   // Active vehicles count
   const activeVehicles = await db.query.vehicles.findMany({
-    where: (vehicles: { companyId: any; status: any }, { eq, and }: any) => and(eq(vehicles.companyId, companyId), eq(vehicles.status, "active")),
+    where: (vehicles, { eq, and }) => and(eq(vehicles.organizationId, organizationId), eq(vehicles.status, "active")),
     columns: { id: true },
   })
 
   // Active drivers count
   const activeDrivers = await db.query.drivers.findMany({
-    where: (drivers: { companyId: any; status: any }, { eq, and }: any) => and(eq(drivers.companyId, companyId), eq(drivers.status, "active")),
+    where: (drivers, { eq, and }) => and(eq(drivers.organizationId, organizationId), eq(drivers.status, "active")),
     columns: { id: true },
   })
 
   // Loads in last 30 days
   const recentLoads = await db.query.loads.findMany({
-    where: (loads: { companyId: any; createdAt: any }, { eq, and, gte }: any) => and(eq(loads.companyId, companyId), gte(loads.createdAt, thirtyDaysAgo)),
+    where: (loads, { eq, and, gte }) => and(eq(loads.organizationId, organizationId), gte(loads.createdAt, thirtyDaysAgo)),
   })
 
   // Calculate load statistics
   const totalLoads = recentLoads.length
-  const completedLoads = recentLoads.filter((load: { status: string }) => load.status === "completed").length
+  const completedLoads = recentLoads.filter((load: { status: string }) => load.status === "delivered").length
   const pendingLoads = recentLoads.filter((load: { status: string }) => load.status === "pending").length
   const inTransitLoads = recentLoads.filter((load: { status: string }) => load.status === "in_transit").length
 
   // Calculate revenue and miles
   const totalRevenue = recentLoads.reduce((sum: number, load: { rate: any }) => sum + (Number(load.rate) || 0), 0)
 
-  // Upcoming maintenance
-  const upcomingMaintenance = await db.query.maintenanceRecords.findMany({
-    where: (records: { companyId: any; status: any; scheduledDate: any }, { eq, and, gte, lte }: any) =>
-      and(
-        eq(records.companyId, companyId),
-        eq(records.status, "scheduled"),
-        gte(records.scheduledDate, today),
-        lte(records.scheduledDate, new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)), // Next 7 days
-      ),
-    columns: { id: true },
-  })
+  // Placeholder for upcoming maintenance (table not implemented yet)
+  const upcomingMaintenance: any[] = []
 
-  // Recent inspections
-  const recentInspections = await db.query.inspections.findMany({
-    where: (inspections: { companyId: any; date: any }, { eq, and, gte }: any) =>
-      and(eq(inspections.companyId, companyId), gte(inspections.date, thirtyDaysAgo)),
-    columns: { id: true, status: true },
-  })
-
-  const failedInspections = recentInspections.filter((inspection: { status: string }) => inspection.status === "failed").length
+  // Placeholder for recent inspections (table not implemented yet)
+  const recentInspections: any[] = []
+  const failedInspections = 0
 
   return {
     activeVehicles: activeVehicles.length,
@@ -69,13 +55,13 @@ export async function getKPIs(companyId: string) {
 }
 
 // Get loads for the dispatch board
-export async function getLoads(companyId: string, status?: string, driverId?: string) {
+export async function getLoads(organizationId: string, status?: string, driverId?: string) {
   const query = db.query.loads.findMany({
-    where: (loads: { companyId: any; status: any; driverId: any }, { eq, and }: any) => {
-      const conditions = [eq(loads.companyId, companyId)]
+    where: (loads, { eq, and }) => {
+      const conditions = [eq(loads.organizationId, organizationId)]
 
       if (status) {
-        conditions.push(eq(loads.status, status))
+        conditions.push(eq(loads.status, status as "pending" | "assigned" | "in_transit" | "delivered" | "cancelled"))
       }
 
       if (driverId) {
@@ -99,50 +85,43 @@ export async function getLoads(companyId: string, status?: string, driverId?: st
         },
       },
     },
-    orderBy: (loads: { createdAt: any }, { desc }: any) => [desc(loads.createdAt)],
+    orderBy: (loads, { desc }) => [desc(loads.createdAt)],
   })
 
   return query
 }
 
-// Get vehicles with their status and maintenance info
-export async function getVehicles(companyId: string, status?: string) {
+// Get vehicles with their status
+export async function getVehicles(organizationId: string, status?: string) {
   const query = db.query.vehicles.findMany({
-    where: (vehicles: { companyId: any; status: any }, { eq, and }: any) => {
-      const conditions = [eq(vehicles.companyId, companyId)]
+    where: (vehicles, { eq, and }) => {
+      const conditions = [eq(vehicles.organizationId, organizationId)]
 
       if (status) {
-        conditions.push(eq(vehicles.status, status))
+        conditions.push(eq(vehicles.status, status as "active" | "inactive" | "maintenance" | "decommissioned"))
       }
 
       return and(...conditions)
     },
-    with: {
-      maintenanceRecords: {
-        where: (records: { status: any }, { eq }: any) => eq(records.status, "scheduled"),
-        orderBy: (records: { scheduledDate: any }, { asc }: any) => [asc(records.scheduledDate)],
-        limit: 1,
-      },
-    },
-    orderBy: (vehicles: { unitNumber: any }, { asc }: any) => [asc(vehicles.unitNumber)],
+    orderBy: (vehicles, { asc }) => [asc(vehicles.unitNumber)],
   })
 
   return query
 }
 
 // Get drivers with their status and assignment info
-export async function getDrivers(companyId: string, status?: string) {
+export async function getDrivers(organizationId: string, status?: string) {
   const query = db.query.drivers.findMany({
-    where: (drivers: { companyId: any; status: any }, { eq, and }: any) => {
-      const conditions = [eq(drivers.companyId, companyId)]
+    where: (drivers, { eq, and }) => {
+      const conditions = [eq(drivers.organizationId, organizationId)]
 
       if (status) {
-        conditions.push(eq(drivers.status, status))
+        conditions.push(eq(drivers.status, status as "active" | "inactive" | "suspended" | "terminated"))
       }
 
       return and(...conditions)
     },
-    orderBy: (drivers: { lastName: any; firstName: any }, { asc }: any) => [asc(drivers.lastName), asc(drivers.firstName)],
+    orderBy: (drivers, { asc }) => [asc(drivers.lastName), asc(drivers.firstName)],
   })
 
   return query

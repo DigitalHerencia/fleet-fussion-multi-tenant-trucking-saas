@@ -1,6 +1,6 @@
 import Image from "next/image"
 import { cn } from "@/lib/utils"
-import { UserNav } from "@/components/user-nav"
+import { UserNav } from "@/components/shared/user-nav"
 
 
 interface PageHeaderProps {

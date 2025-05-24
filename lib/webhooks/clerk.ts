@@ -7,7 +7,8 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { headers } from 'next/headers'
-import { Webhook } from 'svix'
+import type { Webhook } from 'svix';
+import { Webhook as SvixWebhook } from 'svix';
 import { DatabaseQueries } from '@/lib/database'
 import { 
   UserWebhookPayload, 
@@ -18,7 +19,7 @@ import {
 } from '@/types/auth'
 
 // Webhook secret from environment
-const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET
+const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET as string
 
 if (!WEBHOOK_SECRET) {
   throw new Error('CLERK_WEBHOOK_SECRET environment variable is required')
@@ -28,10 +29,10 @@ if (!WEBHOOK_SECRET) {
  * Verify webhook signature and parse payload
  */
 export async function verifyWebhook(request: NextRequest) {
-  const headerPayload = headers()
-  const svixId = headerPayload.get('svix-id')
-  const svixTimestamp = headerPayload.get('svix-timestamp')
-  const svixSignature = headerPayload.get('svix-signature')
+  const headerPayload = await headers();
+  const svixId = headerPayload.get('svix-id');
+  const svixTimestamp = headerPayload.get('svix-timestamp');
+  const svixSignature = headerPayload.get('svix-signature');
 
   if (!svixId || !svixTimestamp || !svixSignature) {
     throw new Error('Missing webhook headers')
@@ -41,7 +42,7 @@ export async function verifyWebhook(request: NextRequest) {
   const body = JSON.parse(payload)
 
   // Verify the webhook signature
-  const wh = new Webhook(WEBHOOK_SECRET)
+  const wh = new SvixWebhook(WEBHOOK_SECRET)
   
   try {
     const evt = wh.verify(payload, {
@@ -273,38 +274,37 @@ export async function handleWebhook(request: NextRequest) {
     // Verify webhook and get event
     const evt = await verifyWebhook(request)
     
-    console.log('Processing webhook event:', evt.type)
-    
     // Route to appropriate handler based on event type
-    switch (evt.type) {
+    const event = evt as any; // Cast to any to access .type
+    switch (event.type) {
       // User events
       case 'user.created':
-        await UserWebhookHandler.handleUserCreated(evt as UserWebhookPayload)
+        await UserWebhookHandler.handleUserCreated(event as UserWebhookPayload)
         break
         
       case 'user.updated':
-        await UserWebhookHandler.handleUserUpdated(evt as UserWebhookPayload)
+        await UserWebhookHandler.handleUserUpdated(event as UserWebhookPayload)
         break
         
       case 'user.deleted':
-        await UserWebhookHandler.handleUserDeleted(evt as UserWebhookPayload)
+        await UserWebhookHandler.handleUserDeleted(event as UserWebhookPayload)
         break
         
       // Organization events
       case 'organization.created':
-        await OrganizationWebhookHandler.handleOrganizationCreated(evt as OrganizationWebhookPayload)
+        await OrganizationWebhookHandler.handleOrganizationCreated(event as OrganizationWebhookPayload)
         break
         
       case 'organization.updated':
-        await OrganizationWebhookHandler.handleOrganizationUpdated(evt as OrganizationWebhookPayload)
+        await OrganizationWebhookHandler.handleOrganizationUpdated(event as OrganizationWebhookPayload)
         break
         
       case 'organization.deleted':
-        await OrganizationWebhookHandler.handleOrganizationDeleted(evt as OrganizationWebhookPayload)
+        await OrganizationWebhookHandler.handleOrganizationDeleted(event as OrganizationWebhookPayload)
         break
         
       default:
-        console.log('Unhandled webhook event type:', evt.type)
+        console.log('Unhandled webhook event type:', event.type);
     }
     
     return NextResponse.json({ success: true })

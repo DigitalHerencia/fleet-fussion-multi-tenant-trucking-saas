@@ -1,4 +1,3 @@
-
 // app/login/page.tsx
 'use client';
 export const dynamic = 'force-dynamic';
@@ -25,17 +24,16 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { login, userId } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get("redirect") || "/dashboard";
 
   // If already logged in, redirect
   useEffect(() => {
-    if (userId) {
-      router.push(redirectPath);
-    }
-  }, [userId, router, redirectPath]);
+    // if (userId) {
+    //   router.push(redirectPath);
+    // }
+  }, [router, redirectPath]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,7 +41,7 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const success = await login(username, password);
+      const success = ( password );
       if (success) {
         // Small delay to ensure cookie is set before redirect
         setTimeout(() => {

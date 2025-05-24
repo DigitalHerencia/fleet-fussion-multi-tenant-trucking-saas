@@ -9,11 +9,10 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { useUser, useOrganization } from '@clerk/nextjs'
+import type { ClerkUserMetadata, ClerkOrganizationMetadata } from '@/types/auth'
 import { 
   AuthState, 
   UserContext, 
-  ClerkUserMetadata, 
-  ClerkOrganizationMetadata,
   UserRole,
   Permission,
   ROLE_PERMISSIONS 
@@ -33,13 +32,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user: null,
     isLoaded: false,
     isSignedIn: false,
-    organization: null
+    isLoading: true,
+    organization: null,
+    company: null
   })
 
   useEffect(() => {
     // Wait for both user and organization data to load
     if (!userLoaded || !orgLoaded) {
-      setAuthState(prev => ({ ...prev, isLoaded: false }))
+      setAuthState(prev => ({ ...prev, isLoaded: false, isLoading: true }))
       return
     }
 
@@ -48,15 +49,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user: null,
         isLoaded: true,
         isSignedIn: false,
-        organization: null
+        isLoading: false,
+        organization: null,
+        company: null
       })
       return
     }
 
     try {
       // Extract user metadata from Clerk
-      const userMetadata = clerkUser.publicMetadata as ClerkUserMetadata
-      const orgMetadata = organization?.publicMetadata as ClerkOrganizationMetadata
+      const userMetadata = clerkUser.publicMetadata as unknown as ClerkUserMetadata
+      const orgMetadata = organization?.publicMetadata as unknown as ClerkOrganizationMetadata
 
       // Get the user's role and permissions
       const role: UserRole = userMetadata?.role || 'viewer'
@@ -71,6 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email: clerkUser.emailAddresses[0]?.emailAddress || '',
         firstName: clerkUser.firstName || undefined,
         lastName: clerkUser.lastName || undefined,
+        name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || clerkUser.emailAddresses[0]?.emailAddress || 'Unknown User',
         profileImage: clerkUser.imageUrl || undefined,
         isActive: userMetadata?.isActive ?? true,
         onboardingCompleted: userMetadata?.onboardingCompleted ?? false,
@@ -79,7 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           subscriptionStatus: 'trial',
           maxUsers: 5,
           features: [],
-          billingEmail: clerkUser.emailAddresses[0]?.emailAddress || '',
+          billingEmail: clerkUser.emailAddresses[ 0 ]?.emailAddress || '',
           createdAt: new Date().toISOString(),
           settings: {
             timezone: 'America/Denver',
@@ -88,30 +92,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             fuelUnit: 'gallons'
           }
         }
-      }
-
-      // Build organization context
+      }      // Build organization context
       const orgContext = organization ? {
         id: organization.id,
         name: organization.name,
         slug: organization.slug || '',
         metadata: orgMetadata || userContext.organizationMetadata
       } : null
-
+      
       setAuthState({
         user: userContext,
         isLoaded: true,
         isSignedIn: true,
-        organization: orgContext
+        isLoading: false,
+        organization: orgContext,
+        company: orgContext ? {
+          id: orgContext.id,
+          name: orgContext.name,
+          dotNumber: orgContext.metadata?.dotNumber,
+          mcNumber: orgContext.metadata?.mcNumber
+        } : null
       })
-
     } catch (error) {
       console.error('Error building auth context:', error)
       setAuthState({
         user: null,
         isLoaded: true,
         isSignedIn: false,
-        organization: null
+        isLoading: false,
+        organization: null,
+        company: null
       })
     }
   }, [clerkUser, organization, userLoaded, orgLoaded, isSignedIn])

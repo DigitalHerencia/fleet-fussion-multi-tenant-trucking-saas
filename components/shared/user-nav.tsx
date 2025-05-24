@@ -1,6 +1,6 @@
 "use client"
 
-import { useAuth } from "@/lib/auth-context"
+import { useAuth } from "@/lib/auth/context"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
@@ -13,18 +13,18 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { User } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { ThemeToggle } from "@/components/theme-toggle"
+import { ThemeToggle } from "@/components/shared/theme-toggle"
 
 export function UserNav() {
-  const { userId, company, logout } = useAuth()
+  const { user, organization } = useAuth()
   const router = useRouter()
 
   const handleLogout = () => {
-    logout()
+    // Using Clerk's signOut from the useClerk hook
     router.push("/login")
   }
 
-  if (!userId || !company) {
+  if (!user || !organization) {
     return null
   }
 
@@ -38,7 +38,7 @@ export function UserNav() {
             aria-label="Open user menu"
           >
             <Avatar className="h-10 w-10">
-              <AvatarImage src="/placeholder-user.png" alt={userId.name} />
+              <AvatarImage src="/placeholder-user.png" alt={user.name} />
               <AvatarFallback>
                 <User className="h-5 w-5 text-muted-foreground" />
               </AvatarFallback>
@@ -50,15 +50,15 @@ export function UserNav() {
         <DropdownMenuContent className="w-64 p-2" align="end" forceMount>
           <div className="flex items-center gap-3 px-2 py-2">
             <Avatar className="h-10 w-10">
-              <AvatarImage src="/placeholder-user.png" alt={userId.name} />
+              <AvatarImage src="/placeholder-user.png" alt={user.name} />
               <AvatarFallback>
                 <User className="h-5 w-5 text-muted-foreground" />
               </AvatarFallback>
             </Avatar>
             <div className="flex flex-col min-w-0">
-              <span className="truncate text-sm font-semibold leading-tight">{userId.name}</span>
-              <span className="truncate text-xs text-muted-foreground">{userId.email}</span>
-              <span className="mt-1 inline-block rounded bg-accent px-2 py-0.5 text-xs font-medium text-accent-foreground">{company.name}</span>
+              <span className="truncate text-sm font-semibold leading-tight">{user.name}</span>
+              <span className="truncate text-xs text-muted-foreground">{user.email}</span>
+              <span className="mt-1 inline-block rounded bg-accent px-2 py-0.5 text-xs font-medium text-accent-foreground">{organization.name}</span>
             </div>
           </div>
           <DropdownMenuSeparator />

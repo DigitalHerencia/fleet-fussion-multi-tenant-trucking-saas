@@ -7,10 +7,7 @@
 import { Suspense } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { DashboardMetrics } from '@/features/analytics/components/dashboard-metrics'
-import { RecentActivity } from '@/features/dispatch/components/recent-activity'
 import { QuickActions } from '@/features/dashboard/components/quick-actions'
-import { UpcomingMaintenance } from '@/features/fleet/components/upcoming-maintenance'
-import { ComplianceAlerts } from '@/features/compliance/components/compliance-alerts'
 import { LoadingSpinner } from '@/components/shared/loading-spinner'
 
 export default function DashboardPage() {
@@ -44,7 +41,6 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <Suspense fallback={<LoadingSpinner />}>
-              <RecentActivity />
             </Suspense>
           </CardContent>
         </Card>
@@ -59,7 +55,6 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <Suspense fallback={<LoadingSpinner />}>
-              <ComplianceAlerts />
             </Suspense>
           </CardContent>
         </Card>
@@ -74,7 +69,6 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <Suspense fallback={<LoadingSpinner />}>
-              <UpcomingMaintenance />
             </Suspense>
           </CardContent>
         </Card>

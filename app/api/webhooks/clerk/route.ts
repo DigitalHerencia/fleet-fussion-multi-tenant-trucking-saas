@@ -9,8 +9,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyWebhook, UserWebhookHandler, OrganizationWebhookHandler } from '@/lib/webhooks/clerk'
 import { 
   UserWebhookPayload, 
-  OrganizationWebhookPayload,
-  WebhookEventType 
+  OrganizationWebhookPayload
 } from '@/types/auth'
 
 /**
@@ -19,7 +18,7 @@ import {
 export async function POST(request: NextRequest) {
   try {
     // Verify webhook signature and get payload
-    const { eventType, payload } = await verifyWebhook(request)
+    const { eventType, payload } = await verifyWebhook(request) as { eventType: string, payload: any }
     
     console.log(`Processing webhook event: ${eventType}`)
     

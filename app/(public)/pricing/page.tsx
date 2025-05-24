@@ -1,5 +1,5 @@
 import PricingSection from "@/components/pricing/pricing-section"
-import { SharedFooter } from "@/components/shared-footer"
+import { SharedFooter } from "@/components/shared/shared-footer"
 import Link from "next/link"
 
 export default function PricingPage() {

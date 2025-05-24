@@ -19,268 +19,111 @@ Ensure a complete integration using Clerk for Attribute-Based Access Control (AB
   ```
   /
   ├── public/            # Marketing & legal: terms, privacy, refund, pricing, about, features, services, contact, blog
-  ├── app/
-  │   ├── globals.css    # TailwindCSS v4 custom CSS vars and class overrides (Dark Theme Only)
-  │   ├── auth/          # Auth-related: sign-in, sign-up, sign-out, onboarding, org-selection, forgot-password, profile, billing
-  │   └── tenant/        # Tenant-specific features: dashboard, dispatch, drivers, vehicles, compliance, ifta, analytics, settings
-  ├── components/
-  │   ├── shared/        # Dumb UI components only, utilizing ShadCN primitives
-  │   └── domain/        # Domain-specific layouts & view shells for tenant/auth/public pages
-  ├── features/          # Business logic and server-side actions per feature
-  ├── lib/
-  │   ├── fetchers/      # Data fetching utilities (GET)
-  │   └── actions/       # Mutations and server actions (POST, PUT, DELETE)
-  ├── types/             # TypeScript types, interfaces, and enums
-  ├── validations/       # Zod validation schemas
-  ├── db/                # Database utilities and connections (Neon PostgreSQL)
-  └── middleware/        # Clerk ABAC logic, redirects, and UX flow control
+  ├── app/               # Next.js App Router: routes, pages, layouts
+  ├── components/        # Dumb, reusable UI components (e.g., buttons, inputs)
+  ├── features/          # Smart UI components with business logic (e.g., <UserProfile />, <OrderForm />)
+  ├── lib/               # Core business logic, utilities, data fetching, server actions
+  │   ├── actions/       # Server Actions for mutations (e.g., createUser, updateOrder)
+  │   ├── fetchers/      # Data fetching functions (e.g., getProducts, getOrderDetails)
+  │   ├── utils/         # Utility functions (e.g., formatters, validators)
+  │   ├── database/      # Database schema, migrations, connection, queries (Drizzle ORM)
+  │   └── webhooks/      # Webhook handlers (e.g., Clerk, Stripe)
+  ├── styles/            # Global styles, Tailwind CSS base, CSS custom properties/tokens
+  ├── types/             # Shared TypeScript type definitions and interfaces
+  ├── config/            # Configuration files (e.g., Tailwind, Next.js, PostCSS, Drizzle)
+  ├── db/                # Database related files (e.g., schema, migrations, seeds) - consider merging relevant parts into lib/database/ and config/
+  ├── middleware.ts      # Next.js middleware for routing, authentication
+  ├── next.config.mjs    # Next.js configuration
+  ├── tailwind.config.ts # Tailwind CSS configuration
+  ├── tsconfig.json      # TypeScript configuration
+  └── README.md          # Project documentation
   ```
-* **Label each directory and file clearly and concisely** with descriptive, intuitive naming conventions.
-* **Ensure thorough commenting** throughout to clearly explain purpose, data flow, and integration points.
+* **Initialize Drizzle ORM** and set up the database schema in `lib/database/schema.ts`.
+    * Define tables for `companies`, `users`, `roles`, `permissions`, `vehicles`, `drivers`, `loads`, `documents`, `settings`, `subscriptions`, `audit_logs`, etc.
+    * Ensure relationships between tables are correctly defined (e.g., a `company` has many `users`, a `user` has one `role`).
+* **Configure Drizzle Kit** for migrations in `drizzle.config.ts`.
+* **Set up Neon PostgreSQL** as the database provider.
+    * Store connection string securely in environment variables.
+* **Integrate Clerk for authentication**:
+    * Configure Clerk for multi-tenancy using organizations.
+    * Implement ABAC (Attribute-Based Access Control) using Clerk roles and permissions.
+    * Set up Clerk webhooks to synchronize user and organization data with your Neon database (`/app/api/webhooks/clerk/route.ts` and `lib/webhooks/clerk.ts`).
+        * On `organization.created`, create a corresponding `company` in your database.
+        * On `user.created`, associate the user with their `company` and assign a default role.
+        * Handle other relevant events like `user.updated`, `organization.updated`, `organizationMembership.created`, etc.
+* **Implement basic UI components** using ShadCN UI and Tailwind CSS:
+    * Create a consistent layout structure (`app/(protected)/layout.tsx`, `app/(public)/layout.tsx`).
+    * Develop navigation components (`components/main-nav.tsx`, `components/user-nav.tsx`).
+    * Style forms, buttons, tables, and other common UI elements.
+* **Set up Tailwind CSS 4** according to the new CSS-first theming approach:
+    * Define design tokens (CSS custom properties for colors, spacing, radius, etc.) in `app/globals.css` within `:root`.
+    * Use `hsl(var(--token))` for colors in Tailwind utility classes.
+    * Ensure `darkMode: 'class'` is enabled in `tailwind.config.ts`.
+* **Create initial pages** for key areas:
+    * Public: Landing, About, Pricing, Contact
+    * Auth: Sign In, Sign Up
+    * App (Protected): Dashboard, Settings
+
+### 2️⃣ **Core Feature Development (TMS Specific):**
+
+*   **Company/Tenant Management:**
+    *   Allow users to manage their company profile (details, logo, primary color).
+    *   Implement logic for tenant isolation in database queries.
+*   **User Management (within a tenant):**
+    *   Allow admins to invite, view, and manage users within their organization.
+    *   Assign and manage user roles and permissions (e.g., admin, dispatcher, driver, compliance).
+*   **Vehicle Management:**
+    *   CRUD operations for vehicles (tractors, trailers).
+    *   Track vehicle details (VIN, make, model, year, status, registration, insurance).
+*   **Driver Management:**
+    *   CRUD operations for drivers.
+    *   Track driver details (CDL, contact info, employment status, compliance documents).
+*   **Load Management (Dispatch):**
+    *   CRUD operations for loads.
+    *   Track load details (origin, destination, shipper, consignee, dates, cargo, rate).
+    *   Implement a dispatch board/calendar view.
+*   **Document Management:**
+    *   Allow uploading and managing documents related to vehicles, drivers, loads (e.g., BOLs, PODs, insurance, registration).
+*   **Compliance Management:**
+    *   Track HOS (Hours of Service) for drivers.
+    *   Manage vehicle maintenance schedules and records.
+    *   IFTA reporting features.
+*   **Basic Analytics/Dashboard:**
+    *   Display key metrics for fleet operations (e.g., vehicle utilization, driver performance, load profitability).
+
+### 3️⃣ **Advanced Features & Integrations:**
+
+*   **Subscription & Billing:**
+    *   Integrate Stripe for subscription management (free, pro, enterprise tiers).
+    *   Implement logic to restrict features based on subscription tier.
+*   **Real-time Tracking (Optional):**
+    *   Integrate with ELD/GPS providers for real-time vehicle tracking.
+*   **Accounting Integration (Optional):**
+    *   Allow exporting data for accounting software (e.g., QuickBooks).
+*   **Reporting Module:**
+    *   Generate custom reports for various aspects of the TMS.
+*   **Notifications:**
+    *   Implement in-app and email notifications for important events (e.g., new load assignment, expiring documents).
+
+### 4️⃣ **Testing, Deployment & Polish:**
+
+*   **Write unit and integration tests** for critical business logic (Server Actions, fetchers, utilities).
+*   **Implement end-to-end tests** for key user flows.
+*   **Set up CI/CD pipeline** for automated testing and deployment (e.g., using Vercel, GitHub Actions).
+*   **Optimize for performance and scalability.**
+*   **Thoroughly test ABAC rules** to ensure data security and isolation.
+*   **Refine UI/UX** based on user feedback.
+*   **Create comprehensive documentation** (user guides, API docs).
 
 ---
 
-### 2️⃣ **Authentication & Authorization (Clerk ABAC):**
-
-* Implement Clerk for authentication with ABAC for tenant roles & permissions.
-* Define clear roles (`admin`, `dispatcher`, `driver`, etc.) and custom session claims.
-* Set up Clerk webhooks to synchronize roles and tenant data directly with Neon PostgreSQL, clearly documenting how webhook sync is managed.
-
----
-
-### 3️⃣ **Database Integration (Neon PostgreSQL):**
-
-* Configure Neon PostgreSQL connection pooling and ORM (Drizzle or Prisma).
-* Structure schemas clearly by domain and tenant separation:
-
-  ```
-  tenants (
-    id UUID PRIMARY KEY,
-    org_id VARCHAR UNIQUE NOT NULL, -- Clerk Org ID
-    name VARCHAR NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-  )
-
-  users (
-    id UUID PRIMARY KEY,
-    clerk_user_id VARCHAR UNIQUE NOT NULL, -- Clerk User ID
-    tenant_id UUID REFERENCES tenants(id),
-    role VARCHAR NOT NULL, -- ABAC role
-    ...
-  )
-
-  vehicles, drivers, dispatches, compliance, invoices, ifta_reports...
-  ```
-* Clearly document all schema relations, indexes, constraints, and synchronization processes.
-
----
-
-### 4️⃣ **Tenant Pages UI Implementation (ShadCN UI Components):**
-
-* Implement fully-featured, modular UI pages using React v19 and ShadCN v2 components:
-
-  * **Dashboard:** Metrics, quick summaries, key operational data visualizations.
-  * **Dispatch:** Real-time job assignments, scheduling, status tracking.
-  * **Drivers:** Driver profiles, certifications, assignments, status updates.
-  * **Vehicles:** Fleet management, maintenance tracking, vehicle status.
-  * **Compliance:** Regulatory filings, documentation, alerts, and notifications.
-  * **IFTA:** Fuel tax reporting interface and data collection.
-  * **Analytics:** Operational analytics, visual data charts, and performance metrics.
-  * **Settings:** User, tenant, billing, and notification preferences.
-* Implement **custom sign-in/sign-up/onboarding flows** clearly integrated with Clerk.
-* Include standard auth pages: sign-out, forgot-password, org-selection, profile management, and billing pages.
-* **Document clearly each page/component**, describing its purpose, props, and context of use.
-
----
-
-### 5️⃣ **TailwindCSS Styling & Dark Theme Accessibility:**
-
-* **Implement accessible, visually legible dark-only theme** (no mode toggling).
-* Document all TailwindCSS v4 customizations in `globals.css` clearly with:
-
-  * Spacing scales
-  * Font selections & sizes (headings, body, labels, inputs)
-  * Custom CSS variables for consistent color scheme (background, primary, secondary, accent, destructive, success, warning, neutral shades)
-* Use intuitive, accessible contrast ratios to handle UI complexities like tables, charts, and forms clearly and legibly.
-
-Example documentation snippet:
-
-| Variable          | Purpose          | Hex       | RGB          | Tailwind Class                |
-| ----------------- | ---------------- | --------- | ------------ | ----------------------------- |
-| `--color-bg`      | Page backgrounds | `#121212` | `18,18,18`   | `bg-bg`                       |
-| `--color-primary` | Main brand color | `#3B82F6` | `59,130,246` | `text-primary` / `bg-primary` |
-
----
-
-### 6️⃣ **Modularity, Reusability & Separation of Concerns:**
-
-* Strictly maintain separation of concerns:
-
-  * Dumb UI: `components/shared/`
-  * Domain-specific UI shells/layouts: `components/domain/`
-  * Logic (API calls, mutations): `features/`, `lib/fetchers`, `lib/actions`
-  * Types, validation schemas: `types/`, `validations/`
-  * Database integration and middleware clearly isolated and modular.
-
----
-
-### 7️⃣ **Middleware and Redirect Logic:**
-
-* Clearly document and implement middleware logic for:
-
-  * Route protection based on ABAC roles (Clerk).
-  * Client-side & server-side redirects for onboarding and unauthorized access flows.
-* Explicitly note Clerk session handling and custom session claim checks for each middleware logic segment.
-
----
-
-### 8️⃣ **Comprehensive Documentation:**
-
-* Provide **clear, descriptive documentation** in markdown (`README.md`) covering:
-
-  * Project structure overview & reasoning
-  * Clerk ABAC integration steps
-  * Neon PostgreSQL schema & webhook synchronization
-  * TailwindCSS theming guidelines
-  * ShadCN UI usage guidelines & component directory conventions
-  * Middleware usage & logic clearly explained
-  * Complete example setups for onboarding and tenant feature implementations
-
----
-
-## ✅ **Final Checks (Completion Checklist):**
-
-* [ ] Directory structure is strictly domain-driven as instructed.
-* [ ] Clerk ABAC roles clearly defined, synced via webhook to Neon PostgreSQL.
-* [ ] UI pages fully modular, accessible dark theme only, clearly documented.
-* [ ] CSS customizations documented explicitly in `globals.css`.
-* [ ] Middleware clearly handling redirects, ABAC permissions, session claims.
-* [ ] All business logic and UI strictly separated, clearly organized.
-* [ ] Comprehensive documentation provided clearly in markdown.
-
----
-
-### 🛠️ **Additional Recommendations:**
-
-* Setup continuous integration (CI/CD) with GitHub Actions & deployment to Vercel for streamlined workflow.
-* Consider implementing detailed logging and analytics for robust operational insights and error handling.
-* Future-proof your architecture by abstracting DB/API layers for easy scalability and maintainability.
-
----
-
-# UI/UX Standardization TODO List
-
-## 1. Typography System
-
-<input disabled="" type="checkbox"> Create consistent text hierarchies
-
-Standardize heading sizes across all components (especially in cards and dialogs)
-Define specific text sizes for different UI contexts (cards, tables, forms)
-Establish clear rules for font weights (currently inconsistent between components)
-
-<input disabled="" type="checkbox"> Standardize text colors
-
-Create reusable text color utility classes instead of inline text-muted-foreground
-Document proper usage of text emphasis levels
-
-## 2. Spacing System
-
-<input disabled="" type="checkbox"> Establish spacing scale
-
-Currently mixing gap-2, gap-4 inconsistently across components
-Define spacing tokens (xs, sm, md, lg, xl) with consistent rem/px values
-Create spacing documentation for different component types
-
-<input disabled="" type="checkbox"> Standardize padding/margin patterns
-
-Card padding is inconsistent (compare vehicle-card vs. other cards)
-Modal/dialog internal spacing varies throughout the app
-Create consistent spacing between related elements
-
-## 3. Component Standardization
-
-<input disabled="" type="checkbox"> Badge standardization
-
-Create a consistent pattern for status badges instead of inline styling
-Extract the getStatusColor logic into a shared utility
-Standardize badge sizing (currently varies across components)
-
-<input disabled="" type="checkbox"> Card patterns
-
-Define standard card layouts for different content types
-Standardize card header/content/footer spacing
-Create consistent patterns for information display in cards
-
-<input disabled="" type="checkbox"> Dialog/modal patterns
-
-Standardize dialog content structure and spacing
-Create reusable patterns for common dialog layouts
-Improve scrollable content handling in dialogs
-
-## 4. Layout Systems
-
-<input disabled="" type="checkbox"> Grid system refinement
-
-Standardize grid breakpoints across the application
-Create consistent column patterns for similar content types
-Refine responsive behavior of grid layouts
-
-<input disabled="" type="checkbox"> Flex layout standardization
-
-Create standard flex layout utilities for common patterns
-Standardize gap spacing in flex layouts
-Establish consistent alignment patterns
-
-## 5. Color System
-
-<input disabled="" type="checkbox"> Status color system
-
-Extract all status color logic into a shared utility
-Create consistent color tokens for status indicators
-Document status color usage patterns
-
-<input disabled="" type="checkbox"> Background color consistency
-
-Standardize background colors for different UI regions
-Create consistent hover/active state colors
-
-## 6. UI Elements
-
-<input disabled="" type="checkbox"> Icon usage
-
-Standardize icon sizing (currently using multiple size classes)
-Create consistent icon + text spacing patterns
-Establish standard colors for different icon contexts
-
-<input disabled="" type="checkbox"> Button standardization
-
-Ensure consistent button styling across similar actions
-Standardize icon placement in buttons
-Create consistent hover/focus states
-
-## 7. Component Architecture
-
-<input disabled="" type="checkbox"> Extract repeated patterns
-
-Create reusable "StatusBadge" component to replace custom badge styling
-Build shared "InfoItem" component for label+value patterns
-Develop standard "CardSection" components for common layouts
-
-<input disabled="" type="checkbox"> Style composition
-
-Leverage more CSS composition for repeated patterns
-Consider using more variants in component definitions
-Improve className handling for better maintainability
-
-
-![alt text](.vscode/Screenshot_22-5-2025_21407_kzmksml6rbxw1cpvf422.lite.vusercontent.net.jpeg)
-
-![alt text](.vscode/Screenshot_22-5-2025_213859_kzmksml6rbxw1cpvf422.lite.vusercontent.net.jpeg)
-
-![alt text](.vscode/Screenshot_22-5-2025_213913_kzmksml6rbxw1cpvf422.lite.vusercontent.net.jpeg)
-
-![alt text](.vscode/Screenshot_22-5-2025_213927_kzmksml6rbxw1cpvf422.lite.vusercontent.net.jpeg)
-
-![alt text](.vscode/Screenshot_22-5-2025_213952_kzmksml6rbxw1cpvf422.lite.vusercontent.net.jpeg)
-
-![alt text](.vscode/Screenshot_22-5-2025_214035_kzmksml6rbxw1cpvf422.lite.vusercontent.net.jpeg)
+## 📝 **Notes & Reminders:**
+
+*   Prioritize server-first rendering with React Server Components (RSC).
+*   Use Server Actions for all mutations and form submissions.
+*   Keep API routes (`/app/api/*`) minimal (auth, webhooks, 3rd-party integrations).
+*   Follow TypeScript best practices (strict mode, `satisfies` for configs).
+*   Maintain a clean and modular codebase.
+*   Document everything!
+
+Let's build an amazing TMS! 🚀

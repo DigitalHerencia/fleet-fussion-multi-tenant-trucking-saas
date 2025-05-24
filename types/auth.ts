@@ -136,6 +136,8 @@ export interface ClerkOrganizationMetadata {
   features: string[]
   billingEmail: string
   createdAt: string
+  dotNumber?: string
+  mcNumber?: string
   settings: {
     timezone: string
     dateFormat: string
@@ -146,6 +148,7 @@ export interface ClerkOrganizationMetadata {
 
 // Extended user context with ABAC data
 export interface UserContext {
+  name: string | undefined
   userId: string
   organizationId: string
   role: UserRole
@@ -164,11 +167,18 @@ export interface AuthState {
   user: UserContext | null
   isLoaded: boolean
   isSignedIn: boolean
+  isLoading: boolean
   organization: {
     id: string
     name: string
     slug: string
     metadata: ClerkOrganizationMetadata
+  } | null
+  company: {
+    id: string
+    name: string
+    dotNumber?: string
+    mcNumber?: string
   } | null
 }
 

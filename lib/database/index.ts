@@ -8,6 +8,7 @@
 import { drizzle } from 'drizzle-orm/neon-http'
 import { neon } from '@neondatabase/serverless'
 import * as schema from './schema'
+import { eq } from "drizzle-orm";
 
 if (!process.env.DATABASE_URL) {
   throw new Error('DATABASE_URL environment variable is required')
@@ -55,7 +56,7 @@ export class DatabaseQueries {
       const [organization] = await db
         .select()
         .from(schema.organizations)
-        .where(schema.organizations.clerkId.eq(clerkId))
+        .where(eq(schema.organizations.clerkId, clerkId))
         .limit(1)
       
       return organization || null
@@ -72,7 +73,7 @@ export class DatabaseQueries {
       const [user] = await db
         .select()
         .from(schema.users)
-        .where(schema.users.clerkId.eq(clerkId))
+        .where(eq(schema.users.clerkId, clerkId))
         .limit(1)
       
       return user || null
@@ -109,7 +110,7 @@ export class DatabaseQueries {
             }),
             updatedAt: new Date(),
           })
-          .where(schema.organizations.clerkId.eq(data.clerkId))
+          .where(eq(schema.organizations.clerkId, data.clerkId))
           .returning()
         
         return updated
@@ -173,7 +174,7 @@ export class DatabaseQueries {
             }),
             updatedAt: new Date(),
           })
-          .where(schema.users.clerkId.eq(data.clerkId))
+          .where(eq(schema.users.clerkId, data.clerkId))
           .returning()
         
         return updated
@@ -209,7 +210,7 @@ export class DatabaseQueries {
     try {
       await db
         .delete(schema.organizations)
-        .where(schema.organizations.clerkId.eq(clerkId))
+        .where(eq(schema.organizations.clerkId, clerkId))
     } catch (error) {
       handleDatabaseError(error)
     }
@@ -222,7 +223,7 @@ export class DatabaseQueries {
     try {
       await db
         .delete(schema.users)
-        .where(schema.users.clerkId.eq(clerkId))
+        .where(eq(schema.users.clerkId, clerkId))
     } catch (error) {
       handleDatabaseError(error)
     }

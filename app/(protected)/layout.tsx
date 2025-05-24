@@ -2,8 +2,8 @@
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { PageHeader } from "@/components/ui/page-header"
-import { MainNav } from "@/components/main-nav"
-import { MobileNav } from "@/components/mobile-nav"
+import { MainNav } from "@/components/shared/main-nav"
+import { MobileNav } from "@/components/shared/mobile-nav"
 import clsx from "clsx"
 import { useState } from "react"
 

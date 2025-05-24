@@ -9,7 +9,6 @@
 import { Bell, Search, Menu } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,12 +21,19 @@ import { Badge } from '@/components/ui/badge'
 import { OrganizationSwitcher, UserButton } from '@clerk/nextjs'
 import { useAuth } from '@/lib/auth/context'
 
+type OrganizationMetadata = {
+  subscriptionTier?: string
+  dotNumber?: string
+  // ...add other custom fields if needed
+}
+
 interface DashboardHeaderProps {
   onMobileMenuToggle?: () => void
 }
 
 export function DashboardHeader({ onMobileMenuToggle }: DashboardHeaderProps) {
   const { user, organization } = useAuth()
+  const metadata = organization?.metadata as OrganizationMetadata | undefined
 
   return (
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -49,11 +55,11 @@ export function DashboardHeader({ onMobileMenuToggle }: DashboardHeaderProps) {
             <h2 className="text-sm font-semibold">{organization?.name}</h2>
             <div className="flex items-center gap-2">
               <Badge variant="secondary" className="text-xs">
-                {organization?.metadata?.subscriptionTier || 'Free'}
+                {metadata?.subscriptionTier || 'Free'}
               </Badge>
-              {organization?.metadata?.dotNumber && (
+              {metadata?.dotNumber && (
                 <span className="text-xs text-muted-foreground">
-                  DOT: {organization.metadata.dotNumber}
+                  DOT: {metadata.dotNumber}
                 </span>
               )}
             </div>

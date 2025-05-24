@@ -18,10 +18,12 @@ import {
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth/context'
+import { hasPermission } from '@/lib/auth/permissions'
+import type { Permission } from '@/types/auth'
 
 export function QuickActions() {
   const router = useRouter()
-  const { hasPermission } = useAuth()
+  const auth = useAuth()
 
   const actions = [
     {
@@ -75,7 +77,7 @@ export function QuickActions() {
   ]
 
   const visibleActions = actions.filter(action => 
-    hasPermission(action.permission)
+    hasPermission(auth.user, action.permission as Permission)
   )
 
   if (visibleActions.length === 0) {
