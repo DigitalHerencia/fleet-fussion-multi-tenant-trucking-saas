@@ -1,7 +1,8 @@
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { Home, Truck, Users, ClipboardList, FileText, BarChart2, Settings, ChevronLeft, ChevronRight, Activity } from "lucide-react"
-import { Button } from "../ui/button"
+import { Button } from "@/components/ui/button"
+import { SignOutButton } from "@/components/shared/sign-out-button"
 
 interface MainNavProps {
   className?: string
@@ -35,7 +36,12 @@ export function MainNav({ className, collapsed, setCollapsed }: MainNavProps) {
         {/* Bottom Settings Link */}
         <div className="px-2 py-4 border-t border-[hsl(var(--sidebar-border))]/60">
           <SidebarLink href="/settings" icon={<Settings />} collapsed={collapsed}>Settings</SidebarLink>
+          {/* Sign Out Button */}
+          <div className={cn(collapsed ? "flex justify-center" : "mt-4")}>
+            <SignOutButton />
+          </div>
         </div>
+        
 
         {/* Collapse Button */}
         <Button
