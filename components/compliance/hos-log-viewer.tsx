@@ -67,7 +67,7 @@ export function HosLogViewer() {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
-                  <Calendar mode="single" selected={date} onSelect={(date) => date && setDate(date)} initialFocus />
+                  <Calendar selected={date} onSelect={(date) => date && setDate(date)} />
                 </PopoverContent>
               </Popover>
             </div>
