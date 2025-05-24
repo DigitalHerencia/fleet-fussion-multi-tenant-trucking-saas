@@ -24,7 +24,9 @@ export default function OnboardingPage() {
   const [formData, setFormData] = useState({
     firstName: user?.firstName || '',
     lastName: user?.lastName || '',
-    role: ''
+    role: '',
+    orgName: '',
+    orgSlug: '',
   })
 
   const roles = [
@@ -41,6 +43,11 @@ export default function OnboardingPage() {
       return
     }
 
+    if (!formData.orgName) {
+      toast.error('Please enter your organization name')
+      return
+    }
+
     setIsLoading(true)
     
     try {
@@ -50,20 +57,23 @@ export default function OnboardingPage() {
         lastName: formData.lastName,
       })
 
-      // Update user metadata with role
+      // Update user metadata with role and onboarding flag
       await user?.update({
         unsafeMetadata: {
           role: formData.role,
-          onboardingCompleted: false, // Will be completed after organization setup
+          onboardingCompleted: true,
         }
       })
 
-      toast.success('Profile updated successfully!')
-      router.push('/onboarding/organization')
+      // Create organization (replace with your org creation logic)
+      // Example: await createOrganization(formData.orgName, formData.orgSlug)
+
+      toast.success('Onboarding complete!')
+      router.push('/dashboard')
       
     } catch (error) {
-      console.error('Error updating profile:', error)
-      toast.error('Failed to update profile. Please try again.')
+      console.error('Error during onboarding:', error)
+      toast.error('Failed to complete onboarding. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -72,9 +82,9 @@ export default function OnboardingPage() {
   return (
     <Card>
       <CardHeader className="text-center">
-        <CardTitle>Complete Your Profile</CardTitle>
+        <CardTitle>Welcome to FleetFusion</CardTitle>
         <CardDescription>
-          Let&apos;s get you set up with FleetFusion. This will only take a moment.
+          Complete your profile and organization setup to get started.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -138,10 +148,28 @@ export default function OnboardingPage() {
             </div>
           </div>
 
+          {/* Organization Setup */}
+          <div className="space-y-2">
+            <Label htmlFor="orgName">Organization Name</Label>
+            <Input
+              id="orgName"
+              value={formData.orgName}
+              onChange={(e) => setFormData(prev => ({ ...prev, orgName: e.target.value }))}
+              required
+            />
+            <Label htmlFor="orgSlug" className="mt-2">Organization Slug (optional)</Label>
+            <Input
+              id="orgSlug"
+              value={formData.orgSlug}
+              onChange={(e) => setFormData(prev => ({ ...prev, orgSlug: e.target.value }))}
+              placeholder="e.g. fleetfusion-inc"
+            />
+          </div>
+
           {/* Submit Button */}
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Continue to Organization Setup
+            Finish Onboarding
           </Button>
         </form>
       </CardContent>
