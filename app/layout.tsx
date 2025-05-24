@@ -4,13 +4,6 @@ import { AuthProvider } from "@/lib/auth/context"
 import { ThemeProvider } from "@/components/shared/theme-provider"
 import { ClerkProvider } from "@clerk/nextjs"
 import type { Metadata } from "next"
-import { Inter as FontSans } from "next/font/google"
-import { cn } from "@/lib/utils"
-
-const fontSans = FontSans({
-  subsets: ["latin"],
-  variable: "--font-sans",
-})
 
 export const metadata: Metadata = {
   title: "FleetFusion - Enterprise-Grade Fleet Management",
@@ -27,12 +20,7 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en" className="dark" suppressHydrationWarning>
         <head />
-        <body
-          className={cn(
-            "min-h-screen bg-background font-sans antialiased",
-            fontSans.variable // Ensure this variable is correctly applied
-          )}
-        >
+        <body>
           <ThemeProvider
             attribute="class"
             defaultTheme="dark"
