@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, ChangeEvent, type JSX } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { AlertCircle, CheckCircle, Clock, MoreHorizontal, Search } from "lucide-react"
 import type { ColumnDef } from "@tanstack/react-table"
+import { drivers } from "@/lib/database/schema"
 
 // Define the Driver type
 interface Driver {
@@ -19,6 +20,18 @@ interface Driver {
   lastHosViolation: string
   dutyStatus: string
   availableHours: number
+}
+
+// Add interface for compliance table driver
+interface ComplianceDriver {
+  id: string
+  name: string
+  cdlStatus: string
+  cdlExpiration: string
+  medicalStatus: string
+  medicalExpiration: string
+  hosStatus: string
+  lastViolation: string
 }
 
 // Export the columns definition
@@ -106,65 +119,9 @@ export const columns: ColumnDef<Driver>[] = [
   },
 ]
 
-const mockDrivers = [
-  {
-    id: "1",
-    name: "John Smith",
-    cdlStatus: "Valid",
-    cdlExpiration: "2025-06-15",
-    medicalStatus: "Expiring Soon",
-    medicalExpiration: "2023-07-10",
-    hosStatus: "Compliant",
-    lastViolation: "2023-04-22",
-  },
-  {
-    id: "2",
-    name: "Maria Garcia",
-    cdlStatus: "Valid",
-    cdlExpiration: "2024-08-22",
-    medicalStatus: "Valid",
-    medicalExpiration: "2024-02-18",
-    hosStatus: "Violation",
-    lastViolation: "2023-06-05",
-  },
-  {
-    id: "3",
-    name: "Robert Johnson",
-    cdlStatus: "Valid",
-    cdlExpiration: "2026-03-30",
-    medicalStatus: "Valid",
-    medicalExpiration: "2023-11-12",
-    hosStatus: "Compliant",
-    lastViolation: "None",
-  },
-  {
-    id: "4",
-    name: "Sarah Williams",
-    cdlStatus: "Expiring Soon",
-    cdlExpiration: "2023-07-28",
-    medicalStatus: "Valid",
-    medicalExpiration: "2024-05-20",
-    hosStatus: "Compliant",
-    lastViolation: "2023-02-14",
-  },
-  {
-    id: "5",
-    name: "Michael Brown",
-    cdlStatus: "Valid",
-    cdlExpiration: "2025-11-05",
-    medicalStatus: "Expired",
-    medicalExpiration: "2023-06-01",
-    hosStatus: "Compliant",
-    lastViolation: "2023-01-30",
-  },
-]
-
 export function DriverComplianceTable() {
-  const [searchTerm, setSearchTerm] = useState("")
-
-  const filteredDrivers = mockDrivers.filter((driver) => driver.name.toLowerCase().includes(searchTerm.toLowerCase()))
-
-  const getStatusBadge = (status: string) => {
+  const [searchTerm, setSearchTerm] = useState<string>("")
+  const getStatusBadge = (status: string): JSX.Element => {
     switch (status) {
       case "Valid":
         return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Valid</Badge>
@@ -181,7 +138,7 @@ export function DriverComplianceTable() {
     }
   }
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: string): JSX.Element | null => {
     switch (status) {
       case "Valid":
       case "Compliant":
@@ -206,7 +163,7 @@ export function DriverComplianceTable() {
             placeholder="Search drivers..."
             className="pl-8 w-full"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
           />
         </div>
         <div className="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
@@ -229,45 +186,6 @@ export function DriverComplianceTable() {
               <TableHead className="w-[80px]"></TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
-            {filteredDrivers.map((driver) => (
-              <TableRow key={driver.id}>
-                <TableCell className="font-medium">{driver.name}</TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    {getStatusIcon(driver.cdlStatus)}
-                    <div>
-                      {getStatusBadge(driver.cdlStatus)}
-                      <div className="text-xs text-muted-foreground mt-1">
-                        Exp: {new Date(driver.cdlExpiration).toLocaleDateString()}
-                      </div>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    {getStatusIcon(driver.medicalStatus)}
-                    <div>
-                      {getStatusBadge(driver.medicalStatus)}
-                      <div className="text-xs text-muted-foreground mt-1">
-                        Exp: {new Date(driver.medicalExpiration).toLocaleDateString()}
-                      </div>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    {getStatusIcon(driver.hosStatus)}
-                    {getStatusBadge(driver.hosStatus)}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  {driver.lastViolation === "None" ? (
-                    <span className="text-muted-foreground">None</span>
-                  ) : (
-                    new Date(driver.lastViolation).toLocaleDateString()
-                  )}
-                </TableCell>
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -284,11 +202,8 @@ export function DriverComplianceTable() {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
+                </Table>
+                </div>
+              </div>
   )
 }

@@ -6,7 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { verifyWebhook, UserWebhookHandler, OrganizationWebhookHandler } from '@/lib/webhooks/clerk'
+import { verifyWebhook, UserWebhookHandler, OrganizationWebhookHandler } from '@/lib/clerk'
 import { 
   UserWebhookPayload, 
   OrganizationWebhookPayload

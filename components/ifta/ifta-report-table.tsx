@@ -13,8 +13,7 @@ export function IftaReportTable() {
             </tr>
           </thead>
           <tbody>
-            {/* {mockReports.map((report) => (
-            ))} */}
+          
           </tbody>
         </table>
       </div>

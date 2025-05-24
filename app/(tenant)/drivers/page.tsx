@@ -7,113 +7,24 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { DriverCard } from "@/components/drivers/driver-card"
 import { DriverDetailsDialog } from "@/components/drivers/driver-details-dialog"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Plus, Search, Filter } from "lucide-react"
-import Link from "next/link"
-import { useAuth } from "@/lib/auth-context"
+import { Search, Filter } from "lucide-react"
+import { useAuth } from "@/lib/auth/context"
 
-const mockDrivers = [
+// Mock Drivers data (replace with import if you have real data elsewhere)
+const Drivers = [
 	{
-		id: "f81d4e2e-bcf2-11e6-869b-7df92533d2db",
+		id: "1",
 		firstName: "John",
+		lastName: "Doe",
+		status: "active",
+	},
+	{
+		id: "2",
+		firstName: "Jane",
 		lastName: "Smith",
-		email: "john.smith@example.com",
-		phone: "555-111-2222",
-		status: "active",
-		licenseNumber: "DL123456",
-		licenseState: "NM",
-		licenseExpiration: new Date("2026-05-15"),
-		medicalCardExpiration: new Date("2025-08-20"),
-		hireDate: new Date("2022-03-10"),
-		notes: "Experienced driver with hazmat endorsement",
-	},
-	{
-		id: "f81d4e2e-bcf2-11e6-869b-7df92533d2dc",
-		firstName: "Maria",
-		lastName: "Garcia",
-		email: "maria.garcia@example.com",
-		phone: "555-222-3333",
-		status: "active",
-		licenseNumber: "DL234567",
-		licenseState: "TX",
-		licenseExpiration: new Date("2025-11-30"),
-		medicalCardExpiration: new Date("2025-04-15"),
-		hireDate: new Date("2021-06-22"),
-		notes: "Team driver capability",
-	},
-	{
-		id: "f81d4e2e-bcf2-11e6-869b-7df92533d2dd",
-		firstName: "Robert",
-		lastName: "Johnson",
-		email: "robert.johnson@example.com",
-		phone: "555-333-4444",
-		status: "active",
-		licenseNumber: "DL345678",
-		licenseState: "AZ",
-		licenseExpiration: new Date("2024-09-18"),
-		medicalCardExpiration: new Date("2024-12-05"),
-		hireDate: new Date("2023-01-15"),
-		notes: "Prefers southwest routes",
-	},
-	{
-		id: "f81d4e2e-bcf2-11e6-869b-7df92533d2de",
-		firstName: "Sarah",
-		lastName: "Williams",
-		email: "sarah.williams@example.com",
-		phone: "555-444-5555",
-		status: "active",
-		licenseNumber: "DL456789",
-		licenseState: "NM",
-		licenseExpiration: new Date("2025-07-22"),
-		medicalCardExpiration: new Date("2024-08-30"),
-		hireDate: new Date("2022-11-08"),
-		notes: "Excellent safety record",
-	},
-	{
-		id: "f81d4e2e-bcf2-11e6-869b-7df92533d2df",
-		firstName: "Michael",
-		lastName: "Brown",
-		email: "michael.brown@example.com",
-		phone: "555-555-6666",
 		status: "inactive",
-		licenseNumber: "DL567890",
-		licenseState: "CA",
-		licenseExpiration: new Date("2026-02-14"),
-		medicalCardExpiration: new Date("2025-03-10"),
-		hireDate: new Date("2021-09-30"),
-		terminationDate: new Date("2023-10-15"),
-		notes: "On extended leave",
 	},
-]
-
-const mockRecentLoads = [
-	{
-		id: "a81d4e2e-bcf2-11e6-869b-7df92533d2db",
-		referenceNumber: "L-1001",
-		status: "in_transit",
-		originCity: "El Paso",
-		originState: "TX",
-		destinationCity: "Albuquerque",
-		destinationState: "NM",
-		pickupDate: new Date("2025-05-01"),
-		deliveryDate: new Date("2025-05-02"),
-	},
-	{
-		id: "a81d4e2e-bcf2-11e6-869b-7df92533d2dd",
-		referenceNumber: "L-1003",
-		status: "completed",
-		originCity: "Tucson",
-		originState: "AZ",
-		destinationCity: "El Paso",
-		destinationState: "TX",
-		pickupDate: new Date("2025-04-28"),
-		deliveryDate: new Date("2025-04-29"),
-	},
-]
-
-const navLinks: Array<{ label: string; href: string; active?: boolean }> = [
-	{ label: "Dashboard", href: "/dashboard" },
-	{ label: "Drivers", href: "/drivers", active: true },
+	// Add more mock drivers as needed
 ]
 
 export default function DriversPage() {
@@ -136,10 +47,10 @@ export default function DriversPage() {
 		setIsDetailsOpen(true)
 	}
 
-	const activeDrivers = mockDrivers.filter((driver) => driver.status === "active")
-	const inactiveDrivers = mockDrivers.filter((driver) => driver.status === "inactive")
+	const activeDrivers = Drivers.filter((driver) => driver.status === "active")
+	const inactiveDrivers = Drivers.filter((driver) => driver.status === "inactive")
 
-	const filteredDrivers = mockDrivers.filter((driver) =>
+	const filteredDrivers = Drivers.filter((driver) =>
 		`${driver.firstName} ${driver.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()),
 	)
 	const filteredActiveDrivers = activeDrivers.filter((driver) =>
@@ -213,7 +124,7 @@ export default function DriversPage() {
 				{selectedDriver && (
 					<DriverDetailsDialog
 						driver={selectedDriver}
-						recentLoads={mockRecentLoads}
+						recentLoads={[]}
 						isOpen={isDetailsOpen}
 						onClose={() => setIsDetailsOpen(false)}
 					/>

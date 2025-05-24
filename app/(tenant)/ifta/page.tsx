@@ -7,19 +7,6 @@ import { BarChart3, CalendarIcon, FileText, MapPin } from "lucide-react"
 import { PageHeader } from "@/components/ui/page-header"
 import { IftaReportTableClient } from "@/components/ifta/ifta-tables"
 
-// Mock data for IFTA reports
-const iftaReportsData = [
-	{
-		id: 1,
-		quarter: "Q2 2024",
-		totalMiles: 5842,
-		totalGallons: 912.5,
-		avgMPG: 6.4,
-		jurisdictions: 8,
-		status: "Draft",
-	},
-	// ...add more rows as needed...
-]
 
 // Define a custom FuelIcon component since it's not in lucide-react
 function FuelIcon(props: React.SVGProps<SVGSVGElement>) {

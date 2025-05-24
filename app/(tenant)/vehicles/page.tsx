@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Search, Plus } from "lucide-react"
 import { VehicleCard } from "@/components/vehicles/vehicle-card"
-import { useAuth } from "@/lib/auth-context"
+import { useAuth } from "@/lib/auth/context"
 import {
   Dialog,
   DialogContent,

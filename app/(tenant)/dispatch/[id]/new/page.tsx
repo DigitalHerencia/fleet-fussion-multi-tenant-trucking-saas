@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { LoadForm } from "@/components/dispatch/load-form"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useAuth } from "@/lib/auth-context"
+import { useAuth } from "@/lib/auth/context"
 
 export default function NewLoadPage() {
   const [isLoading, setIsLoading] = useState(true)

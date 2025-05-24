@@ -6,9 +6,9 @@
 
 import { Suspense } from 'react'
 import { redirect } from 'next/navigation'
-import { DashboardNav } from '@/features/auth/components/dashboard-nav'
-import { DashboardSidebar } from '@/features/auth/components/dashboard-sidebar'
-import { DashboardHeader } from '@/features/auth/components/dashboard-header'
+import { DashboardNav } from '@/features/auth/dashboard-nav'
+import { DashboardSidebar } from '@/features/auth/dashboard-sidebar'
+import { DashboardHeader } from '@/features/auth/dashboard-header'
 import { LoadingSpinner } from '@/components/shared/loading-spinner'
 
 interface DashboardLayoutProps {

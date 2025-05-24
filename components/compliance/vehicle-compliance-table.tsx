@@ -1,14 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { useState, type JSX } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { MoreHorizontal, AlertCircle, CheckCircle, Clock } from "lucide-react"
 import type { ColumnDef } from "@tanstack/react-table"
+import { vehicles } from "@/lib/database/schema"
 
 // Define the Vehicle type
-interface Vehicle {
+export interface Vehicle {
   id: string
   unit: string
   status: string
@@ -19,7 +20,9 @@ interface Vehicle {
   type: string
 }
 
-// Export the columns definition
+// Props for VehicleComplianceTable (none in this case, but explicit for clarity)
+interface VehicleComplianceTableProps {}
+
 export const columns: ColumnDef<Vehicle>[] = [
   {
     accessorKey: "unit",
@@ -115,61 +118,7 @@ export const columns: ColumnDef<Vehicle>[] = [
   },
 ]
 
-const mockVehicles = [
-  {
-    id: "1",
-    unit: "TRK-101",
-    status: "Compliant",
-    lastInspection: "2024-04-01",
-    nextInspection: "2024-07-01",
-    defects: "None",
-    registrationExpiry: "2024-12-15",
-    type: "Tractor",
-  },
-  {
-    id: "2",
-    unit: "TRL-202",
-    status: "Warning",
-    lastInspection: "2024-03-15",
-    nextInspection: "2024-06-15",
-    defects: "Minor - Tail Light",
-    registrationExpiry: "2024-08-30",
-    type: "Trailer",
-  },
-  {
-    id: "3",
-    unit: "TRK-103",
-    status: "Non-Compliant",
-    lastInspection: "2024-01-10",
-    nextInspection: "2024-04-10",
-    defects: "Major - Brake System",
-    registrationExpiry: "2024-10-20",
-    type: "Tractor",
-  },
-  {
-    id: "4",
-    unit: "TRL-204",
-    status: "Compliant",
-    lastInspection: "2024-03-25",
-    nextInspection: "2024-06-25",
-    defects: "None",
-    registrationExpiry: "2025-01-15",
-    type: "Trailer",
-  },
-  {
-    id: "5",
-    unit: "TRK-105",
-    status: "Compliant",
-    lastInspection: "2024-04-05",
-    nextInspection: "2024-07-05",
-    defects: "None",
-    registrationExpiry: "2024-11-10",
-    type: "Tractor",
-  },
-]
-
-export function VehicleComplianceTable() {
-  const [vehicles, setVehicles] = useState(mockVehicles)
+export function VehicleComplianceTable(props: VehicleComplianceTableProps): JSX.Element {
 
   return (
     <div className="space-y-4">
@@ -179,46 +128,7 @@ export function VehicleComplianceTable() {
       </div>
 
       {/* Vehicle list would go here */}
-      <div className="grid gap-4">
-        {vehicles.map((vehicle) => (
-          <div key={vehicle.id} className="border rounded-md p-4 flex flex-col sm:flex-row justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-medium">{vehicle.unit}</h3>
-                <Badge variant="outline">{vehicle.type}</Badge>
-              </div>
-              <p className="text-sm text-muted-foreground mt-1">
-                Registration expires: {new Date(vehicle.registrationExpiry).toLocaleDateString()}
-              </p>
-            </div>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-              <div className="flex items-center gap-1">
-                {vehicle.status === "Compliant" ? (
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                ) : vehicle.status === "Warning" ? (
-                  <Clock className="h-4 w-4 text-amber-500" />
-                ) : (
-                  <AlertCircle className="h-4 w-4 text-red-500" />
-                )}
-                <Badge
-                  className={
-                    vehicle.status === "Compliant"
-                      ? "bg-green-100 text-green-800"
-                      : vehicle.status === "Warning"
-                        ? "bg-amber-100 text-amber-800"
-                        : "bg-red-100 text-red-800"
-                  }
-                >
-                  {vehicle.status}
-                </Badge>
-              </div>
-              <Button variant="outline" size="sm">
-                View Details
-              </Button>
-            </div>
-          </div>
-        ))}
+      
       </div>
-    </div>
   )
 }

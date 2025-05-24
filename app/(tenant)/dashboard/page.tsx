@@ -6,8 +6,8 @@
 
 import { Suspense } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { DashboardMetrics } from '@/features/analytics/components/dashboard-metrics'
-import { QuickActions } from '@/features/dashboard/components/quick-actions'
+import { DashboardMetrics } from '@/features/analytics/dashboard-metrics'
+import { QuickActions } from '@/features/dashboard/quick-actions'
 import { LoadingSpinner } from '@/components/shared/loading-spinner'
 
 export default function DashboardPage() {
