@@ -1,79 +1,62 @@
 "use server"
 
-import { cookies } from "next/headers"
+import { auth, currentUser } from "@clerk/nextjs/server"
+import { DatabaseQueries } from "@/lib/database"
+import { ClerkUserMetadata, ClerkOrganizationMetadata, UserContext } from "@/types/auth"
 import { redirect } from "next/navigation"
 
-// Mock data
-const mockCompany = {
-  id: "company-1",
-  name: "C & J Express Inc.",
-  dotNumber: "1565942",
-  mcNumber: "580454",
-  address: "710 Eagle Dr",
-  city: "Anthony",
-  state: "NM",
-  zip: "88021",
-  phone: "555-123-4567",
-  email: "info@cjexpress.com",
-  logoUrl: null,
-  primaryColor: "#0f766e",
-  isActive: true,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-}
+// Get the current authenticated user with ABAC/Clerk context
+export async function getCurrentUser(): Promise<UserContext | null> {
+  const { userId, orgId } = await auth()
+  if (!userId || !orgId) return null
 
-const mockUser = {
-  id: "user-1",
-  name: "Test User",
-  email: "test@example.com",
-  role: "admin",
-}
+  // Get Clerk user and org metadata
+  const user = await currentUser()
+  if (!user) return null
 
-// Get the current authenticated user
-export async function getCurrentUser() {
-  const userCookie = ( await cookies() ).get("fleetfusion_user")
+  // Get DB user/org for additional info
+  const dbUser = await DatabaseQueries.getUserByClerkId(userId)
+  const dbOrg = await DatabaseQueries.getOrganizationByClerkId(orgId)
+  if (!dbUser || !dbOrg) return null
 
-  if (!userCookie?.value) {
-    return null
-  }
+  // Compose ABAC context
+  const userMeta = user.publicMetadata as unknown as ClerkUserMetadata
+  const orgMeta = dbOrg as unknown as ClerkOrganizationMetadata
 
-  try {
-    return mockUser
-  } catch (error) {
-    console.error("Error parsing user cookie:", error)
-    return null
+  return {
+    name: user.firstName ? `${user.firstName} ${user.lastName ?? ''}`.trim() : user.username ?? user.emailAddresses[0]?.emailAddress ?? undefined,
+    userId,
+    organizationId: orgId,
+    role: userMeta.role,
+    permissions: userMeta.permissions,
+    email: user.emailAddresses[0]?.emailAddress ?? '',
+    firstName: user.firstName,
+    lastName: user.lastName,
+    profileImage: user.imageUrl,
+    isActive: userMeta.isActive,
+    onboardingCompleted: userMeta.onboardingCompleted,
+    organizationMetadata: orgMeta,
   }
 }
 
-// Get the current company
-export async function getCurrentCompany() {
-  const userCookie = ( await cookies() ).get("fleetfusion_user")
-
-  if (!userCookie?.value) {
-    return null
-  }
-
-  return mockCompany
+// Get the current company (organization) context
+export async function getCurrentCompany(): Promise<ClerkOrganizationMetadata | null> {
+  const { orgId } = await auth()
+  if (!orgId) return null
+  const dbOrg = await DatabaseQueries.getOrganizationByClerkId(orgId)
+  if (!dbOrg) return null
+  return dbOrg as unknown as ClerkOrganizationMetadata
 }
 
 // Check if the user has the required role
-export async function checkUserRole(requiredRole: string) {
+export async function checkUserRole(requiredRole: string): Promise<boolean> {
   const user = await getCurrentUser()
-
-  if (!user) {
-    return false
-  }
-
+  if (!user) return false
   return user.role === requiredRole
 }
 
 // Require authentication and redirect to login if not authenticated
 export async function requireAuth() {
-  const userCookie = ( await cookies() ).get("fleetfusion_user")
-
-  if (!userCookie?.value) {
-    redirect("/login")
-  }
-
-  return { userId: mockUser.id, companyId: mockCompany.id }
+  const user = await getCurrentUser()
+  if (!user) redirect("/login")
 }

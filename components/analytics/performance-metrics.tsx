@@ -2,20 +2,14 @@
 
 import { Line, LineChart, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import { RevenueMetrics } from "@/types/analytics"
 
 interface PerformanceMetricsProps {
   timeRange: string
+  performanceData: RevenueMetrics[] // Updated prop type to RevenueMetrics
 }
 
-const mockPerformanceData = [
-  { date: "2023-06-01", loads: 42, miles: 12450, onTimeDelivery: 95, utilization: 88 },
-  { date: "2023-06-08", loads: 38, miles: 11200, onTimeDelivery: 92, utilization: 85 },
-  { date: "2023-06-15", loads: 45, miles: 13500, onTimeDelivery: 94, utilization: 90 },
-  { date: "2023-06-22", loads: 40, miles: 12000, onTimeDelivery: 96, utilization: 87 },
-  { date: "2023-06-29", loads: 44, miles: 13200, onTimeDelivery: 93, utilization: 89 },
-]
-
-export function PerformanceMetrics({ timeRange }: PerformanceMetricsProps) {
+export function PerformanceMetrics({ performanceData }: PerformanceMetricsProps) {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2">
@@ -31,7 +25,7 @@ export function PerformanceMetrics({ timeRange }: PerformanceMetricsProps) {
             className="h-[300px]"
           >
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={mockPerformanceData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+              <LineChart data={performanceData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
                 <YAxis />
@@ -55,7 +49,7 @@ export function PerformanceMetrics({ timeRange }: PerformanceMetricsProps) {
             className="h-[300px]"
           >
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={mockPerformanceData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+              <LineChart data={performanceData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
                 <YAxis />
@@ -79,7 +73,7 @@ export function PerformanceMetrics({ timeRange }: PerformanceMetricsProps) {
             className="h-[300px]"
           >
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={mockPerformanceData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+              <LineChart data={performanceData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
                 <YAxis domain={[80, 100]} />
@@ -108,7 +102,7 @@ export function PerformanceMetrics({ timeRange }: PerformanceMetricsProps) {
             className="h-[300px]"
           >
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={mockPerformanceData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+              <LineChart data={performanceData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
                 <YAxis domain={[80, 100]} />

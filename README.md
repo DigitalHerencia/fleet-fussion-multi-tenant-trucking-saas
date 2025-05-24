@@ -1,7 +1,7 @@
 <!-- FleetFusion SaaS Platform -->
 
 <p align="center">
-  <img src="/public/readme_hero.jpeg" alt="FleetFusion Logo" width="1920" />
+  <img src="public/readme_hero.jpeg" alt="FleetFusion Logo" width="1920" />
 </p>
 
 <h1 align="center">FleetFusion 🚚✨</h1>
@@ -15,9 +15,6 @@
   <a href="https://vercel.com/digital-herencia/fleet-fusion"><img src="https://img.shields.io/badge/Deploy-Vercel-000?logo=vercel" alt="Vercel"/></a>
   <img src="https://img.shields.io/badge/Next.js-15-blue?logo=next.js" alt="Next.js"/>
   <img src="https://img.shields.io/badge/React-19-61dafb?logo=react" alt="React"/>
-  <img src="https://img.shields.io/badge/Postgres-Neon-008bb9?logo=postgresql" alt="Postgres"/>
-  <img src="https://img.shields.io/badge/Auth-Clerk-3b82f6?logo=clerk" alt="Clerk"/>
-  <img src="https://img.shields.io/badge/CI-CD-GitHub%20Actions-2088ff?logo=githubactions" alt="CI/CD"/>
   <img src="https://img.shields.io/badge/License-MIT-green" alt="License"/>
 </p>
 

@@ -2,17 +2,23 @@ import { Button } from "@/components/ui/button"
 import { ArrowRight, Truck, Shield, BarChart3, FileText, MapPin, Users, Calendar, CreditCard } from "lucide-react"
 import PricingSection from "@/components/pricing/pricing-section"
 import { SharedFooter } from "@/components/shared/shared-footer"
+import Image from "next/image"
+import { PublicNav } from "@/components/shared/public-nav"
 
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
+      <PublicNav />
+      {/* Main content area */}
       <main className="flex-1">
         <section className="w-full py-12 md:py-24 lg:py-0 xl:py-0 relative lg:min-h-[600px] xl:min-h-[700px] 2xl:min-h-[800px] overflow-hidden">
           {/* Background image for large screens */}
           <div className="hidden lg:block absolute inset-0 w-full h-full z-0">
-            <img
-              src="/big-trucksz.png"
+            <Image
+              src="/landing_hero.png"
               alt="FleetFusion Hero Background"
+              width={1920}
+              height={1080}
               className="w-full h-full object-cover object-right-bottom"
             />
             <div className="absolute inset-0 bg-black/20" />
@@ -38,10 +44,12 @@ export default function Home() {
               </div>
               {/* Show hero image only on small screens */}
               <div className="flex items-center justify-center lg:hidden">
-                <img
+                <Image
                   alt="Automated Compliance Management"
                   className="aspect-video overflow-hidden rounded-xl object-fit object-center shadow-lg border border-muted"
-                  src="/trucksz.png"
+                  src="/trucksz_splash.png"
+                  width={600}
+                  height={400}
                 />
               </div>
             </div>
@@ -143,7 +151,7 @@ export default function Home() {
                 </div>
               </div>
             </div>
-        </section>
+          </section>
         <PricingSection />
       </main>
       <SharedFooter />

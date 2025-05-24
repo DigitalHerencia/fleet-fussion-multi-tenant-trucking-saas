@@ -185,7 +185,7 @@ export function ComplianceDashboard() {
               <CardDescription>Manage and track required documentation</CardDescription>
             </CardHeader>
             <CardContent>
-              <ComplianceDocuments />
+              <ComplianceDocuments documents={ [] } />
             </CardContent>
           </Card>
         </TabsContent>

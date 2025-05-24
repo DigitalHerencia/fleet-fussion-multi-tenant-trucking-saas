@@ -3,61 +3,17 @@
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, XAxis, YAxis } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
+import { DriverPerformanceMetrics } from "@/types/analytics" 
 
 interface DriverPerformanceProps {
   timeRange: string
+  driverPerformanceMetrics: DriverPerformanceMetrics[] // Added prop for data
 }
 
-const mockDriverPerformanceData = [
-  {
-    name: "John Smith",
-    miles: 8450,
-    loads: 28,
-    onTime: 96,
-    fuelEfficiency: 6.4,
-    safetyScore: 95,
-    violations: 0,
-  },
-  {
-    name: "Maria Garcia",
-    miles: 7850,
-    loads: 26,
-    onTime: 92,
-    fuelEfficiency: 6.2,
-    safetyScore: 92,
-    violations: 1,
-  },
-  {
-    name: "Robert Johnson",
-    miles: 8200,
-    loads: 27,
-    onTime: 94,
-    fuelEfficiency: 6.5,
-    safetyScore: 97,
-    violations: 0,
-  },
-  {
-    name: "Sarah Williams",
-    miles: 7650,
-    loads: 25,
-    onTime: 95,
-    fuelEfficiency: 6.3,
-    safetyScore: 94,
-    violations: 0,
-  },
-  {
-    name: "Michael Brown",
-    miles: 7950,
-    loads: 26,
-    onTime: 93,
-    fuelEfficiency: 6.1,
-    safetyScore: 90,
-    violations: 1,
-  },
-]
+export function DriverPerformance({ driverPerformanceMetrics }: DriverPerformanceProps) {
+  // Assume driverPerformanceMetrics is an array with one element (per timeframe)
+  const drivers = driverPerformanceMetrics[0]?.drivers ?? [];
 
-export function DriverPerformance({ timeRange }: DriverPerformanceProps) {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2">
@@ -73,9 +29,9 @@ export function DriverPerformance({ timeRange }: DriverPerformanceProps) {
             className="h-[300px]"
           >
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={mockDriverPerformanceData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+              <BarChart data={drivers} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
+                <XAxis dataKey="driverName" />
                 <YAxis />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Legend />
@@ -97,9 +53,9 @@ export function DriverPerformance({ timeRange }: DriverPerformanceProps) {
             className="h-[300px]"
           >
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={mockDriverPerformanceData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+              <BarChart data={drivers} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
+                <XAxis dataKey="driverName" />
                 <YAxis domain={[80, 100]} />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Legend />
@@ -121,25 +77,19 @@ export function DriverPerformance({ timeRange }: DriverPerformanceProps) {
               <TableHead className="text-right">On-Time %</TableHead>
               <TableHead className="text-right">MPG</TableHead>
               <TableHead className="text-right">Safety Score</TableHead>
-              <TableHead>Violations</TableHead>
+              {/* Violations column removed as it's not in the type */}
             </TableRow>
           </TableHeader>
           <TableBody>
-            {mockDriverPerformanceData.map((driver) => (
-              <TableRow key={driver.name}>
-                <TableCell className="font-medium">{driver.name}</TableCell>
+            {drivers.map((driver) => (
+              <TableRow key={driver.driverId}>
+                <TableCell className="font-medium">{driver.driverName}</TableCell>
                 <TableCell className="text-right">{driver.miles.toLocaleString()}</TableCell>
                 <TableCell className="text-right">{driver.loads}</TableCell>
-                <TableCell className="text-right">{driver.onTime}%</TableCell>
+                <TableCell className="text-right">{driver.onTimeDelivery}%</TableCell>
                 <TableCell className="text-right">{driver.fuelEfficiency.toFixed(1)}</TableCell>
                 <TableCell className="text-right">{driver.safetyScore}</TableCell>
-                <TableCell>
-                  {driver.violations === 0 ? (
-                    <Badge className="bg-green-100 text-green-800 hover:bg-green-100">None</Badge>
-                  ) : (
-                    <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">{driver.violations}</Badge>
-                  )}
-                </TableCell>
+                {/* Violations column removed as it's not in the type */}
               </TableRow>
             ))}
           </TableBody>

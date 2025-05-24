@@ -3,6 +3,7 @@
  */
 
 export interface ComplianceDocument {
+  lastUpdated: string | number | Date
   id: string
   tenantId: string
   type: ComplianceDocumentType

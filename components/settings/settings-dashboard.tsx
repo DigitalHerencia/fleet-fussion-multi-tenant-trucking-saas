@@ -8,6 +8,7 @@ import { CompanySettings } from "./company-settings"
 import { UserSettings } from "./user-settings"
 import { NotificationSettings } from "./notification-settings"
 import { IntegrationSettings } from "./integration-settings"
+import { Button } from "../ui/button"
 
 // Loading component for Settings page
 function SettingsLoading() {
@@ -29,9 +30,9 @@ function BillingSettings() {
               <h4 className="font-medium">Current Plan: Professional</h4>
               <p className="text-sm text-muted-foreground">$99/month, billed monthly</p>
             </div>
-            <button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 w-full sm:w-auto">
+            <Button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 w-full sm:w-auto">
               Change Plan
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -46,9 +47,9 @@ function BillingSettings() {
                   <p className="text-sm text-muted-foreground">Expires 12/2025</p>
                 </div>
               </div>
-              <button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-8 px-3 text-muted-foreground hover:bg-accent hover:text-accent-foreground w-full sm:w-auto">
+              <Button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-8 px-3 text-muted-foreground hover:bg-accent hover:text-accent-foreground w-full sm:w-auto">
                 Edit
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -62,9 +63,9 @@ function BillingSettings() {
                 <p>123 Trucking Way</p>
                 <p>Atlanta, GA 30301</p>
               </div>
-              <button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-8 px-3 text-muted-foreground hover:bg-accent hover:text-accent-foreground w-full sm:w-auto">
+              <Button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-8 px-3 text-muted-foreground hover:bg-accent hover:text-accent-foreground w-full sm:w-auto">
                 Edit
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -77,27 +78,27 @@ function BillingSettings() {
                 <p className="font-medium">Invoice #INV-2023-11</p>
                 <p className="text-sm text-muted-foreground">Nov 1, 2023 - $99.00</p>
               </div>
-              <button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-8 px-3 text-muted-foreground hover:bg-accent hover:text-accent-foreground w-full sm:w-auto">
+              <Button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-8 px-3 text-muted-foreground hover:bg-accent hover:text-accent-foreground w-full sm:w-auto">
                 Download
-              </button>
+              </Button>
             </div>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b p-4 gap-2">
               <div>
                 <p className="font-medium">Invoice #INV-2023-10</p>
                 <p className="text-sm text-muted-foreground">Oct 1, 2023 - $99.00</p>
               </div>
-              <button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-8 px-3 text-muted-foreground hover:bg-accent hover:text-accent-foreground w-full sm:w-auto">
+              <Button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-8 px-3 text-muted-foreground hover:bg-accent hover:text-accent-foreground w-full sm:w-auto">
                 Download
-              </button>
+              </Button>
             </div>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-2">
               <div>
                 <p className="font-medium">Invoice #INV-2023-09</p>
                 <p className="text-sm text-muted-foreground">Sep 1, 2023 - $99.00</p>
               </div>
-              <button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-8 px-3 text-muted-foreground hover:bg-accent hover:text-accent-foreground w-full sm:w-auto">
+              <Button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-8 px-3 text-muted-foreground hover:bg-accent hover:text-accent-foreground w-full sm:w-auto">
                 Download
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -175,12 +176,12 @@ function SupportSettings() {
             </div>
           </div>
 
-          <button
+          <Button
             type="submit"
             className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full sm:w-auto"
           >
             Submit Support Request
-          </button>
+          </Button>
         </form>
 
         <div className="rounded-lg border p-4 mt-6">

@@ -2,29 +2,15 @@
 
 import { Line, LineChart, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer, Bar, BarChart } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import { ExpenseMetrics, ProfitabilityMetrics } from "@/types/analytics" // Assuming types are defined in @/types
 
 interface FinancialMetricsProps {
   timeRange: string
+  financialData: ProfitabilityMetrics[] // Updated prop type to ProfitabilityMetrics
+  expenseBreakdown: ExpenseMetrics[] // Updated prop type to ExpenseMetrics
 }
 
-const mockFinancialData = [
-  { date: "2023-06-01", revenue: 25800, expenses: 18500, profit: 7300 },
-  { date: "2023-06-08", revenue: 23400, expenses: 17200, profit: 6200 },
-  { date: "2023-06-15", revenue: 27500, expenses: 19800, profit: 7700 },
-  { date: "2023-06-22", revenue: 24600, expenses: 18100, profit: 6500 },
-  { date: "2023-06-29", revenue: 27150, expenses: 19300, profit: 7850 },
-]
-
-const mockExpenseBreakdown = [
-  { category: "Fuel", value: 26842 },
-  { category: "Maintenance", value: 12450 },
-  { category: "Insurance", value: 8750 },
-  { category: "Payroll", value: 35200 },
-  { category: "Admin", value: 6800 },
-  { category: "Other", value: 3850 },
-]
-
-export function FinancialMetrics({ timeRange }: FinancialMetricsProps) {
+export function FinancialMetrics({ timeRange, financialData, expenseBreakdown }: FinancialMetricsProps) {
   return (
     <div className="space-y-6">
       <div>
@@ -47,7 +33,7 @@ export function FinancialMetrics({ timeRange }: FinancialMetricsProps) {
           className="h-[400px]"
         >
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={mockFinancialData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+            <LineChart data={financialData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
               <YAxis />
@@ -74,7 +60,7 @@ export function FinancialMetrics({ timeRange }: FinancialMetricsProps) {
             className="h-[300px]"
           >
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={mockExpenseBreakdown} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+              <BarChart data={expenseBreakdown} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="category" />
                 <YAxis />

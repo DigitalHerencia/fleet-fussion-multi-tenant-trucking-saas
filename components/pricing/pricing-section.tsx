@@ -1,6 +1,8 @@
 // Shared pricing section for landing and pricing pages
 import Link from "next/link"
 import React from "react"
+import Image from "next/image"
+import { Button } from "@/components/ui/button"
 
 const plans = [
   {
@@ -48,11 +50,14 @@ export default function PricingSection({ showTitle = true }: { showTitle?: boole
   return (
     <section className="w-full min-h-screen flex items-center justify-center relative overflow-hidden">
       {/* Background image */}
-      <div className="absolute inset-0 w-full h-full z-0">
-        <img
-          src="/tiers-bg.png"
+      <div className="absolute inset-0 w-full h-full z-10">
+        <Image
+          src="/tiers_bg.png"
           alt="Pricing Background"
           className="w-full h-full object-cover object-center"
+          width={1920}
+          height={1080}
+          priority
         />
         <div className="absolute inset-0 bg-white/80 dark:bg-zinc-900/20" />
       </div>
@@ -86,9 +91,9 @@ export default function PricingSection({ showTitle = true }: { showTitle?: boole
                 ))}
               </ul>
               <div className="mt-auto w-full">
-                <button className={`w-full py-2 rounded-lg font-semibold text-white ${plan.highlight ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-700 hover:bg-gray-800'} transition-colors`}>
+                <Button className={`w-full py-2 rounded-lg font-semibold text-white ${plan.highlight ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-700 hover:bg-gray-800'} transition-colors`}>
                   Choose {plan.name}
-                </button>
+                </Button>
               </div>
             </div>
           ))}

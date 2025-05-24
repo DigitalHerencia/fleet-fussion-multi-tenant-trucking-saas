@@ -110,7 +110,7 @@ export function AnalyticsDashboard() {
               <CardDescription>Key operational performance indicators</CardDescription>
             </CardHeader>
             <CardContent>
-              <PerformanceMetrics timeRange={timeRange} />
+              <PerformanceMetrics timeRange={ "" } performanceData={ [] }  />
             </CardContent>
           </Card>
         </TabsContent>
@@ -122,7 +122,7 @@ export function AnalyticsDashboard() {
               <CardDescription>Revenue, costs, and profitability analysis</CardDescription>
             </CardHeader>
             <CardContent>
-              <FinancialMetrics timeRange={timeRange} />
+              <FinancialMetrics timeRange={ timeRange } financialData={ [] } expenseBreakdown={ [] } />
             </CardContent>
           </Card>
         </TabsContent>
@@ -134,7 +134,7 @@ export function AnalyticsDashboard() {
               <CardDescription>Driver productivity and safety metrics</CardDescription>
             </CardHeader>
             <CardContent>
-              <DriverPerformance timeRange={timeRange} />
+              <DriverPerformance timeRange={ timeRange } driverPerformanceMetrics={ [] } />
             </CardContent>
           </Card>
         </TabsContent>
@@ -146,7 +146,7 @@ export function AnalyticsDashboard() {
               <CardDescription>Vehicle usage and maintenance metrics</CardDescription>
             </CardHeader>
             <CardContent>
-              <VehicleUtilization timeRange={timeRange} />
+              <VehicleUtilization timeRange={ timeRange } vehicleData={ [] } />
             </CardContent>
           </Card>
         </TabsContent>

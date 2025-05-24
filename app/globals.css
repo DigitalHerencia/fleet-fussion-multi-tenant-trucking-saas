@@ -1,5 +1,6 @@
 /** @format */
 
+@import "../styles/tokens.css";
 @import "tailwindcss";
 
 :root {
@@ -99,22 +100,24 @@
 
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.15),
-        0 2px 4px -2px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.2),
-        0 4px 6px -4px rgba(0, 0, 0, 0.15);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.25),
-        0 8px 10px -6px rgba(0, 0, 0, 0.2);
+    --shadow-md:
+        0 4px 6px -1px rgba(0, 0, 0, 0.15), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    --shadow-lg:
+        0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -4px rgba(0, 0, 0, 0.15);
+    --shadow-xl:
+        0 20px 25px -5px rgba(0, 0, 0, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
     --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.1);
 
     /* Typography */
     /* Font Families - Ensure these are imported or available system fonts */
-    --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
-        "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
+    --font-sans:
+        "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
         "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
         "Noto Color Emoji";
     --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    --font-mono:
+        ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
         "Liberation Mono", "Courier New", monospace;
 
     /* Font Sizes - Base size is 16px (1rem) on body */
@@ -254,7 +257,10 @@ a:hover {
     font-weight: 600;
     font-size: 1rem;
     padding: 0.5rem 1.25rem;
-    transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+    transition:
+        background 0.15s,
+        color 0.15s,
+        box-shadow 0.15s;
     border: none;
     cursor: pointer;
 }
@@ -343,7 +349,9 @@ a:hover {
     padding-bottom: 0.5rem;
     cursor: pointer;
     border-bottom: 2px solid transparent;
-    transition: color 0.15s, border-color 0.15s;
+    transition:
+        color 0.15s,
+        border-color 0.15s;
 }
 .tab.active {
     color: hsl(var(--primary));

@@ -115,7 +115,6 @@ export const columns: ColumnDef<Vehicle>[] = [
   },
 ]
 
-// Mock vehicles data
 const mockVehicles = [
   {
     id: "1",

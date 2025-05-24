@@ -4,60 +4,14 @@ import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, XAxis, YAxis
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import { Vehicle } from "@/types/dispatch"
 
 interface VehicleUtilizationProps {
   timeRange: string
+  vehicleData: Vehicle[] // Updated prop type to Vehicle[]
 }
 
-const mockVehicleData = [
-  {
-    number: "T-101",
-    type: "Tractor",
-    miles: 14250,
-    utilization: 92,
-    fuelEfficiency: 6.4,
-    maintenance: 1250,
-    status: "Active",
-  },
-  {
-    number: "T-102",
-    type: "Tractor",
-    miles: 13850,
-    utilization: 88,
-    fuelEfficiency: 6.2,
-    maintenance: 1450,
-    status: "Active",
-  },
-  {
-    number: "T-103",
-    type: "Tractor",
-    miles: 14050,
-    utilization: 90,
-    fuelEfficiency: 6.5,
-    maintenance: 950,
-    status: "Maintenance",
-  },
-  {
-    number: "TR-201",
-    type: "Trailer",
-    miles: 13650,
-    utilization: 87,
-    fuelEfficiency: "N/A",
-    maintenance: 750,
-    status: "Active",
-  },
-  {
-    number: "TR-202",
-    type: "Trailer",
-    miles: 12950,
-    utilization: 83,
-    fuelEfficiency: "N/A",
-    maintenance: 850,
-    status: "Active",
-  },
-]
-
-export function VehicleUtilization({ timeRange }: VehicleUtilizationProps) {
+export function VehicleUtilization({ timeRange, vehicleData }: VehicleUtilizationProps) {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2">
@@ -73,7 +27,7 @@ export function VehicleUtilization({ timeRange }: VehicleUtilizationProps) {
             className="h-[300px]"
           >
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={mockVehicleData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+              <BarChart data={vehicleData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="number" />
                 <YAxis />
@@ -97,7 +51,7 @@ export function VehicleUtilization({ timeRange }: VehicleUtilizationProps) {
             className="h-[300px]"
           >
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={mockVehicleData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+              <BarChart data={vehicleData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="number" />
                 <YAxis domain={[70, 100]} />
@@ -125,20 +79,20 @@ export function VehicleUtilization({ timeRange }: VehicleUtilizationProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {mockVehicleData.map((vehicle) => (
-              <TableRow key={vehicle.number}>
-                <TableCell className="font-medium">{vehicle.number}</TableCell>
+            {vehicleData.map((vehicle) => (
+              <TableRow key={vehicle.id}>
+                <TableCell className="font-medium">{vehicle.id}</TableCell>
                 <TableCell>{vehicle.type}</TableCell>
-                <TableCell className="text-right">{vehicle.miles.toLocaleString()}</TableCell>
-                <TableCell className="text-right">{vehicle.utilization}%</TableCell>
+                <TableCell className="text-right">{vehicle.currentOdometer.toLocaleString()}</TableCell>
+                <TableCell className="text-right">{vehicle.lastMaintenanceDate.toLocaleString()}</TableCell>
                 <TableCell className="text-right">
-                  {typeof vehicle.fuelEfficiency === 'number'
-                    ? vehicle.fuelEfficiency.toFixed(1)
+                  {typeof vehicle.fuelType === 'string'
+                    ? vehicle.fuelType.toLocaleString()
                     : "N/A"}
                 </TableCell>
-                <TableCell className="text-right">${vehicle.maintenance.toLocaleString()}</TableCell>
+                <TableCell className="text-right">${vehicle.nextMaintenanceDate.toLocaleString()}</TableCell>
                 <TableCell>
-                  {vehicle.status === "Active" ? (
+                  {vehicle.status === "active" ? (
                     <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Active</Badge>
                   ) : (
                     <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">Maintenance</Badge>

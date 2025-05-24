@@ -217,7 +217,7 @@ export function IftaDashboard() {
               <CardDescription>Record of trips for IFTA reporting</CardDescription>
             </CardHeader>
             <CardContent>
-              <IftaTripTable />
+              <IftaTripTable trips={ [] } />
             </CardContent>
           </Card>
         </TabsContent>

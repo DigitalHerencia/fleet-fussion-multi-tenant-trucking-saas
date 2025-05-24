@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
+import Image from "next/image"
 import { AlertCircle, CheckCircle, ExternalLink, Clock } from "lucide-react"
 
 // Add 'comingSoon' as an optional property to the integration type
@@ -118,7 +119,7 @@ export function IntegrationSettings() {
             <CardHeader className="flex flex-row items-start justify-between space-y-0">
               <div className="flex items-start gap-3">
                 <div className="flex-shrink-0 w-10 h-10">
-                  <img
+                  <Image
                     src={integration.logo || "/placeholder.svg"}
                     alt={`${integration.name} logo`}
                     className="w-full h-full object-contain"

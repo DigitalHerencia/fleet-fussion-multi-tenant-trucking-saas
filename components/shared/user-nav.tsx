@@ -33,7 +33,7 @@ export function UserNav() {
       <ThemeToggle />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button
+          <Button
             className="relative flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background shadow-sm transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
             aria-label="Open user menu"
           >
@@ -45,7 +45,7 @@ export function UserNav() {
             </Avatar>
             {/* Status dot */}
             <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full border-2 border-background bg-green-500" />
-          </button>
+          </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-64 p-2" align="end" forceMount>
           <div className="flex items-center gap-3 px-2 py-2">

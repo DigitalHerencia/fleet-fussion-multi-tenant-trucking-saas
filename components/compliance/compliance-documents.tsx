@@ -1,11 +1,11 @@
 "use client"
 
-import { useState } from "react"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { MoreHorizontal, FileText, Download, Eye } from "lucide-react"
-import type { ColumnDef } from "@tanstack/react-table"
+import { Badge } from "@/components/ui/badge"
+import { FileText, Download, Eye, MoreHorizontal } from "lucide-react"
+import { ColumnDef } from "@tanstack/react-table"
+import { ComplianceDocument } from "@/types/compliance"
 
 // Define the Document type
 interface Document {
@@ -18,7 +18,7 @@ interface Document {
 }
 
 // Export the columns definition
-export const columns: ColumnDef<Document>[] = [
+export const columns: ColumnDef<ComplianceDocument>[] = [
   {
     accessorKey: "name",
     header: "Document Name",
@@ -96,53 +96,12 @@ export const columns: ColumnDef<Document>[] = [
   },
 ]
 
-// Mock documents data
-const mockDocuments = [
-  {
-    id: "1",
-    name: "Driver Qualification File",
-    type: "Required",
-    lastUpdated: "2024-04-10",
-    status: "Complete",
-    assignedTo: "All Drivers",
-  },
-  {
-    id: "2",
-    name: "Vehicle Inspection Reports",
-    type: "Required",
-    lastUpdated: "2024-04-15",
-    status: "Complete",
-    assignedTo: "All Vehicles",
-  },
-  {
-    id: "3",
-    name: "Hours of Service Logs",
-    type: "Required",
-    lastUpdated: "2024-04-18",
-    status: "Incomplete",
-    assignedTo: "All Drivers",
-  },
-  {
-    id: "4",
-    name: "Drug & Alcohol Testing Records",
-    type: "Required",
-    lastUpdated: "2024-03-30",
-    status: "Complete",
-    assignedTo: "All Drivers",
-  },
-  {
-    id: "5",
-    name: "Accident Register",
-    type: "Required",
-    lastUpdated: "2024-04-05",
-    status: "Complete",
-    assignedTo: "Company",
-  },
-]
+interface ComplianceDocumentsProps {
+  documents: ComplianceDocument[] // Added prop for documents
+}
 
-export function ComplianceDocuments() {
-  const [documents, setDocuments] = useState(mockDocuments)
-
+// Update the component to accept documents as a prop
+export function ComplianceDocuments({ documents }: ComplianceDocumentsProps) {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -168,9 +127,15 @@ export function ComplianceDocuments() {
             </div>
             <div className="flex items-center gap-2">
               <Badge
-                className={doc.status === "Complete" ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"}
+                className={
+                  doc.status === "valid"
+                    ? "bg-green-100 text-green-800"
+                    : doc.status === "expiring"
+                    ? "bg-amber-100 text-amber-800"
+                    : "bg-red-100 text-red-800"
+                }
               >
-                {doc.status}
+                {doc.status.charAt(0).toUpperCase() + doc.status.slice(1)}
               </Badge>
               <Button variant="ghost" size="icon">
                 <Download className="h-4 w-4" />
