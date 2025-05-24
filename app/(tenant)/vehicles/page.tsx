@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Search, Plus } from "lucide-react"
 import { VehicleCard } from "@/components/vehicles/vehicle-card"
-import { useAuth } from "@/lib/auth/context"
 import {
   Dialog,
   DialogContent,
@@ -128,11 +127,6 @@ export default function VehiclesPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <VehicleCard vehicle={ undefined } onClick={ function (): void
-        {
-          throw new Error( "Function not implemented." )
-        } } />
-          )
         </div>
       
       {/* Add Vehicle Dialog */}

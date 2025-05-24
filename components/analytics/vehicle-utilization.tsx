@@ -83,14 +83,26 @@ export function VehicleUtilization({ timeRange, vehicleData }: VehicleUtilizatio
               <TableRow key={vehicle.id}>
                 <TableCell className="font-medium">{vehicle.id}</TableCell>
                 <TableCell>{vehicle.type}</TableCell>
-                <TableCell className="text-right">{vehicle.currentOdometer.toLocaleString()}</TableCell>
-                <TableCell className="text-right">{vehicle.lastMaintenanceDate.toLocaleString()}</TableCell>
+                <TableCell className="text-right">
+                  {vehicle.currentOdometer !== undefined && vehicle.currentOdometer !== null
+                    ? vehicle.currentOdometer.toLocaleString()
+                    : "N/A"}
+                </TableCell>
+                <TableCell className="text-right">
+                  {vehicle.lastMaintenanceDate
+                    ? vehicle.lastMaintenanceDate.toLocaleString()
+                    : "N/A"}
+                </TableCell>
                 <TableCell className="text-right">
                   {typeof vehicle.fuelType === 'string'
                     ? vehicle.fuelType.toLocaleString()
                     : "N/A"}
                 </TableCell>
-                <TableCell className="text-right">${vehicle.nextMaintenanceDate.toLocaleString()}</TableCell>
+                <TableCell className="text-right">
+                  {vehicle.nextMaintenanceDate
+                    ? `$${vehicle.nextMaintenanceDate.toLocaleString()}`
+                    : "N/A"}
+                </TableCell>
                 <TableCell>
                   {vehicle.status === "active" ? (
                     <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Active</Badge>
