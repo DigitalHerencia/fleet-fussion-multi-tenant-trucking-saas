@@ -12,6 +12,21 @@ import {
 } from '@/types/auth'
 
 /**
+ * Utility to generate a unique slug for organizations
+ */
+async function generateUniqueOrgSlug(baseSlug: string, client: any): Promise<string> {
+  let slug = baseSlug;
+  let suffix = 1;
+  while (true) {
+    const existingOrgs = await client.organizations.getOrganizationList({ query: slug });
+    const exists = existingOrgs.data.some((org: any) => org.slug === slug);
+    if (!exists) return slug;
+    slug = `${baseSlug}-${suffix}`;
+    suffix++;
+  }
+}
+
+/**
  * Server action to immediately set Clerk metadata and create organization after onboarding
  * This provides instant UX while webhooks handle eventual consistency
  */
@@ -51,14 +66,18 @@ export async function setClerkMetadata(data: OnboardingData): Promise<SetClerkMe
 
     // Check if organization already exists
     let organization
+    let uniqueSlug = data.orgSlug;
     try {
       const existingOrgs = await client.organizations.getOrganizationList({
         query: data.orgSlug
       })
-      
       organization = existingOrgs.data.find(org => 
         org.slug === data.orgSlug || org.name === data.orgName
       )
+      if (!organization) {
+        // Generate a unique slug if needed
+        uniqueSlug = await generateUniqueOrgSlug(data.orgSlug, client);
+      }
     } catch (error) {
       console.log('Organization search failed, will create new one')
     }
@@ -67,7 +86,7 @@ export async function setClerkMetadata(data: OnboardingData): Promise<SetClerkMe
     if (!organization) {
       organization = await client.organizations.createOrganization({
         name: data.orgName,
-        slug: data.orgSlug,
+        slug: uniqueSlug,
       
         createdBy: data.userId
       })
@@ -78,7 +97,7 @@ export async function setClerkMetadata(data: OnboardingData): Promise<SetClerkMe
       await DatabaseQueries.upsertOrganization({
         clerkId: organization.id,
         name: data.orgName,
-        slug: data.orgSlug
+        slug: uniqueSlug
         // metadata: orgMetadata // Removed, as this property is not supported
       })
     }

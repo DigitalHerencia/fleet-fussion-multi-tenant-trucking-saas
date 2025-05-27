@@ -19,6 +19,15 @@ import { toast } from '@/hooks/use-toast'
 import type { OnboardingData } from '@/types/auth'
 import { setClerkMetadata } from '@/lib/actions/onboarding'
 
+// Utility to generate a base slug from company name
+function toBaseSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
+    .slice(0, 50);
+}
+
 export default function OnboardingPage() {
   const { user } = useUser()
   const router = useRouter()
@@ -72,11 +81,12 @@ export default function OnboardingPage() {
         return
       }
       // Prepare onboarding data
+      const baseSlug = toBaseSlug(formData.companyName);
       const onboardingData: OnboardingData = {
         userId: user.id,
         companyName: formData.companyName,
         orgName: formData.companyName, // Use company name for orgName
-        orgSlug: formData.companyName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+        orgSlug: baseSlug, // Pass base slug, server will ensure uniqueness
         dotNumber: formData.dotNumber,
         mcNumber: formData.mcNumber,
         address: formData.address,
