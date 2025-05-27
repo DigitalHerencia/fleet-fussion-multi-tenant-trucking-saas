@@ -10,21 +10,54 @@ async function DispatchData() {
 	const { userId, orgId } = await auth()
 	
 	if (!userId || !orgId) {
-		return <div className="p-4 text-[hsl(var(--muted-foreground))]">Please sign in to access dispatch.</div>
+		return <div className="p-4 text-gray-600">Please sign in to access dispatch.</div>
 	}
 
 	// Get user to verify organization access
 	const user = await DatabaseQueries.getUserByClerkId(userId)
 	if (!user) {
-		return <div className="p-4 text-[hsl(var(--muted-foreground))]">User not found. Please complete setup.</div>
+		return <div className="p-4 text-gray-600">User not found. Please complete setup.</div>
 	}
 
 	// Fetch all required data in parallel
-	const [loads, drivers, vehicles] = await Promise.all([
+	const [loadsRaw, driversRaw, vehiclesRaw] = await Promise.all([
 		getLoads(user.organizationId),
 		getDrivers(user.organizationId),
 		getVehicles(user.organizationId)
 	])
+
+	// Ensure all required Load properties are present
+	const loads = loadsRaw.map((load: any) => ({
+		id: load.id ?? "",
+		status: load.status ?? "pending",
+		originCity: load.originCity ?? "",
+		originState: load.originState ?? "",
+		destinationCity: load.destinationCity ?? "",
+		destinationState: load.destinationState ?? "",
+		...load,
+	}))
+
+	// Ensure all required Driver properties are present
+	const drivers = driversRaw.map((driver: any) => ({
+		id: driver.id ?? "",
+		firstName: driver.firstName ?? "",
+		lastName: driver.lastName ?? "",
+		status: driver.status ?? "inactive",
+		email: driver.email ?? "",
+		phone: driver.phone ?? "",
+		...driver,
+	}))
+
+	// Ensure all required Vehicle properties are present
+	const vehicles = vehiclesRaw.map((vehicle: any) => ({
+		id: vehicle.id ?? "",
+		unitNumber: vehicle.unitNumber ?? "",
+		status: vehicle.status ?? "inactive",
+		type: vehicle.type ?? "",
+		make: vehicle.make ?? "",
+		model: vehicle.model ?? "",
+		...vehicle,
+	}))
 
 	return <DispatchBoard loads={loads} drivers={drivers} vehicles={vehicles} />
 }

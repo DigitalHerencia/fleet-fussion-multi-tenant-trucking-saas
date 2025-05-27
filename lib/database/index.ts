@@ -5,7 +5,7 @@
  * Includes connection pooling and proper error handling
  */
 
-import { PrismaClient, Prisma } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 
@@ -82,6 +82,12 @@ export class DatabaseQueries {
    */
   static async getUserByClerkId(clerkId: string) {
     try {
+      // Validate clerkId is provided
+      if (!clerkId) {
+        console.warn('getUserByClerkId called with undefined/empty clerkId');
+        return null;
+      }
+      
       const user = await db.user.findUnique({
         where: { clerkId },
       });
@@ -150,6 +156,7 @@ export class DatabaseQueries {
   /**
    * Create or update user from Clerk webhook
    */  static async upsertUser(data: {
+    onboardingComplete: boolean;
     clerkId: string;
     organizationId: string;
     email: string;
@@ -163,30 +170,74 @@ export class DatabaseQueries {
     try {
       const { clerkId, organizationId, ...updateData } = data;
 
+      // Validate required fields
+      if (!clerkId) {
+        throw new Error('clerkId is required for user upsert');
+      }
+      if (!organizationId) {
+        throw new Error('organizationId is required for user upsert');
+      }
+      if (!data.email) {
+        throw new Error('email is required for user upsert');
+      }
+
       // Check if organization exists, if not, create a placeholder organization
       let organizationExists = await db.organization.findUnique({
-        where: { id: organizationId },
+        where: { clerkId: organizationId },
       });
       
       if (!organizationExists) {
         console.log(`📝 Creating placeholder organization for ID: ${organizationId}`);
-        // Create a placeholder organization with minimal data
-        try {
-          organizationExists = await db.organization.create({
-            data: {
-              clerkId: organizationId,
-              name: `Organization ${organizationId.substring(0, 8)}`,
-              slug: `org-${organizationId.substring(0, 8)}`,
-              subscriptionTier: 'free',
-              subscriptionStatus: 'trial',
-              maxUsers: 5,
-              isActive: true,
-            },
-          });
-          console.log(`✅ Placeholder organization created: ${organizationId}`);
-        } catch (createError) {
-          console.error(`❌ Failed to create placeholder organization: ${organizationId}`, createError);
-          throw new Error(`Could not create or find organization with ID ${organizationId}`);
+        
+        // Try to create a placeholder organization with retry logic for race conditions
+        let createAttempts = 0;
+        const maxAttempts = 3;
+        
+        while (!organizationExists && createAttempts < maxAttempts) {
+          createAttempts++;
+          
+          try {
+            organizationExists = await db.organization.create({
+              data: {
+                clerkId: organizationId,
+                name: `Organization ${organizationId.substring(0, 8)}`,
+                slug: `org-${organizationId.substring(0, 8)}-${Date.now()}-${createAttempts}`, // Add attempt number for uniqueness
+                subscriptionTier: 'free',
+                subscriptionStatus: 'trial',
+                maxUsers: 5,
+                isActive: true,
+              },
+            });
+            console.log(`✅ Placeholder organization created: ${organizationId}`);
+            break;
+          } catch (createError: any) {
+            console.error(`❌ Failed to create placeholder organization (attempt ${createAttempts}): ${organizationId}`, createError);
+            
+            // If creation fails due to unique constraint (race condition), try to find existing org
+            if (createError?.code === 'P2002') {
+              console.log(`🔄 Unique constraint error, checking for existing organization: ${organizationId}`);
+              
+              // Wait a small amount before retrying to avoid race conditions
+              await new Promise(resolve => setTimeout(resolve, 100 * createAttempts));
+              
+              organizationExists = await db.organization.findUnique({
+                where: { clerkId: organizationId },
+              });
+              
+              if (organizationExists) {
+                console.log(`✅ Found existing organization after race condition: ${organizationId}`);
+                break;
+              }
+            } else {
+              // For non-unique constraint errors, break the loop
+              console.error(`❌ Non-recoverable error creating organization: ${createError.message}`);
+              break;
+            }
+          }
+        }
+        
+        if (!organizationExists) {
+          throw new Error(`Could not create or find organization with ID ${organizationId} after ${maxAttempts} attempts`);
         }
       }
 
@@ -201,10 +252,10 @@ export class DatabaseQueries {
         lastName: data.lastName,
         profileImage: data.profileImage,
         isActive: data.isActive === undefined ? true : data.isActive,
-        onboardingCompleted: data.onboardingCompleted === undefined ? false : data.onboardingCompleted,
+        onboardingComplete: data.onboardingComplete === undefined ? false : data.onboardingComplete,
         lastLogin: data.lastLogin,
         organization: {
-          connect: { id: organizationId },
+          connect: { id: organizationExists.id },
         },
       };
 
@@ -215,6 +266,7 @@ export class DatabaseQueries {
       });
       return user;
     } catch (error) {
+      console.error(`Error in upsertUser for clerkId: ${data.clerkId}`, error);
       handleDatabaseError(error);
     }
   }
@@ -224,16 +276,29 @@ export class DatabaseQueries {
    */
   static async deleteOrganization(clerkId: string) {
     try {
+      // Check if organization exists first
+      const organization = await db.organization.findUnique({
+        where: { clerkId },
+      });
+      
+      if (!organization) {
+        console.warn(`Organization with clerkId ${clerkId} does not exist, skipping delete.`);
+        return { success: true, message: 'Organization already deleted or does not exist' };
+      }
+      
       await db.organization.delete({
         where: { clerkId },
       });
+      console.log(`✅ Organization deleted successfully: ${clerkId}`);
+      return { success: true, message: 'Organization deleted successfully' };
     } catch (error) {
       // If the error is a Prisma P2025 (record does not exist), treat as success (idempotent)
       if (error instanceof PrismaClientKnownRequestError && error.code === 'P2025') {
         console.warn(`Organization with clerkId ${clerkId} does not exist, skipping delete.`);
-        return;
+        return { success: true, message: 'Organization already deleted or does not exist' };
       }
-      handleDatabaseError(error);
+      console.error(`Error deleting organization ${clerkId}:`, error);
+      return { success: false, message: `Failed to delete organization: ${error instanceof Error ? error.message : 'Unknown error'}` };
     }
   }
 
@@ -242,11 +307,29 @@ export class DatabaseQueries {
    */
   static async deleteUser(clerkId: string) {
     try {
+      // Check if user exists first
+      const user = await db.user.findUnique({
+        where: { clerkId },
+      });
+      
+      if (!user) {
+        console.warn(`User with clerkId ${clerkId} does not exist, skipping delete.`);
+        return { success: true, message: 'User already deleted or does not exist' };
+      }
+      
       await db.user.delete({
         where: { clerkId },
       });
+      console.log(`✅ User deleted successfully: ${clerkId}`);
+      return { success: true, message: 'User deleted successfully' };
     } catch (error) {
-      handleDatabaseError(error);
+      // If the error is a Prisma P2025 (record does not exist), treat as success (idempotent)
+      if (error instanceof PrismaClientKnownRequestError && error.code === 'P2025') {
+        console.warn(`User with clerkId ${clerkId} does not exist, skipping delete.`);
+        return { success: true, message: 'User already deleted or does not exist' };
+      }
+      console.error(`Error deleting user ${clerkId}:`, error);
+      return { success: false, message: `Failed to delete user: ${error instanceof Error ? error.message : 'Unknown error'}` };
     }
   }
 }

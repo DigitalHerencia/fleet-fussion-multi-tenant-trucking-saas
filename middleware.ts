@@ -9,6 +9,7 @@ const publicRoutePatterns = [
   '/',
   '/sign-in(.*)',
   '/sign-up(.*)',
+  '/forgot-password(.*)',
   '/api/clerk/(.*)', // Clerk webhooks
   '/about',
   '/contact',

@@ -26,6 +26,19 @@ const webhookRateLimit = ratelimit({
   limit: 60          // 60 requests per minute max
 });
 
+// List of all Clerk events to handle
+const HANDLED_EVENTS = [
+  'user.created', 'user.updated', 'user.deleted',
+  'organization.created', 'organization.updated', 'organization.deleted',
+  'organizationMembership.created', 'organizationMembership.updated', 'organizationMembership.deleted',
+  'organizationInvitation.created', 'organizationInvitation.accepted', 'organizationInvitation.revoked',
+  'email.created',
+  'session.created', 'session.ended', 'session.pending', 'session.removed', 'session.revoked',
+  'permission.created', 'permission.updated', 'permission.deleted',
+  'role.created', 'role.updated', 'role.deleted',
+  'organizationDomain.created', 'organizationDomain.updated', 'organizationDomain.deleted'
+];
+
 async function verifyWebhook(request: NextRequest): Promise<WebhookPayload | null> {
   try {
     const body = await request.text();
@@ -53,9 +66,9 @@ async function verifyWebhook(request: NextRequest): Promise<WebhookPayload | nul
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   // Check rate limit first
-  const identifier = request.headers.get('x-forwarded-for') || 'anonymous';
+  const identifier = req.headers.get('x-forwarded-for') || 'anonymous';
   const rateLimit = await webhookRateLimit(identifier);
   
   if (!rateLimit.success) {
@@ -69,175 +82,140 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  const evt = await verifyWebhook(request);
-  
-  if (!evt) {
-    return new NextResponse('Unauthorized', { status: 401 });
+  // Parse and verify event
+  const payload = await req.text();
+  const headers = Object.fromEntries(req.headers.entries());
+  const webhook = new Webhook(process.env.CLERK_WEBHOOK_SECRET!);
+  const event = webhook.verify(payload, headers) as WebhookPayload;
+  if (!HANDLED_EVENTS.includes(event.type)) {
+    return NextResponse.json({ ok: true, ignored: true, reason: 'Event not handled' });
   }
 
-  try {
-    const { type, data } = evt;
-    console.log(`📨 Processing webhook: ${type} for ID: ${data.id}`);
-
-    switch (type) {
-      // User Events
-      case 'user.created': {
-        const userData = data as UserWebhookData;
-        // Get organization context from membership or metadata
-        const orgMembership = userData.organization_memberships?.[0];
-        const organizationId = userData.public_metadata?.organizationId || 
-                              orgMembership?.organization?.id || '';
-        if (!organizationId) {
-          console.warn(`⚠️ Skipping user.created for ${userData.id}: organizationId missing in webhook payload.`);
-          break;
-        }
-        // Determine role from membership or default to USER
-        const role = orgMembership?.role as UserRole || UserRole.USER;
-        const permissions = ROLE_PERMISSIONS[role] || [];
+  // Handle each event type
+  switch (event.type) {
+    // User Events
+    case 'user.created':
+    case 'user.updated': {
+      const user = event.data as UserWebhookData;
+      if (user.public_metadata?.onboardingComplete) {
+        // Sync to DB or perform any additional logic as needed
+      }
+      // Get organization context from membership or metadata
+      const orgMembership = user.organization_memberships?.[0];
+      const organizationId = user.public_metadata?.organizationId || 
+                            orgMembership?.organization?.id || '';
+      if (!organizationId) {
+        console.warn(`⚠️ Skipping ${event.type} for ${user.id}: organizationId missing in webhook payload.`);
+        break;
+      }
+      // Determine role from membership or default to USER
+      const role = orgMembership?.role as UserRole || UserRole.USER;
+      const permissions = ROLE_PERMISSIONS[role] || [];
+      await DatabaseQueries.upsertUser({
+        clerkId: user.id,
+        organizationId,
+        email: user.email_addresses?.[0]?.email_address || '',
+        firstName: user.first_name || '',
+        lastName: user.last_name || '',
+        profileImage: user.profile_image_url,
+        isActive: true,
+        onboardingComplete: user.public_metadata?.onboardingComplete || false,
+      });
+      console.log(`✅ User ${event.type}: ${user.id} in org: ${organizationId}`);
+      break;
+    }
+    
+    case 'user.deleted': {
+      const user = event.data as UserWebhookData;
+      // Look up last known organization for this user
+      const dbUser = await DatabaseQueries.getUserByClerkId(user.id);
+      if (dbUser && dbUser.organizationId) {
         await DatabaseQueries.upsertUser({
-          clerkId: userData.id,
-          organizationId,
-          email: userData.email_addresses?.[0]?.email_address || '',
-          firstName: userData.first_name || '',
-          lastName: userData.last_name || '',
-          profileImage: userData.profile_image_url,
-          isActive: true,
-          onboardingCompleted: userData.public_metadata?.onboardingComplete || false,
+          clerkId: user.id,
+          organizationId: dbUser.organizationId,
+          email: user.email_addresses?.[0]?.email_address || '',
+          isActive: false,
+          onboardingComplete: dbUser.onboardingComplete || false
         });
-        console.log(`✅ User created: ${userData.id} in org: ${organizationId}`);
+        console.log(`✅ User deactivated: ${user.id}`);
+      } else {
+        console.warn(`⚠️ Skipping user.deleted for ${user.id}: organizationId not found in DB.`);
+      }
+      break;
+    }
+
+    // Organization Events
+    case 'organization.created':
+    case 'organization.updated':
+    case 'organization.deleted': {
+      const orgData = event.data as OrganizationWebhookData;
+      
+      await DatabaseQueries.upsertOrganization({
+        clerkId: orgData.id,
+        name: orgData.name,
+        slug: orgData.slug || generateSlug(orgData.name)
+        // metadata: orgData.public_metadata // removed, not a valid property
+      });
+      
+      console.log(`✅ Organization ${event.type}: ${orgData.id} (${orgData.name})`);
+      break;
+    }
+
+    // Organization Membership Events
+    case 'organizationMembership.created':
+    case 'organizationMembership.updated':
+    case 'organizationMembership.deleted': {
+      const membershipData = event.data as OrganizationMembershipWebhookData;
+      
+      // Extract user ID from either user_id or public_user_data
+      const userId = membershipData.user_id || membershipData.public_user_data?.user_id;
+      
+      if (!userId) {
+        console.error(`❌ No user ID found in membership data for organization: ${membershipData.organization.id}`);
         break;
       }
       
-      case 'user.updated': {
-        const userData = data as UserWebhookData;
-        // Get updated organization context
-        const orgMembership = userData.organization_memberships?.[0];
-        const organizationId = userData.public_metadata?.organizationId || 
-                              orgMembership?.organization?.id || '';
-        if (!organizationId) {
-          console.warn(`⚠️ Skipping user.updated for ${userData.id}: organizationId missing in webhook payload.`);
-          break;
-        }
-        // Update role if it changed
-        const role = orgMembership?.role as UserRole;
-        const permissions = role ? ROLE_PERMISSIONS[role] : undefined;
-        await DatabaseQueries.upsertUser({
-          clerkId: userData.id,
-          organizationId,
-          email: userData.email_addresses?.[0]?.email_address || '',
-          firstName: userData.first_name || '',
-          lastName: userData.last_name || '',
-          profileImage: userData.profile_image_url,
-          ...(role && { role }),
-          ...(permissions && { permissions }),
-          isActive: userData.public_metadata?.isActive !== false,
-          ...(userData.public_metadata?.onboardingComplete !== undefined && {
-            onboardingCompleted: userData.public_metadata.onboardingComplete
-          })
-        });
-        console.log(`✅ User updated: ${userData.id}`);
-        break;
-      }
-
-      case 'user.deleted': {
-        const userData = data as UserWebhookData;
-        // Look up last known organization for this user
-        const dbUser = await DatabaseQueries.getUserByClerkId(userData.id);
-        if (dbUser && dbUser.organizationId) {
-          await DatabaseQueries.upsertUser({
-            clerkId: userData.id,
-            organizationId: dbUser.organizationId,
-            email: userData.email_addresses?.[0]?.email_address || '',
-            isActive: false
-          });
-          console.log(`✅ User deactivated: ${userData.id}`);
-        } else {
-          console.warn(`⚠️ Skipping user.deleted for ${userData.id}: organizationId not found in DB.`);
-        }
-        break;
-      }
-
-      // Organization Events
-      case 'organization.created': {
-        const orgData = data as OrganizationWebhookData;
-        
-        await DatabaseQueries.upsertOrganization({
-          clerkId: orgData.id,
-          name: orgData.name,
-          slug: orgData.slug || generateSlug(orgData.name)
-          // metadata: orgData.public_metadata // removed, not a valid property
-        });
-        
-        console.log(`✅ Organization created: ${orgData.id} (${orgData.name})`);
-        break;
-      }
-
-      case 'organization.updated': {
-        const orgData = data as OrganizationWebhookData;
-        
-        await DatabaseQueries.upsertOrganization({
-          clerkId: orgData.id,
-          name: orgData.name,
-          slug: orgData.slug || generateSlug(orgData.name)
-          // metadata: orgData.public_metadata // removed, not a valid property
-        });
-        
-        console.log(`✅ Organization updated: ${orgData.id}`);
-        break;
-      }
-
-      case 'organization.deleted': {
-        const orgData = data as OrganizationWebhookData;
-        
-        await DatabaseQueries.deleteOrganization(orgData.id);
-        
-        console.log(`✅ Organization deleted: ${orgData.id}`);
-        break;
-      }
-
-      // Organization Membership Events
-      case 'organizationMembership.created':
-      case 'organizationMembership.updated': {
-        const membershipData = data as OrganizationMembershipWebhookData;
-        await DatabaseQueries.upsertUser({
-          clerkId: membershipData.user_id!,
-          organizationId: membershipData.organization.id,
-          email: '', // Email not available in membership event
-          isActive: true,
-          onboardingCompleted: true
-        });
-        break;
-      }
-      case 'organizationMembership.deleted': {
-        const membershipData = data as OrganizationMembershipWebhookData;
-        await DatabaseQueries.upsertUser({
-          clerkId: membershipData.user_id!,
-          organizationId: membershipData.organization.id,
-          email: '', // Email not available in membership event
-          isActive: false
-        });
-        break;
-      }
-
-      // Session Events
-      case 'session.created': {
-        // Optionally handle session.created event (e.g., analytics, session sync)
-        console.log(`✅ Session created: ${data.id}`);
-        break;
-      }
-
-      default: {
-        // Log and acknowledge unhandled event types
-        console.warn(`⚠️ Unhandled webhook event type: ${type}`);
-        // Optionally, return 200 OK for unhandled events to avoid retries
-        break;
-      }
+      // Try to get existing user data first for email
+      const existingUser = await DatabaseQueries.getUserByClerkId(userId);
+      
+      // Extract user information from public_user_data if available
+      const firstName = membershipData.public_user_data?.first_name;
+      const lastName = membershipData.public_user_data?.last_name;
+      const profileImage = membershipData.public_user_data?.profile_image_url;
+      
+      await DatabaseQueries.upsertUser({
+        clerkId: userId,
+        organizationId: membershipData.organization.id,
+        email: existingUser?.email || `user-${userId}@placeholder.com`, // Use existing email or placeholder
+        firstName: firstName || existingUser?.firstName,
+        lastName: lastName || existingUser?.lastName,
+        profileImage: profileImage || existingUser?.profileImage,
+        isActive: true,
+        onboardingComplete: existingUser?.onboardingComplete || false
+      });
+      console.log(`✅ Organization membership ${event.type}: ${userId} in org: ${membershipData.organization.id}`);
+      break;
     }
-    return new NextResponse('OK', { status: 200 }); // Optionally respond OK after processing
-  } catch (err) {
-    console.error('❌ Error processing webhook:', err);
-    return new NextResponse('Internal Server Error', { status: 500 });
+
+    // Session Events
+    case 'session.created':
+    case 'session.ended':
+    case 'session.pending':
+    case 'session.removed':
+    case 'session.revoked': {
+      const session = event.data;
+      console.log(`✅ Session event ${event.type}: ${session?.id}`);
+      break;
+    }
+
+    default: {
+      // Log and acknowledge unhandled event types
+      console.warn(`⚠️ Unhandled webhook event type: ${event.type}`);
+      // Optionally, return 200 OK for unhandled events to avoid retries
+      break;
+    }
   }
+  return NextResponse.json({ ok: true });
 } // <-- Add this to close the POST function
 
 function generateSlug(name: string): string {

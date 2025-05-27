@@ -128,7 +128,7 @@ export interface ClerkUserMetadata {
   permissions: Permission[]
   isActive: boolean
   lastLogin?: string
-  onboardingComplete: boolean // Match JWT claim field name
+  onboardingComplete: boolean // Must match JWT/session claim
 }
 
 // Organization metadata in Clerk
@@ -161,7 +161,7 @@ export interface UserContext {
   lastName?: string
   profileImage?: string
   isActive: boolean
-  onboardingCompleted: boolean
+  onboardingCompleted: boolean // Should match onboardingComplete in ClerkUserMetadata and JWT
   organizationMetadata: ClerkOrganizationMetadata
 }
 
@@ -231,7 +231,7 @@ export interface DatabaseUser {
   role: UserRole | null;
   isActive: boolean;
   lastLogin?: string | null;
-  onboardingCompleted: boolean;
+  onboardingCompleted: boolean // Should match ClerkUserMetadata.onboardingComplete
   // Standard database timestamps
   createdAt: Date;
   updatedAt: Date;

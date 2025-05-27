@@ -84,15 +84,23 @@ export async function setClerkMetadata(data: OnboardingData): Promise<SetClerkMe
     }
 
     // Step 2: Calculate user permissions based on role
-    const permissions = ROLE_PERMISSIONS[data.role] || []    // Step 3: Create user metadata (aligned with JWT claims)
+    const permissions = ROLE_PERMISSIONS[data.role] || []
     const userMetadata: ClerkUserMetadata = {
       organizationId: organization.id,
       role: data.role,
       permissions,
       isActive: true,
-      onboardingComplete: true, // Match JWT claim name
+      onboardingComplete: true, // Always set onboardingComplete
       lastLogin: new Date().toISOString()
     }
+
+    // Set Clerk public metadata (must include onboardingComplete)
+    await client.users.updateUserMetadata(data.userId, {
+      publicMetadata: {
+        ...userMetadata,
+        onboardingComplete: true // Ensure this is always set
+      }
+    })
 
     // Step 4: Update user with complete metadata
     await client.users.updateUser(data.userId, {
@@ -116,11 +124,25 @@ export async function setClerkMetadata(data: OnboardingData): Promise<SetClerkMe
         userId: data.userId,
         role: data.role
       });
-    } catch (membershipError) {
-      // Ignore if already a member
-      if (!String(membershipError).includes('already a member')) {
+    } catch (membershipError: any) {
+      // Check for various error conditions that indicate user is already a member
+      const errorMessage = String(membershipError?.message || membershipError).toLowerCase();
+      const isAlreadyMemberError = 
+        errorMessage.includes('already a member') ||
+        errorMessage.includes('already exists') ||
+        errorMessage.includes('duplicate') ||
+        membershipError?.status === 422 ||
+        (membershipError?.errors && Array.isArray(membershipError.errors) && 
+         membershipError.errors.some((e: any) => 
+           String(e?.message || e).toLowerCase().includes('already') ||
+           String(e?.code || e).toLowerCase().includes('member')
+         ));
+      
+      if (!isAlreadyMemberError) {
+        console.error('Membership creation failed:', membershipError);
         throw membershipError;
       }
+      console.log('User is already a member of the organization, continuing...')
     }
 
     // Step 6: Create user in database immediately for instant access
@@ -140,7 +162,7 @@ export async function setClerkMetadata(data: OnboardingData): Promise<SetClerkMe
       lastName: undefined,
       profileImage: undefined,
       isActive: true,
-      onboardingCompleted: true // Keep database field name consistent
+      onboardingComplete: true // Keep database field name consistent
     });
     createdUser = true
 
@@ -162,16 +184,24 @@ export async function setClerkMetadata(data: OnboardingData): Promise<SetClerkMe
     try {
       if (createdOrgId) {
         console.log('Rolling back created organization:', createdOrgId)
-        await client.organizations.deleteOrganization(createdOrgId)
-        await DatabaseQueries.deleteOrganization(createdOrgId)
+        try {
+          await client.organizations.deleteOrganization(createdOrgId)
+        } catch (clerkError) {
+          console.warn('Failed to delete organization from Clerk (may not exist):', clerkError)
+        }
+        
+        const dbDeleteResult = await DatabaseQueries.deleteOrganization(createdOrgId)
+        console.log('DB delete result:', dbDeleteResult?.message)
       }
       
       if (createdUser) {
         console.log('Rolling back created user:', data.userId)
-        await DatabaseQueries.deleteUser(data.userId)
+        const userDeleteResult = await DatabaseQueries.deleteUser(data.userId)
+        console.log('User delete result:', userDeleteResult?.message)
       }
     } catch (rollbackError) {
       console.error('Rollback failed:', rollbackError)
+      // Continue execution - rollback failures shouldn't block the error response
     }
 
     return {
