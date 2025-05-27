@@ -6,11 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "postinstall": "prisma generate",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui",
-    "test:e2e:headed": "playwright test --headed",
-    "test:e2e:debug": "playwright test --debug"
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.20.0",
@@ -82,11 +78,5 @@
     "postcss": "^8.5.3",
     "tailwindcss": "^4.1.7",
     "typescript": "5.8.3"
-  },
-  "prisma": {
-    "binaryTargets": [
-      "native",
-      "rhel-openssl-3.0.x"
-    ]
   }
 }
