@@ -61,6 +61,20 @@ export function handleDatabaseError(error: any): never {
   throw new Error('Unknown database error occurred');
 }
 
+/**
+ * Utility to generate a unique slug for organizations (DB-level)
+ */
+async function generateUniqueOrgSlug(baseSlug: string): Promise<string> {
+  let slug = baseSlug;
+  let suffix = 1;
+  while (true) {
+    const existing = await db.organization.findUnique({ where: { slug } });
+    if (!existing) return slug;
+    slug = `${baseSlug}-${suffix}`;
+    suffix++;
+  }
+}
+
 // Type-safe database queries helper (rewritten for Prisma)
 export class DatabaseQueries {
   /**
@@ -121,33 +135,59 @@ export class DatabaseQueries {
   }) {
     try {
       const { clerkId, ...updateData } = data;
-      const orgDataForUpdate = {
-        ...updateData,
-      };
-      const orgDataForCreate = {
-        clerkId,
-        name: data.name,
-        slug: data.slug,
-        dotNumber: data.dotNumber,
-        mcNumber: data.mcNumber,
-        address: data.address,
-        city: data.city,
-        state: data.state,
-        zip: data.zip,
-        phone: data.phone,
-        email: data.email,
-        logoUrl: data.logoUrl,
-        maxUsers: data.maxUsers === undefined ? 5 : data.maxUsers,
-        billingEmail: data.billingEmail,
-        isActive: data.isActive === undefined ? true : data.isActive,
-      };
-
-      const organization = await db.organization.upsert({
-        where: { clerkId },
-        update: orgDataForUpdate,
-        create: orgDataForCreate,
-      });
-      return organization;
+      let baseSlug = data.slug;
+      let uniqueSlug = baseSlug;
+      let attempt = 0;
+      const maxAttempts = 5;
+      let lastError;
+      while (attempt < maxAttempts) {
+        try {
+          if (attempt > 0) {
+            uniqueSlug = await generateUniqueOrgSlug(baseSlug);
+          }
+          const orgDataForUpdate = { ...updateData, slug: uniqueSlug };
+          const orgDataForCreate = {
+            clerkId,
+            name: data.name,
+            slug: uniqueSlug,
+            dotNumber: data.dotNumber,
+            mcNumber: data.mcNumber,
+            address: data.address,
+            city: data.city,
+            state: data.state,
+            zip: data.zip,
+            phone: data.phone,
+            email: data.email,
+            logoUrl: data.logoUrl,
+            maxUsers: data.maxUsers === undefined ? 5 : data.maxUsers,
+            billingEmail: data.billingEmail,
+            isActive: data.isActive === undefined ? true : data.isActive,
+          };
+          const organization = await db.organization.upsert({
+            where: { clerkId },
+            update: orgDataForUpdate,
+            create: orgDataForCreate,
+          });
+          return organization;
+        } catch (error: any) {
+          lastError = error;
+          if (
+            error instanceof PrismaClientKnownRequestError &&
+            error.code === 'P2002' &&
+            (
+              (typeof error.meta?.target === 'string' && error.meta.target === 'slug') ||
+              (Array.isArray(error.meta?.target) && error.meta.target.includes('slug'))
+            )
+          ) {
+            // Slug conflict, try again with a new slug
+            attempt++;
+            baseSlug = `${data.slug}-${Date.now()}`; // Add timestamp for extra uniqueness if needed
+            continue;
+          }
+          throw error;
+        }
+      }
+      throw lastError || new Error('Failed to upsert organization due to slug conflicts');
     } catch (error) {
       handleDatabaseError(error);
     }
@@ -192,16 +232,18 @@ export class DatabaseQueries {
         // Try to create a placeholder organization with retry logic for race conditions
         let createAttempts = 0;
         const maxAttempts = 3;
-        
+        let lastError;
         while (!organizationExists && createAttempts < maxAttempts) {
           createAttempts++;
-          
           try {
+            // Generate a unique slug for the placeholder org
+            const baseSlug = `org-${organizationId.substring(0, 8)}`;
+            const uniqueSlug = await generateUniqueOrgSlug(baseSlug);
             organizationExists = await db.organization.create({
               data: {
                 clerkId: organizationId,
                 name: `Organization ${organizationId.substring(0, 8)}`,
-                slug: `org-${organizationId.substring(0, 8)}-${Date.now()}-${createAttempts}`, // Add attempt number for uniqueness
+                slug: uniqueSlug,
                 subscriptionTier: 'free',
                 subscriptionStatus: 'trial',
                 maxUsers: 5,
@@ -211,33 +253,23 @@ export class DatabaseQueries {
             console.log(`✅ Placeholder organization created: ${organizationId}`);
             break;
           } catch (createError: any) {
-            console.error(`❌ Failed to create placeholder organization (attempt ${createAttempts}): ${organizationId}`, createError);
-            
-            // If creation fails due to unique constraint (race condition), try to find existing org
+            lastError = createError;
             if (createError?.code === 'P2002') {
-              console.log(`🔄 Unique constraint error, checking for existing organization: ${organizationId}`);
-              
-              // Wait a small amount before retrying to avoid race conditions
+              console.log(`🔄 Unique constraint error, retrying slug for organization: ${organizationId}`);
               await new Promise(resolve => setTimeout(resolve, 100 * createAttempts));
-              
-              organizationExists = await db.organization.findUnique({
-                where: { clerkId: organizationId },
-              });
-              
+              organizationExists = await db.organization.findUnique({ where: { clerkId: organizationId } });
               if (organizationExists) {
                 console.log(`✅ Found existing organization after race condition: ${organizationId}`);
                 break;
               }
             } else {
-              // For non-unique constraint errors, break the loop
               console.error(`❌ Non-recoverable error creating organization: ${createError.message}`);
               break;
             }
           }
         }
-        
         if (!organizationExists) {
-          throw new Error(`Could not create or find organization with ID ${organizationId} after ${maxAttempts} attempts`);
+          throw lastError || new Error(`Could not create or find organization with ID ${organizationId} after ${maxAttempts} attempts`);
         }
       }
 
