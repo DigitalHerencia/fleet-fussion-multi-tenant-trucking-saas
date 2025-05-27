@@ -218,7 +218,8 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ ok: true });
 } // <-- Add this to close the POST function
 
-function generateSlug(name: string): string {
+function generateSlug(name?: string): string {
+  if (!name || typeof name !== 'string') return 'org';
   return name
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
