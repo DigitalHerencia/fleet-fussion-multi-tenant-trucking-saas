@@ -1,0 +1,429 @@
+/** @format */
+
+@import "tailwindcss";
+
+:root {
+    /* 
+      Color Palette Documentation:
+      - Naming: --color-[category]-[modifier?] (e.g., --color-bg, --color-primary-hover)
+      - Values: HSL format for easy manipulation (e.g., hue, saturation, lightness adjustments)
+      - Usage: In Tailwind via utility classes like bg-bg, text-primary, border-border-accent
+    */
+
+    /* Base Palette (Dark Theme Only) */
+    /* Backgrounds */
+    --color-bg: 240 10% 3.9%; /* Page background: hsl(var(--color-bg)) -> bg-background */
+    --color-bg-soft: 240 10% 10%; /* Softer background for cards, modals: hsl(var(--color-bg-soft)) -> bg-background-soft */
+    --color-bg-muted: 240 5% 15%; /* Muted background for sidebars, less prominent elements: hsl(var(--color-bg-muted)) -> bg-background-muted */
+
+    /* Foreground / Text */
+    --color-fg: 0 0% 98%; /* Default text color: hsl(var(--color-fg)) -> text-foreground */
+    --color-fg-muted: 0 0% 63.9%; /* Muted text for secondary info: hsl(var(--color-fg-muted)) -> text-foreground-muted */
+    --color-fg-subtle: 0 0% 40%; /* Subtle text for placeholders, disabled states: hsl(var(--color-fg-subtle)) -> text-foreground-subtle */
+
+    /* Primary Action Colors */
+    --color-primary: 217 91% 60%; /* Main brand/action color (e.g., buttons, links): hsl(var(--color-primary)) -> bg-primary, text-primary */
+    --color-primary-fg: 0 0% 100%; /* Text on primary background: hsl(var(--color-primary-fg)) -> text-primary-foreground */
+    --color-primary-hover: 217 91% 55%; /* Hover state for primary: hsl(var(--color-primary-hover)) */
+    --color-primary-active: 217 91% 50%; /* Active state for primary: hsl(var(--color-primary-active)) */
+
+    /* Secondary Action Colors */
+    --color-secondary: 240 5% 25%; /* Secondary actions, outlines: hsl(var(--color-secondary)) -> bg-secondary, text-secondary */
+    --color-secondary-fg: 0 0% 98%; /* Text on secondary background: hsl(var(--color-secondary-fg)) -> text-secondary-foreground */
+    --color-secondary-hover: 240 5% 30%; /* Hover state for secondary: hsl(var(--color-secondary-hover)) */
+    --color-secondary-active: 240 5% 35%; /* Active state for secondary: hsl(var(--color-secondary-active)) */
+
+    /* Accent Colors (for highlights, focus rings, etc.) */
+    --color-accent: 190 80% 50%; /* Accent color: hsl(var(--color-accent)) -> bg-accent, text-accent */
+    --color-accent-fg: 240 10% 3.9%; /* Text on accent background: hsl(var(--color-accent-fg)) -> text-accent-foreground */
+    --color-accent-hover: 190 80% 45%; /* Hover state for accent: hsl(var(--color-accent-hover)) */
+    --color-accent-active: 190 80% 40%; /* Active state for accent: hsl(var(--color-accent-active)) */
+
+    /* Destructive Action Colors (e.g., delete, error) */
+    --color-destructive: 0 70% 50%; /* Destructive actions: hsl(var(--color-destructive)) -> bg-destructive, text-destructive */
+    --color-destructive-fg: 0 0% 100%; /* Text on destructive background: hsl(var(--color-destructive-fg)) -> text-destructive-foreground */
+    --color-destructive-hover: 0 70% 45%; /* Hover state for destructive: hsl(var(--color-destructive-hover)) */
+    --color-destructive-active: 0 70% 40%; /* Active state for destructive: hsl(var(--color-destructive-active)) */
+
+    /* Success Action Colors */
+    --color-success: 140 60% 45%; /* Success states: hsl(var(--color-success)) -> bg-success, text-success */
+    --color-success-fg: 0 0% 100%; /* Text on success background: hsl(var(--color-success-fg)) -> text-success-foreground */
+
+    /* Warning Action Colors */
+    --color-warning: 45 90% 50%; /* Warning states: hsl(var(--color-warning)) -> bg-warning, text-warning */
+    --color-warning-fg: 240 10% 3.9%; /* Text on warning background: hsl(var(--color-warning-fg)) -> text-warning-foreground */
+
+    /* Borders & Rings */
+    --color-border: 240 4% 20%; /* Default border color: hsl(var(--color-border)) -> border-border */
+    --color-border-muted: 240 4% 15%; /* Muted border for less emphasis: hsl(var(--color-border-muted)) -> border-border-muted */
+    --color-ring: 217 91% 65%; /* Focus ring color: hsl(var(--color-ring)) -> ring-ring */
+
+    /* Input Fields */
+    --color-input-bg: 240 5% 18%; /* Input background: hsl(var(--color-input-bg)) -> bg-input */
+    --color-input-border: 240 4% 25%; /* Input border: hsl(var(--color-input-border)) -> border-input */
+    --color-input-fg: 0 0% 98%; /* Input text color: hsl(var(--color-input-fg)) -> text-input-foreground */
+    --color-input-placeholder: 0 0% 50%; /* Input placeholder text: hsl(var(--color-input-placeholder)) -> placeholder:text-input-placeholder */
+
+    /* Card Specific */
+    --color-card-bg: 240 8% 12%; /* Card background: hsl(var(--color-card-bg)) -> bg-card */
+    --color-card-fg: 0 0% 98%; /* Card foreground text: hsl(var(--color-card-fg)) -> text-card-foreground */
+    --color-card-border: 240 4% 18%; /* Card border: hsl(var(--color-card-border)) -> border-card-border */
+
+    /* Popover Specific */
+    --color-popover-bg: 240 10% 8%; /* Popover background: hsl(var(--color-popover-bg)) -> bg-popover */
+    --color-popover-fg: 0 0% 98%; /* Popover foreground text: hsl(var(--color-popover-fg)) -> text-popover-foreground */
+    --color-popover-border: 240 4% 15%; /* Popover border: hsl(var(--color-popover-border)) -> border-popover-border */
+
+    /* Chart Colors (Categorical) */
+    --color-chart-1: 221 83% 53%; /* hsl(var(--color-chart-1)) */
+    --color-chart-2: 162 70% 51%; /* hsl(var(--color-chart-2)) */
+    --color-chart-3: 41 97% 56%; /* hsl(var(--color-chart-3)) */
+    --color-chart-4: 340 82% 52%; /* hsl(var(--color-chart-4)) */
+    --color-chart-5: 271 91% 65%; /* hsl(var(--color-chart-5)) */
+    /* Add more chart colors as needed, ensuring good contrast and visual distinction */
+
+    /* Spacing & Sizing */
+    --spacing-xs: 0.25rem; /* 4px */
+    --spacing-sm: 0.5rem; /* 8px */
+    --spacing-md: 1rem; /* 16px */
+    --spacing-lg: 1.5rem; /* 24px */
+    --spacing-xl: 2rem; /* 32px */
+    --spacing-2xl: 2.5rem; /* 40px */
+    --spacing-3xl: 3rem; /* 48px */
+
+    /* Radius */
+    --radius-sm: 0.25rem; /* 4px */
+    --radius-md: 0.5rem; /* 8px - default */
+    --radius-lg: 0.75rem; /* 12px */
+    --radius-full: 9999px;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.15),
+        0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.2),
+        0 4px 6px -4px rgba(0, 0, 0, 0.15);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.25),
+        0 8px 10px -6px rgba(0, 0, 0, 0.2);
+    --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.1);
+
+    /* Typography */
+    /* Font Families - Ensure these are imported or available system fonts */
+    --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
+        "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+        "Noto Color Emoji";
+    --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+        "Liberation Mono", "Courier New", monospace;
+
+    /* Font Sizes - Base size is 16px (1rem) on body */
+    --font-size-xs: 0.75rem; /* 12px */
+    --font-size-sm: 0.875rem; /* 14px */
+    --font-size-base: 1rem; /* 16px */
+    --font-size-lg: 1.125rem; /* 18px */
+    --font-size-xl: 1.25rem; /* 20px */
+    --font-size-2xl: 1.5rem; /* 24px */
+    --font-size-3xl: 1.875rem; /* 30px */
+    --font-size-4xl: 2.25rem; /* 36px */
+    --font-size-5xl: 3rem; /* 48px */
+
+    /* Font Weights */
+    --font-weight-light: 300;
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    --font-weight-extrabold: 800;
+
+    /* Line Heights */
+    --line-height-none: 1;
+    --line-height-tight: 1.25;
+    --line-height-snug: 1.375;
+    --line-height-normal: 1.5; /* Default */
+    --line-height-relaxed: 1.625;
+    --line-height-loose: 2;
+
+    /* Letter Spacing */
+    --letter-spacing-tighter: -0.05em;
+    --letter-spacing-tight: -0.025em;
+    --letter-spacing-normal: 0em;
+    --letter-spacing-wide: 0.025em;
+    --letter-spacing-wider: 0.05em;
+    --letter-spacing-widest: 0.1em;
+}
+
+body {
+    background-color: hsl(var(--color-bg));
+    color: hsl(var(--color-fg));
+    font-family: var(--font-sans);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-normal);
+    line-height: var(--line-height-normal);
+    letter-spacing: var(--letter-spacing-normal);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Headings */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-tight);
+    color: hsl(var(--color-fg)); /* Or a slightly brighter variant if needed */
+}
+h1 {
+    font-size: var(--font-size-4xl);
+    letter-spacing: var(--letter-spacing-tighter);
+}
+h2 {
+    font-size: var(--font-size-3xl);
+    letter-spacing: var(--letter-spacing-tighter);
+}
+h3 {
+    font-size: var(--font-size-2xl);
+}
+h4 {
+    font-size: var(--font-size-xl);
+}
+h5 {
+    font-size: var(--font-size-lg);
+}
+h6 {
+    font-size: var(--font-size-base);
+}
+
+/* Links */
+a {
+    color: hsl(var(--color-primary));
+    text-decoration: none; /* Remove underline by default */
+    transition: color 0.2s ease-in-out;
+}
+a:hover {
+    color: hsl(var(--color-primary-hover));
+    text-decoration: underline; /* Add underline on hover for clarity */
+}
+
+/* --- Card & Section Utility --- */
+/* These are example utility classes. ShadCN components will have their own styling.
+   You can add more global utility classes here if needed, but prefer component-level styling.
+*/
+.card-base {
+    /* Renamed from .card to avoid conflict if ShadCN uses .card */
+    background: hsl(var(--color-card-bg));
+    color: hsl(var(--color-card-fg));
+    border-radius: var(--radius-md);
+    border: 1px solid hsl(var(--color-card-border));
+    box-shadow: var(--shadow-md);
+    padding: var(--spacing-lg);
+}
+.card-base-lg {
+    /* Renamed from .card-lg */
+    padding: var(--spacing-xl) var(--spacing-lg);
+    box-shadow: var(--shadow-lg);
+}
+.card-header-base {
+    /* Renamed from .card-header */
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    margin-bottom: var(--spacing-sm);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid hsl(var(--color-border-muted));
+}
+.card-metric-base {
+    /* Renamed from .card-metric */
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: -0.01em;
+}
+.card-subtext-base {
+    font-size: var(--font-size-sm);
+    color: hsl(var(--muted-foreground));
+}
+
+/* --- Button Utility --- */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: calc(var(--radius) - 2px);
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 0.5rem 1.25rem;
+    transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+    border: none;
+    cursor: pointer;
+}
+.btn-primary {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+}
+.btn-primary:hover {
+    background: hsl(var(--primary) / 0.92);
+}
+.btn-outline {
+    background: transparent;
+    color: hsl(var(--primary));
+    border: 1.5px solid hsl(var(--primary));
+}
+.btn-outline:hover {
+    background: hsl(var(--primary) / 0.08);
+}
+.btn-danger {
+    background: hsl(var(--danger));
+    color: #fff;
+}
+
+/* --- Badge Utility --- */
+.badge {
+    display: inline-block;
+    border-radius: 9999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.15em 0.75em;
+    background: hsl(var(--secondary));
+    color: hsl(var(--primary));
+}
+.badge-success {
+    background: hsl(var(--success));
+    color: #fff;
+}
+.badge-warning {
+    background: hsl(var(--warning));
+    color: #fff;
+}
+.badge-danger {
+    background: hsl(var(--danger));
+    color: #fff;
+}
+.badge-info {
+    background: hsl(var(--info));
+    color: #fff;
+}
+
+/* --- Table Utility --- */
+.table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: hsl(var(--card));
+    border-radius: var(--radius);
+    overflow: hidden;
+    font-size: 1rem;
+}
+.table th,
+.table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid hsl(var(--border));
+}
+.table th {
+    font-weight: 600;
+    background: hsl(var(--secondary));
+    color: hsl(var(--primary));
+}
+.table tr:last-child td {
+    border-bottom: none;
+}
+
+/* --- Tabs Utility --- */
+.tabs {
+    display: flex;
+    gap: 1.5rem;
+    border-bottom: 2px solid hsl(var(--border));
+    margin-bottom: 1.5rem;
+}
+.tab {
+    font-size: 1rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    padding-bottom: 0.5rem;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+}
+.tab.active {
+    color: hsl(var(--primary));
+    border-bottom: 2px solid hsl(var(--primary));
+}
+
+/* --- Page Section Utility --- */
+.analytics-page {
+    background: hsl(var(--background));
+}
+.compliance-page {
+    background: hsl(var(--background));
+}
+.dashboard-page {
+    background: hsl(var(--background));
+}
+.dispatch-page {
+    background: hsl(var(--background));
+}
+.drivers-page {
+    background: hsl(var(--background));
+}
+.ifta-page {
+    background: hsl(var(--background));
+}
+.settings-page {
+    background: hsl(var(--background));
+}
+.vehicles-page {
+    background: hsl(var(--background));
+}
+
+/* --- Spacing Utility --- */
+.section {
+    margin-bottom: 2.5rem;
+}
+
+/* --- Misc Utility --- */
+.shadow {
+    box-shadow: var(--shadow);
+}
+.shadow-lg {
+    box-shadow: var(--shadow-lg);
+}
+.border {
+    border: 1px solid hsl(var(--border));
+}
+.rounded {
+    border-radius: var(--radius);
+}
+
+/* --- Headings & Typography --- */
+.page-title {
+    font-size: 2.25rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.5rem;
+}
+.page-subtitle {
+    font-size: 1.15rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    margin-bottom: 2rem;
+}
+.section-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+/* --- Responsive Utility --- */
+@media (max-width: 768px) {
+    .card,
+    .card-lg {
+        padding: 1rem;
+    }
+    .page-title {
+        font-size: 1.5rem;
+    }
+    .section-title {
+        font-size: 1.1rem;
+    }
+}
