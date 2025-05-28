@@ -145,60 +145,90 @@ export class DatabaseQueries {
         throw new Error('slug is required for organization upsert');
       }
 
-      const { clerkId, ...updateData } = data;
-      let baseSlug = data.slug;
-      let uniqueSlug = baseSlug;
-      let attempt = 0;
-      const maxAttempts = 5;
-      let lastError;
-      while (attempt < maxAttempts) {
-        try {
-          if (attempt > 0) {
-            uniqueSlug = await generateUniqueOrgSlug(baseSlug);
+      const { clerkId } = data;
+      
+      // First, check if organization exists by clerkId
+      const existingOrg = await db.organization.findUnique({
+        where: { clerkId }
+      });
+
+      if (existingOrg) {
+        // Organization exists, update it without changing the slug to avoid conflicts
+        const updateData = {
+          name: data.name,
+          dotNumber: data.dotNumber,
+          mcNumber: data.mcNumber,
+          address: data.address,
+          city: data.city,
+          state: data.state,
+          zip: data.zip,
+          phone: data.phone,
+          email: data.email,
+          logoUrl: data.logoUrl,
+          maxUsers: data.maxUsers === undefined ? 5 : data.maxUsers,
+          billingEmail: data.billingEmail,
+          isActive: data.isActive === undefined ? true : data.isActive,
+        };
+        
+        const organization = await db.organization.update({
+          where: { clerkId },
+          data: updateData,
+        });
+        return organization;
+      } else {
+        // Organization doesn't exist, create new one with unique slug
+        let uniqueSlug = data.slug;
+        let attempt = 0;
+        const maxAttempts = 5;
+        let lastError;
+        
+        while (attempt < maxAttempts) {
+          try {
+            if (attempt > 0) {
+              uniqueSlug = await generateUniqueOrgSlug(data.slug);
+            }
+            
+            const orgDataForCreate = {
+              clerkId,
+              name: data.name,
+              slug: uniqueSlug,
+              dotNumber: data.dotNumber,
+              mcNumber: data.mcNumber,
+              address: data.address,
+              city: data.city,
+              state: data.state,
+              zip: data.zip,
+              phone: data.phone,
+              email: data.email,
+              logoUrl: data.logoUrl,
+              maxUsers: data.maxUsers === undefined ? 5 : data.maxUsers,
+              billingEmail: data.billingEmail,
+              isActive: data.isActive === undefined ? true : data.isActive,
+            };
+            
+            const organization = await db.organization.create({
+              data: orgDataForCreate,
+            });
+            return organization;
+          } catch (error: any) {
+            lastError = error;
+            if (
+              error instanceof PrismaClientKnownRequestError &&
+              error.code === 'P2002' &&
+              (
+                (typeof error.meta?.target === 'string' && error.meta.target === 'slug') ||
+                (Array.isArray(error.meta?.target) && error.meta.target.includes('slug'))
+              )
+            ) {
+              // Slug conflict, try again with a new slug
+              attempt++;
+              continue;
+            }
+            throw error;
           }
-          const orgDataForUpdate = { ...updateData, slug: uniqueSlug };
-          const orgDataForCreate = {
-            clerkId,
-            name: data.name,
-            slug: uniqueSlug,
-            dotNumber: data.dotNumber,
-            mcNumber: data.mcNumber,
-            address: data.address,
-            city: data.city,
-            state: data.state,
-            zip: data.zip,
-            phone: data.phone,
-            email: data.email,
-            logoUrl: data.logoUrl,
-            maxUsers: data.maxUsers === undefined ? 5 : data.maxUsers,
-            billingEmail: data.billingEmail,
-            isActive: data.isActive === undefined ? true : data.isActive,
-          };
-          const organization = await db.organization.upsert({
-            where: { clerkId },
-            update: orgDataForUpdate,
-            create: orgDataForCreate,
-          });
-          return organization;
-        } catch (error: any) {
-          lastError = error;
-          if (
-            error instanceof PrismaClientKnownRequestError &&
-            error.code === 'P2002' &&
-            (
-              (typeof error.meta?.target === 'string' && error.meta.target === 'slug') ||
-              (Array.isArray(error.meta?.target) && error.meta.target.includes('slug'))
-            )
-          ) {
-            // Slug conflict, try again with a new slug
-            attempt++;
-            baseSlug = `${data.slug}-${Date.now()}`; // Add timestamp for extra uniqueness if needed
-            continue;
-          }
-          throw error;
         }
+        throw lastError || new Error('Failed to create organization due to slug conflicts');
       }
-      throw lastError || new Error('Failed to upsert organization due to slug conflicts');
     } catch (error) {
       handleDatabaseError(error);
     }
