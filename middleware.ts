@@ -170,7 +170,7 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
 
 export const config = {
   matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
-  runtime: 'edge', // Explicitly set Edge Runtime for Next.js Middleware compatibility
+  runtime: 'experimental-edge', // Use experimental-edge for Next.js 15 compatibility
 };
 
 function forbiddenOrRedirect(req: NextRequest, redirectUrl?: string) {
