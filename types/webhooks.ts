@@ -37,6 +37,7 @@ export type WebhookEventType =
 
 // Generic webhook payload structure
 export interface WebhookPayload<T = any> {
+  [ x: string ]: any
   data: T
   type: WebhookEventType
   object: string

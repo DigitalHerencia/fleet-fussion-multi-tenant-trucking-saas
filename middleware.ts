@@ -170,6 +170,7 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
 
 export const config = {
   matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
+  runtime: 'edge', // Explicitly set Edge Runtime for Next.js Middleware compatibility
 };
 
 function forbiddenOrRedirect(req: NextRequest, redirectUrl?: string) {
@@ -183,3 +184,6 @@ function forbiddenOrRedirect(req: NextRequest, redirectUrl?: string) {
   // Redirect to sign-in instead of non-existent /dashboard
   return NextResponse.redirect(new URL('/sign-in?error=forbidden', req.url));
 }
+
+// Edge Runtime: This middleware runs in the Edge Runtime (no Node.js built-ins allowed)
+// Clerk helpers (e.g., auth().protect()) can be used for simple protection, but custom logic is required for ABAC, onboarding, and org context.

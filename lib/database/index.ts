@@ -1,63 +1,59 @@
 /**
- * Database Connection Configuration
+ * Database Connection Configuration (Neon + Prisma)
  *
- * Neon PostgreSQL connection with Prisma ORM
- * Includes connection pooling and proper error handling
+ * - Uses Neon serverless driver for serverless/edge environments
+ * - Uses Prisma client singleton pattern to avoid connection exhaustion
+ * - Handles error logging and type-safe queries
  */
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 
-// NOTE: Enums like UserRole are now available via Prisma Client (e.g., Prisma.UserRole)
-// or directly if you export them from schema.prisma (though not standard for Prisma enums)
+// Neon serverless driver support
+let prisma: PrismaClient;
+
+// Use a global variable for the Prisma client in development to avoid hot-reload issues
+const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
 if (!process.env.DATABASE_URL) {
   throw new Error('DATABASE_URL environment variable is required');
 }
 
-// Create the Prisma Client instance
-const prisma = new PrismaClient();
+if (process.env.NODE_ENV === 'production') {
+  prisma = new PrismaClient();
+} else {
+  if (!globalForPrisma.prisma) {
+    globalForPrisma.prisma = new PrismaClient();
+  }
+  prisma = globalForPrisma.prisma;
+}
 
-// Export the Prisma Client instance
 export const db = prisma;
 
-// Export types (Prisma generates its own types, which are generally preferred)
-// You can still export specific types if needed, e.g.:
-// export type { User, Organization } from '../../generated/prisma';
-
 // Utility function to handle database errors
-export function handleDatabaseError(error: any): never {
+export function handleDatabaseError(error: unknown): never {
   console.error('Database error:', error);
-
   if (error instanceof PrismaClientKnownRequestError) {
-    // Prisma-specific errors
     switch (error.code) {
-      case 'P2002': // Unique constraint failed
-        throw new Error(`Record already exists: A unique constraint would be violated on ${Array.isArray(error.meta?.target) ? error.meta.target.join(', ') : 'a field'}.`);
-      case 'P2003': // Foreign key constraint failed
-        throw new Error(`Foreign key constraint failed on the field: ${error.meta?.field_name}`);
-      case 'P2025': // Record to update or delete does not exist
-        throw new Error('Operation failed because the record does not exist.');
-      // Add more Prisma error codes as needed
+      case 'P2002':
+      case 'P2003':
+      case 'P2025':
       default:
         throw new Error(`Database error (Prisma): ${error.message} (Code: ${error.code})`);
     }
-  } else if (error.code) { // Fallback for generic SQL errors if not caught by Prisma error types
-    switch (error.code) {
-      case '23505': // Unique violation (PostgreSQL specific, Prisma usually catches as P2002)
-        throw new Error('Record already exists');
-      case '23503': // Foreign key violation (PostgreSQL specific, Prisma usually catches as P2003)
-        throw new Error('Referenced record does not exist');
-      case '23502': // Not null violation
-        throw new Error('Required field is missing');
-      case '42P01': // Undefined table
-        throw new Error('Database table does not exist');
+  } else if (typeof error === 'object' && error !== null && 'code' in error && 'message' in error) {
+    // Fallback for generic SQL errors
+    const sqlError = error as { code: string; message: string };
+    switch (sqlError.code) {
+      case '23505':
+      case '23503':
+      case '23502':
+      case '42P01':
       default:
-        throw new Error(`Database error: ${error.message} (SQL Code: ${error.code})`);
+        throw new Error(`Database error: ${sqlError.message} (SQL Code: ${sqlError.code})`);
     }
   }
-
   throw new Error('Unknown database error occurred');
 }
 
@@ -91,6 +87,14 @@ async function generateUniqueOrgSlug(baseSlug: string): Promise<string> {
 
 // Type-safe database queries helper (rewritten for Prisma)
 export class DatabaseQueries {
+  static upsertOrganizationMembership ( arg0: { clerkId: any; organizationId: any; userId: any; role: any; createdAt: Date | undefined; updatedAt: Date | undefined; } )
+  {
+    throw new Error( 'Method not implemented.' );
+  }
+  static deleteOrganizationMembership ( id: any )
+  {
+    throw new Error( 'Method not implemented.' );
+  }
   /**
    * Get organization by Clerk ID
    */
@@ -221,7 +225,7 @@ export class DatabaseQueries {
               data: orgDataForCreate,
             });
             return organization;
-          } catch (error: any) {
+          } catch (error: unknown) {
             lastError = error;
             if (
               error instanceof PrismaClientKnownRequestError &&

@@ -1,130 +1,183 @@
-'use server'
+"use server"
 
-import { clerkClient } from '@clerk/nextjs/server'
-import { redirect } from 'next/navigation'
-import type { OnboardingData } from '@/types/auth'
+import { clerkClient } from '@clerk/nextjs/server';
+import { 
+  type UserRole, 
+  type ClerkUserMetadata, 
+  type ClerkOrganizationMetadata,
+  type OnboardingData,
+  type SetClerkMetadataResult,
+  ROLE_PERMISSIONS 
+} from '@/types/auth';
+
+// Infer the resolved client type
+type ResolvedClerkClient = Awaited<ReturnType<typeof clerkClient>>;
 
 /**
- * Server action to handle onboarding
- * ONLY creates organization in Clerk and adds user as admin
- * Database sync is handled by webhooks
+ * Utility to generate a unique slug for organizations.
+ * It first checks the baseSlug, then baseSlug-1, baseSlug-2, etc.
  */
-export async function setClerkMetadata(data: OnboardingData) {
-  console.log('🚀 Starting onboarding process for user:', data.userId)
-  console.log('📋 Onboarding data:', {
-    companyName: data.companyName,
-    orgSlug: data.orgSlug,
-    dotNumber: data.dotNumber,
-    mcNumber: data.mcNumber
-  })
+async function generateUniqueOrgSlug(baseSlug: string, resolvedClient: ResolvedClerkClient): Promise<string> {
+  let currentSlug = baseSlug;
+  let attempt = 0; 
+  const maxAttempts = 50; 
 
-  try {    // Generate unique slug if needed
-    let finalSlug = data.orgSlug
-    let slugAttempts = 0
-    const maxSlugAttempts = 5
+  while (attempt < maxAttempts) {
+    try {
+      // Reverted to using query as slug parameter caused issues.
+      // The Clerk SDK might expect `query` for this type of broad check.
+      const existingOrgs = await resolvedClient.organizations.getOrganizationList({ query: currentSlug });
+      // Check if any returned organization exactly matches the currentSlug
+      const orgExists = existingOrgs.data.some((org: any) => org.slug === currentSlug);
 
-    while (slugAttempts < maxSlugAttempts) {
-      try {
-        // Get Clerk client instance
-        const clerk = await clerkClient()
+      if (!orgExists) {
+        return currentSlug; 
+      }
+    } catch (error) {
+      console.warn(`Error checking slug uniqueness for '${currentSlug}':`, error);
+    }
+    
+    attempt++;
+    currentSlug = `${baseSlug}-${attempt}`;
+  }
+  
+  console.warn(`Max attempts reached for slug generation based on '${baseSlug}'. Using timestamp fallback.`);
+  return `${baseSlug}-${Date.now()}`;
+}
+
+/**
+ * Server action to set Clerk metadata and create organization after onboarding
+ * ONLY creates in Clerk - database sync handled by webhooks for proper separation of concerns
+ */
+export async function setClerkMetadata(data: OnboardingData): Promise<SetClerkMetadataResult> {
+  const actualClient: ResolvedClerkClient = await clerkClient();
+  let createdOrgId: string | undefined;
+
+  try {
+    console.log('🚀 Starting onboarding metadata setup for user:', data.userId);
+    console.log('📋 Architecture: ONLY creating in Clerk, database sync via webhooks');
+
+    if (!data.userId) {
+      return { success: false, error: "User ID is required." };
+    }
+    if (!data.orgName || data.orgName.trim().length < 2) {
+      return { success: false, error: "Organization name must be at least 2 characters." };
+    }
+    if (!data.orgSlug) { 
+      return { success: false, error: "Base organization slug is required." };
+    }
+    if (!data.role) {
+        return { success: false, error: "User role is required for organization membership." };
+    }
+
+    let billingEmail = '';
+    try {
+      const user = await actualClient.users.getUser(data.userId);
+      billingEmail = user.emailAddresses.find((email: { id: string; }) => email.id === user.primaryEmailAddressId)?.emailAddress || '';
+    } catch (e: any) {
+      console.warn('Could not retrieve user email for billing:', e.message);
+    }
+
+    let organization;
+    let slugToUse = data.orgSlug;
+
+    try {
+        // Reverted to using query for initial check as well.
+        const existingOrgsBySlug = await actualClient.organizations.getOrganizationList({ query: slugToUse });
+        organization = existingOrgsBySlug.data.find((org: any) => org.slug === slugToUse);
+    } catch (error: any) {
+        console.warn(`Error fetching organization by slug '${slugToUse}' using query: ${error.message}. Will attempt to create if necessary.`);
+    }
+
+    if (!organization) {
+        slugToUse = await generateUniqueOrgSlug(data.orgSlug, actualClient); 
         
-        // Try to create organization with current slug
-        const organization = await clerk.organizations.createOrganization({
-          name: data.companyName,
-          slug: finalSlug,          publicMetadata: {
-            // Business information for database sync via webhooks
-            dotNumber: data.dotNumber,
-            mcNumber: data.mcNumber,
-            address: data.address,
-            city: data.city,
-            state: data.state,
-            zip: data.zip,
-            phone: data.phone,
-            billingEmail: '', // Will be set from user's email during webhook
-            maxUsers: 5,
-            subscriptionTier: 'free',
-            subscriptionStatus: 'active',
-            features: [],
-            settings: {
-              timezone: 'UTC',
-              dateFormat: 'MM/DD/YYYY',
-              distanceUnit: 'miles',
-              fuelUnit: 'gallons'
-            }
-          }
-        })
-
-        console.log('✅ Organization created in Clerk:', {
-          id: organization.id,
-          name: organization.name,
-          slug: organization.slug
-        })        // Add user to organization as admin
-        await clerk.organizations.createOrganizationMembership({
-          organizationId: organization.id,
-          userId: data.userId,
-          role: 'admin'
-        })
-
-        console.log('✅ User added to organization as admin:', {
-          userId: data.userId,
-          organizationId: organization.id,
-          role: 'admin'
-        })
-
-        // Update user metadata to mark onboarding complete
-        await clerk.users.updateUserMetadata(data.userId, {
-          publicMetadata: {
-            onboardingComplete: true,
-            organizationId: organization.id,
-            role: 'admin'
-          }
-        })
-
-        console.log('✅ User metadata updated:', {
-          userId: data.userId,
-          onboardingComplete: true,
-          organizationId: organization.id
-        })
-
-        // Return success with organization ID for client-side redirect
-        return {
-          success: true,
-          organizationId: organization.id,
-          message: 'Onboarding completed successfully'
+        console.log(`Attempting to create organization '${data.orgName}' with slug '${slugToUse}'`);
+        try {
+            organization = await actualClient.organizations.createOrganization({
+                name: data.orgName,
+                slug: slugToUse,
+                createdBy: data.userId,
+                publicMetadata: { companyName: data.companyName, dotNumber: data.dotNumber, mcNumber: data.mcNumber },
+                ...(billingEmail && { billingEmail }),
+            });
+            createdOrgId = organization.id;
+            console.log('🏢 Organization created in Clerk ONLY:', { id: organization.id, name: organization.name, slug: organization.slug });
+        } catch (creationError: any) {
+            console.error('❌ Error creating organization:', creationError.errors || creationError.message);
+            return { success: false, error: `Failed to create organization '${data.orgName}': ${creationError.message}` };
         }
+    } else {
+        createdOrgId = organization.id;
+        console.log('🏢 Organization with preferred slug already exists in Clerk:', { id: organization.id, name: organization.name, slug: organization.slug });
+    }
+    
+    if (!organization) {
+        console.error('❌ Organization object is undefined after creation/retrieval attempt.');
+        return { success: false, error: 'Failed to obtain organization details.' };
+    }
+    createdOrgId = organization.id;
 
-      } catch (error: any) {
-        // Handle slug conflicts
-        if (error.errors?.[0]?.code === 'form_slug_exists' || 
-            error.message?.includes('slug') ||
-            error.message?.includes('already exists')) {
-          
-          slugAttempts++
-          finalSlug = `${data.orgSlug}-${slugAttempts}`
-          console.log(`⚠️ Slug conflict, trying: ${finalSlug} (attempt ${slugAttempts})`)
-          continue
-        }
-        
-        // Handle other errors
-        console.error('❌ Error in onboarding process:', error)
-        return {
-          success: false,
-          error: error.message || 'Failed to complete onboarding'
+    await actualClient.users.updateUser(data.userId, {
+      publicMetadata: {
+        onboardingComplete: true,
+        organizationId: organization.id, 
+        role: data.role, 
+        isActive: true
+      },
+      privateMetadata: {
+        onboarding: {
+          ...data, 
+          organizationId: organization.id,
+          completedAt: new Date().toISOString()
+        },
+        lastLogin: new Date().toISOString()
+      }
+    });    
+    
+    console.log('✅ Updated user metadata in Clerk ONLY (database sync via webhook):', {
+      userId: data.userId,
+      organizationId: organization.id,
+      role: data.role,
+      onboardingComplete: true
+    });
+
+    const createMembershipWithRetry = async (maxRetries = 3, baseDelay = 1000): Promise<void> => {
+      let attempts = 0;
+      while (attempts < maxRetries) {
+        try {
+          console.log(`Attempt ${attempts + 1} to add user ${data.userId} to org ${organization!.id} with role ${data.role}`);
+          await actualClient.organizations.createOrganizationMembership({
+            organizationId: organization!.id,
+            userId: data.userId,
+            role: data.role, 
+          });
+          console.log(`✅ Successfully added user ${data.userId} to organization ${organization!.id} with role ${data.role}`);
+          return; 
+        } catch (error: any) {
+          attempts++;
+          const errorMessage = error.errors ? error.errors.map((e: any) => e.message).join(', ') : error.message;
+          console.warn(`Failed attempt ${attempts} to add user to organization:`, errorMessage);
+          if (attempts >= maxRetries) {
+            console.error('❌ Max retries reached for adding user to organization. Error:', errorMessage);
+            throw new Error(`Failed to add user to organization after ${maxRetries} attempts: ${errorMessage}`);
+          }
+          await new Promise(resolve => setTimeout(resolve, baseDelay * Math.pow(2, attempts -1)));
         }
       }
-    }
+    };
+    
+    await createMembershipWithRetry();
 
-    // If we exhausted slug attempts
-    return {
-      success: false,
-      error: 'Unable to create organization - slug conflicts exceeded maximum retries'
-    }
+    console.log('🎉 User successfully added to organization in Clerk.');
+    return { success: true, organizationId: createdOrgId };
 
   } catch (error: any) {
-    console.error('❌ Onboarding failed:', error)
-    return {
-      success: false,
-      error: error.message || 'Failed to complete onboarding'
-    }
+    console.error('❌ Onboarding process failed:', error.errors || error.message);
+    return { 
+      success: false, 
+      error: error.message || "An unexpected error occurred during onboarding.",
+      organizationId: createdOrgId 
+    };
   }
 }
