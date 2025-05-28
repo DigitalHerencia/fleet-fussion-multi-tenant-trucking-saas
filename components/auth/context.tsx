@@ -77,7 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || clerkUser.emailAddresses[0]?.emailAddress || 'Unknown User',
         profileImage: clerkUser.imageUrl || undefined,
         isActive: userMetadata?.isActive ?? true,
-        onboardingCompleted: userMetadata?.onboardingComplete ?? false,
+        onboardingComplete: userMetadata?.onboardingComplete ?? false,
         organizationMetadata: orgMetadata || {
           subscriptionTier: 'free',
           subscriptionStatus: 'trial',
@@ -181,7 +181,7 @@ export function useOrganizationContext() {
  */
 export function useOnboardingStatus(): boolean {
   const user = useUserContext()
-  return user?.onboardingCompleted ?? false
+  return user?.onboardingComplete ?? false
 }
 
 /**

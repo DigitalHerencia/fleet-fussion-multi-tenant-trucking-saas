@@ -99,7 +99,7 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
     email: sessionClaims?.primaryEmail || '',
     firstName: sessionClaims?.firstName || '',
     lastName: sessionClaims?.lastName || '',
-    onboardingCompleted: onboardingComplete,
+    onboardingComplete: onboardingComplete,
     organizationMetadata: orgMetadata || {
       subscriptionTier: 'free',
       subscriptionStatus: 'inactive',
@@ -117,12 +117,12 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
   };
 
   // Check if user needs to complete onboarding
-  if (!userContext.onboardingCompleted && !req.nextUrl.pathname.startsWith('/onboarding')) {
+  if (!userContext.onboardingComplete && !req.nextUrl.pathname.startsWith('/onboarding')) {
     return NextResponse.redirect(new URL('/onboarding', req.url));
   }
 
   // Prevent users who have completed onboarding from accessing onboarding page again
-  if (userContext.onboardingCompleted && req.nextUrl.pathname.startsWith('/onboarding')) {
+  if (userContext.onboardingComplete && req.nextUrl.pathname.startsWith('/onboarding')) {
     // Redirect to org dashboard if org context exists, else to dashboard
     if (userContext.organizationId) {
       return NextResponse.redirect(new URL(`/org/${userContext.organizationId}/dashboard`, req.url));

@@ -36,7 +36,7 @@ export async function getCurrentUser(): Promise<UserContext | null> {
     lastName: user.lastName ?? undefined,
     profileImage: user.imageUrl,
     isActive: userMeta.isActive,
-    onboardingCompleted: userMeta.onboardingComplete,
+    onboardingComplete: userMeta.onboardingComplete,
     organizationMetadata: orgMeta,
   }
 }

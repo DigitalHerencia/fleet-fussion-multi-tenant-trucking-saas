@@ -73,7 +73,7 @@ export interface UserContext {
   lastName?: string
   profileImage?: string
   isActive: boolean
-  onboardingCompleted: boolean // Should match onboardingComplete in ClerkUserMetadata and JWT
+  onboardingComplete: boolean // Standardized to match Clerk and DB field names
   organizationMetadata: ClerkOrganizationMetadata
 }
 
@@ -143,7 +143,7 @@ export interface DatabaseUser {
   role: UserRole | null;
   isActive: boolean;
   lastLogin?: string | null;
-  onboardingCompleted: boolean // Should match ClerkUserMetadata.onboardingComplete
+  onboardingComplete: boolean // Standardized to match ClerkUserMetadata and database schema
   // Standard database timestamps
   createdAt: Date;
   updatedAt: Date;
@@ -188,7 +188,7 @@ export interface OnboardingData {
   zip: string
   phone: string
   role: UserRole
-  onboardingCompleted: boolean
+  onboardingComplete: boolean
 }
 
 export interface SetClerkMetadataResult {

@@ -95,7 +95,7 @@ export default function OnboardingPage() {
         zip: formData.zip,
         phone: formData.phone,
         role: 'admin', // Default to admin for onboarding
-        onboardingCompleted: true
+        onboardingComplete: true
       }
       // Call server action to handle onboarding
       const result = await setClerkMetadata(onboardingData)

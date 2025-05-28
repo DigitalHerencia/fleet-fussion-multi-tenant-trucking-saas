@@ -134,6 +134,17 @@ export class DatabaseQueries {
     isActive?: boolean;
   }) {
     try {
+      // Validate required fields
+      if (!data.clerkId) {
+        throw new Error('clerkId is required for organization upsert');
+      }
+      if (!data.name) {
+        throw new Error('name is required for organization upsert');
+      }
+      if (!data.slug) {
+        throw new Error('slug is required for organization upsert');
+      }
+
       const { clerkId, ...updateData } = data;
       let baseSlug = data.slug;
       let uniqueSlug = baseSlug;
@@ -196,7 +207,6 @@ export class DatabaseQueries {
   /**
    * Create or update user from Clerk webhook
    */  static async upsertUser(data: {
-    onboardingComplete: boolean;
     clerkId: string;
     organizationId: string;
     email: string;
@@ -204,7 +214,7 @@ export class DatabaseQueries {
     lastName?: string | null;
     profileImage?: string | null;
     isActive?: boolean;
-    onboardingCompleted?: boolean;
+    onboardingComplete: boolean;
     lastLogin?: Date | null;
   }) {
     try {

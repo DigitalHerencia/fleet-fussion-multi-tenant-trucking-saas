@@ -67,32 +67,36 @@ async function verifyWebhook(request: NextRequest): Promise<WebhookPayload | nul
 }
 
 export async function POST(req: NextRequest) {
-  // Check rate limit first
-  const identifier = req.headers.get('x-forwarded-for') || 'anonymous';
-  const rateLimit = await webhookRateLimit(identifier);
-  
-  if (!rateLimit.success) {
-    return new NextResponse('Too Many Requests', { 
-      status: 429,
-      headers: {
-        'X-RateLimit-Limit': rateLimit.limit.toString(),
-        'X-RateLimit-Remaining': rateLimit.remaining.toString(),
-        'X-RateLimit-Reset': rateLimit.reset.toString()
-      }
-    });
-  }
+  try {
+    // Check rate limit first
+    const identifier = req.headers.get('x-forwarded-for') || 'anonymous';
+    const rateLimit = await webhookRateLimit(identifier);
+    
+    if (!rateLimit.success) {
+      return new NextResponse('Too Many Requests', { 
+        status: 429,
+        headers: {
+          'X-RateLimit-Limit': rateLimit.limit.toString(),
+          'X-RateLimit-Remaining': rateLimit.remaining.toString(),
+          'X-RateLimit-Reset': rateLimit.reset.toString()
+        }
+      });
+    }
 
-  // Parse and verify event
-  const payload = await req.text();
-  const headers = Object.fromEntries(req.headers.entries());
-  const webhook = new Webhook(process.env.CLERK_WEBHOOK_SECRET!);
-  const event = webhook.verify(payload, headers) as WebhookPayload;
-  if (!HANDLED_EVENTS.includes(event.type)) {
-    return NextResponse.json({ ok: true, ignored: true, reason: 'Event not handled' });
-  }
+    // Parse and verify event
+    const payload = await req.text();
+    const headers = Object.fromEntries(req.headers.entries());
+    const webhook = new Webhook(process.env.CLERK_WEBHOOK_SECRET!);
+    const event = webhook.verify(payload, headers) as WebhookPayload;
+    
+    if (!HANDLED_EVENTS.includes(event.type)) {
+      return NextResponse.json({ ok: true, ignored: true, reason: 'Event not handled' });
+    }
 
-  // Handle each event type
-  switch (event.type) {
+    console.log(`📨 Processing webhook event: ${event.type}`);
+
+    // Handle each event type
+    switch (event.type) {
     // User Events
     case 'user.created':
     case 'user.updated': {
@@ -150,14 +154,35 @@ export async function POST(req: NextRequest) {
     case 'organization.deleted': {
       const orgData = event.data as OrganizationWebhookData;
       
-      await DatabaseQueries.upsertOrganization({
-        clerkId: orgData.id,
+      // Debug logging to see what data we're receiving
+      console.log('📥 Organization webhook data:', {
+        id: orgData.id,
         name: orgData.name,
-        slug: orgData.slug || generateSlug(orgData.name)
-        // metadata: orgData.public_metadata // removed, not a valid property
+        slug: orgData.slug,
+        type: event.type
       });
       
-      console.log(`✅ Organization ${event.type}: ${orgData.id} (${orgData.name})`);
+      // Ensure name is provided, use slug as fallback, or generate a default name
+      const organizationName = orgData.name || orgData.slug || `Organization ${orgData.id.substring(0, 8)}`;
+      const organizationSlug = orgData.slug || generateSlug(organizationName);
+      
+      // Additional validation before database call
+      if (!organizationName) {
+        console.error(`❌ Cannot process organization ${event.type}: name is required but missing for ${orgData.id}`);
+        break;
+      }
+      if (!organizationSlug) {
+        console.error(`❌ Cannot process organization ${event.type}: slug is required but missing for ${orgData.id}`);
+        break;
+      }
+      
+      await DatabaseQueries.upsertOrganization({
+        clerkId: orgData.id,
+        name: organizationName,
+        slug: organizationSlug
+      });
+      
+      console.log(`✅ Organization ${event.type}: ${orgData.id} (${organizationName})`);
       break;
     }
 
@@ -215,14 +240,39 @@ export async function POST(req: NextRequest) {
       break;
     }
   }
+  
+  console.log(`✅ Successfully processed webhook event: ${event.type}`);
   return NextResponse.json({ ok: true });
-} // <-- Add this to close the POST function
+  
+} catch (error) {
+  console.error('❌ Webhook processing error:', error);
+  
+  // Log specific details about the error
+  if (error instanceof Error) {
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
+  }
+  
+  // Return 500 to signal Clerk to retry the webhook
+  return new NextResponse('Internal Server Error', { 
+    status: 500,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+}
+}
 
 function generateSlug(name?: string): string {
   if (!name || typeof name !== 'string') return 'org';
   return name
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
+    .replace(/(^-|-$)/g, '')
+    .substring(0, 50) // Limit length
+    || 'org'; // Fallback if name becomes empty after processing
 }
 
