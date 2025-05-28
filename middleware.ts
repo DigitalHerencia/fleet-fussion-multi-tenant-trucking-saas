@@ -46,10 +46,17 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
 
       // If user has org context, redirect to org dashboard
       if (authData.orgId) {
-        return NextResponse.redirect(new URL(`/org/${authData.orgId}/dashboard`, req.url));
+        return NextResponse.redirect(new URL(`/${authData.orgId}/dashboard/${authData.userId}`, req.url));
       }
       
-      return NextResponse.redirect(new URL('/dashboard', req.url));
+      // If no org context but has organization in metadata, use that
+      const fallbackUserMetadata = sessionClaims?.metadata || sessionClaims?.publicMetadata;
+      if (fallbackUserMetadata?.organizationId) {
+        return NextResponse.redirect(new URL(`/${fallbackUserMetadata.organizationId}/dashboard/${authData.userId}`, req.url));
+      }
+      
+      // Fallback: redirect to onboarding if no organization context
+      return NextResponse.redirect(new URL('/onboarding', req.url));
     }
     return NextResponse.next();
   }
@@ -123,11 +130,12 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
 
   // Prevent users who have completed onboarding from accessing onboarding page again
   if (userContext.onboardingComplete && req.nextUrl.pathname.startsWith('/onboarding')) {
-    // Redirect to org dashboard if org context exists, else to dashboard
+    // Redirect to org dashboard if org context exists
     if (userContext.organizationId) {
-      return NextResponse.redirect(new URL(`/org/${userContext.organizationId}/dashboard`, req.url));
+      return NextResponse.redirect(new URL(`/${userContext.organizationId}/dashboard/${userId}`, req.url));
     }
-    return NextResponse.redirect(new URL('/dashboard', req.url));
+    // If no organization context, redirect to onboarding to complete setup
+    return NextResponse.redirect(new URL('/onboarding', req.url));
   }
 
   // Organization tenant handling

@@ -109,12 +109,27 @@ export default function OnboardingPage() {
         setIsLoading(false)
         return
       }
+      
+      // Check if we got an organizationId back from the server action
+      if (!result.organizationId) {
+        setErrorMessage('Organization was not created properly')
+        toast({
+          title: "Error",
+          description: 'Organization was not created properly',
+          variant: "destructive"
+        })
+        setIsLoading(false)
+        return
+      }
+
       setSuccessMessage("Welcome to FleetFusion! Your organization has been created.")
       toast({
         title: "Success!",
         description: "Welcome to FleetFusion! Your organization has been created.",
       })
-      router.push('/dashboard')
+      
+      // Redirect to the proper dynamic dashboard route with orgId and userId
+      router.push(`/${result.organizationId}/dashboard/${user.id}`)
     } catch (error: any) {
       console.error('Onboarding error:', error)
       setErrorMessage(error instanceof Error ? error.message : "Failed to complete onboarding. Please try again.")
@@ -130,7 +145,15 @@ export default function OnboardingPage() {
 
   React.useEffect(() => {
     if (user && user.publicMetadata?.onboardingComplete) {
-      router.replace('/dashboard');
+      // Get organization ID from user metadata
+      const organizationId = user.publicMetadata?.organizationId;
+      if (organizationId) {
+        router.replace(`/${organizationId}/dashboard/${user.id}`);
+      } else {
+        // Fallback: if no org ID, try to redirect to a general dashboard or sign out
+        console.warn('User completed onboarding but no organization ID found');
+        router.replace('/dashboard'); // This might need to be handled differently
+      }
     }
   }, [user, router])
 
