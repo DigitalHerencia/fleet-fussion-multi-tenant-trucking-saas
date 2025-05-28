@@ -5,30 +5,39 @@
  * for the FleetFusion multi-tenant system with aligned type structure
  */
 
-import { UserRole, Permission, ROLE_PERMISSIONS, PermissionAction, ResourceType, UserContext } from '@/types/auth';
+import { 
+  SystemRole, 
+  SystemRoles, 
+  Permission, 
+  PermissionAction, 
+  ResourceType,
+  hasPermission as abacHasPermission,
+  getPermissionsForRole as abacGetPermissionsForRole
+} from '@/types/abac';
+import type { UserContext } from '@/types/auth';
 
 /**
  * Create a permission string from action and resource
  */
-export function createPermission(action: PermissionAction, resource: ResourceType): Permission {
-  return `${action}:${resource}`
+export function createPermission(action: PermissionAction, resource: ResourceType): string {
+  return `${action}:${resource}`;
 }
 
 /**
  * Parse a permission string into action and resource
  */
-export function parsePermission(permission: Permission): { action: PermissionAction; resource: ResourceType } | null {
-  const parts = permission.split(':')
-  if (parts.length !== 2) return null
-  return { action: parts[0] as PermissionAction, resource: parts[1] as ResourceType }
+export function parsePermission(permission: string): { action: PermissionAction; resource: ResourceType } | null {
+  const parts = permission.split(':');
+  if (parts.length !== 2) return null;
+  return { action: parts[0] as PermissionAction, resource: parts[1] as ResourceType };
 }
 
 /**
  * Check if a user has a specific permission
  */
-export function hasPermission(user: UserContext | null, permission: Permission): boolean {
-  if (!user || user.isActive === false) return false
-  return user.permissions?.includes(permission) || false
+export function hasPermission(user: UserContext | null, action: PermissionAction, resource: ResourceType): boolean {
+  if (!user || user.isActive === false) return false;
+  return abacHasPermission(user.permissions, action, resource);
 }
 
 /**
@@ -39,47 +48,46 @@ export function hasResourcePermission(
   action: PermissionAction, 
   resource: ResourceType
 ): boolean {
-  const permission = createPermission(action, resource)
-  return hasPermission(user, permission) || hasPermission(user, createPermission('manage', resource))
+  return hasPermission(user, action, resource);
 }
 
 /**
  * Check if a user has any of the specified permissions
  */
-export function hasAnyPermission(user: UserContext | null, permissions: Permission[]): boolean {
-  if (!user || user.isActive === false || !user.permissions) return false
-  return permissions.some(permission => user.permissions!.includes(permission))
+export function hasAnyPermission(user: UserContext | null, permissions: Array<{action: PermissionAction, resource: ResourceType}>): boolean {
+  if (!user || user.isActive === false || !user.permissions) return false;
+  return permissions.some(perm => abacHasPermission(user.permissions, perm.action, perm.resource));
 }
 
 /**
  * Check if a user has all of the specified permissions
  */
-export function hasAllPermissions(user: UserContext | null, permissions: Permission[]): boolean {
-  if (!user || user.isActive === false || !user.permissions) return false
-  return permissions.every(permission => user.permissions!.includes(permission))
+export function hasAllPermissions(user: UserContext | null, permissions: Array<{action: PermissionAction, resource: ResourceType}>): boolean {
+  if (!user || user.isActive === false || !user.permissions) return false;
+  return permissions.every(perm => abacHasPermission(user.permissions, perm.action, perm.resource));
 }
 
 /**
  * Check if a user has a specific role
  */
-export function hasRole(user: UserContext | null, role: UserRole): boolean {
-  if (!user || user.isActive === false || !user.role) return false
-  return user.role === role
+export function hasRole(user: UserContext | null, role: SystemRole): boolean {
+  if (!user || user.isActive === false || !user.role) return false;
+  return user.role === role;
 }
 
 /**
  * Check if a user has any of the specified roles
  */
-export function hasAnyRole(user: UserContext | null, roles: UserRole[]): boolean {
-  if (!user || user.isActive === false) return false
-  return roles.includes(user.role as UserRole)
+export function hasAnyRole(user: UserContext | null, roles: SystemRole[]): boolean {
+  if (!user || user.isActive === false) return false;
+  return roles.includes(user.role as SystemRole);
 }
 
 /**
  * Check if a user is an admin
  */
 export function isAdmin(user: UserContext | null): boolean {
-  return hasRole(user, 'admin')
+  return hasRole(user, SystemRoles.ADMIN);
 }
 
 /**
@@ -106,8 +114,8 @@ export function canManageSettings(user: UserContext | null): boolean {
 /**
  * Get permissions for a role
  */
-export function getPermissionsForRole(role: UserRole): Permission[] {
-  return ROLE_PERMISSIONS[role] || []
+export function getPermissionsForRole(role: SystemRole): Permission[] {
+  return abacGetPermissionsForRole(role);
 }
 
 /**
@@ -180,7 +188,7 @@ export class ResourcePermissions {
     if (!user) return false
     
     // If user has general driver permissions, allow access
-    if (hasPermission(user, 'drivers:view')) return true
+    if (hasPermission(user, 'read', 'driver')) return true
     
     // If user is the driver themselves, allow access to own data
     if (user.role === 'driver' && user.userId === driverId) return true
@@ -196,7 +204,7 @@ export class ResourcePermissions {
     if (!user) return false
     
     // If user has general dispatch permissions, allow access
-    if (hasPermission(user, 'dispatch:view')) return true
+    if (hasPermission(user, 'read', 'load')) return true
     
     // If user is a driver and the load is assigned to them, allow access
     if (user.role === 'driver' && loadDriverId === user.userId) return true
@@ -212,7 +220,7 @@ export class ResourcePermissions {
     if (!user) return false
     
     // If user has general compliance permissions, allow access
-    if (hasPermission(user, 'compliance:view')) return true
+    if (hasPermission(user, 'read', 'document')) return true
     
     // If user is a driver and the document belongs to them, allow access
     if (user.role === 'driver' && documentDriverId === user.userId) return true
@@ -237,20 +245,21 @@ export function requirePermission(permission: Permission) {
 /**
  * Route protection utilities
  */
-export class RouteProtection {  // Define PROTECTED_ROUTES using the imported UserRole
-  static PROTECTED_ROUTES: Record<string, UserRole[]> = {
-    '/dashboard': [UserRole.ADMIN, UserRole.MANAGER, UserRole.USER, UserRole.VIEWER, UserRole.DRIVER, UserRole.ACCOUNTANT, UserRole.COMPLIANCE, UserRole.DISPATCHER],
-    '/admin': [UserRole.ADMIN],
-    '/tenant': [UserRole.ADMIN, UserRole.MANAGER],
-    '/settings': [UserRole.ADMIN, UserRole.MANAGER],
-    '/users': [UserRole.ADMIN, UserRole.MANAGER],
-    '/analytics': [UserRole.ADMIN, UserRole.MANAGER, UserRole.DISPATCHER, UserRole.COMPLIANCE],
-    '/dispatch': [UserRole.ADMIN, UserRole.MANAGER, UserRole.DISPATCHER],
-    '/drivers': [UserRole.ADMIN, UserRole.MANAGER, UserRole.DISPATCHER, UserRole.DRIVER],
-    '/vehicles': [UserRole.ADMIN, UserRole.MANAGER, UserRole.DISPATCHER],
-    '/compliance': [UserRole.ADMIN, UserRole.MANAGER, UserRole.COMPLIANCE],
-    '/ifta': [UserRole.ADMIN, UserRole.MANAGER, UserRole.ACCOUNTANT],
-    '/billing': [UserRole.ADMIN, UserRole.MANAGER, UserRole.ACCOUNTANT],
+export class RouteProtection {  
+  // Define PROTECTED_ROUTES using SystemRole
+  static PROTECTED_ROUTES: Record<string, SystemRole[]> = {
+    '/dashboard': [SystemRoles.ADMIN, SystemRoles.DISPATCHER, SystemRoles.DRIVER, SystemRoles.COMPLIANCE_OFFICER, SystemRoles.ACCOUNTANT, SystemRoles.VIEWER],
+    '/admin': [SystemRoles.ADMIN],
+    '/tenant': [SystemRoles.ADMIN],
+    '/settings': [SystemRoles.ADMIN],
+    '/users': [SystemRoles.ADMIN],
+    '/analytics': [SystemRoles.ADMIN, SystemRoles.DISPATCHER, SystemRoles.COMPLIANCE_OFFICER],
+    '/dispatch': [SystemRoles.ADMIN, SystemRoles.DISPATCHER],
+    '/drivers': [SystemRoles.ADMIN, SystemRoles.DISPATCHER, SystemRoles.DRIVER],
+    '/vehicles': [SystemRoles.ADMIN, SystemRoles.DISPATCHER],
+    '/compliance': [SystemRoles.ADMIN, SystemRoles.COMPLIANCE_OFFICER],
+    '/ifta': [SystemRoles.ADMIN, SystemRoles.ACCOUNTANT],
+    '/billing': [SystemRoles.ADMIN, SystemRoles.ACCOUNTANT],
     // Add other routes and their required roles
   };
   

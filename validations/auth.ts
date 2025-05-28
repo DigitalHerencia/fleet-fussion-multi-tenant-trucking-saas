@@ -4,6 +4,7 @@
  */
 
 import { z } from "zod"
+import { SystemRoles } from "@/types/abac"
 
 export const signInSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -68,6 +69,26 @@ export const onboardingSchema = z.object({
   fleetSize: z.enum(["1_5", "6_15", "16_50", "51_100", "100_plus"]),
   services: z.array(z.enum(["truckload", "ltl", "intermodal", "specialized", "refrigerated", "flatbed", "other"])),
   referralSource: z.enum(["search", "social_media", "referral", "advertisement", "other"]).optional(),
+})
+
+// Role validation schemas aligned with ABAC specification
+export const systemRoleSchema = z.enum([
+  SystemRoles.ADMIN,
+  SystemRoles.DISPATCHER,
+  SystemRoles.DRIVER,
+  SystemRoles.COMPLIANCE_OFFICER,
+  SystemRoles.ACCOUNTANT,
+  SystemRoles.VIEWER
+] as const)
+
+export const userRoleAssignmentSchema = z.object({
+  userId: z.string().min(1, "User ID is required"),
+  role: systemRoleSchema,
+  organizationId: z.string().min(1, "Organization ID is required")
+})
+
+export const updateUserRoleSchema = z.object({
+  role: systemRoleSchema
 })
 
 // Organization validation schemas

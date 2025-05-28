@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { RouteProtection } from "@/lib/auth/permissions";
 import type { UserContext, ClerkUserMetadata, ClerkOrganizationMetadata } from "@/types/auth";
-import { UserRole } from "@/types/auth";
+import { SystemRoles, getPermissionsForRole, type SystemRole } from "@/types/abac";
 
 const publicRoutePatterns = [
   '/',
@@ -63,11 +63,27 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
     return NextResponse.redirect(signInUrl);
   }
 
-  // Get user metadata from session claims
-  const userMetadata = sessionClaims?.metadata;
-  const userRole = userMetadata?.role;
-  const userPermissions = userMetadata?.permissions || [];
-  const isActive = userMetadata?.isActive !== false;
+  // Extract ABAC session attributes (prioritize new structure)
+  const abacAttributes = sessionClaims?.abac;
+  const userRole = abacAttributes?.role || 
+                   sessionClaims?.publicMetadata?.role ||
+                   sessionClaims?.metadata?.role ||
+                   SystemRoles.VIEWER;
+  
+  const userPermissions = abacAttributes?.permissions || 
+                         getPermissionsForRole(userRole as SystemRole);
+  
+  const organizationId = abacAttributes?.organizationId ||
+                        orgId || 
+                        sessionClaims?.publicMetadata?.organizationId ||
+                        sessionClaims?.metadata?.organizationId || 
+                        '';
+  
+  const onboardingComplete = sessionClaims?.publicMetadata?.onboardingComplete ||
+                            sessionClaims?.metadata?.onboardingComplete ||
+                            false;
+  
+  const isActive = sessionClaims?.metadata?.isActive !== false;
 
   // Get organization metadata
   const orgMetadata = sessionClaims?.org_public_metadata as ClerkOrganizationMetadata | undefined;
@@ -75,15 +91,15 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
   // Build user context for route protection
   const userContext: UserContext = {
     userId,
-    organizationId: orgId || userMetadata?.organizationId || '',
-    role: (userRole as UserRole) || UserRole.USER,
+    organizationId,
+    role: userRole as SystemRole,
     permissions: userPermissions,
     isActive,
     name: sessionClaims?.firstName || sessionClaims?.fullName?.split(' ')[0] || '',
     email: sessionClaims?.primaryEmail || '',
     firstName: sessionClaims?.firstName || '',
     lastName: sessionClaims?.lastName || '',
-    onboardingCompleted: userMetadata?.onboardingComplete || false,
+    onboardingCompleted: onboardingComplete,
     organizationMetadata: orgMetadata || {
       subscriptionTier: 'free',
       subscriptionStatus: 'inactive',
@@ -134,9 +150,9 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
   // Set headers with user context
   const response = NextResponse.next();
   
-  response.headers.set('x-user-role', userRole || UserRole.USER);
+  response.headers.set('x-user-role', userRole as string);
   if (userPermissions.length > 0) {
-    response.headers.set('x-user-permissions', userPermissions.join(','));
+    response.headers.set('x-user-permissions', JSON.stringify(userPermissions));
   }
   if (orgId) {
     response.headers.set('x-organization-id', orgId);

@@ -13,7 +13,7 @@ import { DatabaseQueries } from '@/lib/database';
 import type { WebhookPayload, UserWebhookData, OrganizationWebhookData, OrganizationMembershipWebhookData } from '@/types/webhooks';
 // import type { WebhookEventType, WebhookPayload, UserWebhookData, OrganizationWebhookData, OrganizationMembershipWebhookData } from '@/types/webhooks';
 import { ratelimit } from '@/lib/rate-limit';
-import { UserRole, ROLE_PERMISSIONS } from '@/types/auth';
+import { SystemRoles, getPermissionsForRole, type SystemRole } from '@/types/abac';
 
 // Environment variables check
 if (!process.env.CLERK_WEBHOOK_SECRET) {
@@ -108,9 +108,9 @@ export async function POST(req: NextRequest) {
         console.warn(`⚠️ Skipping ${event.type} for ${user.id}: organizationId missing in webhook payload.`);
         break;
       }
-      // Determine role from membership or default to USER
-      const role = orgMembership?.role as UserRole || UserRole.USER;
-      const permissions = ROLE_PERMISSIONS[role] || [];
+      // Determine role from membership or default to VIEWER
+      const role = orgMembership?.role as SystemRole || SystemRoles.VIEWER;
+      const permissions = getPermissionsForRole(role);
       await DatabaseQueries.upsertUser({
         clerkId: user.id,
         organizationId,

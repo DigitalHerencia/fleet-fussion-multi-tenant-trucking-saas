@@ -3,123 +3,35 @@
  * 
  * Defines comprehensive ABAC (Attribute-Based Access Control) types
  * for multi-tenant fleet management system
+ * 
+ * NOTE: This file aligns with the documented ABAC specifications from
+ * types/abac.ts to ensure consistency across the codebase.
  */
 
-// Core user roles within an organization
-export const UserRole = {
-  ADMIN: 'admin',
-  MANAGER: 'manager', // Added MANAGER
-  USER: 'user', // Added USER
-  DISPATCHER: 'dispatcher',
-  DRIVER: 'driver',
-  COMPLIANCE: 'compliance',
-  ACCOUNTANT: 'accountant',
-  VIEWER: 'viewer',
-} as const;
+// Import ABAC types as the source of truth
+import { 
+  SystemRole, 
+  SystemRoles, 
+  ResourceType, 
+  ResourceTypes,
+  PermissionAction, 
+  PermissionActions,
+  Permission,
+  RolePermissions as ABACRolePermissions
+} from './abac';
 
-export type UserRole = typeof UserRole[keyof typeof UserRole];
+// Use ABAC system roles as the canonical role definition
+export const UserRole = SystemRoles;
+export type UserRole = SystemRole;
 
-// Aligned permission structure with ABAC types
-export type Permission = string
+// Use ABAC permission structure as canonical
+export type { Permission, ResourceType, PermissionAction };
 
-// Resource types for ABAC
-export type ResourceType = 
-  | 'user'
-  | 'driver'
-  | 'vehicle'
-  | 'load'
-  | 'document'
-  | 'ifta_report'
-  | 'organization'
-  | 'billing'
+// Re-export for backwards compatibility
+export { ResourceTypes, PermissionActions };
 
-// Permission actions for ABAC
-export type PermissionAction = 
-  | 'create'
-  | 'read'
-  | 'update'
-  | 'delete'
-  | 'manage'
-  | 'assign'
-  | 'approve'
-  | 'report'
-
-// Generate permission strings from resource and action
-export function createPermission(action: PermissionAction, resource: ResourceType): Permission {
-  return `${action}:${resource}`
-}
-
-// Role-based permission mapping using consistent structure
-export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
-  admin: [
-    // Full access to everything - generate all combinations
-    'create:user', 'read:user', 'update:user', 'delete:user', 'manage:user',
-    'create:driver', 'read:driver', 'update:driver', 'delete:driver', 'manage:driver',
-    'create:vehicle', 'read:vehicle', 'update:vehicle', 'delete:vehicle', 'manage:vehicle',
-    'create:load', 'read:load', 'update:load', 'delete:load', 'manage:load', 'assign:load',
-    'create:document', 'read:document', 'update:document', 'delete:document', 'approve:document',
-    'create:ifta_report', 'read:ifta_report', 'update:ifta_report', 'report:ifta_report',
-    'read:organization', 'update:organization', 'manage:organization',
-    'read:billing', 'manage:billing'
-  ],
-  
-  dispatcher: [
-    'read:vehicle', 'update:vehicle',
-    'read:driver', 'update:driver',
-    'create:load', 'read:load', 'update:load', 'assign:load',
-    'read:document', 'report:load'
-  ],
-  
-  driver: [
-    'read:load', 'update:load', // Only assigned loads
-    'read:document', 'create:document', // Own documents only
-    'read:user' // Own profile only
-  ],
-  
-  compliance: [
-    'read:vehicle',
-    'read:driver', 'update:driver',
-    'create:document', 'read:document', 'update:document', 'delete:document', 'approve:document',
-    'report:document'
-  ],
-  
-    
-  accountant: [
-    'read:load',
-    'read:driver',
-    'read:vehicle',
-    'create:ifta_report', 'read:ifta_report', 'update:ifta_report', 'report:ifta_report',
-    'read:billing'
-  ],
-    viewer: [
-    'read:load',
-    'read:driver', 
-    'read:vehicle',
-    'read:document',
-    'read:ifta_report'
-  ],
-  
-  manager: [
-    // Manager has elevated permissions but not full admin access
-    'read:user', 'update:user', 'manage:user',
-    'create:driver', 'read:driver', 'update:driver', 'manage:driver',
-    'create:vehicle', 'read:vehicle', 'update:vehicle', 'manage:vehicle',
-    'create:load', 'read:load', 'update:load', 'assign:load', 'manage:load',
-    'read:document', 'create:document', 'approve:document',
-    'read:ifta_report', 'update:ifta_report', 'report:ifta_report',
-    'read:organization', 'update:organization',
-    'read:billing'
-  ],
-  
-  user: [
-    // Basic user permissions
-    'read:user', // Own profile only
-    'read:load', 'update:load', // Limited to assigned loads
-    'read:document', 'create:document', // Own documents only
-    'read:vehicle', // Read-only access to vehicle info
-    'read:driver' // Read-only access to driver info
-  ],
-} as const;
+// Use ABAC role permissions as the source of truth
+export const ROLE_PERMISSIONS = ABACRolePermissions;
 
 // Clerk user metadata structure (aligned with JWT claims)
 export interface ClerkUserMetadata {
