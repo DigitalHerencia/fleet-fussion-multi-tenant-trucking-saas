@@ -4,7 +4,9 @@ import type { NextRequest } from "next/server";
 import { RouteProtection } from "@/lib/auth/permissions";
 import type { UserContext, ClerkUserMetadata, ClerkOrganizationMetadata } from "@/types/auth";
 import { SystemRoles, getPermissionsForRole, type SystemRole } from "@/types/abac";
+import { authCache } from "@/lib/cache/auth-cache";
 
+// Pre-compiled route matchers for better performance
 const publicRoutePatterns = [
   '/',
   '/sign-in(.*)',
@@ -23,53 +25,68 @@ const publicRoutePatterns = [
 
 const isPublicRoute = createRouteMatcher(publicRoutePatterns);
 
-export default clerkMiddleware(async (auth, req: NextRequest) => {
-  // Check if it's a public route
-  if (isPublicRoute(req)) {
-    // Get auth data to check if user is authenticated
-    const authData = await auth();
+// Cache for session data to avoid repeated processing
+const sessionCache = new Map<string, {
+  userContext: UserContext;
+  timestamp: number;
+  ttl: number;
+}>();
 
-    // Special handling for webhook endpoint
-    if (req.nextUrl.pathname.startsWith('/api/clerk/webhook-handler')) {
-      return NextResponse.next();
-    }
+const SESSION_CACHE_TTL = 30 * 1000; // 30 seconds for session cache
 
-    // If user is authenticated and trying to access sign-in/sign-up, redirect appropriately (contingency)
-    if (authData.userId && (req.nextUrl.pathname.startsWith('/sign-in') || req.nextUrl.pathname.startsWith('/sign-up'))) {
-      const { sessionClaims } = authData;
-      const userMetadata = sessionClaims?.metadata || sessionClaims?.publicMetadata;
-      
-      // Check if onboarding is completed
-      if (!userMetadata?.onboardingComplete) {
-        return NextResponse.redirect(new URL('/onboarding', req.url));
-      }
+function getCachedUserContext(sessionId: string): UserContext | null {
+  const cached = sessionCache.get(sessionId);
+  if (cached && Date.now() - cached.timestamp < cached.ttl) {
+    return cached.userContext;
+  }
+  if (cached) {
+    sessionCache.delete(sessionId);
+  }
+  return null;
+}
 
-      // If user has org context, redirect to org dashboard
-      if (authData.orgId) {
-        return NextResponse.redirect(new URL(`/${authData.orgId}/dashboard/${authData.userId}`, req.url));
-      }
-      
-      // If no org context but has organization in metadata, use that
-      if (userMetadata?.organizationId) {
-        return NextResponse.redirect(new URL(`/${userMetadata.organizationId}/dashboard/${authData.userId}`, req.url));
-      }
-      
-      // Fallback: redirect to onboarding if no organization context
-      return NextResponse.redirect(new URL('/onboarding', req.url));
-    }
+function setCachedUserContext(sessionId: string, userContext: UserContext): void {
+  sessionCache.set(sessionId, {
+    userContext,
+    timestamp: Date.now(),
+    ttl: SESSION_CACHE_TTL,
+  });
+}
+
+// Pre-compile regex patterns for better performance
+const orgPathRegex = /\/([^\/]+)\/dashboard/;
+
+// Extracted helper functions for better performance and readability
+async function handlePublicRoute(auth: any, req: NextRequest) {
+  const authData = await auth();
+
+  // Special handling for webhook endpoint - immediate return
+  if (req.nextUrl.pathname.startsWith('/api/clerk/webhook-handler')) {
     return NextResponse.next();
   }
 
-  // For protected routes, ensure user is authenticated
-  const { userId, sessionClaims, orgId } = await auth();
-  
-  if (!userId) {
-    const signInUrl = new URL('/sign-in', req.url);
-    signInUrl.searchParams.set('redirect_url', req.url);
-    return NextResponse.redirect(signInUrl);
-  }
+  // Optimized authenticated user redirection
+  if (authData.userId && (req.nextUrl.pathname.startsWith('/sign-in') || req.nextUrl.pathname.startsWith('/sign-up'))) {
+    const { sessionClaims } = authData;
+    const userMetadata = sessionClaims?.metadata || sessionClaims?.publicMetadata;
+    
+    if (!userMetadata?.onboardingComplete) {
+      return NextResponse.redirect(new URL('/onboarding', req.url));
+    }
 
-  // Extract ABAC session attributes (prioritize new structure)
+    const orgId = authData.orgId || userMetadata?.organizationId;
+    if (orgId) {
+      return NextResponse.redirect(new URL(`/${orgId}/dashboard/${authData.userId}`, req.url));
+    }
+    
+    return NextResponse.redirect(new URL('/onboarding', req.url));
+  }
+  
+  return NextResponse.next();
+}
+
+function buildUserContext(userId: string, sessionClaims: any, orgId: string | null): UserContext {
+  // Extract ABAC session attributes with fallback optimization
   const abacAttributes = sessionClaims?.abac;
   const userRole = abacAttributes?.role || 
                    sessionClaims?.publicMetadata?.role ||
@@ -90,12 +107,9 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
                             false;
   
   const isActive = sessionClaims?.metadata?.isActive !== false;
-
-  // Get organization metadata
   const orgMetadata = sessionClaims?.org_public_metadata as ClerkOrganizationMetadata | undefined;
 
-  // Build user context for route protection
-  const userContext: UserContext = {
+  return {
     userId,
     organizationId,
     role: userRole as SystemRole,
@@ -121,56 +135,22 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
       }
     },
   };
+}
 
-  // Check if user needs to complete onboarding
-  if (!userContext.onboardingComplete && !req.nextUrl.pathname.startsWith('/onboarding')) {
-    return NextResponse.redirect(new URL('/onboarding', req.url));
-  }
-
-  // Prevent users who have completed onboarding from accessing onboarding page again
-  if (userContext.onboardingComplete && req.nextUrl.pathname.startsWith('/onboarding')) {
-    // Redirect to org dashboard if org context exists
-    if (userContext.organizationId) {
-      return NextResponse.redirect(new URL(`/${userContext.organizationId}/dashboard/${userId}`, req.url));
-    }
-    // If no organization context, redirect to onboarding to complete setup
-    return NextResponse.redirect(new URL('/onboarding', req.url));
-  }
-
-  // Organization tenant handling
-  const orgPath = /\/([^\/]+)\/dashboard/;
-  const matches = req.nextUrl.pathname.match(orgPath);
-  
-  if (matches && matches[1]) {
-    const requestedOrgId = matches[1];
-    // If user is not a member of the requested org, deny access
-    if (userContext.organizationId && userContext.organizationId !== requestedOrgId) {
-      return NextResponse.redirect(new URL(`/${userContext.organizationId}/dashboard/${userId}?error=wrong-org`, req.url));
-    }
-  }
-
-  // Check route permissions
-  if (!RouteProtection.canAccessRoute(userContext, req.nextUrl.pathname)) {
-    return forbiddenOrRedirect(req, '/sign-in?error=unauthorized');
-  }
-
-  // Set headers with user context
+function createResponseWithHeaders(userContext: UserContext, orgId: string | null): NextResponse {
   const response = NextResponse.next();
   
-  response.headers.set('x-user-role', userRole as string);
-  if (userPermissions.length > 0) {
-    response.headers.set('x-user-permissions', JSON.stringify(userPermissions));
+  // Set optimized headers
+  response.headers.set('x-user-role', userContext.role);
+  if (userContext.permissions.length > 0) {
+    response.headers.set('x-user-permissions', JSON.stringify(userContext.permissions));
   }
   if (orgId) {
     response.headers.set('x-organization-id', orgId);
   }
   
   return response;
-});
-
-export const config = {
-  matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
-};
+}
 
 function forbiddenOrRedirect(req: NextRequest, redirectUrl?: string) {
   const isApi = req.nextUrl.pathname.startsWith('/api/') || req.headers.get('accept')?.includes('application/json');
@@ -180,6 +160,65 @@ function forbiddenOrRedirect(req: NextRequest, redirectUrl?: string) {
   if (redirectUrl) {
     return NextResponse.redirect(new URL(redirectUrl, req.url));
   }
-  // Redirect to sign-in instead of non-existent /dashboard
   return NextResponse.redirect(new URL('/sign-in?error=forbidden', req.url));
 }
+
+export default clerkMiddleware(async (auth, req: NextRequest) => {
+  // Check if it's a public route - early return for better performance
+  if (isPublicRoute(req)) {
+    return handlePublicRoute(auth, req);
+  }
+
+  // For protected routes, ensure user is authenticated
+  const { userId, sessionClaims, orgId } = await auth();
+  
+  if (!userId) {
+    const signInUrl = new URL('/sign-in', req.url);
+    signInUrl.searchParams.set('redirect_url', req.url);
+    return NextResponse.redirect(signInUrl);
+  }
+
+  // Try to get cached user context first
+  const sessionId = `${userId}-${orgId || 'no-org'}`;
+  let userContext = getCachedUserContext(sessionId);
+  
+  if (!userContext) {
+    // Build user context with optimized extraction
+    userContext = buildUserContext(userId, sessionClaims, orgId || null);
+    setCachedUserContext(sessionId, userContext);
+  }
+
+  // Check onboarding status
+  if (!userContext.onboardingComplete && !req.nextUrl.pathname.startsWith('/onboarding')) {
+    return NextResponse.redirect(new URL('/onboarding', req.url));
+  }
+
+  // Prevent users who have completed onboarding from accessing onboarding page again
+  if (userContext.onboardingComplete && req.nextUrl.pathname.startsWith('/onboarding')) {
+    if (userContext.organizationId) {
+      return NextResponse.redirect(new URL(`/${userContext.organizationId}/dashboard/${userId}`, req.url));
+    }
+    return NextResponse.redirect(new URL('/onboarding', req.url));
+  }
+
+  // Organization tenant handling with optimized regex
+  const matches = req.nextUrl.pathname.match(orgPathRegex);
+  if (matches && matches[1]) {
+    const requestedOrgId = matches[1];
+    if (userContext.organizationId && userContext.organizationId !== requestedOrgId) {
+      return NextResponse.redirect(new URL(`/${userContext.organizationId}/dashboard/${userId}?error=wrong-org`, req.url));
+    }
+  }
+
+  // Check route permissions with optimized lookup
+  if (!RouteProtection.canAccessRoute(userContext, req.nextUrl.pathname)) {
+    return forbiddenOrRedirect(req, '/sign-in?error=unauthorized');
+  }
+
+  // Set optimized headers
+  return createResponseWithHeaders(userContext, orgId || null);
+});
+
+export const config = {
+  matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
+};

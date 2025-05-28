@@ -14,38 +14,6 @@ import {
 type ResolvedClerkClient = Awaited<ReturnType<typeof clerkClient>>;
 
 /**
- * Utility to generate a unique slug for organizations.
- * It first checks the baseSlug, then baseSlug-1, baseSlug-2, etc.
- */
-async function generateUniqueOrgSlug(baseSlug: string, resolvedClient: ResolvedClerkClient): Promise<string> {
-  let currentSlug = baseSlug;
-  let attempt = 0; 
-  const maxAttempts = 50; 
-
-  while (attempt < maxAttempts) {
-    try {
-      // Reverted to using query as slug parameter caused issues.
-      // The Clerk SDK might expect `query` for this type of broad check.
-      const existingOrgs = await resolvedClient.organizations.getOrganizationList({ query: currentSlug });
-      // Check if any returned organization exactly matches the currentSlug
-      const orgExists = existingOrgs.data.some((org: any) => org.slug === currentSlug);
-
-      if (!orgExists) {
-        return currentSlug; 
-      }
-    } catch (error) {
-      console.warn(`Error checking slug uniqueness for '${currentSlug}':`, error);
-    }
-    
-    attempt++;
-    currentSlug = `${baseSlug}-${attempt}`;
-  }
-  
-  console.warn(`Max attempts reached for slug generation based on '${baseSlug}'. Using timestamp fallback.`);
-  return `${baseSlug}-${Date.now()}`;
-}
-
-/**
  * Server action to set Clerk metadata and create organization after onboarding
  * ONLY creates in Clerk - database sync handled by webhooks for proper separation of concerns
  */
@@ -79,24 +47,23 @@ export async function setClerkMetadata(data: OnboardingData): Promise<SetClerkMe
     }
 
     let organization;
-    let slugToUse = data.orgSlug;
+    let baseSlug = data.orgSlug;
 
     try {
         // Reverted to using query for initial check as well.
-        const existingOrgsBySlug = await actualClient.organizations.getOrganizationList({ query: slugToUse });
-        organization = existingOrgsBySlug.data.find((org: any) => org.slug === slugToUse);
+        const existingOrgsBySlug = await actualClient.organizations.getOrganizationList({ query: baseSlug });
+        organization = existingOrgsBySlug.data.find((org: any) => org.slug === baseSlug);
     } catch (error: any) {
-        console.warn(`Error fetching organization by slug '${slugToUse}' using query: ${error.message}. Will attempt to create if necessary.`);
+        console.warn(`Error fetching organization by slug '${baseSlug}' using query: ${error.message}. Will attempt to create if necessary.`);
     }
 
     if (!organization) {
-        slugToUse = await generateUniqueOrgSlug(data.orgSlug, actualClient); 
         
-        console.log(`Attempting to create organization '${data.orgName}' with slug '${slugToUse}'`);
+        console.log(`Attempting to create organization '${data.orgName}' with slug '${baseSlug}'`);
         try {
             organization = await actualClient.organizations.createOrganization({
                 name: data.orgName,
-                slug: slugToUse,
+                slug: baseSlug,
                 createdBy: data.userId,
                 publicMetadata: { companyName: data.companyName, dotNumber: data.dotNumber, mcNumber: data.mcNumber },
                 ...(billingEmail && { billingEmail }),
