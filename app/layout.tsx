@@ -8,7 +8,7 @@ import type { Metadata } from "next"
 export const metadata: Metadata = {
   title: "FleetFusion - Enterprise-Grade Fleet Management",
   description: "Modern transportation management system for small-to-mid-size trucking fleets",
-  icons:  "white_logo.png"
+  icons:  "map-pinned_icon.png"
 }
 
 export default function RootLayout({

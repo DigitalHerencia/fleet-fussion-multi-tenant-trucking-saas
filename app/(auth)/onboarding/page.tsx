@@ -14,7 +14,7 @@ import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Loader2 } from 'lucide-react'
+import { Loader2, MapPinned } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 import type { OnboardingData } from '@/types/auth'
 import { setClerkMetadata } from '@/lib/actions/onboarding'
@@ -56,18 +56,42 @@ export default function OnboardingPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log('🚀 Form submission started')
+    console.log('📋 Current form data:', formData)
+    
     setErrorMessage("")
     setSuccessMessage("")
+    
     // Validation for required fields
-    if (!formData.companyName.trim() || !formData.dotNumber.trim() || !formData.mcNumber.trim() || !formData.address.trim() || !formData.city.trim() || !formData.state.trim() || !formData.zip.trim() || !formData.phone.trim()) {
-      setErrorMessage("Please fill in all required fields.")
+    const requiredFields = {
+      companyName: formData.companyName.trim(),
+      dotNumber: formData.dotNumber.trim(),
+      mcNumber: formData.mcNumber.trim(),
+      address: formData.address.trim(),
+      city: formData.city.trim(),
+      state: formData.state.trim(),
+      zip: formData.zip.trim(),
+      phone: formData.phone.trim()
+    }
+    
+    console.log('🔍 Validation check:', requiredFields)
+    
+    const missingFields = Object.entries(requiredFields)
+      .filter(([key, value]) => !value)
+      .map(([key]) => key)
+    
+    if (missingFields.length > 0) {
+      console.log('❌ Missing required fields:', missingFields)
+      setErrorMessage(`Please fill in all required fields: ${missingFields.join(', ')}`)
       toast({
         title: "Error", 
-        description: "Please fill in all required fields.",
+        description: `Please fill in all required fields: ${missingFields.join(', ')}`,
         variant: "destructive"
       })
       return
     }
+    
+    console.log('✅ Validation passed, proceeding with submission')
     setIsLoading(true)
     try {
       if (!user) {
@@ -80,26 +104,42 @@ export default function OnboardingPage() {
         setIsLoading(false)
         return
       }
-      // Prepare onboarding data
+      
+      // Prepare onboarding data with better validation
       const baseSlug = toBaseSlug(formData.companyName);
-      const onboardingData: OnboardingData = {
-        userId: user.id,
+      console.log('🚀 Preparing onboarding data:', {
         companyName: formData.companyName,
-        orgName: formData.companyName, // Use company name for orgName
-        orgSlug: baseSlug, // Pass base slug, server will ensure uniqueness
+        baseSlug,
         dotNumber: formData.dotNumber,
         mcNumber: formData.mcNumber,
-        address: formData.address,
-        city: formData.city,
-        state: formData.state,
-        zip: formData.zip,
-        phone: formData.phone,
+        userId: user.id
+      })
+      
+      const onboardingData: OnboardingData = {
+        userId: user.id,
+        companyName: formData.companyName.trim(), // Ensure no whitespace issues
+        orgName: formData.companyName.trim(), // Use company name for orgName
+        orgSlug: baseSlug, // Pass base slug, server will ensure uniqueness
+        dotNumber: formData.dotNumber.trim(),
+        mcNumber: formData.mcNumber.trim(),
+        address: formData.address.trim(),
+        city: formData.city.trim(),
+        state: formData.state.trim(),
+        zip: formData.zip.trim(),
+        phone: formData.phone.trim(),
         role: 'admin', // Default to admin for onboarding
         onboardingComplete: true
       }
+      
+      console.log('📤 Sending onboarding data to server:', onboardingData)
+      
       // Call server action to handle onboarding
       const result = await setClerkMetadata(onboardingData)
+      
+      console.log('📦 Server action result:', result)
+      
       if (!result.success) {
+        console.error('❌ Onboarding failed:', result.error)
         setErrorMessage(result.error || 'Failed to complete onboarding')
         toast({
           title: "Error",
@@ -112,6 +152,7 @@ export default function OnboardingPage() {
       
       // Check if we got an organizationId back from the server action
       if (!result.organizationId) {
+        console.error('❌ No organization ID in result:', result)
         setErrorMessage('Organization was not created properly')
         toast({
           title: "Error",
@@ -122,13 +163,18 @@ export default function OnboardingPage() {
         return
       }
 
+      console.log('✅ Onboarding completed successfully:', {
+        organizationId: result.organizationId,
+        companyName: formData.companyName
+      })
+
       setSuccessMessage("Welcome to FleetFusion! Your organization has been created.")
       toast({
         title: "Success!",
         description: "Welcome to FleetFusion! Your organization has been created.",
       })
       
-      // Redirect to the proper dynamic dashboard route with orgId and userId
+      // Active redirect to the proper dynamic dashboard route with orgId and userId
       router.push(`/${result.organizationId}/dashboard/${user.id}`)
     } catch (error: any) {
       console.error('Onboarding error:', error)
@@ -152,26 +198,23 @@ export default function OnboardingPage() {
       } else {
         // Fallback: if no org ID, try to redirect to a general dashboard or sign out
         console.warn('User completed onboarding but no organization ID found');
-        router.replace('/dashboard'); // This might need to be handled differently
+        router.replace('/sign-out'); // Sign out instead of redirecting to non-existent /dashboard
       }
     }
   }, [user, router])
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-black px-4 sm:px-6 lg:px-8">
+    <div className="flex min-h-screen flex-col items-center justify-center mt-8 mb-8 bg-black px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-2xl space-y-8">
         <div className="flex flex-col items-center justify-center text-center">
-          <Link href="/" className="flex items-center space-x-2 mb-2">
-            <Image
-              src="/white_logo.png"
-              alt="FleetFusion Logo"
-              width={220}
-              height={60}
-              priority
-            />
+          <div className="flex flex-1 items-center">
+          <Link className="flex items-center justify-center hover:text-blue-500 hover:underline underline-offset-4" href="/">
+            <MapPinned className="h-6 w-6 text-blue-500 mr-1" />
+            <span className="font-extrabold text-white dark:text-white text-2xl">FleetFusion</span>
           </Link>
+          </div> 
           <h1 className="mt-2 text-3xl font-extrabold text-white">
-            Welcome to FleetFusion
+            WELCOME TO FLEETFUSION
           </h1>
           <p className="mt-2 text-sm text-gray-400">
             Complete your profile and organization setup to get started.

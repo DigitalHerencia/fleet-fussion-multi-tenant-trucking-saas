@@ -53,6 +53,12 @@ export interface ClerkOrganizationMetadata {
   createdAt: string
   dotNumber?: string
   mcNumber?: string
+  // Business address fields
+  address?: string
+  city?: string
+  state?: string
+  zip?: string
+  phone?: string
   settings: {
     timezone: string
     dateFormat: string

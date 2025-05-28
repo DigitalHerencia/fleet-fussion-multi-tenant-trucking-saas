@@ -34,10 +34,10 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
       return NextResponse.next();
     }
 
-    // If user is authenticated and trying to access sign-in/sign-up, redirect appropriately
+    // If user is authenticated and trying to access sign-in/sign-up, redirect appropriately (contingency)
     if (authData.userId && (req.nextUrl.pathname.startsWith('/sign-in') || req.nextUrl.pathname.startsWith('/sign-up'))) {
       const { sessionClaims } = authData;
-      const userMetadata = sessionClaims?.metadata;
+      const userMetadata = sessionClaims?.metadata || sessionClaims?.publicMetadata;
       
       // Check if onboarding is completed
       if (!userMetadata?.onboardingComplete) {
@@ -50,9 +50,8 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
       }
       
       // If no org context but has organization in metadata, use that
-      const fallbackUserMetadata = sessionClaims?.metadata || sessionClaims?.publicMetadata;
-      if (fallbackUserMetadata?.organizationId) {
-        return NextResponse.redirect(new URL(`/${fallbackUserMetadata.organizationId}/dashboard/${authData.userId}`, req.url));
+      if (userMetadata?.organizationId) {
+        return NextResponse.redirect(new URL(`/${userMetadata.organizationId}/dashboard/${authData.userId}`, req.url));
       }
       
       // Fallback: redirect to onboarding if no organization context
@@ -139,20 +138,20 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
   }
 
   // Organization tenant handling
-  const orgPath = /\/org\/([^\/]+)/;
+  const orgPath = /\/([^\/]+)\/dashboard/;
   const matches = req.nextUrl.pathname.match(orgPath);
   
   if (matches && matches[1]) {
     const requestedOrgId = matches[1];
     // If user is not a member of the requested org, deny access
     if (userContext.organizationId && userContext.organizationId !== requestedOrgId) {
-      return NextResponse.redirect(new URL(`/org/${userContext.organizationId}/dashboard?error=wrong-org`, req.url));
+      return NextResponse.redirect(new URL(`/${userContext.organizationId}/dashboard/${userId}?error=wrong-org`, req.url));
     }
   }
 
   // Check route permissions
   if (!RouteProtection.canAccessRoute(userContext, req.nextUrl.pathname)) {
-    return forbiddenOrRedirect(req, '/dashboard?error=unauthorized');
+    return forbiddenOrRedirect(req, '/sign-in?error=unauthorized');
   }
 
   // Set headers with user context
@@ -181,5 +180,6 @@ function forbiddenOrRedirect(req: NextRequest, redirectUrl?: string) {
   if (redirectUrl) {
     return NextResponse.redirect(new URL(redirectUrl, req.url));
   }
-  return NextResponse.redirect(new URL('/dashboard?error=forbidden', req.url));
+  // Redirect to sign-in instead of non-existent /dashboard
+  return NextResponse.redirect(new URL('/sign-in?error=forbidden', req.url));
 }

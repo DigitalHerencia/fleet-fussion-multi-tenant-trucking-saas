@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
-import { useState } from "react";
-import { useSignIn } from "@clerk/nextjs";
+import { useState, useEffect } from "react";
+import { useSignIn, useUser, useAuth } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import { MapPinned } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 // Add this at the top of the file, before any usage of window.Clerk
 declare global {
@@ -21,14 +23,41 @@ export default function SignInPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { signIn, isLoaded } = useSignIn();
+  const { signIn, isLoaded: isSignInLoaded, setActive } = useSignIn();
+  const { user, isLoaded: isUserLoaded } = useUser();
+  const { isSignedIn } = useAuth();
+  const router = useRouter();
+  const [signInAttempted, setSignInAttempted] = useState(false);
+
+  useEffect(() => {
+    if (signInAttempted && isSignedIn && isUserLoaded && user) {
+      const { publicMetadata } = user;
+      const onboardingComplete = publicMetadata?.onboardingComplete as boolean | undefined;
+      const organizationId = publicMetadata?.organizationId as string | undefined;
+      const userId = user.id;
+
+      if (onboardingComplete && organizationId && userId) {
+        router.push(`/${organizationId}/dashboard/${userId}`);
+      } else {
+        router.push('/onboarding');
+      }
+      setSignInAttempted(false);
+    } else if (signInAttempted && isSignedIn && isUserLoaded && !user) {
+      console.warn("User is signed in but user object is not available. Redirecting to home.");
+      router.push('/'); 
+      setSignInAttempted(false);
+    }
+  }, [signInAttempted, isSignedIn, isUserLoaded, user, router]);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError("");
-    if (!isLoaded) return;
+    if (!isSignInLoaded) {
+      setLoading(false);
+      return;
+    }
     
-    // Enforce Clerk CAPTCHA if present
     const captcha = window.Clerk?.captcha;
     if (captcha && !captcha.isSolved()) {
       setError("Please complete the CAPTCHA challenge.");
@@ -40,18 +69,18 @@ export default function SignInPage() {
       const res = await signIn.create({ identifier: email, password });
       
       if (res.status !== "complete") {
-        // If 2FA or other verification is required, handle it
         const firstFactor = res.firstFactorVerification;
         if (firstFactor.status === "failed") {
           setError(firstFactor.error?.message || "Sign in verification failed.");
         } else {
-          setError("Sign in failed. Please check your credentials.");
-        }      } else {
-        // Sign in successful - let middleware handle redirects based on user state
-        window.location.href = "/dashboard";
+          setError("Further verification required or sign in failed. Please check your credentials and try again.");
+        }
+        setLoading(false);
+      } else {
+        await setActive({ session: res.createdSessionId });
+        setSignInAttempted(true);
       }
     } catch (err: any) {
-      // Properly handle Clerk error objects
       console.error("Sign in error:", err);
 
       if (err?.errors && Array.isArray(err.errors) && err.errors.length > 0) {
@@ -69,8 +98,8 @@ export default function SignInPage() {
             break;
           case "session_exists":
             setError("You are already signed in.");
-            window.location.href = "/dashboard";
-            return;
+            setSignInAttempted(true);
+            break;
           default:
             setError(clerkError.message || "Sign in failed.");
         }
@@ -79,9 +108,8 @@ export default function SignInPage() {
       } else if (err?.message) {
         setError(err.message);
       } else {
-        setError("An unexpected error occurred during sign in. Please try again.");
+        setError("An unknown error occurred during sign in.");
       }
-    } finally {
       setLoading(false);
     }
   }
@@ -90,23 +118,20 @@ export default function SignInPage() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-black px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
         <div className="flex flex-col items-center justify-center text-center">
-          <Link href="/" className="flex items-center space-x-2 mb-2">
-            <Image
-              src="/white_logo.png"
-              alt="FleetFusion Logo"
-              width={220}
-              height={60}
-              priority
-            />
+        <div className="flex flex-1 items-center">
+          <Link className="flex items-center justify-center hover:text-blue-500 hover:underline underline-offset-4" href="/">
+            <MapPinned className="h-6 w-6 text-blue-500 mr-1" />
+              <span className="font-extrabold text-white dark:text-white text-2xl">FleetFusion</span>
           </Link>
+        </div> 
           <h1 className="mt-2 text-3xl font-extrabold text-white">
-            Sign in to your account
+            SIGN IN TO YOUR ACCOUNT
           </h1>
           <p className="mt-2 text-sm text-gray-400">
             Or{" "}
             <Link
               href="/sign-up"
-              className="font-medium text-blue-400 hover:underline"
+              className="font-medium text-blue-500 hover:underline"
             >
               create a new account
             </Link>
@@ -143,7 +168,7 @@ export default function SignInPage() {
           />
 
           <div className="flex justify-end">
-            <Link href="/forgot-password" className="text-xs text-blue-400 hover:underline">
+            <Link href="/forgot-password" className="text-xs text-blue-500 hover:underline">
               Forgot password?
             </Link>
           </div>
@@ -152,13 +177,13 @@ export default function SignInPage() {
             <p className="text-sm text-red-500 mt-2">{error}</p>
           )}
 
-          <button
+          <Button
             type="submit"
-            disabled={loading || !isLoaded}
-            className="mt-4 w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={loading || !isSignInLoaded}
+            className="mt-4 w-full px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Signing in..." : "Sign in"}
-          </button>
+          </Button>
         </form>
       </div>
     </div>

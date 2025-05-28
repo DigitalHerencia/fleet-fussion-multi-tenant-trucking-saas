@@ -101,9 +101,13 @@ export async function POST(req: NextRequest) {
     case 'user.created':
     case 'user.updated': {
       const user = event.data as UserWebhookData;
-      if (user.public_metadata?.onboardingComplete) {
-        // Sync to DB or perform any additional logic as needed
+      
+      // Skip processing if user doesn't have onboarding completed yet
+      if (!user.public_metadata?.onboardingComplete) {
+        console.log(`⏭️ Skipping ${event.type} for ${user.id}: onboarding not complete`);
+        break;
       }
+      
       // Get organization context from membership or metadata
       const orgMembership = user.organization_memberships?.[0];
       const organizationId = user.public_metadata?.organizationId || 
@@ -112,20 +116,37 @@ export async function POST(req: NextRequest) {
         console.warn(`⚠️ Skipping ${event.type} for ${user.id}: organizationId missing in webhook payload.`);
         break;
       }
-      // Determine role from membership or default to VIEWER
-      const role = orgMembership?.role as SystemRole || SystemRoles.VIEWER;
-      const permissions = getPermissionsForRole(role);
-      await DatabaseQueries.upsertUser({
-        clerkId: user.id,
-        organizationId,
-        email: user.email_addresses?.[0]?.email_address || '',
-        firstName: user.first_name || '',
-        lastName: user.last_name || '',
-        profileImage: user.profile_image_url,
-        isActive: true,
-        onboardingComplete: user.public_metadata?.onboardingComplete || false,
-      });
-      console.log(`✅ User ${event.type}: ${user.id} in org: ${organizationId}`);
+      
+      // Check if the organization exists before processing user
+      try {
+        const orgExists = await DatabaseQueries.getOrganizationByClerkId(organizationId);
+        if (!orgExists) {
+          console.warn(`⚠️ Skipping ${event.type} for ${user.id}: organization ${organizationId} not found in database`);
+          break;
+        }
+      } catch (orgCheckError) {
+        console.error(`❌ Error checking organization existence for user ${user.id}:`, orgCheckError);
+        break; // Don't process user if we can't verify organization
+      }
+      
+      // Determine role from membership or metadata
+      const role = orgMembership?.role || user.public_metadata?.role || 'viewer';
+      
+      try {
+        await DatabaseQueries.upsertUser({
+          clerkId: user.id,
+          organizationId,
+          email: user.email_addresses?.[0]?.email_address || '',
+          firstName: user.first_name || '',
+          lastName: user.last_name || '',
+          profileImage: user.profile_image_url,
+          isActive: true,
+          onboardingComplete: user.public_metadata?.onboardingComplete || false,
+        });
+        console.log(`✅ User ${event.type}: ${user.id} in org: ${organizationId}`);
+      } catch (userUpsertError) {
+        console.error(`❌ Failed to upsert user ${user.id} in organization ${organizationId}:`, userUpsertError);
+      }
       break;
     }
     
@@ -146,12 +167,9 @@ export async function POST(req: NextRequest) {
         console.warn(`⚠️ Skipping user.deleted for ${user.id}: organizationId not found in DB.`);
       }
       break;
-    }
-
-    // Organization Events
+    }    // Organization Events
     case 'organization.created':
-    case 'organization.updated':
-    case 'organization.deleted': {
+    case 'organization.updated': {
       const orgData = event.data as OrganizationWebhookData;
       
       // Debug logging to see what data we're receiving
@@ -159,9 +177,16 @@ export async function POST(req: NextRequest) {
         id: orgData.id,
         name: orgData.name,
         slug: orgData.slug,
-        type: event.type
+        type: event.type,
+        hasPublicMetadata: !!orgData.public_metadata,
+        publicMetadataKeys: orgData.public_metadata ? Object.keys(orgData.public_metadata) : [],
+        businessData: {
+          dotNumber: (orgData.public_metadata as any)?.dotNumber,
+          mcNumber: (orgData.public_metadata as any)?.mcNumber,
+          address: (orgData.public_metadata as any)?.address
+        }
       });
-      
+
       // Ensure name is provided, use slug as fallback, or generate a default name
       const organizationName = orgData.name || orgData.slug || `Organization ${orgData.id.substring(0, 8)}`;
       const organizationSlug = orgData.slug || generateSlug(organizationName);
@@ -176,13 +201,72 @@ export async function POST(req: NextRequest) {
         break;
       }
       
-      await DatabaseQueries.upsertOrganization({
-        clerkId: orgData.id,
-        name: organizationName,
-        slug: organizationSlug
-      });
+      try {
+        // Extract business data from public_metadata if available
+        const publicMetadata = orgData.public_metadata || {};
+        // TypeScript workaround for partial metadata access
+        const metadata = publicMetadata as any;
+        
+        await DatabaseQueries.upsertOrganization({
+          clerkId: orgData.id,
+          name: organizationName,
+          slug: organizationSlug,
+          // Extract business data from Clerk organization metadata - use exact same data as Clerk
+          dotNumber: metadata.dotNumber || null,
+          mcNumber: metadata.mcNumber || null,
+          address: metadata.address || null,
+          city: metadata.city || null,
+          state: metadata.state || null,
+          zip: metadata.zip || null,
+          phone: metadata.phone || null,
+          email: metadata.billingEmail || null,
+          maxUsers: metadata.maxUsers || 5,
+          billingEmail: metadata.billingEmail || null
+        });
+        
+        console.log(`✅ Organization ${event.type}: ${orgData.id} (${organizationName}) with business data:`, {
+          dotNumber: metadata.dotNumber,
+          mcNumber: metadata.mcNumber,
+          hasAddress: !!metadata.address
+        });
+      } catch (error: any) {
+        // Handle race conditions gracefully
+        if (error.message?.includes('already exists') || error.code === 'P2002') {
+          console.log(`✅ Organization ${orgData.id} already exists in database - webhook sync complete`);
+        } else {
+          console.error(`❌ Failed to upsert organization ${orgData.id}:`, error);
+          throw error;
+        }
+      }
+      break;
+    }
+
+    case 'organization.deleted': {
+      const orgData = event.data as OrganizationWebhookData;
       
-      console.log(`✅ Organization ${event.type}: ${orgData.id} (${organizationName})`);
+      try {
+        // Mark organization as inactive instead of deleting to preserve data integrity
+        await DatabaseQueries.upsertOrganization({
+          clerkId: orgData.id,
+          name: orgData.name || 'Deleted Organization',
+          slug: orgData.slug || `deleted-${orgData.id}`,
+          dotNumber: null,
+          mcNumber: null,
+          address: null,
+          city: null,
+          state: null,
+          zip: null,
+          phone: null,
+          email: null,
+          maxUsers: 0,
+          billingEmail: null,
+          isActive: false
+        });
+        
+        console.log(`✅ Organization deleted: ${orgData.id}`);
+      } catch (error) {
+        console.error(`❌ Failed to mark organization ${orgData.id} as deleted:`, error);
+      }
       break;
     }
 
@@ -200,8 +284,26 @@ export async function POST(req: NextRequest) {
         break;
       }
       
-      // Try to get existing user data first for email
+      // Check if we should process this membership event
       const existingUser = await DatabaseQueries.getUserByClerkId(userId);
+      
+      // For deleted memberships, handle user deactivation
+      if (event.type === 'organizationMembership.deleted') {
+        if (existingUser) {
+          await DatabaseQueries.upsertUser({
+            clerkId: userId,
+            organizationId: membershipData.organization.id,
+            email: existingUser.email,
+            firstName: existingUser.firstName,
+            lastName: existingUser.lastName,
+            profileImage: existingUser.profileImage,
+            isActive: false, // Deactivate user
+            onboardingComplete: existingUser.onboardingComplete
+          });
+          console.log(`✅ User ${userId} deactivated from organization: ${membershipData.organization.id}`);
+        }
+        break;
+      }
       
       // Extract user information from public_user_data if available
       const firstName = membershipData.public_user_data?.first_name;
