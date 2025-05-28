@@ -67,12 +67,26 @@ export function handleDatabaseError(error: any): never {
 async function generateUniqueOrgSlug(baseSlug: string): Promise<string> {
   let slug = baseSlug;
   let suffix = 1;
-  while (true) {
+  const maxAttempts = 100; // Prevent infinite loops
+  
+  while (suffix <= maxAttempts) {
     const existing = await db.organization.findUnique({ where: { slug } });
     if (!existing) return slug;
     slug = `${baseSlug}-${suffix}`;
     suffix++;
   }
+  
+  // If we still can't find a unique slug, add a timestamp
+  const timestamp = Date.now();
+  slug = `${baseSlug}-${timestamp}`;
+  
+  // Final check - if this still fails, there's a bigger problem
+  const existing = await db.organization.findUnique({ where: { slug } });
+  if (existing) {
+    throw new Error(`Unable to generate unique slug for base: ${baseSlug}`);
+  }
+  
+  return slug;
 }
 
 // Type-safe database queries helper (rewritten for Prisma)
@@ -177,17 +191,14 @@ export class DatabaseQueries {
         return organization;
       } else {
         // Organization doesn't exist, create new one with unique slug
-        let uniqueSlug = data.slug;
+        // Pre-generate a unique slug before attempting to create
+        let uniqueSlug = await generateUniqueOrgSlug(data.slug);
         let attempt = 0;
         const maxAttempts = 5;
         let lastError;
         
         while (attempt < maxAttempts) {
           try {
-            if (attempt > 0) {
-              uniqueSlug = await generateUniqueOrgSlug(data.slug);
-            }
-            
             const orgDataForCreate = {
               clerkId,
               name: data.name,
@@ -214,22 +225,40 @@ export class DatabaseQueries {
             lastError = error;
             if (
               error instanceof PrismaClientKnownRequestError &&
-              error.code === 'P2002' &&
-              (
-                (typeof error.meta?.target === 'string' && error.meta.target === 'slug') ||
-                (Array.isArray(error.meta?.target) && error.meta.target.includes('slug'))
-              )
+              error.code === 'P2002'
             ) {
-              // Slug conflict, try again with a new slug
-              attempt++;
-              continue;
+              const target = error.meta?.target;
+              if (
+                (typeof target === 'string' && target === 'slug') ||
+                (Array.isArray(target) && target.includes('slug'))
+              ) {
+                // Slug conflict, generate a new unique slug and try again
+                console.log(`🔄 Slug conflict on attempt ${attempt + 1}, generating new unique slug...`);
+                uniqueSlug = await generateUniqueOrgSlug(data.slug);
+                attempt++;
+                continue;
+              } else if (
+                (typeof target === 'string' && target === 'clerkId') ||
+                (Array.isArray(target) && target.includes('clerkId'))
+              ) {
+                // ClerkId conflict - this means the organization was just created by another process
+                // Return the existing organization
+                console.log(`✅ Organization with clerkId ${clerkId} was created by another process, fetching it...`);
+                const existingOrg = await db.organization.findUnique({
+                  where: { clerkId }
+                });
+                if (existingOrg) {
+                  return existingOrg;
+                }
+              }
             }
             throw error;
           }
         }
-        throw lastError || new Error('Failed to create organization due to slug conflicts');
+        throw lastError || new Error('Failed to create organization due to conflicts after multiple attempts');
       }
     } catch (error) {
+      console.error(`Error in upsertOrganization for clerkId: ${data.clerkId}`, error);
       handleDatabaseError(error);
     }
   }

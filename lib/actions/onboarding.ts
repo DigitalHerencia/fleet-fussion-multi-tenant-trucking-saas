@@ -17,13 +17,27 @@ import {
 async function generateUniqueOrgSlug(baseSlug: string, client: any): Promise<string> {
   let slug = baseSlug;
   let suffix = 1;
-  while (true) {
-    const existingOrgs = await client.organizations.getOrganizationList({ query: slug });
-    const exists = existingOrgs.data.some((org: any) => org.slug === slug);
-    if (!exists) return slug;
-    slug = `${baseSlug}-${suffix}`;
-    suffix++;
+  const maxAttempts = 50; // Prevent excessive API calls
+  
+  while (suffix <= maxAttempts) {
+    try {
+      const existingOrgs = await client.organizations.getOrganizationList({ query: slug });
+      const exists = existingOrgs.data.some((org: any) => org.slug === slug);
+      if (!exists) return slug;
+      slug = `${baseSlug}-${suffix}`;
+      suffix++;
+    } catch (error) {
+      console.warn(`Error checking slug uniqueness for '${slug}':`, error);
+      // If we can't check, assume it might exist and try the next one
+      slug = `${baseSlug}-${suffix}`;
+      suffix++;
+    }
   }
+  
+  // If we still can't find a unique slug, add a timestamp
+  const timestamp = Date.now();
+  slug = `${baseSlug}-${timestamp}`;
+  return slug;
 }
 
 /**
@@ -93,13 +107,21 @@ export async function setClerkMetadata(data: OnboardingData): Promise<SetClerkMe
       createdOrgId = organization.id
       console.log('Created new organization:', organization.id)
 
-      // Create organization in database immediately
-      await DatabaseQueries.upsertOrganization({
-        clerkId: organization.id,
-        name: data.orgName,
-        slug: uniqueSlug
-        // metadata: orgMetadata // Removed, as this property is not supported
-      })
+      // Create organization in database immediately with retry logic
+      try {
+        await DatabaseQueries.upsertOrganization({
+          clerkId: organization.id,
+          name: data.orgName,
+          slug: uniqueSlug
+          // metadata: orgMetadata // Removed, as this property is not supported
+        })
+        console.log('✅ Organization successfully created in database')
+      } catch (dbError) {
+        console.error('❌ Failed to create organization in database:', dbError)
+        // Don't fail the entire onboarding - the webhook will handle this eventually
+        // But log the error for monitoring
+        console.warn('Database sync will be handled by webhook - continuing with onboarding')
+      }
     }
 
     // Step 2: Calculate user permissions based on role
