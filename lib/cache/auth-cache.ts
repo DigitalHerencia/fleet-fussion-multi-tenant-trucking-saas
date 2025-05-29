@@ -34,22 +34,17 @@ interface CircuitBreakerState {
   nextAttempt: number;
 }
 
-class AuthCache {
-  // L1 Cache - Hot data (frequently accessed)
+class AuthCache {  // L1 Cache - Hot data (frequently accessed)
   private userHotCache = new Map<string, CacheItem<UserContext>>();
   private permissionHotCache = new Map<string, CacheItem<string[]>>();
-  
+  private orgCache = new Map<string, CacheItem<ClerkOrganizationMetadata>>();
   
   private readonly USER_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
   private readonly ORG_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
   private readonly PERMISSION_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
   
-  
-  
-  
   // Cache cleanup interval
   private cleanupInterval: NodeJS.Timeout;
-    orgCache: any;
 
   constructor() {
     // Clean up expired items every 2 minutes
@@ -105,7 +100,6 @@ class AuthCache {
     }
     return null;
   }
-
   /**
    * Set organization in cache
    */
@@ -114,6 +108,8 @@ class AuthCache {
       data: org,
       timestamp: Date.now(),
       ttl: this.ORG_CACHE_TTL,
+      accessCount: 0,
+      lastAccessed: Date.now()
     });
   }
 
