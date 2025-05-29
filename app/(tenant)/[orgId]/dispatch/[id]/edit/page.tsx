@@ -23,38 +23,53 @@ export default function EditLoadPage() {
   const { id } = useParams()
   const [isLoading, setIsLoading] = useState(true)
   const [load, setLoad] = useState<any>(null)
+  const [error, setError] = useState<string | null>(null)
   const { company } = useAuth()
 
   useEffect(() => {
-    // Simulate loading data
-    const timer = setTimeout(() => {
-      if (typeof id === "string" && load[id]) {
-        setLoad(load[id])
-      }
-      setIsLoading(false)
-    }, 1000)
-
-    return () => clearTimeout(timer)
+    if (!id) return
+    setIsLoading(true)
+    setError(null)
+    setLoad(null)
+    // Replace with your actual API endpoint
+    fetch(`/api/dispatch/${id}`)
+      .then(async (res) => {
+        if (!res.ok) throw new Error("Failed to fetch load")
+        const data = await res.json()
+        setLoad(data)
+      })
+      .catch((err) => {
+        setError(err.message)
+      })
+      .finally(() => setIsLoading(false))
   }, [id])
 
   if (!company) {
     return <div>Company not found. Please create a company first.</div>
   }
 
-  return (
-    <>
-    <div className="space-y-4 mt-6">
-      <Skeleton className="h-10 w-full" />
-      <Skeleton className="h-64 w-full" />
-      <Skeleton className="h-64 w-full" />
-    </div>
-    <div className="mt-6">
-      <LoadForm drivers={ [] } vehicles={ [] } load={ load } />
-    </div>
-    <div className="mt-6">
-      Load not found
+  if (isLoading) {
+    return (
+      <div className="space-y-4 mt-6">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-64 w-full" />
+        <Skeleton className="h-64 w-full" />
       </div>
-    </>
+    )
+  }
+
+  if (error) {
+    return <div className="mt-6 text-red-500">Error: {error}</div>
+  }
+
+  if (!load) {
+    return <div className="mt-6">Load not found</div>
+  }
+
+  return (
+    <div className="mt-6">
+      <LoadForm drivers={[]} vehicles={[]} load={load} />
+    </div>
   )
 }
 
