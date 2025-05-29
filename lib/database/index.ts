@@ -6,29 +6,16 @@
  * - Handles error logging and type-safe queries
  */
 
-import { PrismaClient, Prisma } from '@prisma/client';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { PrismaClient } from '@prisma/client'
+import { PrismaNeon } from '@prisma/adapter-neon'
+import dotenv from 'dotenv'
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 
+dotenv.config()
+const connectionString = `${process.env.DATABASE_URL}`
 
-// Neon serverless driver support
-let prisma: PrismaClient;
-
-// Use a global variable for the Prisma client in development to avoid hot-reload issues
-const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
-
-if (!process.env.DATABASE_URL) {
-  throw new Error('DATABASE_URL environment variable is required');
-}
-
-if (process.env.NODE_ENV === 'production') {
-  prisma = new PrismaClient();
-} else {
-  if (!globalForPrisma.prisma) {
-    globalForPrisma.prisma = new PrismaClient();
-  }
-  prisma = globalForPrisma.prisma;
-}
-
+const adapter = new PrismaNeon({ connectionString })
+const prisma = new PrismaClient({ adapter })
 export const db = prisma;
 
 // Utility function to handle database errors

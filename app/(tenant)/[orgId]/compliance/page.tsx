@@ -7,7 +7,7 @@ import { DataTable } from "@/components/ui/data-table"
 import { columns as driverColumns } from "@/components/compliance/driver-compliance-table"
 import { columns as vehicleColumns } from "@/components/compliance/vehicle-compliance-table"
 import { columns as documentColumns } from "@/components/compliance/compliance-documents"
-import { PageHeader } from "@/components/ui/page-header"
+import { PageHeader } from "@/components/shared/page-header"
 
 
 export default function CompliancePage() {

@@ -1,7 +1,7 @@
 "use client"
 
 import { useIsMobile } from "@/hooks/use-mobile"
-import { PageHeader } from "@/components/ui/page-header"
+import { PageHeader } from "@/components/shared/page-header"
 import { MainNav } from "@/components/shared/main-nav"
 import { MobileNav } from "@/components/shared/mobile-nav"
 import { useState } from "react"
