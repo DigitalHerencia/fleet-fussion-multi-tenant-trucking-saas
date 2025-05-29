@@ -1,9 +1,8 @@
 'use client'
-// RULE #1: Only middleware can redirect
-// RULE #5: Forgot password should use the clerk process for resetting password
 
 import React, { useState } from 'react'
-import { useSignIn } from '@clerk/nextjs'
+import { useSignIn, useUser } from '@clerk/nextjs'
+import { useRouter } from 'next/navigation';
 import type { NextPage } from 'next'
 
 const ForgotPasswordPage: NextPage = () => {
@@ -18,6 +17,8 @@ const [statusMessage, setStatusMessage] = useState('')
 
   // No router - middleware handles redirects
   const { isLoaded, signIn, setActive } = useSignIn()
+  const { user, isLoaded: isUserLoaded } = useUser();
+  const router = useRouter();
   
   // No redirects here - middleware handles all auth redirects
   if (!isLoaded) {
@@ -54,19 +55,26 @@ const [statusMessage, setStatusMessage] = useState('')
     e.preventDefault()
     setLoading(true)
     setError('')
-    
     try {
       const result = await signIn?.attemptFirstFactor({
         strategy: 'reset_password_email_code',
         code,
         password,
       })
-      
       if (result?.status === 'complete') {
-        // Set the active session but do not redirect here
-        // Let middleware handle redirection to the appropriate page
         await setActive?.({ session: result.createdSessionId })
         setStatusMessage('Password reset successful! Redirecting...')
+        // Wait for Clerk to update user context, then redirect
+        setTimeout(() => {
+          // Try to get orgId from user.publicMetadata
+          const orgId = user?.publicMetadata?.organizationId as string | undefined;
+          const userId = user?.id;
+          if (orgId && userId) {
+            router.replace(`/${orgId}/dashboard/${userId}`);
+          } else {
+            router.replace('/onboarding');
+          }
+        }, 1200);
       } else if (result?.status === 'needs_second_factor') {
         setError('2FA is required. Please complete second factor authentication.')
       } else {

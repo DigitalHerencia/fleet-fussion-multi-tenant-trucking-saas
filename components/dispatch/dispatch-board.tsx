@@ -14,7 +14,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { updateLoadStatus } from "@/lib/actions/loads"
+import { updateLoadStatus } from "@/lib/actions/load-actions"
 import { toast } from "@/hooks/use-toast"
 import type { ReactNode } from "react"
 

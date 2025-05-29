@@ -78,22 +78,25 @@ async function processWebhookEvent(eventType: WebhookEventType, data: any): Prom
       if (!email) throw new Error('Missing user email');
       const orgMembership = userData.organization_memberships?.[0];
       const orgId = orgMembership?.organization?.id;
-      if (!orgId) throw new Error('Missing organization ID');
-      
-      await DatabaseQueries.upsertUser({
-        clerkId: userData.id,
-        organizationId: orgId,
-        email,
-        firstName: userData.first_name || null,
-        lastName: userData.last_name || null,
-        profileImage: userData.profile_image_url || null,
-        isActive: userData.public_metadata?.isActive ?? true,
-        onboardingComplete: userData.public_metadata?.onboardingComplete ?? false,
-        lastLogin: undefined,
-      });
-      
-      // Invalidate cache for user changes
-      authCache.invalidateUser(userData.id);
+      // Only upsert user if orgId is present
+      if (orgId) {
+        await DatabaseQueries.upsertUser({
+          clerkId: userData.id,
+          organizationId: orgId,
+          email,
+          firstName: userData.first_name || null,
+          lastName: userData.last_name || null,
+          profileImage: userData.profile_image_url || null,
+          isActive: userData.public_metadata?.isActive ?? true,
+          onboardingComplete: userData.public_metadata?.onboardingComplete ?? false,
+          lastLogin: undefined,
+        });
+        // Invalidate cache for user changes
+        authCache.invalidateUser(userData.id);
+      } else {
+        // No org assigned yet, skip DB user creation for now
+        console.log(`User ${userData.id} created without organization. Skipping DB user creation until org assignment.`);
+      }
       break;
     }
     case 'user.deleted': {

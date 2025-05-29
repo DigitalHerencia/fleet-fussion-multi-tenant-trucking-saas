@@ -30,12 +30,25 @@ export default function SignInPage() {
   const [signInAttempted, setSignInAttempted] = useState(false);
 
   useEffect(() => {
+    // If already signed in, redirect immediately (prevents showing sign-in page to signed-in users)
+    if (isSignedIn && isUserLoaded && user && !signInAttempted) {
+      const { publicMetadata } = user;
+      const onboardingComplete = publicMetadata?.onboardingComplete as boolean | undefined;
+      const organizationId = publicMetadata?.organizationId as string | undefined;
+      const userId = user.id;
+      if (onboardingComplete && organizationId && userId) {
+        router.replace(`/${organizationId}/dashboard/${userId}`);
+      } else {
+        router.replace('/onboarding');
+      }
+      return;
+    }
+    // After sign-in, redirect as before
     if (signInAttempted && isSignedIn && isUserLoaded && user) {
       const { publicMetadata } = user;
       const onboardingComplete = publicMetadata?.onboardingComplete as boolean | undefined;
       const organizationId = publicMetadata?.organizationId as string | undefined;
       const userId = user.id;
-
       if (onboardingComplete && organizationId && userId) {
         router.push(`/${organizationId}/dashboard/${userId}`);
       } else {
@@ -67,10 +80,9 @@ export default function SignInPage() {
 
     try {
       const res = await signIn.create({ identifier: email, password });
-      
       if (res.status !== "complete") {
         const firstFactor = res.firstFactorVerification;
-        if (firstFactor.status === "failed") {
+        if (firstFactor?.status === "failed") {
           setError(firstFactor.error?.message || "Sign in verification failed.");
         } else {
           setError("Further verification required or sign in failed. Please check your credentials and try again.");
@@ -108,7 +120,7 @@ export default function SignInPage() {
       } else if (err?.message) {
         setError(err.message);
       } else {
-        setError("An unknown error occurred during sign in.");
+        setError("An unknown error occurred during sign in. Please try again later.");
       }
       setLoading(false);
     }

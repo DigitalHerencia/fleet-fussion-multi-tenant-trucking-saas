@@ -1,36 +1,28 @@
-'use client'
+"use client";
 
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useClerk } from '@clerk/nextjs'
-import { Loader2 } from 'lucide-react'
+import { useEffect } from "react";
+import { useClerk } from "@clerk/nextjs";
+import { Loader2 } from "lucide-react";
 
 export default function SignOutPage() {
-  const { signOut } = useClerk()
-  const router = useRouter()
+  const { signOut } = useClerk();
 
   useEffect(() => {
-    const handleSignOut = async () => {
-      try {
-        await signOut({ redirectUrl: '/' })
-        // Also force redirect to home
-        router.push('/')
-      } catch (error) {
-        console.error('Error signing out:', error)
-        // Fallback redirect to home
-        router.push('/')
-      }
-    }
-    handleSignOut()
-  }, [signOut, router])
+    signOut({ redirectUrl: "/" });
+  }, [signOut]);
 
   return (
     <div className="flex min-h-screen items-center justify-center">
       <div className="flex flex-col items-center space-y-4">
         <Loader2 className="h-8 w-8 animate-spin" />
         <p className="text-muted-foreground">Signing you out...</p>
-        <a href="/" className="text-xs text-blue-400 hover:underline">Return to home</a>
+        <a
+          href="/"
+          className="text-xs text-blue-400 hover:underline"
+        >
+          Return to home
+        </a>
       </div>
     </div>
-  )
+  );
 }

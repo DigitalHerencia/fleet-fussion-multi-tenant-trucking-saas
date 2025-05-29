@@ -109,35 +109,12 @@ export async function setClerkMetadata(data: OnboardingData): Promise<SetClerkMe
       onboardingComplete: true
     });
 
-    const createMembershipWithRetry = async (maxRetries = 3, baseDelay = 1000): Promise<void> => {
-      let attempts = 0;
-      while (attempts < maxRetries) {
-        try {
-          console.log(`Attempt ${attempts + 1} to add user ${data.userId} to org ${organization!.id} with role ${data.role}`);
-          await actualClient.organizations.createOrganizationMembership({
-            organizationId: organization!.id,
-            userId: data.userId,
-            role: data.role, 
-          });
-          console.log(`✅ Successfully added user ${data.userId} to organization ${organization!.id} with role ${data.role}`);
-          return; 
-        } catch (error: any) {
-          attempts++;
-          const errorMessage = error.errors ? error.errors.map((e: any) => e.message).join(', ') : error.message;
-          console.warn(`Failed attempt ${attempts} to add user to organization:`, errorMessage);
-          if (attempts >= maxRetries) {
-            console.error('❌ Max retries reached for adding user to organization. Error:', errorMessage);
-            throw new Error(`Failed to add user to organization after ${maxRetries} attempts: ${errorMessage}`);
-          }
-          await new Promise(resolve => setTimeout(resolve, baseDelay * Math.pow(2, attempts -1)));
-        }
-      }
-    };
-    
-    await createMembershipWithRetry();
+    // No need to add user to organization: Clerk automatically adds creator as admin
 
-    console.log('🎉 User successfully added to organization in Clerk.');
-    return { success: true, organizationId: createdOrgId };
+    // Webhook will sync user/org to Neon DB
+    // Redirect to dashboard: /app/(tenant)/[orgId]/dashboard/[userId]/page.tsx
+    console.log('🎉 User successfully added to organization in Clerk. Webhook will sync to Neon DB.');
+    return { success: true, organizationId: createdOrgId, userId: data.userId };
 
   } catch (error: any) {
     console.error('❌ Onboarding process failed:', error.errors || error.message);

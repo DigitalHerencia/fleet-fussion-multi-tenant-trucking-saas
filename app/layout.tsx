@@ -4,6 +4,13 @@ import { AuthProvider } from "@/components/auth/context"
 import { ThemeProvider } from "@/components/shared/theme-provider"
 import { ClerkProvider } from "@clerk/nextjs"
 import type { Metadata } from "next"
+// Import Next.js font utilities
+import { Inter, Playfair_Display } from "next/font/google"
+
+// Choose Inter for body (clean, modern, highly readable)
+// Choose Playfair Display for headers (elegant, strong contrast)
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" })
+const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair", display: "swap" })
 
 export const metadata: Metadata = {
   title: "FleetFusion - Enterprise-Grade Fleet Management",
@@ -18,13 +25,13 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider>
-      <html lang="en" className="dark" suppressHydrationWarning>
+      <html lang="en" className={`dark ${inter.variable} ${playfair.variable}`} suppressHydrationWarning>
         <head />
-        <body>
+        <body className="font-sans bg-black text-white">
           <ThemeProvider
             attribute="class"
             defaultTheme="dark"
-            enableSystem={false} // Explicitly disable system theme preference
+            enableSystem={false}
             disableTransitionOnChange
           >
             <AuthProvider>

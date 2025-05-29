@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useSignUp } from "@clerk/nextjs";
+import { useSignUp, useUser, useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { MapPinned } from "lucide-react";
 
@@ -23,7 +23,17 @@ export default function SignUpPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { signUp, isLoaded, setActive } = useSignUp();
+  const { user, isLoaded: isUserLoaded } = useUser();
+  const { isSignedIn } = useAuth();
   const router = useRouter();
+
+  // Redirect already signed-in users away from sign-up page
+  if (isSignedIn && isUserLoaded && user) {
+    // If user is already signed in, send to onboarding or dashboard
+    // (You may want to check onboarding status here if needed)
+    router.replace("/onboarding");
+    return null;
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -82,7 +92,7 @@ export default function SignUpPage() {
       } else if (err?.message) {
         setError(err.message);
       } else {
-        setError("Sign up failed. Please try again.");
+        setError("Sign up failed. Please try again later.");
       }
     } finally {
       setLoading(false);

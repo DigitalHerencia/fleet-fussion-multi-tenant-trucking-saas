@@ -22,6 +22,12 @@ export default function Error() {
           We couldn't load this tenant page. Please try refreshing, or contact
           support if the problem persists.
         </span>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 bg-blue-500 text-white rounded-md shadow-md hover:bg-blue-800 transition-all duration-200"
+        >
+          Try again
+        </button>
       </div>
     </div>
   )

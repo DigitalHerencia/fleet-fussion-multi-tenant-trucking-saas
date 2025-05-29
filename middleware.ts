@@ -188,18 +188,6 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
     setCachedUserContext(sessionId, userContext);
   }
 
-  // Check onboarding status
-  if (!userContext.onboardingComplete && !req.nextUrl.pathname.startsWith('/onboarding')) {
-    return NextResponse.redirect(new URL('/onboarding', req.url));
-  }
-
-  // Prevent users who have completed onboarding from accessing onboarding page again
-  if (userContext.onboardingComplete && req.nextUrl.pathname.startsWith('/onboarding')) {
-    if (userContext.organizationId) {
-      return NextResponse.redirect(new URL(`/${userContext.organizationId}/dashboard/${userId}`, req.url));
-    }
-    return NextResponse.redirect(new URL('/onboarding', req.url));
-  }
 
   // Organization tenant handling with optimized regex
   const matches = req.nextUrl.pathname.match(orgPathRegex);
