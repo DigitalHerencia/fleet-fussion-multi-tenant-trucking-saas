@@ -50,7 +50,7 @@ export function handleDatabaseError(error: unknown): never {
 async function generateUniqueOrgSlug(baseSlug: string): Promise<string> {
   let slug = baseSlug;
   let suffix = 1;
-  const maxAttempts = 100; // Prevent infinite loops
+  const maxAttempts = 50; // Prevent infinite loops
   
   while (suffix <= maxAttempts) {
     const existing = await db.organization.findUnique({ where: { slug } });
@@ -58,18 +58,7 @@ async function generateUniqueOrgSlug(baseSlug: string): Promise<string> {
     slug = `${baseSlug}-${suffix}`;
     suffix++;
   }
-  
-  // If we still can't find a unique slug, add a timestamp
-  const timestamp = Date.now();
-  slug = `${baseSlug}-${timestamp}`;
-  
-  // Final check - if this still fails, there's a bigger problem
-  const existing = await db.organization.findUnique({ where: { slug } });
-  if (existing) {
-    throw new Error(`Unable to generate unique slug for base: ${baseSlug}`);
-  }
-  
-  return slug;
+  throw new Error(`Could not generate unique slug after ${maxAttempts} attempts for base slug: ${baseSlug}`);
 }
 
 // Type-safe database queries helper (rewritten for Prisma)
