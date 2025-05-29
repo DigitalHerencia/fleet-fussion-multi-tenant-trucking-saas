@@ -4,7 +4,7 @@
  * Individual driver dashboard for viewing assigned loads, HOS status, and compliance info
  */
 
-import { Suspense } from 'react'
+import { Suspense, type JSX } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { PageHeader } from '@/components/shared/page-header'
 import { LoadingSpinner } from '@/components/shared/loading-spinner'
@@ -27,11 +27,8 @@ import { getCurrentUser } from '@/lib/auth/auth'
 import { redirect } from 'next/navigation'
 import { SystemRoles } from '@/types/abac'
 
-export default async function DriverDashboardPage({
-  params
-}: {
-  params: { orgId: string; userId: string }
-}) {
+export default async function DriverDashboardPage(): Promise<JSX.Element> {
+
   // Verify driver access
   const user = await getCurrentUser()
   if (!user || user.role !== SystemRoles.DRIVER) {
