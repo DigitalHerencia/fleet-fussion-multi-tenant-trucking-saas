@@ -28,11 +28,7 @@ import { getCurrentUser } from '@/lib/auth/auth'
 import { redirect } from 'next/navigation'
 import { SystemRoles } from '@/types/abac'
 
-export default async function ComplianceDashboardPage({
-  params
-}: {
-  params: { orgId: string; userId: string }
-}) {
+export default async function ComplianceDashboardPage() {
   // Verify compliance officer access
   const user = await getCurrentUser()
   if (!user || user.role !== SystemRoles.COMPLIANCE_OFFICER) {
