@@ -65,10 +65,11 @@ async function processWebhookEvent(eventType: WebhookEventType, data: any): Prom
         userData.emailAddresses?.[0]?.emailAddress;
       if (!email) throw new Error('Missing user email');
       const orgMembership = userData.organization_memberships?.[0];
-      let orgId = organizationId || orgMembership?.organization?.id;
-      // If no orgId, use placeholder org_pending_{userId}
-      if (!orgId) {
-        orgId = `org_pending_${userData.id}`;
+      let orgId = extractOrganizationId(data, eventType) || orgMembership?.organization?.id;
+      // If no orgId, skip upsert and log
+      if (!orgId || orgId.startsWith('org_pending_')) {
+        console.warn(`No valid organization for user ${userData.id}, skipping user upsert.`);
+        return;
       }
       await DatabaseQueries.upsertUser({
         clerkId: userData.id,
@@ -169,10 +170,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid webhook signature' }, { status: 400 });
   }
 
-  // Check for duplicate events
+  // Validate eventId
+  if (!eventId || typeof eventId !== 'string' || eventId.trim() === '') {
+    console.error('Missing or invalid eventId in webhook payload.');
+    return NextResponse.json({ error: 'Missing or invalid eventId in webhook payload.' }, { status: 400 });
+  }
+
+  // Check for duplicate events using Prisma's unique constraint and upsert pattern
   try {
     const existingEvent = await db.webhookEvent.findUnique({
-      where: { eventId: eventId ?? undefined },
+      where: { eventId },
     });
     if (existingEvent && existingEvent.status === 'processed') {
       console.log(`Duplicate webhook event ignored: ${eventId}`);
@@ -182,10 +189,43 @@ export async function POST(req: Request) {
     console.error('Failed to check for duplicate event:', err);
   }
 
+  // Validate required fields for user events
+  if ((eventType === 'user.created' || eventType === 'user.updated') &&
+      !(
+        event.data?.email_addresses?.[0]?.email_address ||
+        event.data?.emailAddresses?.[0]?.emailAddress
+      )) {
+    return NextResponse.json({ error: 'Missing user email in webhook payload.' }, { status: 400 });
+  }
+
   try {
     await processWebhookEvent(eventType, event.data);
   } catch (error) {
     result = { success: false, error: (error as Error).message || null };
+  }
+
+  // Always log the event in webhook_events
+  try {
+    await db.webhookEvent.upsert({
+      where: { eventId },
+      update: {
+        status: result.success ? 'processed' : 'failed',
+        processedAt: new Date(),
+        processingError: result.success ? null : result.error,
+      },
+      create: {
+        eventId,
+        eventType,
+        organizationId: extractOrganizationId(event.data, eventType),
+        userId: extractUserId(event.data, eventType),
+        payload: event,
+        status: result.success ? 'processed' : 'failed',
+        processedAt: new Date(),
+        processingError: result.success ? null : result.error,
+      },
+    });
+  } catch (err) {
+    console.error('Failed to log webhook event:', err);
   }
   const processingTime = Date.now() - startTime;
   console.log(`Webhook processed: ${eventType} in ${processingTime}ms`, {

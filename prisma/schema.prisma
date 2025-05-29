@@ -66,7 +66,7 @@ model Organization {
   clerkId            String             @unique @map("clerk_id")
   name               String
   slug               String             @unique
-  dotNumber          String?            @map("dot_number") 
+  dotNumber          String?            @map("dot_number")
   mcNumber           String?            @map("mc_number")
   address            String?
   city               String?
@@ -336,10 +336,8 @@ model IftaReport {
   @@index([quarter, year], name: "ifta_reports_quarter_year_idx")
   @@index([status], name: "ifta_reports_status_idx")
   @@index([dueDate], name: "ifta_reports_due_date_idx")
-  @@unique([organizationId, quarter, year], name: "ifta_reports_org_quarter_year_unique")
 }
 
-// Audit Trail System
 model AuditLog {
   id           String    @id @default(uuid())
   organizationId String  @map("organization_id")
@@ -363,11 +361,10 @@ model AuditLog {
   @@index([timestamp], name: "audit_logs_timestamp_idx")
 }
 
-// Webhook Event Log
 model WebhookEvent {
   id              String    @id @default(uuid())
   eventType       String    @map("event_type") // Clerk event type
-  eventId         String    @map("event_id")   // Clerk event ID
+  eventId         String    @map("event_id") @unique(map: "webhook_events_event_id_unique") // Clerk event ID, must be unique and non-null
   organizationId  String?   @map("organization_id")
   userId          String?   @map("user_id")
   payload         Json      // Full webhook payload
@@ -379,10 +376,8 @@ model WebhookEvent {
 
   @@map("webhook_events")
   @@index([eventType], name: "webhook_events_event_type_idx")
-  @@index([eventId], name: "webhook_events_event_id_idx")
   @@index([organizationId], name: "webhook_events_organization_id_idx")
   @@index([userId], name: "webhook_events_user_id_idx")
   @@index([status], name: "webhook_events_status_idx")
   @@index([createdAt], name: "webhook_events_created_at_idx")
-  @@unique([eventId], name: "webhook_events_event_id_unique")
 }

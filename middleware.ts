@@ -56,6 +56,44 @@ function setCachedUserContext(sessionId: string, userContext: UserContext): void
 // Pre-compile regex patterns for better performance
 const orgPathRegex = /\/([^\/]+)\/dashboard/;
 
+// Utility: Get dashboard path by role
+function getDashboardPath(userContext: UserContext): string {
+  const orgId = userContext.organizationId;
+  const userId = userContext.userId;
+  switch (userContext.role) {
+    case SystemRoles.ADMIN:
+      return `/${orgId}/dashboard/${userId}`;
+    case SystemRoles.DISPATCHER:
+      return `/${orgId}/dispatcher/${userId}`;
+    case SystemRoles.DRIVER:
+      return `/${orgId}/driver/${userId}`;
+    case SystemRoles.COMPLIANCE_OFFICER:
+      return `/${orgId}/compliance/${userId}`;
+    case SystemRoles.ACCOUNTANT:
+      return `/${orgId}/dashboard/${userId}`; // Default to dashboard
+    case SystemRoles.VIEWER:
+      return `/${orgId}/dashboard/${userId}`;
+    default:
+      return `/${orgId}/dashboard/${userId}`;
+  }
+}
+
+// Provide a default ClerkOrganizationMetadata object for type safety
+const defaultOrgMetadata: ClerkOrganizationMetadata = {
+  subscriptionTier: 'free',
+  subscriptionStatus: 'inactive',
+  maxUsers: 1,
+  features: [],
+  billingEmail: '',
+  createdAt: new Date().toISOString(),
+  settings: {
+    timezone: 'UTC',
+    dateFormat: 'MM/DD/YYYY',
+    distanceUnit: 'miles',
+    fuelUnit: 'gallons',
+  },
+};
+
 // Extracted helper functions for better performance and readability
 async function handlePublicRoute(auth: any, req: NextRequest) {
   const authData = await auth();
@@ -65,23 +103,95 @@ async function handlePublicRoute(auth: any, req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Optimized authenticated user redirection
+  // Authenticated user on sign-in/up: route to correct dashboard or onboarding
   if (authData.userId && (req.nextUrl.pathname.startsWith('/sign-in') || req.nextUrl.pathname.startsWith('/sign-up'))) {
     const { sessionClaims } = authData;
     const userMetadata = sessionClaims?.metadata || sessionClaims?.publicMetadata;
-    
-    if (!userMetadata?.onboardingComplete) {
-      return NextResponse.redirect(new URL('/onboarding', req.url));
+    const userRole = userMetadata?.role;
+    const onboardingComplete = userMetadata?.onboardingComplete;
+    const orgId = authData.orgId || userMetadata?.organizationId;
+    const userId = authData.userId;
+
+    // Only admins (org creators) can access onboarding
+    if (!onboardingComplete) {
+      if (userRole === SystemRoles.ADMIN) {
+        // Allow onboarding for admins only
+        if (!req.nextUrl.pathname.startsWith('/onboarding')) {
+          return NextResponse.redirect(new URL('/onboarding', req.url));
+        }
+        return NextResponse.next();
+      } else {
+        // Invited users (not admin) skip onboarding, go to their dashboard
+        if (orgId) {
+          const dashPath = getDashboardPath({
+            userId,
+            organizationId: orgId,
+            role: userRole,
+            permissions: [],
+            isActive: true,
+            name: '',
+            email: '',
+            firstName: '',
+            lastName: '',
+            onboardingComplete: false,
+            organizationMetadata: defaultOrgMetadata,
+          });
+          return NextResponse.redirect(new URL(dashPath, req.url));
+        }
+        return NextResponse.redirect(new URL('/sign-in', req.url));
+      }
     }
 
-    const orgId = authData.orgId || userMetadata?.organizationId;
+    // If onboarding complete, always route to correct dashboard
     if (orgId) {
-      return NextResponse.redirect(new URL(`/${orgId}/dashboard/${authData.userId}`, req.url));
+      const dashPath = getDashboardPath({
+        userId,
+        organizationId: orgId,
+        role: userRole,
+        permissions: [],
+        isActive: true,
+        name: '',
+        email: '',
+        firstName: '',
+        lastName: '',
+        onboardingComplete: true,
+        organizationMetadata: defaultOrgMetadata,
+      });
+      return NextResponse.redirect(new URL(dashPath, req.url));
     }
-    
     return NextResponse.redirect(new URL('/onboarding', req.url));
   }
-  
+
+  // Block onboarding for non-admins
+  if (req.nextUrl.pathname.startsWith('/onboarding')) {
+    if (authData.userId) {
+      const { sessionClaims } = authData;
+      const userMetadata = sessionClaims?.metadata || sessionClaims?.publicMetadata;
+      const userRole = userMetadata?.role;
+      if (userRole !== SystemRoles.ADMIN) {
+        // Not admin, redirect to dashboard
+        const orgId = authData.orgId || userMetadata?.organizationId;
+        if (orgId) {
+          const dashPath = getDashboardPath({
+            userId: authData.userId,
+            organizationId: orgId,
+            role: userRole,
+            permissions: [],
+            isActive: true,
+            name: '',
+            email: '',
+            firstName: '',
+            lastName: '',
+            onboardingComplete: false,
+            organizationMetadata: defaultOrgMetadata,
+          });
+          return NextResponse.redirect(new URL(dashPath, req.url));
+        }
+        return NextResponse.redirect(new URL('/sign-in', req.url));
+      }
+    }
+  }
+
   return NextResponse.next();
 }
 
@@ -120,20 +230,7 @@ function buildUserContext(userId: string, sessionClaims: any, orgId: string | nu
     firstName: sessionClaims?.firstName || '',
     lastName: sessionClaims?.lastName || '',
     onboardingComplete: onboardingComplete,
-    organizationMetadata: orgMetadata || {
-      subscriptionTier: 'free',
-      subscriptionStatus: 'inactive',
-      maxUsers: 1,
-      features: [],
-      billingEmail: sessionClaims?.primaryEmail || '',
-      createdAt: new Date().toISOString(),
-      settings: {
-        timezone: 'UTC',
-        dateFormat: 'MM/DD/YYYY',
-        distanceUnit: 'miles',
-        fuelUnit: 'gallons'
-      }
-    },
+    organizationMetadata: orgMetadata || defaultOrgMetadata,
   };
 }
 
@@ -171,7 +268,7 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
 
   // For protected routes, ensure user is authenticated
   const { userId, sessionClaims, orgId } = await auth();
-  
+
   if (!userId) {
     const signInUrl = new URL('/sign-in', req.url);
     signInUrl.searchParams.set('redirect_url', req.url);
@@ -181,20 +278,20 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
   // Try to get cached user context first
   const sessionId = `${userId}-${orgId || 'no-org'}`;
   let userContext = getCachedUserContext(sessionId);
-  
+
   if (!userContext) {
     // Build user context with optimized extraction
     userContext = buildUserContext(userId, sessionClaims, orgId || null);
     setCachedUserContext(sessionId, userContext);
   }
 
-
   // Organization tenant handling with optimized regex
   const matches = req.nextUrl.pathname.match(orgPathRegex);
   if (matches && matches[1]) {
     const requestedOrgId = matches[1];
     if (userContext.organizationId && userContext.organizationId !== requestedOrgId) {
-      return NextResponse.redirect(new URL(`/${userContext.organizationId}/dashboard/${userId}?error=wrong-org`, req.url));
+      // Always redirect to correct org dashboard for this user
+      return NextResponse.redirect(new URL(getDashboardPath(userContext) + '?error=wrong-org', req.url));
     }
   }
 
