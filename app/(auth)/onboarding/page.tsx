@@ -15,7 +15,7 @@ import { Label } from '@/components/ui/label'
 import { Loader2, MapPinned } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 import type { OnboardingData } from '@/types/auth'
-import { setClerkMetadata } from '@/lib/actions/onboarding-actions'
+import { setClerkMetadata } from '@/lib/actions/onboardingActions'
 
 // Utility to generate a base slug from company name
 function toBaseSlug(name: string): string {

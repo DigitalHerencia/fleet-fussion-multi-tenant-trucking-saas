@@ -23,7 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { MoreHorizontal, Plus, Search, Mail, Users, UserCheck, Loader2 } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
 import { SystemRoles, type SystemRole } from "@/types/abac"
-import { createOrganizationInvitation, getOrganizationInvitations, revokeOrganizationInvitation, type InvitationData } from "@/lib/actions/invitation-actions"
+import { createOrganizationInvitation, getOrganizationInvitations, type InvitationData } from "@/lib/actions/invitationActions"
 
 interface OrganizationInvitation {
   id: string
@@ -107,13 +107,11 @@ export function UserSettings() {
   }
 
   const handleRevokeInvitation = async (invitationId: string) => {
-    if (!user?.publicMetadata?.organizationId) return
-
     try {
-      const result = await revokeOrganizationInvitation(
-        user.publicMetadata.organizationId as string,
-        invitationId
-      )
+      // TODO: Implement actual revoke logic here, e.g. call an API or action
+      // Example:
+      // const result = await revokeOrganizationInvitation(invitationId)
+      const result = { success: false, error: "Revoke not implemented" } // Placeholder
 
       if (result.success) {
         toast({
@@ -163,19 +161,17 @@ export function UserSettings() {
       const invitationData: InvitationData = {
         emailAddress: newInvitation.email,
         role: newInvitation.role as SystemRole,
-        organizationId: user.publicMetadata.organizationId as string,
-        bypassOnboarding: newInvitation.bypassOnboarding,
         redirectUrl: `${window.location.origin}/accept-invitation`,
       }
 
       const result = await createOrganizationInvitation(invitationData)
 
-      if (result.success) {
+      if (success(result)) {
         toast({
           title: "Invitation Sent",
           description: `Invitation has been sent to ${newInvitation.email}`,
         })
-        
+
         // Reset form
         setNewInvitation({
           email: "",
@@ -189,7 +185,7 @@ export function UserSettings() {
       } else {
         toast({
           title: "Failed to Send Invitation",
-          description: result.error || "An error occurred while sending the invitation.",
+          description:  "An error occurred while sending the invitation.",
           variant: "destructive",
         })
       }
@@ -426,3 +422,8 @@ export function UserSettings() {
     </div>
   )
 }
+
+function success(result: { success: boolean; error: string } | undefined) {
+  return !!result && result.success === true;
+}
+

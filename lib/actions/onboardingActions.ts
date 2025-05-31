@@ -1,15 +1,22 @@
 "use server";
 
 import { currentUser } from '@clerk/nextjs/server';
-import { db, handleDatabaseError } from '@/lib/database';
+import { clerkClient } from '@clerk/nextjs/server';
+import { db, handleDatabaseError } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import type { 
   OnboardingStepData, 
   CompanySetupData, 
   ProfileSetupData,
-  OnboardingStatus 
+  OnboardingStatus,
+
 } from '@/types/onboarding';
+import { SystemRoles } from '@/types/abac';
+import type { OnboardingData, SetClerkMetadataResult } from '@/types/auth';
+
+// Infer the resolved client type
+type ResolvedClerkClient = Awaited<ReturnType<typeof clerkClient>>;
 
 export async function submitOnboardingStepAction(step: string, data: OnboardingStepData) {
   try {
@@ -131,46 +138,116 @@ export async function completeOnboardingAction() {
   }
 }
 
-export async function getOnboardingStatusAction(): Promise<OnboardingStatus | null> {
-  try {
-    const user = await currentUser();
-    if (!user) return null;
 
-    const dbUser = await db.user.findUnique({
-      where: { clerkId: user.id },
-      include: { organization: true }
+
+/**
+ * Server action to set Clerk metadata and create organization after onboarding
+ * ONLY creates in Clerk - database sync handled by webhooks for proper separation of concerns
+ */
+export async function setClerkMetadata(data: OnboardingData): Promise<SetClerkMetadataResult> {
+  const actualClient: ResolvedClerkClient = await clerkClient();
+  let createdOrgId: string | undefined;
+
+  try {
+    console.log('🚀 Starting onboarding metadata setup for user:', data.userId);
+    console.log('📋 Architecture: ONLY creating in Clerk, database sync via webhooks');
+
+    if (!data.userId) {
+      return { success: false, error: "User ID is required." };
+    }
+    if (!data.orgName || data.orgName.trim().length < 2) {
+      return { success: false, error: "Organization name must be at least 2 characters." };
+    }
+    if (!data.orgSlug) { 
+      return { success: false, error: "Base organization slug is required." };
+    }
+    if (!data.role) {
+        return { success: false, error: "User role is required for organization membership." };
+    }
+
+    let billingEmail = '';
+    try {
+      const user = await actualClient.users.getUser(data.userId);
+      billingEmail = user.emailAddresses.find((email: { id: string; }) => email.id === user.primaryEmailAddressId)?.emailAddress || '';
+    } catch (e: any) {
+      console.warn('Could not retrieve user email for billing:', e.message);
+    }
+
+    let organization;
+    let baseSlug = data.orgSlug;
+
+    try {
+        // Reverted to using query for initial check as well.
+        const existingOrgsBySlug = await actualClient.organizations.getOrganizationList({ query: baseSlug });
+        organization = existingOrgsBySlug.data.find((org: any) => org.slug === baseSlug);
+    } catch (error: any) {
+        console.warn(`Error fetching organization by slug '${baseSlug}' using query: ${error.message}. Will attempt to create if necessary.`);
+    }
+
+    if (!organization) {
+        console.log(`Attempting to create organization '${data.orgName}' with slug '${baseSlug}'`);
+        try {
+            organization = await actualClient.organizations.createOrganization({
+                name: data.orgName,
+                slug: baseSlug,
+                createdBy: data.userId,
+                publicMetadata: { companyName: data.companyName, dotNumber: data.dotNumber, mcNumber: data.mcNumber },
+                ...(billingEmail && { billingEmail }),
+            });
+            createdOrgId = organization.id;
+            console.log('🏢 Organization created in Clerk ONLY:', { id: organization.id, name: organization.name, slug: organization.slug });
+        } catch (creationError: any) {
+            console.error('❌ Error creating organization:', creationError.errors || creationError.message);
+            return { success: false, error: `Failed to create organization '${data.orgName}': ${creationError.message}` };
+        }
+    } else {
+        createdOrgId = organization.id;
+        console.log('🏢 Organization with preferred slug already exists in Clerk:', { id: organization.id, name: organization.name, slug: organization.slug });
+    }
+    
+    if (!organization) {
+        console.error('❌ Organization object is undefined after creation/retrieval attempt.');
+        return { success: false, error: 'Failed to obtain organization details.' };
+    }
+    createdOrgId = organization.id;
+
+    await actualClient.users.updateUser(data.userId, {
+      publicMetadata: {
+        onboardingComplete: true,
+        organizationId: organization.id, 
+        role: data.role, 
+        isActive: true
+      },
+      privateMetadata: {
+        onboarding: {
+          ...data, 
+          organizationId: organization.id,
+          completedAt: new Date().toISOString()
+        },
+        lastLogin: new Date().toISOString()
+      }
+    });    
+    
+    console.log('✅ Updated user metadata in Clerk ONLY (database sync via webhook):', {
+      userId: data.userId,
+      organizationId: organization.id,
+      role: data.role,
+      onboardingComplete: true
     });
 
-    if (!dbUser) return null;
+    // No need to add user to organization: Clerk automatically adds creator as admin
 
-    const steps = dbUser.onboardingSteps as Record<string, boolean> || {};
-    
-    return {
-      isComplete: dbUser.onboardingComplete,
-      steps: {
-        profile: steps.profile || false,
-        company: steps.company || false,
-        preferences: steps.preferences || false
-      },
-      currentStep: !steps.profile ? 'profile' : 
-                   !steps.company ? 'company' : 
-                   !steps.preferences ? 'preferences' : 'complete',
-      user: {
-        id: dbUser.id,
-        clerkId: dbUser.clerkId,
-        email: dbUser.email,
-        firstName: dbUser.firstName,
-        lastName: dbUser.lastName,
-        role: dbUser.role
-      },
-      organization: {
-        id: dbUser.organization.id,
-        name: dbUser.organization.name,
-        slug: dbUser.organization.slug
-      }
+    // Webhook will sync user/org to Neon DB
+    // Redirect to dashboard: /app/(tenant)/[orgId]/dashboard/[userId]/page.tsx
+    console.log('🎉 User successfully added to organization in Clerk. Webhook will sync to Neon DB.');
+    return { success: true, organizationId: createdOrgId, userId: data.userId };
+
+  } catch (error: any) {
+    console.error('❌ Onboarding process failed:', error.errors || error.message);
+    return { 
+      success: false, 
+      error: error.message || "An unexpected error occurred during onboarding.",
+      organizationId: createdOrgId 
     };
-  } catch (error) {
-    console.error('Get onboarding status error:', error);
-    return null;
   }
 }

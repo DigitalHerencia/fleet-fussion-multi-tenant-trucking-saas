@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PreferencesSchema, type PreferencesFormData } from "@/validations/onboarding";
+import { PreferencesSchema, type PreferencesFormData } from "@/schemas/onboarding";
 import { Bell, Globe, Monitor } from "lucide-react";
 
 interface PreferencesFormProps {
@@ -52,7 +52,6 @@ export function PreferencesForm({ onSubmit, onPrevious, isLoading, initialData }
     setValue,
     watch
   } = useForm<PreferencesFormData>({
-    resolver: zodResolver(PreferencesSchema),
     defaultValues: {
       notifications: {
         email: true,

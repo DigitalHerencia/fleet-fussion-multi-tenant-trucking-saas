@@ -1,6 +1,6 @@
 /**
- * Validation schemas for compliance-related forms
- * Using Zod for runtime validation
+ * Compliance Validation Schemas
+ * Centralized validation schemas for compliance-related data structures
  */
 
 import { z } from "zod"
@@ -463,6 +463,21 @@ export const bulkComplianceOperationSchema = z.object({
   data: z.record(z.any()).optional(),
 })
 
+// Additional compliance-specific schemas
+export const complianceDocumentBulkSchema = z.object({
+  documentIds: z.array(z.string()),
+  operation: z.enum(["approve", "reject", "delete", "archive"]),
+  notes: z.string().optional(),
+})
+
+export const complianceReportSchema = z.object({
+  startDate: z.string(),
+  endDate: z.string(),
+  reportType: z.enum(["hos", "dvir", "safety", "maintenance"]),
+  includeMetrics: z.boolean().default(true),
+  includeGraphs: z.boolean().default(true),
+})
+
 // Export types from schemas
 export type CreateComplianceDocumentInput = z.infer<typeof createComplianceDocumentSchema>
 export type UpdateComplianceDocumentInput = z.infer<typeof updateComplianceDocumentSchema>
@@ -484,3 +499,15 @@ export type ComplianceAlertInput = z.infer<typeof complianceAlertSchema>
 export type UpdateComplianceAlertInput = z.infer<typeof updateComplianceAlertSchema>
 export type ComplianceAlertFilterInput = z.infer<typeof complianceAlertFilterSchema>
 export type BulkComplianceOperationInput = z.infer<typeof bulkComplianceOperationSchema>
+export const complianceExportSchema = z.object({
+  driverIds: z.array(z.string()).optional(),
+  vehicleIds: z.array(z.string()).optional(),
+  includeDetails: z.boolean().default(false),
+})
+
+export const complianceAlertConfigSchema = z.object({
+  alertType: z.enum(["hos_violation", "medical_expiry", "license_expiry", "vehicle_inspection"]),
+  isEnabled: z.boolean(),
+  reminderDays: z.number().min(1).max(365),
+  notificationMethods: z.array(z.enum(["email", "dashboard", "sms"])),
+})

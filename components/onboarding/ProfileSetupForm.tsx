@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ProfileSetupSchema, type ProfileSetupFormData } from "@/validations/onboarding";
+import { ProfileSetupSchema, type ProfileSetupFormData } from "@/schemas/onboarding";
 
 interface ProfileSetupFormProps {
   onSubmit: (data: ProfileSetupFormData) => void;

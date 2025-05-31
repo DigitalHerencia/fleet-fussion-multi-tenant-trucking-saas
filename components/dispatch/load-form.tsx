@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "@/components/ui/use-toast"
-import { createLoad, updateLoad } from "@/lib/actions/load-actions"
+import { updateLoadAction } from "@/lib/actions/loadActions"
 
 interface Driver {
   id: string
@@ -74,8 +74,12 @@ export function LoadForm({ drivers, vehicles, load, onClose }: LoadFormProps) {
       const formData = new FormData(event.currentTarget)
 
       if (load) {
-        // Update existing load
-        const result = await updateLoad(load.id, formData)
+        // Convert FormData to plain object and add id
+        const data: any = { id: load.id }
+        formData.forEach((value, key) => {
+          data[key] = value
+        })
+        const result = await updateLoadAction(load.id, data)
         if (result.success) {
           toast({
             title: "Load updated",
@@ -85,23 +89,7 @@ export function LoadForm({ drivers, vehicles, load, onClose }: LoadFormProps) {
         } else {
           toast({
             title: "Error",
-            description: result.message || "Failed to update load. Please try again.",
-            variant: "destructive",
-          })
-        }
-      } else {
-        // Create new load
-        const result = await createLoad(formData)
-        if (result.success) {
-          toast({
-            title: "Load created",
-            description: "The load has been created successfully.",
-          })
-          onClose?.()
-        } else {
-          toast({
-            title: "Error",
-            description: result.message || "Failed to create load. Please try again.",
+            description:  "Failed to update load. Please try again.",
             variant: "destructive",
           })
         }

@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
-import { submitOnboardingStepAction, completeOnboardingAction, getOnboardingStatusAction } from "@/lib/actions/onboardingActions";
-import { ProfileSetupSchema, CompanySetupSchema, PreferencesSchema } from "@/validations/onboarding";
+import { submitOnboardingStepAction, completeOnboardingAction } from "@/lib/actions/onboardingActions";
+import { ProfileSetupSchema, CompanySetupSchema, PreferencesSchema } from "@/schemas/onboarding";
 import type { OnboardingStatus, OnboardingStepData } from "@/types/onboarding";
 import { ProfileSetupForm } from "@/components/onboarding/ProfileSetupForm";
 import { CompanySetupForm } from "@/components/onboarding/CompanySetupForm";
@@ -25,11 +25,7 @@ export function OnboardingWizard({ initialStatus }: OnboardingWizardProps) {
   const { toast } = useToast();
 
   // Load onboarding status
-  useEffect(() => {
-    if (!initialStatus) {
-      getOnboardingStatusAction().then(setStatus);
-    }
-  }, [initialStatus]);
+
 
   const handleStepSubmit = async (step: string, data: OnboardingStepData) => {
     setIsLoading(true);
@@ -38,9 +34,12 @@ export function OnboardingWizard({ initialStatus }: OnboardingWizardProps) {
       
       if (result.success) {
         // Refresh status
-        const newStatus = await getOnboardingStatusAction();
-        setStatus(newStatus);
-        
+        // const newStatus = await result.data;
+        // setStatus(newStatus);
+        // Instead, optimistically update or refetch status here if possible
+        // For now, just reload the page or setStatus as needed
+        window.location.reload();
+
         toast({
           title: "Progress saved",
           description: "Your onboarding step has been completed.",

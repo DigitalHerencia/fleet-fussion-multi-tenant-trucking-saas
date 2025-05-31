@@ -23,7 +23,7 @@ import {
   Route,
   Timer
 } from 'lucide-react'
-import { getCurrentUser } from '@/lib/auth/auth'
+import { getCurrentUser } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { SystemRoles } from '@/types/abac'
 

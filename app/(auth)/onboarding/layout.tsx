@@ -1,7 +1,7 @@
 "use server"
 
 import { redirect } from 'next/navigation';
-import { getCurrentUser } from '@/lib/auth/auth';
+import { getCurrentUser } from '@/lib/auth';
 
 export default async function OnboardingLayout({ children }: { children: React.ReactNode }) {
   // Fetch the current user context using a server action

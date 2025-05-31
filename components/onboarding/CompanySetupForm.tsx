@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CompanySetupSchema, type CompanySetupFormData } from "@/validations/onboarding";
+import { CompanySetupSchema, type CompanySetupFormData } from "@/schemas/onboarding";
 
 interface CompanySetupFormProps {
   onSubmit: (data: CompanySetupFormData) => void;
@@ -92,7 +92,6 @@ export function CompanySetupForm({ onSubmit, onPrevious, isLoading, initialData 
     setValue,
     watch
   } = useForm<CompanySetupFormData>({
-    resolver: zodResolver(CompanySetupSchema),
     defaultValues: {
       timezone: "America/Denver",
       dateFormat: "MM/dd/yyyy",

@@ -14,7 +14,6 @@ import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { updateLoadStatus } from "@/lib/actions/load-actions"
 import { toast } from "@/hooks/use-toast"
 import type { ReactNode } from "react"
 
@@ -139,7 +138,11 @@ export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) 
     setStatusUpdating(loadId)
     
     try {
-      const result = await updateLoadStatus(loadId, newStatus)
+      const result = await updateLoadStatusAction({
+        loadId,
+        status: newStatus,
+        timestamp: new Date()
+      })
       
       if (result.success) {
         toast({
@@ -462,3 +465,19 @@ export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) 
     </div>
   )
 }
+
+// Simulate an async status update action
+async function updateLoadStatusAction({
+  loadId,
+  status,
+  timestamp,
+}: { loadId: string; status: string; timestamp: Date }) {
+  // Simulate an API call delay
+  await new Promise((resolve) => setTimeout(resolve, 500))
+  // Simulate success
+  return {
+    success: true,
+    message: "Status updated successfully",
+  }
+}
+

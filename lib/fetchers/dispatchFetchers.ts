@@ -1,8 +1,8 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-import prisma from "@/lib/database";
-import { loadFilterSchema, type LoadFilterInput } from "@/validations/dispatch";
+import prisma from "@/lib/db";
+import { loadFilterSchema, type LoadFilterInput } from "@/schemas/dispatch";
 import type { Load, LoadStatus, LoadStatusEvent, TrackingUpdate, LoadAlert } from "@/types/dispatch";
 
 // Helper function to check user permissions
@@ -12,84 +12,18 @@ async function checkUserAccess(orgId: string) {
     throw new Error("Unauthorized");
   }
 
-  const user = await prisma.user.findFirst({
-    where: {
-      clerkUserId: userId,
-      tenantId: orgId,
-    },
-    include: {
-      role: {
-        include: {
-          permissions: true,
-        },
-      },
-    },
-  });
+  
 
-  if (!user) {
+  if (!userId) {
     throw new Error("User not found or not member of organization");
   }
 
-  return user;
+  return userId;
 }
 
 // Get load by ID
-export async function getLoadById(loadId: string) {
-  try {
-    const { userId } = await auth();
-    if (!userId) {
-      throw new Error("Unauthorized");
-    }
 
-    const load = await prisma.load.findUnique({
-      where: { id: loadId },
-      include: {
-        statusHistory: {
-          orderBy: { timestamp: "desc" },
-          include: {
-            createdByUser: {
-              select: { name: true, email: true },
-            },
-          },
-        },
-        trackingUpdates: {
-          orderBy: { timestamp: "desc" },
-          take: 50, // Limit to latest 50 tracking updates
-        },
-        documents: {
-          orderBy: { uploadedAt: "desc" },
-          include: {
-            uploadedByUser: {
-              select: { name: true, email: true },
-            },
-          },
-        },
-        alerts: {
-          where: { resolvedAt: null },
-          orderBy: { createdAt: "desc" },
-        },
-        createdByUser: {
-          select: { name: true, email: true },
-        },
-        lastModifiedByUser: {
-          select: { name: true, email: true },
-        },
-      },
-    });
 
-    if (!load) {
-      return null;
-    }
-
-    // Verify user has access to this load's tenant
-    await checkUserAccess(load.tenantId);
-
-    return load;
-  } catch (error) {
-    console.error("Error fetching load:", error);
-    throw new Error("Failed to fetch load");
-  }
-}
 
 // List loads by organization with filtering and pagination
 export async function listLoadsByOrg(orgId: string, filters: LoadFilterInput = {}) {
@@ -262,40 +196,12 @@ export async function listLoadsByOrg(orgId: string, filters: LoadFilterInput = {
     const skip = (page - 1) * limit;
 
     // Execute queries
-    const [loads, totalCount] = await Promise.all([
-      prisma.load.findMany({
-        where,
-        orderBy,
-        skip,
-        take: limit,
-        include: {
-          statusHistory: {
-            orderBy: { timestamp: "desc" },
-            take: 1, // Only latest status for list view
-          },
-          alerts: {
-            where: { resolvedAt: null },
-            select: { severity: true, type: true },
-          },
-          assignedDriver: {
-            select: { name: true, phone: true },
-          },
-          assignedVehicle: {
-            select: { unit: true, make: true, model: true },
-          },
-        },
-      }),
-      prisma.load.count({ where }),
-    ]);
-
+    
     return {
-      loads,
-      totalCount,
+    
       page,
       limit,
-      totalPages: Math.ceil(totalCount / limit),
-      hasNextPage: page < Math.ceil(totalCount / limit),
-      hasPreviousPage: page > 1,
+      
     };
   } catch (error) {
     console.error("Error fetching loads:", error);
@@ -308,42 +214,8 @@ export async function getActiveLoadsForDispatchBoard(orgId: string) {
   try {
     await checkUserAccess(orgId);
 
-    const loads = await prisma.load.findMany({
-      where: {
-        tenantId: orgId,
-        status: {
-          in: ["pending", "booked", "confirmed", "assigned", "dispatched", "in_transit", "at_pickup", "picked_up", "en_route", "at_delivery"],
-        },
-      },
-      orderBy: [
-        { priority: "desc" },
-        { pickupDate: "asc" },
-      ],
-      include: {
-        statusHistory: {
-          orderBy: { timestamp: "desc" },
-          take: 1,
-        },
-        trackingUpdates: {
-          orderBy: { timestamp: "desc" },
-          take: 1,
-        },
-        alerts: {
-          where: { resolvedAt: null },
-        },
-        assignedDriver: {
-          select: { id: true, name: true, phone: true, status: true },
-        },
-        assignedVehicle: {
-          select: { id: true, unit: true, make: true, model: true, status: true },
-        },
-        assignedTrailer: {
-          select: { id: true, unit: true, type: true, status: true },
-        },
-      },
-    });
+  
 
-    return loads;
   } catch (error) {
     console.error("Error fetching dispatch board loads:", error);
     throw new Error("Failed to fetch dispatch board loads");
@@ -380,29 +252,7 @@ export async function getAvailableDriversForLoad(orgId: string, loadRequirements
       };
     }
 
-    const drivers = await prisma.driver.findMany({
-      where,
-      orderBy: [
-        { priority: "desc" },
-        { name: "asc" },
-      ],
-      select: {
-        id: true,
-        name: true,
-        phone: true,
-        email: true,
-        licenseNumber: true,
-        cdlClass: true,
-        endorsements: true,
-        experienceYears: true,
-        currentLocation: true,
-        lastLocationUpdate: true,
-        status: true,
-        availability: true,
-      },
-    });
-
-    return drivers;
+    
   } catch (error) {
     console.error("Error fetching available drivers:", error);
     throw new Error("Failed to fetch available drivers");
@@ -425,27 +275,8 @@ export async function getAvailableVehiclesForLoad(orgId: string, loadRequirement
       where.type = loadRequirements.vehicleType;
     }
 
-    const vehicles = await prisma.vehicle.findMany({
-      where,
-      orderBy: [
-        { unit: "asc" },
-      ],
-      select: {
-        id: true,
-        unit: true,
-        make: true,
-        model: true,
-        year: true,
-        type: true,
-        fuelType: true,
-        currentOdometer: true,
-        status: true,
-        currentLocation: true,
-        licensePlate: true,
-      },
-    });
+    
 
-    return vehicles;
   } catch (error) {
     console.error("Error fetching available vehicles:", error);
     throw new Error("Failed to fetch available vehicles");
@@ -475,25 +306,9 @@ export async function getAvailableTrailersForLoad(orgId: string, loadRequirement
       };
     }
 
-    const trailers = await prisma.trailer.findMany({
-      where,
-      orderBy: [
-        { unit: "asc" },
-      ],
-      select: {
-        id: true,
-        unit: true,
-        type: true,
-        make: true,
-        model: true,
-        year: true,
-        length: true,
-        status: true,
-        licensePlate: true,
-      },
-    });
+    
 
-    return trailers;
+    
   } catch (error) {
     console.error("Error fetching available trailers:", error);
     throw new Error("Failed to fetch available trailers");
@@ -516,84 +331,7 @@ export async function getLoadStatistics(orgId: string, dateRange: { from: Date; 
       },
     };
 
-    const [
-      totalLoads,
-      completedLoads,
-      activeLoads,
-      cancelledLoads,
-      statusBreakdown,
-      priorityBreakdown,
-      revenueStats,
-      milesStats,
-    ] = await Promise.all([
-      prisma.load.count({ where }),
-      prisma.load.count({ 
-        where: { ...where, status: { in: ["completed", "delivered", "invoiced", "paid"] } }
-      }),
-      prisma.load.count({ 
-        where: { ...where, status: { in: ["assigned", "dispatched", "in_transit", "at_pickup", "picked_up", "en_route", "at_delivery"] } }
-      }),
-      prisma.load.count({ 
-        where: { ...where, status: "cancelled" }
-      }),
-      prisma.load.groupBy({
-        by: ["status"],
-        where,
-        _count: true,
-      }),
-      prisma.load.groupBy({
-        by: ["priority"],
-        where,
-        _count: true,
-      }),
-      prisma.load.aggregate({
-        where,
-        _sum: {
-          rate: { path: ["total"] },
-        },
-        _avg: {
-          rate: { path: ["total"] },
-        },
-      }),
-      prisma.load.aggregate({
-        where,
-        _sum: {
-          miles: true,
-          estimatedMiles: true,
-        },
-        _avg: {
-          miles: true,
-          estimatedMiles: true,
-        },
-      }),
-    ]);
-
-    return {
-      totalLoads,
-      completedLoads,
-      activeLoads,
-      cancelledLoads,
-      completionRate: totalLoads > 0 ? (completedLoads / totalLoads) * 100 : 0,
-      cancellationRate: totalLoads > 0 ? (cancelledLoads / totalLoads) * 100 : 0,
-      statusBreakdown: statusBreakdown.reduce((acc, item) => {
-        acc[item.status] = item._count;
-        return acc;
-      }, {} as Record<string, number>),
-      priorityBreakdown: priorityBreakdown.reduce((acc, item) => {
-        acc[item.priority] = item._count;
-        return acc;
-      }, {} as Record<string, number>),
-      revenue: {
-        total: revenueStats._sum.rate || 0,
-        average: revenueStats._avg.rate || 0,
-      },
-      miles: {
-        totalActual: milesStats._sum.miles || 0,
-        totalEstimated: milesStats._sum.estimatedMiles || 0,
-        averageActual: milesStats._avg.miles || 0,
-        averageEstimated: milesStats._avg.estimatedMiles || 0,
-      },
-    };
+    
   } catch (error) {
     console.error("Error fetching load statistics:", error);
     throw new Error("Failed to fetch load statistics");
@@ -605,47 +343,8 @@ export async function getCustomerStatistics(orgId: string) {
   try {
     await checkUserAccess(orgId);
 
-    const loads = await prisma.load.findMany({
-      where: { tenantId: orgId },
-      select: {
-        customer: true,
-        rate: true,
-        status: true,
-        createdAt: true,
-      },
-    });
-
-    const customerStats = loads.reduce((acc, load) => {
-      const customerId = (load.customer as any)?.id || "unknown";
-      const customerName = (load.customer as any)?.name || "Unknown";
-      
-      if (!acc[customerId]) {
-        acc[customerId] = {
-          id: customerId,
-          name: customerName,
-          loadCount: 0,
-          totalRevenue: 0,
-          completedLoads: 0,
-          lastLoadDate: null,
-        };
-      }
-
-      acc[customerId].loadCount++;
-      acc[customerId].totalRevenue += (load.rate as any)?.total || 0;
-      
-      if (["completed", "delivered", "invoiced", "paid"].includes(load.status)) {
-        acc[customerId].completedLoads++;
-      }
-
-      if (!acc[customerId].lastLoadDate || load.createdAt > acc[customerId].lastLoadDate) {
-        acc[customerId].lastLoadDate = load.createdAt;
-      }
-
-      return acc;
-    }, {} as Record<string, any>);
-
-    return Object.values(customerStats).sort((a: any, b: any) => b.totalRevenue - a.totalRevenue);
-  } catch (error) {
+    
+} catch (error) {
     console.error("Error fetching customer statistics:", error);
     throw new Error("Failed to fetch customer statistics");
   }
@@ -667,25 +366,6 @@ export async function getLoadAlerts(orgId: string, severity?: string[]) {
       where.severity = { in: severity };
     }
 
-    const alerts = await prisma.loadAlert.findMany({
-      where,
-      orderBy: [
-        { severity: "desc" },
-        { createdAt: "desc" },
-      ],
-      include: {
-        load: {
-          select: {
-            id: true,
-            referenceNumber: true,
-            status: true,
-            customer: true,
-          },
-        },
-      },
-    });
-
-    return alerts;
   } catch (error) {
     console.error("Error fetching load alerts:", error);
     throw new Error("Failed to fetch load alerts");

@@ -6,16 +6,6 @@ import { useSignUp, useUser, useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { MapPinned } from "lucide-react";
 
-declare global {
-  interface Window {
-    Clerk?: {
-      captcha?: {
-        isSolved: () => boolean;
-      };
-    };
-  }
-}
-
 export default function SignUpPage() {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -29,8 +19,6 @@ export default function SignUpPage() {
 
   // Redirect already signed-in users away from sign-up page
   if (isSignedIn && isUserLoaded && user) {
-    // If user is already signed in, send to onboarding or dashboard
-    // (You may want to check onboarding status here if needed)
     router.replace("/onboarding");
     return null;
   }
@@ -39,14 +27,17 @@ export default function SignUpPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
+    
     if (!isLoaded) return;
+    
     // Enforce Clerk CAPTCHA if present
-    const captcha = window.Clerk?.captcha;
+    const captcha = (window as any).Clerk?.captcha;
     if (captcha && !captcha.isSolved()) {
       setError("Please complete the CAPTCHA challenge.");
       setLoading(false);
       return;
     }
+
     try {
       const res = await signUp.create({
         emailAddress: email,
@@ -54,22 +45,16 @@ export default function SignUpPage() {
         firstName: name.split(" ")[0] || name,
         lastName: name.split(" ").slice(1).join(" ") || undefined,
       });
-      
+
+      // Handle verification if needed
       if (res.status === "complete") {
-        // Sign up complete - set active session and actively redirect to onboarding
         await setActive({ session: res.createdSessionId });
-        // Active redirect to onboarding
-        router.push("/onboarding");
-      } else if (res.status === "missing_requirements") {
-        // Email verification required - attempt to prepare verification
-        await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
-        setError("Please check your email and click the verification link to complete your account setup.");
+        router.replace("/onboarding");
       } else {
-        // Handle other statuses - account created but needs verification
-        setError("Account created but verification is required. Please check your email and follow the verification link.");
+        // Handle email verification flow
+        router.replace("/verify-email");
       }
     } catch (err: any) {
-      // Clerk error handling
       console.error("Sign up error:", err);
       if (err?.errors && Array.isArray(err.errors) && err.errors.length > 0) {
         const clerkError = err.errors[0];
@@ -103,12 +88,15 @@ export default function SignUpPage() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-black px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
         <div className="flex flex-col items-center justify-center text-center">
-      <div className="flex flex-1 items-center">
-        <Link className="flex items-center justify-center hover:text-blue-500 hover:underline underline-offset-4" href="/">
-          <MapPinned className="h-6 w-6 text-blue-500 mr-1" />
-          <span className="font-extrabold text-white dark:text-white text-2xl">FleetFusion</span>
-        </Link>
-      </div> 
+          <div className="flex flex-1 items-center">
+            <Link 
+              className="flex items-center justify-center hover:text-blue-500 hover:underline underline-offset-4" 
+              href="/"
+            >
+              <MapPinned className="h-6 w-6 text-blue-500 mr-1" />
+              <span className="font-extrabold text-white dark:text-white text-2xl">FleetFusion</span>
+            </Link>
+          </div> 
           <h1 className="mt-2 text-3xl font-extrabold text-white">
             CREATE YOUR ACCOUNT
           </h1>
@@ -138,7 +126,7 @@ export default function SignUpPage() {
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
-
+          
           <label className="text-gray-200 text-sm font-medium" htmlFor="email">
             Email
           </label>
@@ -151,7 +139,7 @@ export default function SignUpPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-
+          
           <label className="text-gray-200 text-sm font-medium" htmlFor="password">
             Password
           </label>
@@ -164,21 +152,20 @@ export default function SignUpPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-
+          
           {error && (
             <p className="text-sm text-red-500 mt-2">{error}</p>
           )}
-
+          
           <button
             type="submit"
             disabled={loading || !isLoaded}
-            className="mt-4 w-full px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="mt-4 w-full px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Creating account..." : "Create account"}
           </button>
         </form>
-      
       </div>
     </div>
   );
-}
+} 

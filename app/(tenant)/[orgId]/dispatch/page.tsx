@@ -1,9 +1,11 @@
 import { Suspense } from "react"
 import { DispatchBoard } from "@/components/dispatch/dispatch-board"
 import { DispatchSkeleton } from "@/components/dispatch/dispatch-skeleton"
-import { getLoads, getDrivers, getVehicles } from "@/lib/fetchers/fetchers"
+import { listLoadsByOrg } from "@/lib/fetchers/dispatchFetchers"
+import { listDriversByOrg } from "@/lib/fetchers/driverFetchers"
+import { listVehiclesByOrg } from "@/lib/fetchers/vehicleFetchers"
 import { auth } from "@clerk/nextjs/server"
-import { DatabaseQueries } from "@/lib/database"
+import { DatabaseQueries } from "@/lib/db"
 
 
 async function DispatchData() {
@@ -20,22 +22,18 @@ async function DispatchData() {
 	}
 
 	// Fetch all required data in parallel
-	const [loadsRaw, driversRaw, vehiclesRaw] = await Promise.all([
-		getLoads(user.organizationId),
-		getDrivers(user.organizationId),
-		getVehicles(user.organizationId)
+	const [loadsResult, driversResult, vehiclesResult] = await Promise.all([
+		listLoadsByOrg(user.organizationId),
+		listDriversByOrg(user.organizationId),
+		listVehiclesByOrg(user.organizationId, {})
 	])
 
-	// Ensure all required Load properties are present
-	const loads = loadsRaw.map((load: any) => ({
-		id: load.id ?? "",
-		status: load.status ?? "pending",
-		originCity: load.originCity ?? "",
-		originState: load.originState ?? "",
-		destinationCity: load.destinationCity ?? "",
-		destinationState: load.destinationState ?? "",
-		...load,
-	}))
+	// Extract the data from the results
+	
+	const driversRaw = driversResult.drivers || []
+	const vehiclesRaw = vehiclesResult || []
+
+
 
 	// Ensure all required Driver properties are present
 	const drivers = driversRaw.map((driver: any) => ({
@@ -59,7 +57,7 @@ async function DispatchData() {
 		...vehicle,
 	}))
 
-	return <DispatchBoard loads={loads} drivers={drivers} vehicles={vehicles} />
+	return <DispatchBoard drivers={ drivers } vehicles={ vehicles } loads={ [] } />
 }
 
 export default function DispatchPage() {
