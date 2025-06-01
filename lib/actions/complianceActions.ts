@@ -1,6 +1,6 @@
 'use server';
 
-import { db } from '../db';
+import { db } from '../database/db';
 import { z } from 'zod';
 import { ComplianceDocument } from '../../types/compliance';
 import { getComplianceDocuments } from '../fetchers/complianceFetchers';
@@ -16,7 +16,8 @@ import {
   createSafetyEventSchema,
   bulkComplianceOperationSchema
 } from '@/schemas/compliance';
-import { getCurrentUser } from '../auth';
+import { getCurrentUser } from '@/lib/auth/auth';
+import { handleError } from "@/lib/errors/handleError";
 
 // Document Management Actions
 export async function createComplianceDocument(data: z.infer<typeof createComplianceDocumentSchema>) {
@@ -91,10 +92,7 @@ export async function createComplianceDocument(data: z.infer<typeof createCompli
     return { success: true, data: document };
   } catch (error) {
     console.error('Error creating compliance document:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to create compliance document'
-    };
+    return handleError(error, "Compliance Action")
   }
 }
 
@@ -144,10 +142,7 @@ export async function updateComplianceDocument(
     return { success: true, data: updatedDocument };
   } catch (error) {
     console.error('Error updating compliance document:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to update compliance document'
-    };
+    return handleError(error, "Compliance Action")
   }
 }
 
@@ -178,10 +173,7 @@ export async function deleteComplianceDocument(id: string) {
     return { success: true };
   } catch (error) {
     console.error('Error deleting compliance document:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to delete compliance document'
-    };
+    return handleError(error, "Compliance Action")
   }
 }
 
@@ -219,10 +211,7 @@ export async function createDVIRReport(data: z.infer<typeof createDvirSchema>) {
     // revalidatePath('/[orgId]/compliance/dvir');
   } catch (error) {
     console.error('Error creating DVIR report:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to create DVIR report'
-    };
+    return handleError(error, "Compliance Action")
   }
 }
 
@@ -309,10 +298,7 @@ export async function bulkUpdateComplianceDocuments(
     };
   } catch (error) {
     console.error('Error bulk updating compliance documents:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to bulk update compliance documents'
-    };
+    return handleError(error, "Compliance Action")
   }
 }
 

@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server"
 import { cache } from "react"
 
-import prisma from "@/lib/db"
+import prisma from "@/lib/database/db"
 import type { 
   Driver, 
   DriverListResponse, 

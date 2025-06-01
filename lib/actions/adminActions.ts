@@ -1,9 +1,14 @@
+// NOTE: All ABAC/auth types (UserRole, Permission, ResourceType, etc.)
+// are now defined in types/auth.ts or types/abac.ts. Do not define or export them here.
+//
+// IMPORTANT: If you need UserRole, Permission, ResourceType, etc., import them from '@/types/auth' or '@/types/abac'.
+
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { clerkClient } from "@clerk/nextjs/server";
-import prisma from "@/lib/db";
+import prisma from "@/lib/database/db";
 import { SystemRoles } from "@/types/abac";
 
 export interface AdminActionResult {

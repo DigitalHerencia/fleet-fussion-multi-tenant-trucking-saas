@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { MapPin, Calendar, DollarSign, Package, FileText, Truck, User, Weight, Route } from "lucide-react"
 import { formatDate, formatCurrency } from "@/lib/utils"
 import Link from "next/link"
+import { DocumentUpload, DocumentListEmpty } from "@/components/shared/DocumentUpload"
 
 interface Driver {
   id: string
@@ -356,24 +357,8 @@ export function LoadDetailsDialog({ load, drivers, vehicles, isOpen, onClose }: 
                   <CardDescription>Manage documents related to this load</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <div className="space-y-1">
-                      <h4 className="font-medium">Upload Document</h4>
-                      <p className="text-sm text-muted-foreground">Add BOL, POD, or other documents</p>
-                    </div>
-                    <Button variant="outline">
-                      <FileText className="h-4 w-4 mr-2" />
-                      Upload
-                    </Button>
-                  </div>
-
-                  <div className="border rounded-md p-4">
-                    <div className="text-center text-muted-foreground">
-                      <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                      <p>No documents uploaded yet</p>
-                      <p className="text-sm">Upload documents to keep track of important paperwork</p>
-                    </div>
-                  </div>
+                  <DocumentUpload label="Upload Document" description="Add BOL, POD, or other documents" />
+                  <DocumentListEmpty />
                 </CardContent>
               </Card>
             </TabsContent>

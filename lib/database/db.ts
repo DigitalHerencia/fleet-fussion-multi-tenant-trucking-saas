@@ -63,13 +63,11 @@ async function generateUniqueOrgSlug(baseSlug: string): Promise<string> {
 
 // Type-safe database queries helper (rewritten for Prisma)
 export class DatabaseQueries {
-  static upsertOrganizationMembership ( arg0: { clerkId: any; organizationId: any; userId: any; role: any; createdAt: Date | undefined; updatedAt: Date | undefined; } )
-  {
-    throw new Error( 'Method not implemented.' );
+  static upsertOrganizationMembership(arg0: { clerkId: any; organizationId: any; userId: any; role: any; createdAt: Date | undefined; updatedAt: Date | undefined; }) {
+    throw new Error('Method not implemented.');
   }
-  static deleteOrganizationMembership ( id: any )
-  {
-    throw new Error( 'Method not implemented.' );
+  static deleteOrganizationMembership(id: any) {
+    throw new Error('Method not implemented.');
   }
   /**
    * Get organization by Clerk ID
@@ -90,12 +88,10 @@ export class DatabaseQueries {
    */
   static async getUserByClerkId(clerkId: string) {
     try {
-      // Validate clerkId is provided
       if (!clerkId) {
         console.warn('getUserByClerkId called with undefined/empty clerkId');
         return null;
       }
-      
       const user = await db.user.findUnique({
         where: { clerkId },
       });
@@ -112,8 +108,6 @@ export class DatabaseQueries {
     clerkId: string;
     name: string;
     slug: string;
-    // Prisma will use the types from schema.prisma for metadata fields
-    // Ensure the structure of metadata matches your Prisma schema for Organization
     dotNumber?: string | null;
     mcNumber?: string | null;
     address?: string | null;
@@ -128,26 +122,12 @@ export class DatabaseQueries {
     isActive?: boolean;
   }) {
     try {
-      // Validate required fields
-      if (!data.clerkId) {
-        throw new Error('clerkId is required for organization upsert');
-      }
-      if (!data.name) {
-        throw new Error('name is required for organization upsert');
-      }
-      if (!data.slug) {
-        throw new Error('slug is required for organization upsert');
-      }
-
+      if (!data.clerkId) throw new Error('clerkId is required for organization upsert');
+      if (!data.name) throw new Error('name is required for organization upsert');
+      if (!data.slug) throw new Error('slug is required for organization upsert');
       const { clerkId } = data;
-      
-      // First, check if organization exists by clerkId
-      const existingOrg = await db.organization.findUnique({
-        where: { clerkId }
-      });
-
+      const existingOrg = await db.organization.findUnique({ where: { clerkId } });
       if (existingOrg) {
-        // Organization exists, update it without changing the slug to avoid conflicts
         const updateData = {
           name: data.name,
           dotNumber: data.dotNumber,
@@ -163,20 +143,16 @@ export class DatabaseQueries {
           billingEmail: data.billingEmail,
           isActive: data.isActive === undefined ? true : data.isActive,
         };
-        
         const organization = await db.organization.update({
           where: { clerkId },
           data: updateData,
         });
         return organization;
       } else {
-        // Organization doesn't exist, create new one with unique slug
-        // Pre-generate a unique slug before attempting to create
         let uniqueSlug = await generateUniqueOrgSlug(data.slug);
         let attempt = 0;
         const maxAttempts = 5;
         let lastError;
-        
         while (attempt < maxAttempts) {
           try {
             const orgDataForCreate = {
@@ -196,7 +172,6 @@ export class DatabaseQueries {
               billingEmail: data.billingEmail,
               isActive: data.isActive === undefined ? true : data.isActive,
             };
-            
             const organization = await db.organization.create({
               data: orgDataForCreate,
             });
@@ -212,8 +187,6 @@ export class DatabaseQueries {
                 (typeof target === 'string' && target === 'slug') ||
                 (Array.isArray(target) && target.includes('slug'))
               ) {
-                // Slug conflict, generate a new unique slug and try again
-                console.log(`🔄 Slug conflict on attempt ${attempt + 1}, generating new unique slug...`);
                 uniqueSlug = await generateUniqueOrgSlug(data.slug);
                 attempt++;
                 continue;
@@ -221,9 +194,6 @@ export class DatabaseQueries {
                 (typeof target === 'string' && target === 'clerkId') ||
                 (Array.isArray(target) && target.includes('clerkId'))
               ) {
-                // ClerkId conflict - this means the organization was just created by another process
-                // Return the existing organization
-                console.log(`✅ Organization with clerkId ${clerkId} was created by another process, fetching it...`);
                 const existingOrg = await db.organization.findUnique({
                   where: { clerkId }
                 });
@@ -245,7 +215,8 @@ export class DatabaseQueries {
 
   /**
    * Create or update user from Clerk webhook
-   */  static async upsertUser(data: {
+   */
+  static async upsertUser(data: {
     clerkId: string;
     organizationId: string;
     email: string;
@@ -258,34 +229,19 @@ export class DatabaseQueries {
   }) {
     try {
       const { clerkId, organizationId, ...updateData } = data;
-
-      // Validate required fields
-      if (!clerkId) {
-        throw new Error('clerkId is required for user upsert');
-      }
-      if (!organizationId) {
-        throw new Error('organizationId is required for user upsert');
-      }
-      if (!data.email) {
-        throw new Error('email is required for user upsert');
-      }
-
-      // Check if organization exists, if not, create a placeholder organization
+      if (!clerkId) throw new Error('clerkId is required for user upsert');
+      if (!organizationId) throw new Error('organizationId is required for user upsert');
+      if (!data.email) throw new Error('email is required for user upsert');
       let organizationExists = await db.organization.findUnique({
         where: { clerkId: organizationId },
       });
-      
       if (!organizationExists) {
-        console.log(`📝 Creating placeholder organization for ID: ${organizationId}`);
-        
-        // Try to create a placeholder organization with retry logic for race conditions
         let createAttempts = 0;
         const maxAttempts = 3;
         let lastError;
         while (!organizationExists && createAttempts < maxAttempts) {
           createAttempts++;
           try {
-            // Generate a unique slug for the placeholder org
             const baseSlug = `org-${organizationId.substring(0, 8)}`;
             const uniqueSlug = await generateUniqueOrgSlug(baseSlug);
             organizationExists = await db.organization.create({
@@ -299,20 +255,16 @@ export class DatabaseQueries {
                 isActive: true,
               },
             });
-            console.log(`✅ Placeholder organization created: ${organizationId}`);
             break;
           } catch (createError: any) {
             lastError = createError;
             if (createError?.code === 'P2002') {
-              console.log(`🔄 Unique constraint error, retrying slug for organization: ${organizationId}`);
               await new Promise(resolve => setTimeout(resolve, 100 * createAttempts));
               organizationExists = await db.organization.findUnique({ where: { clerkId: organizationId } });
               if (organizationExists) {
-                console.log(`✅ Found existing organization after race condition: ${organizationId}`);
                 break;
               }
             } else {
-              console.error(`❌ Non-recoverable error creating organization: ${createError.message}`);
               break;
             }
           }
@@ -321,11 +273,9 @@ export class DatabaseQueries {
           throw lastError || new Error(`Could not create or find organization with ID ${organizationId} after ${maxAttempts} attempts`);
         }
       }
-
       const userDataForUpdate = {
         ...updateData,
       };
-
       const userDataForCreate = {
         clerkId,
         email: data.email,
@@ -339,7 +289,6 @@ export class DatabaseQueries {
           connect: { id: organizationExists.id },
         },
       };
-
       const user = await db.user.upsert({
         where: { clerkId },
         update: userDataForUpdate,
@@ -357,28 +306,20 @@ export class DatabaseQueries {
    */
   static async deleteOrganization(clerkId: string) {
     try {
-      // Check if organization exists first
       const organization = await db.organization.findUnique({
         where: { clerkId },
       });
-      
       if (!organization) {
-        console.warn(`Organization with clerkId ${clerkId} does not exist, skipping delete.`);
         return { success: true, message: 'Organization already deleted or does not exist' };
       }
-      
       await db.organization.delete({
         where: { clerkId },
       });
-      console.log(`✅ Organization deleted successfully: ${clerkId}`);
       return { success: true, message: 'Organization deleted successfully' };
     } catch (error) {
-      // If the error is a Prisma P2025 (record does not exist), treat as success (idempotent)
       if (error instanceof PrismaClientKnownRequestError && error.code === 'P2025') {
-        console.warn(`Organization with clerkId ${clerkId} does not exist, skipping delete.`);
         return { success: true, message: 'Organization already deleted or does not exist' };
       }
-      console.error(`Error deleting organization ${clerkId}:`, error);
       return { success: false, message: `Failed to delete organization: ${error instanceof Error ? error.message : 'Unknown error'}` };
     }
   }
@@ -388,28 +329,20 @@ export class DatabaseQueries {
    */
   static async deleteUser(clerkId: string) {
     try {
-      // Check if user exists first
       const user = await db.user.findUnique({
         where: { clerkId },
       });
-      
       if (!user) {
-        console.warn(`User with clerkId ${clerkId} does not exist, skipping delete.`);
         return { success: true, message: 'User already deleted or does not exist' };
       }
-      
       await db.user.delete({
         where: { clerkId },
       });
-      console.log(`✅ User deleted successfully: ${clerkId}`);
       return { success: true, message: 'User deleted successfully' };
     } catch (error) {
-      // If the error is a Prisma P2025 (record does not exist), treat as success (idempotent)
       if (error instanceof PrismaClientKnownRequestError && error.code === 'P2025') {
-        console.warn(`User with clerkId ${clerkId} does not exist, skipping delete.`);
         return { success: true, message: 'User already deleted or does not exist' };
       }
-      console.error(`Error deleting user ${clerkId}:`, error);
       return { success: false, message: `Failed to delete user: ${error instanceof Error ? error.message : 'Unknown error'}` };
     }
   }

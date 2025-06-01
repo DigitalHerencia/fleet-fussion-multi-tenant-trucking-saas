@@ -2,7 +2,7 @@ import { authCache } from "@/lib/cache/auth-cache";
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { Webhook } from 'svix';
-import { db, DatabaseQueries, handleDatabaseError } from '@/lib/db';
+import { db, DatabaseQueries, handleDatabaseError } from '@/lib/database/db';
 import type {
   WebhookEventType,
   UserWebhookPayload,

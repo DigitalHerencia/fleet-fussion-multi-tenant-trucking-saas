@@ -13,6 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "@/components/ui/use-toast"
 import { updateLoadAction } from "@/lib/actions/loadActions"
+import { AddressFields } from "@/components/shared/AddressFields"
+import { ContactFields } from "@/components/shared/ContactFields"
 
 interface Driver {
   id: string
@@ -106,6 +108,24 @@ export function LoadForm({ drivers, vehicles, load, onClose }: LoadFormProps) {
     }
   }
 
+  const getOriginAddressValues = () => ({
+    address: load?.originAddress || "",
+    city: load?.originCity || "",
+    state: load?.originState || "",
+    zip: load?.originZip || "",
+  })
+  const getDestinationAddressValues = () => ({
+    address: load?.destinationAddress || "",
+    city: load?.destinationCity || "",
+    state: load?.destinationState || "",
+    zip: load?.destinationZip || "",
+  })
+  const getContactValues = () => ({
+    customerContact: load?.customerContact || "",
+    customerPhone: load?.customerPhone || "",
+    customerEmail: load?.customerEmail || "",
+  })
+
   return (
     <form onSubmit={handleSubmit}>
       <Tabs defaultValue="basic" className="w-full">
@@ -161,36 +181,7 @@ export function LoadForm({ drivers, vehicles, load, onClose }: LoadFormProps) {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="customerContact">Contact Person</Label>
-                  <Input
-                    id="customerContact"
-                    name="customerContact"
-                    defaultValue={load?.customerContact || ""}
-                    placeholder="e.g., John Smith"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="customerPhone">Phone</Label>
-                  <Input
-                    id="customerPhone"
-                    name="customerPhone"
-                    defaultValue={load?.customerPhone || ""}
-                    placeholder="e.g., 555-123-4567"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="customerEmail">Email</Label>
-                  <Input
-                    id="customerEmail"
-                    name="customerEmail"
-                    type="email"
-                    defaultValue={load?.customerEmail || ""}
-                    placeholder="e.g., john@example.com"
-                  />
-                </div>
-              </div>
+              <ContactFields values={getContactValues()} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -202,107 +193,20 @@ export function LoadForm({ drivers, vehicles, load, onClose }: LoadFormProps) {
               <CardDescription>Enter the pickup location details</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="originAddress">Address</Label>
-                <Input
-                  id="originAddress"
-                  name="originAddress"
-                  defaultValue={load?.originAddress || ""}
-                  placeholder="e.g., 123 Shipping Lane"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="originCity">City</Label>
-                  <Input
-                    id="originCity"
-                    name="originCity"
-                    defaultValue={load?.originCity || ""}
-                    placeholder="e.g., El Paso"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="originState">State</Label>
-                  <Input
-                    id="originState"
-                    name="originState"
-                    defaultValue={load?.originState || ""}
-                    placeholder="e.g., TX"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="originZip">ZIP Code</Label>
-                  <Input
-                    id="originZip"
-                    name="originZip"
-                    defaultValue={load?.originZip || ""}
-                    placeholder="e.g., 79901"
-                    required
-                  />
-                </div>
-              </div>
-
+              <AddressFields prefix="origin" values={getOriginAddressValues()} required />
               <div className="space-y-2">
                 <Label htmlFor="pickupDate">Pickup Date & Time</Label>
                 <Input id="pickupDate" name="pickupDate" type="datetime-local" defaultValue={load?.pickupDate || ""} />
               </div>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader>
               <CardTitle>Destination</CardTitle>
               <CardDescription>Enter the delivery location details</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="destinationAddress">Address</Label>
-                <Input
-                  id="destinationAddress"
-                  name="destinationAddress"
-                  defaultValue={load?.destinationAddress || ""}
-                  placeholder="e.g., 456 Receiving Blvd"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="destinationCity">City</Label>
-                  <Input
-                    id="destinationCity"
-                    name="destinationCity"
-                    defaultValue={load?.destinationCity || ""}
-                    placeholder="e.g., Albuquerque"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="destinationState">State</Label>
-                  <Input
-                    id="destinationState"
-                    name="destinationState"
-                    defaultValue={load?.destinationState || ""}
-                    placeholder="e.g., NM"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="destinationZip">ZIP Code</Label>
-                  <Input
-                    id="destinationZip"
-                    name="destinationZip"
-                    defaultValue={load?.destinationZip || ""}
-                    placeholder="e.g., 87102"
-                    required
-                  />
-                </div>
-              </div>
-
+              <AddressFields prefix="destination" values={getDestinationAddressValues()} required />
               <div className="space-y-2">
                 <Label htmlFor="deliveryDate">Delivery Date & Time</Label>
                 <Input

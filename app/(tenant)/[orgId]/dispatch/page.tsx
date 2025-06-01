@@ -5,7 +5,7 @@ import { listLoadsByOrg } from "@/lib/fetchers/dispatchFetchers"
 import { listDriversByOrg } from "@/lib/fetchers/driverFetchers"
 import { listVehiclesByOrg } from "@/lib/fetchers/vehicleFetchers"
 import { auth } from "@clerk/nextjs/server"
-import { DatabaseQueries } from "@/lib/db"
+import { DatabaseQueries } from "@/lib/database/db"
 
 
 async function DispatchData() {

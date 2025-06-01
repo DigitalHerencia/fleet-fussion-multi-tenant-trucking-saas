@@ -4,18 +4,14 @@
  */
 
 import { z } from "zod"
+import { addressSchema, contactSchema } from "./shared"
 
 // Location validation schema
 export const locationSchema = z.object({
   name: z.string().min(1, "Location name is required"),
-  address: z.string().min(1, "Address is required"),
-  city: z.string().min(1, "City is required"),
-  state: z.string().min(2, "State is required").max(2, "State must be 2 characters"),
-  zipCode: z.string().min(5, "Zip code must be at least 5 characters"),
+  ...addressSchema.shape,
   latitude: z.number().optional(),
   longitude: z.number().optional(),
-  contactName: z.string().optional(),
-  contactPhone: z.string().optional(),
   notes: z.string().optional(),
 })
 
@@ -26,10 +22,7 @@ export const customerSchema = z.object({
   contactName: z.string().optional(),
   email: z.string().email("Please enter a valid email").optional().or(z.literal("")),
   phone: z.string().optional(),
-  address: z.string().optional(),
-  city: z.string().optional(),
-  state: z.string().optional(),
-  zipCode: z.string().optional(),
+  ...addressSchema.partial().shape,
   mcNumber: z.string().optional(),
   dotNumber: z.string().optional(),
   creditLimit: z.number().optional(),

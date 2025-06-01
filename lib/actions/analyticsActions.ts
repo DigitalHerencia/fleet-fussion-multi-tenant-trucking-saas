@@ -1,12 +1,13 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-import prisma from "@/lib/db";
+import prisma from "@/lib/database/db";
 import { hasPermission } from "@/lib/auth/permissions";
+import { PermissionActions, ResourceTypes, SystemRoles } from "@/types/abac";
+import { ClerkOrganizationMetadata } from "@/types/auth";
 
 export interface AnalyticsActionResult {
   success: boolean;
-  error?: string;
   data?: any;
 }
 
@@ -17,7 +18,36 @@ export async function getFleetMetricsAction(orgId: string): Promise<AnalyticsAct
   try {
     const { userId } = await auth();
     if (!userId) {
-      return { success: false, error: "Unauthorized" };
+      return { success: false };
+    }
+    // Minimal UserContext for permission check
+    const userContext = {
+      userId,
+      organizationId: orgId,
+      name: "",
+      role: SystemRoles.VIEWER,
+      permissions: [],
+      email: "",
+      isActive: true,
+      onboardingComplete: true,
+      organizationMetadata: {
+        subscriptionTier: "free",
+        subscriptionStatus: "active",
+        maxUsers: 1,
+        features: [],
+        createdAt: new Date().toISOString(),
+        billingEmail: "",
+        settings: {
+          timezone: "America/Denver",
+          dateFormat: "MM/dd/yyyy",
+          distanceUnit: "miles",
+          fuelUnit: "gallons"
+        }
+      } satisfies ClerkOrganizationMetadata
+    };
+    const hasAccess = hasPermission(userContext, PermissionActions.READ, ResourceTypes.ORGANIZATION);
+    if (!hasAccess) {
+      return { success: false };
     }
 
     // Get fleet performance data
@@ -42,10 +72,7 @@ export async function getFleetMetricsAction(orgId: string): Promise<AnalyticsAct
     return { success: true, data: metrics };
   } catch (error) {
     console.error("Get fleet metrics error:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to get fleet metrics"
-    };
+    return { success: false };
   }
 }
 
@@ -56,7 +83,36 @@ export async function getLoadAnalyticsAction(orgId: string): Promise<AnalyticsAc
   try {
     const { userId } = await auth();
     if (!userId) {
-      return { success: false, error: "Unauthorized" };
+      return { success: false };
+    }
+    // Minimal UserContext for permission check
+    const userContext = {
+      userId,
+      organizationId: orgId,
+      name: "",
+      role: SystemRoles.VIEWER,
+      permissions: [],
+      email: "",
+      isActive: true,
+      onboardingComplete: true,
+      organizationMetadata: {
+        subscriptionTier: "free",
+        subscriptionStatus: "active",
+        maxUsers: 1,
+        features: [],
+        createdAt: new Date().toISOString(),
+        billingEmail: "",
+        settings: {
+          timezone: "America/Denver",
+          dateFormat: "MM/dd/yyyy",
+          distanceUnit: "miles",
+          fuelUnit: "gallons"
+        }
+      } satisfies ClerkOrganizationMetadata
+    };
+    const hasAccess = hasPermission(userContext, PermissionActions.READ, ResourceTypes.ORGANIZATION);
+    if (!hasAccess) {
+      return { success: false };
     }
 
     // Get load statistics
@@ -81,10 +137,7 @@ export async function getLoadAnalyticsAction(orgId: string): Promise<AnalyticsAc
     return { success: true, data: analytics };
   } catch (error) {
     console.error("Get load analytics error:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to get load analytics"
-    };
+    return { success: false };
   }
 }
 
@@ -100,7 +153,36 @@ export async function getFinancialMetricsAction(orgId: string): Promise<Analytic
   try {
     const { userId } = await auth();
     if (!userId) {
-      return { success: false, error: "Unauthorized" };
+      return { success: false };
+    }
+    // Minimal UserContext for permission check
+    const userContext = {
+      userId,
+      organizationId: orgId,
+      name: "",
+      role: SystemRoles.VIEWER,
+      permissions: [],
+      email: "",
+      isActive: true,
+      onboardingComplete: true,
+      organizationMetadata: {
+        subscriptionTier: "free",
+        subscriptionStatus: "active",
+        maxUsers: 1,
+        features: [],
+        createdAt: new Date().toISOString(),
+        billingEmail: "",
+        settings: {
+          timezone: "America/Denver",
+          dateFormat: "MM/dd/yyyy",
+          distanceUnit: "miles",
+          fuelUnit: "gallons"
+        }
+      } satisfies ClerkOrganizationMetadata
+    };
+    const hasAccess = hasPermission(userContext, PermissionActions.READ, ResourceTypes.ORGANIZATION);
+    if (!hasAccess) {
+      return { success: false };
     }
 
     // Get revenue from completed loads
@@ -121,10 +203,7 @@ export async function getFinancialMetricsAction(orgId: string): Promise<Analytic
     return { success: true };
   } catch (error) {
     console.error("Get financial metrics error:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to get financial metrics"
-    };
+    return { success: false };
   }
 }
 
@@ -135,7 +214,36 @@ export async function getComplianceAnalyticsAction(orgId: string): Promise<Analy
   try {
     const { userId } = await auth();
     if (!userId) {
-      return { success: false, error: "Unauthorized" };
+      return { success: false };
+    }
+    // Minimal UserContext for permission check
+    const userContext = {
+      userId,
+      organizationId: orgId,
+      name: "",
+      role: SystemRoles.VIEWER,
+      permissions: [],
+      email: "",
+      isActive: true,
+      onboardingComplete: true,
+      organizationMetadata: {
+        subscriptionTier: "free",
+        subscriptionStatus: "active",
+        maxUsers: 1,
+        features: [],
+        createdAt: new Date().toISOString(),
+        billingEmail: "",
+        settings: {
+          timezone: "America/Denver",
+          dateFormat: "MM/dd/yyyy",
+          distanceUnit: "miles",
+          fuelUnit: "gallons"
+        }
+      } satisfies ClerkOrganizationMetadata
+    };
+    const hasAccess = hasPermission(userContext, PermissionActions.READ, ResourceTypes.ORGANIZATION);
+    if (!hasAccess) {
+      return { success: false };
     }
 
     // Get compliance document statistics
@@ -165,9 +273,6 @@ export async function getComplianceAnalyticsAction(orgId: string): Promise<Analy
     return { success: true, data: analytics };
   } catch (error) {
     console.error("Get compliance analytics error:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to get compliance analytics"
-    };
+    return { success: false };
   }
 }

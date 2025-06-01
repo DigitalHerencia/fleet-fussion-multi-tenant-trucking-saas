@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { FileText, Download, Eye, MoreHorizontal } from "lucide-react"
 import { ColumnDef } from "@tanstack/react-table"
 import { ComplianceDocument } from "@/types/compliance"
+import { DocumentUpload, DocumentListEmpty } from "@/components/shared/DocumentUpload"
 
 // Define the Document type
 interface Document {
@@ -106,43 +107,44 @@ export function ComplianceDocuments({ documents }: ComplianceDocumentsProps) {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold">Compliance Documents</h2>
-        <Button>
-          <FileText className="mr-2 h-4 w-4" />
-          Upload Document
-        </Button>
+        <DocumentUpload label="Upload Document" description="Add compliance documents" />
       </div>
 
       {/* Document list would go here */}
       <div className="grid gap-4">
-        {documents.map((doc) => (
-          <div key={doc.id} className="border rounded-md p-4 flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-muted-foreground" />
-              <div>
-                <h3 className="font-medium">{doc.name}</h3>
-                <p className="text-sm text-muted-foreground">
-                  Last updated: {new Date(doc.lastUpdated).toLocaleDateString()}
-                </p>
+        {documents.length === 0 ? (
+          <DocumentListEmpty />
+        ) : (
+          documents.map((doc) => (
+            <div key={doc.id} className="border rounded-md p-4 flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <FileText className="h-5 w-5 text-muted-foreground" />
+                <div>
+                  <h3 className="font-medium">{doc.name}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Last updated: {new Date(doc.lastUpdated).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge
+                  className={
+                    doc.status === "valid"
+                      ? "bg-green-100 text-green-800"
+                      : doc.status === "expiring"
+                      ? "bg-amber-100 text-amber-800"
+                      : "bg-red-100 text-red-800"
+                  }
+                >
+                  {doc.status.charAt(0).toUpperCase() + doc.status.slice(1)}
+                </Badge>
+                <Button variant="ghost" size="icon">
+                  <Download className="h-4 w-4" />
+                </Button>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Badge
-                className={
-                  doc.status === "valid"
-                    ? "bg-green-100 text-green-800"
-                    : doc.status === "expiring"
-                    ? "bg-amber-100 text-amber-800"
-                    : "bg-red-100 text-red-800"
-                }
-              >
-                {doc.status.charAt(0).toUpperCase() + doc.status.slice(1)}
-              </Badge>
-              <Button variant="ghost" size="icon">
-                <Download className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   )

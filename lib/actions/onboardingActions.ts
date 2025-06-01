@@ -2,7 +2,7 @@
 
 import { currentUser } from '@clerk/nextjs/server';
 import { clerkClient } from '@clerk/nextjs/server';
-import { db, handleDatabaseError } from '@/lib/db';
+import { db, handleDatabaseError } from '@/lib/database/db';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import type { 
@@ -14,6 +14,7 @@ import type {
 } from '@/types/onboarding';
 import { SystemRoles } from '@/types/abac';
 import type { OnboardingData, SetClerkMetadataResult } from '@/types/auth';
+import { handleError } from "@/lib/errors/handleError";
 
 // Infer the resolved client type
 type ResolvedClerkClient = Awaited<ReturnType<typeof clerkClient>>;

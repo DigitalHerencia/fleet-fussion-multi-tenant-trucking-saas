@@ -2,7 +2,7 @@
 'use server';
 
 import { auth } from '@clerk/nextjs/server';
-import { db } from '@/lib/db';
+import { db } from '@/lib/database/db';
 import { revalidatePath } from 'next/cache';
 import type { CreateLoadInput, UpdateLoadInput } from '@/schemas/dispatch';
 

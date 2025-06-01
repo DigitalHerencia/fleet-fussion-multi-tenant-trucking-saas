@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { auth } from "@clerk/nextjs/server";
-import  prisma  from "@/lib/db";
+import  prisma  from "@/lib/database/db";
 import { VehicleFormSchema, VehicleUpdateStatusSchema, VehicleMaintenanceSchema } from "@/schemas/vehicles";
 import type { VehicleFormData, VehicleUpdateStatusData, VehicleMaintenanceData } from "@/schemas/vehicles";
 import { hasPermission } from "@/lib/auth/permissions";

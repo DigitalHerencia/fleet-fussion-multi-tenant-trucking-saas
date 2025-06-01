@@ -1,7 +1,7 @@
 import { HosLog } from "./../../types/compliance";
 'use server';
 
-import prisma from '@/lib/db';
+import prisma from '@/lib/database/db';
 import { auth } from '@clerk/nextjs/server';
 import {
   complianceDocumentFilterSchema,
@@ -12,6 +12,7 @@ import {
 } from '@/schemas/compliance';
 import { parsePermission } from '@/lib/auth/permissions';
 import { z } from 'zod';
+import { handleError } from "@/lib/errors/handleError";
 
 // Document Fetchers
 export async function getComplianceDocuments(
@@ -110,10 +111,7 @@ export async function getComplianceDocuments(
     };
   } catch (error) {
     console.error('Error fetching compliance documents:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to fetch compliance documents'
-    };
+    return handleError(error, "Compliance Document Fetcher")
   }
 }
 
@@ -178,10 +176,7 @@ export async function getHOSLogs(
     };
   } catch (error) {
     console.error('Error fetching HOS logs:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to fetch HOS logs'
-    };
+    return handleError(error, "HOS Logs Fetcher")
   }
 }
 

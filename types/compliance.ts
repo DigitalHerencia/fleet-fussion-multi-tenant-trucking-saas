@@ -410,3 +410,9 @@ export interface AuditFinding {
   evidence?: string[]
   notes?: string
 }
+
+export const DOCUMENT_STATUS_LABELS = {
+  valid: "Active",
+  expiring: "Expiring Soon",
+  expired: "Expired",
+}

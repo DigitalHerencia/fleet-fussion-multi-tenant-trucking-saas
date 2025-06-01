@@ -5,6 +5,11 @@
  * for the FleetFusion multi-tenant system with aligned type structure
  */
 
+// NOTE: All ABAC/auth types (UserRole, Permission, ResourceType, etc.)
+// are now defined in types/auth.ts or types/abac.ts. Do not define or export them here.
+//
+// IMPORTANT: If you need UserRole, Permission, ResourceType, etc., import them from '@/types/auth' or '@/types/abac'.
+
 import { 
   SystemRole, 
   SystemRoles, 
@@ -15,6 +20,9 @@ import {
   getPermissionsForRole as abacGetPermissionsForRole
 } from '@/types/abac';
 import type { UserContext } from '@/types/auth';
+
+
+
 
 /**
  * Create a permission string from action and resource

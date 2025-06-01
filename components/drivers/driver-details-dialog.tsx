@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Phone, Mail, Calendar, FileText, Truck, MapPin, AlertTriangle } from "lucide-react"
 import { formatDate } from "@/lib/utils"
 import Link from "next/link"
+import { DocumentUpload, DocumentListEmpty } from "@/components/shared/DocumentUpload"
 
 interface Driver {
   id: string
@@ -307,39 +308,8 @@ export function DriverDetailsDialog({ driver, recentLoads = [], isOpen, onClose 
                 <CardDescription>Manage documents related to this driver</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <div className="space-y-1">
-                    <h4 className="font-medium">Upload Document</h4>
-                    <p className="text-sm text-muted-foreground">Add license, medical card, or other documents</p>
-                  </div>
-                  <Button variant="outline">
-                    <FileText className="h-4 w-4 mr-2" />
-                    Upload
-                  </Button>
-                </div>
-
-                <div className="space-y-2">
-                  {(isLicenseExpiringSoon || isMedicalCardExpiringSoon) && (
-                    <div className="flex items-center gap-2 p-3 border rounded-md bg-yellow-50">
-                      <AlertTriangle className="h-5 w-5 text-yellow-600" />
-                      <span className="text-sm text-yellow-800">
-                        {isLicenseExpiringSoon && isMedicalCardExpiringSoon
-                          ? "License and medical card are expiring soon"
-                          : isLicenseExpiringSoon
-                            ? "License is expiring soon"
-                            : "Medical card is expiring soon"}
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="border rounded-md p-4">
-                    <div className="text-center text-muted-foreground">
-                      <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                      <p>No documents uploaded yet</p>
-                      <p className="text-sm">Upload documents to keep track of important paperwork</p>
-                    </div>
-                  </div>
-                </div>
+                <DocumentUpload label="Upload Document" description="Add license, medical card, or other documents" />
+                <DocumentListEmpty />
               </CardContent>
             </Card>
           </TabsContent>

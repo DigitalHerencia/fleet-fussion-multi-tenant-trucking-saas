@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-import prisma from "@/lib/db";
+import prisma from "@/lib/database/db";
 import { loadFilterSchema, type LoadFilterInput } from "@/schemas/dispatch";
 import type { Load, LoadStatus, LoadStatusEvent, TrackingUpdate, LoadAlert } from "@/types/dispatch";
 

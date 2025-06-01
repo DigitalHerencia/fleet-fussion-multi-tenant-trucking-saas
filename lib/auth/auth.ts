@@ -1,7 +1,7 @@
 "use server"
 
 import { auth, currentUser } from "@clerk/nextjs/server"
-import { DatabaseQueries } from "@/lib/database"
+import { DatabaseQueries } from "@/lib/database/db"
 import { ClerkUserMetadata, ClerkOrganizationMetadata, UserContext } from "@/types/auth"
 import { redirect } from "next/navigation"
 
@@ -81,3 +81,5 @@ export async function requireAuth() {
   const user = await getCurrentUser()
   if (!user) redirect("/login")
 }
+
+

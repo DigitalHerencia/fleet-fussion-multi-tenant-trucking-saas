@@ -4,6 +4,7 @@
  */
 
 import { z } from "zod"
+import { addressSchema, contactSchema } from "./shared"
 
 // Compliance document validation schemas
 export const createComplianceDocumentSchema = z.object({

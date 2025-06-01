@@ -4,23 +4,42 @@ import { UserContext } from "@/types/auth";
 import { auth } from "@clerk/nextjs/server"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
-
-import prisma from "@/lib/db"
-import { 
-  driverFormSchema, 
-  driverUpdateSchema, 
-  driverStatusUpdateSchema,
-  driverAssignmentSchema,
-  driverBulkUpdateSchema
-} from "@/schemas/drivers"
-import { hasPermission } from "@/lib/auth/permissions"
-import type { 
-  Driver, 
-  DriverFormData, 
-  DriverUpdateData, 
+import type {
+  Driver,
+  DriverFormData,
+  DriverUpdateData,
   DriverActionResult,
   DriverBulkActionResult
 } from "@/types/drivers"
+import { db } from "@/lib/database/db"
+import { logAuditEvent } from "@/lib/actions/auditActions"
+import {
+  driverFormSchema,
+  driverUpdateSchema,
+  driverStatusUpdateSchema,
+  driverDocumentSchema,
+  hosEntrySchema,
+  driverAssignmentSchema,
+  driverBulkUpdateSchema
+} from "@/schemas/drivers"
+
+// Helper function to convert Prisma Driver to Driver interface
+function convertPrismaDriverToDriver(prismaDriver: any): Driver {
+  return {
+    ...prismaDriver,
+    tenantId: prismaDriver.tenantId || prismaDriver.organizationId,
+    address: prismaDriver.address ? JSON.parse(prismaDriver.address) : undefined,
+    endorsements: prismaDriver.endorsements ? JSON.parse(prismaDriver.endorsements) : undefined,
+    restrictions: prismaDriver.restrictions ? JSON.parse(prismaDriver.restrictions) : undefined,
+    emergencyContact: prismaDriver.emergencyContact ? JSON.parse(prismaDriver.emergencyContact) : undefined,
+    tags: prismaDriver.tags ? JSON.parse(prismaDriver.tags) : undefined,
+    payRate: prismaDriver.payRate ? Number(prismaDriver.payRate) : undefined,
+    createdAt: prismaDriver.createdAt.toISOString(),
+    updatedAt: prismaDriver.updatedAt.toISOString(),
+    hireDate: prismaDriver.hireDate?.toISOString() || '',
+    medicalCardExpiration: prismaDriver.medicalCardExpiration?.toISOString() || ''
+  } as Driver
+}
 
 // ================== Core CRUD Operations ==================
 
@@ -45,7 +64,7 @@ export async function createDriverAction(
 
     // Validate input data
     const validatedData = driverFormSchema.parse(data)    // Check for duplicate CDL number within tenant
-    const existingDriver = await prisma.driver.findFirst({
+    const existingDriver = await db.driver.findFirst({
       where: {
         organizationId: tenantId,
         licenseNumber: validatedData.cdlNumber,
@@ -62,7 +81,7 @@ export async function createDriverAction(
         code: "DUPLICATE_CDL" 
       }
     }    // Check for duplicate email within tenant
-    const existingEmail = await prisma.driver.findFirst({
+    const existingEmail = await db.driver.findFirst({
       where: {
         organizationId: tenantId,
         email: validatedData.email,
@@ -79,7 +98,7 @@ export async function createDriverAction(
         code: "DUPLICATE_EMAIL" 
       }
     }    // Create driver record
-    const newDriver = await prisma.driver.create({
+    const newDriver = await db.driver.create({
       data: {
         organizationId: tenantId,
         firstName: validatedData.firstName,
@@ -110,6 +129,7 @@ export async function createDriverAction(
       return { success: false, error: "Failed to create driver", code: "CREATE_FAILED" }
     }
 
+    await logAuditEvent('driver.created', 'driver', newDriver.id, { driverName: `${newDriver.firstName} ${newDriver.lastName}`, cdlNumber: newDriver.licenseNumber })
     revalidatePath(`/dashboard/${tenantId}/drivers`)
     
     return { 
@@ -146,7 +166,7 @@ export async function updateDriverAction(
     }
 
     // Get existing driver to check permissions
-    const existingDriver = await prisma.driver.findUnique({
+    const existingDriver = await db.driver.findUnique({
       where: { id: driverId }
     })
 
@@ -184,7 +204,7 @@ export async function updateDriverAction(
     if (validatedData.tags !== undefined) updateData.tags = validatedData.tags ? JSON.stringify(validatedData.tags) : null
 
     // Update driver
-    const updatedDriver = await prisma.driver.update({
+    const updatedDriver = await db.driver.update({
       where: { id: driverId },
       data: updateData
     })
@@ -193,7 +213,7 @@ export async function updateDriverAction(
       return { success: false, error: "Failed to update driver", code: "UPDATE_FAILED" }
     }
 
-
+    await logAuditEvent('driver.updated', 'driver', driverId, { updatedFields: Object.keys(updateData).filter(key => key !== 'updatedAt' && key !== 'updatedBy') })
     return { 
       success: true, 
       data: updatedDriver as unknown as Driver
@@ -221,7 +241,7 @@ export async function deleteDriverAction(driverId: string): Promise<DriverAction
     }
 
     // Get existing driver to check permissions
-    const existingDriver = await prisma.driver.findUnique({
+    const existingDriver = await db.driver.findUnique({
       where: { id: driverId }
     })
 
@@ -235,7 +255,7 @@ export async function deleteDriverAction(driverId: string): Promise<DriverAction
 
 
     // Soft delete (deactivate) driver
-    const deletedDriver = await prisma.driver.update({
+    const deletedDriver = await db.driver.update({
       where: { id: driverId },
       data: {
         status: 'terminated',
@@ -248,6 +268,7 @@ export async function deleteDriverAction(driverId: string): Promise<DriverAction
       return { success: false, error: "Failed to delete driver", code: "DELETE_FAILED" }
     }
 
+    await logAuditEvent('driver.deleted', 'driver', driverId)
     
     return { success: true }
 
@@ -281,7 +302,7 @@ export async function updateDriverStatusAction(
     }
 
     // Get existing driver
-    const existingDriver = await prisma.driver.findUnique({
+    const existingDriver = await db.driver.findUnique({
       where: { id: driverId }
     })
 
@@ -309,11 +330,12 @@ export async function updateDriverStatusAction(
       updateData.currentLocation = JSON.stringify(validatedData.location)
     }
 
-    const updatedDriver = await prisma.driver.update({
+    const updatedDriver = await db.driver.update({
       where: { id: driverId },
       data: updateData
     })
 
+    await logAuditEvent('driver.statusUpdated', 'driver', driverId, { status: validatedData.status, availabilityStatus: validatedData.availabilityStatus })
     return { 
       success: true, 
       data: updatedDriver as unknown as Driver
@@ -359,7 +381,7 @@ export async function bulkUpdateDriversAction(
     for (const driverId of validatedData.driverIds) {
       try {
         // Get driver to check permissions
-        const driver = await prisma.driver.findUnique({
+        const driver = await db.driver.findUnique({
           where: { id: driverId }
         })
 
@@ -383,7 +405,7 @@ export async function bulkUpdateDriversAction(
         if (validatedData.updates.tags) updateData.tags = JSON.stringify(validatedData.updates.tags)
 
         // Update driver
-        await prisma.driver.update({
+        await db.driver.update({
           where: { id: driverId },
           data: updateData
         })
@@ -440,7 +462,7 @@ export async function assignDriverAction(
     const validatedData = driverAssignmentSchema.parse(assignmentData)
 
     // Get driver to check permissions
-    const driver = await prisma.driver.findUnique({
+    const driver = await db.driver.findUnique({
       where: { id: validatedData.driverId }
     })
 
@@ -486,7 +508,7 @@ export async function unassignDriverAction(driverId: string): Promise<DriverActi
     }
 
     // Get driver
-    const driver = await prisma.driver.findUnique({
+    const driver = await db.driver.findUnique({
       where: { id: driverId }
     })
 

@@ -66,7 +66,7 @@ model Organization {
   clerkId            String             @unique @map("clerk_id")
   name               String
   slug               String             @unique
-  dotNumber          String?            @map("dot_number")
+  dotNumber          String?
   mcNumber           String?            @map("mc_number")
   address            String?
   city               String?
@@ -95,6 +95,8 @@ model Organization {
   @@map("organizations")
   @@index([clerkId], name: "organizations_clerk_id_idx")
   @@index([slug], name: "organizations_slug_idx")
+  IftaFuelPurchase IftaFuelPurchase[]
+  IftaTrip IftaTrip[]
 }
 
 model User {
@@ -155,6 +157,8 @@ model Vehicle {
   loads               Load[]               @relation("VehicleLoads")
   trailerLoads        Load[]               @relation("TrailerLoads")
   complianceDocuments ComplianceDocument[]
+  iftaTrips         IftaTrip[]         @relation("VehicleIftaTrips")
+  iftaFuelPurchases IftaFuelPurchase[] @relation("VehicleIftaFuelPurchases")
 
   @@map("vehicles")
   @@index([organizationId], name: "vehicles_organization_id_idx")
@@ -380,4 +384,48 @@ model WebhookEvent {
   @@index([userId], name: "webhook_events_user_id_idx")
   @@index([status], name: "webhook_events_status_idx")
   @@index([createdAt], name: "webhook_events_created_at_idx")
+}
+
+model IftaTrip {
+  id              String    @id @default(uuid())
+  organizationId  String    @map("organization_id")
+  vehicleId       String    @map("vehicle_id")
+  date            DateTime  @map("date")
+  distance        Int       @map("distance")
+  jurisdiction    String    @map("jurisdiction")
+  fuelUsed        Decimal?  @db.Decimal(10, 3) @map("fuel_used")
+  notes           String?   @map("notes")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  vehicle         Vehicle      @relation("VehicleIftaTrips", fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@map("ifta_trips")
+  @@index([organizationId], name: "ifta_trips_organization_id_idx")
+  @@index([vehicleId], name: "ifta_trips_vehicle_id_idx")
+  @@index([date], name: "ifta_trips_date_idx")
+}
+
+model IftaFuelPurchase {
+  id              String    @id @default(uuid())
+  organizationId  String    @map("organization_id")
+  vehicleId       String    @map("vehicle_id")
+  date            DateTime  @map("date")
+  jurisdiction    String    @map("jurisdiction")
+  gallons         Decimal   @db.Decimal(10, 3) @map("gallons")
+  amount          Decimal   @db.Decimal(10, 2) @map("amount")
+  vendor          String?   @map("vendor")
+  receiptNumber   String?   @map("receipt_number")
+  notes           String?   @map("notes")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  vehicle         Vehicle      @relation("VehicleIftaFuelPurchases", fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@map("ifta_fuel_purchases")
+  @@index([organizationId], name: "ifta_fuel_purchases_organization_id_idx")
+  @@index([vehicleId], name: "ifta_fuel_purchases_vehicle_id_idx")
+  @@index([date], name: "ifta_fuel_purchases_date_idx")
 }

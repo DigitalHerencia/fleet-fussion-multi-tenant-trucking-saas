@@ -2,7 +2,7 @@
 
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
-import prisma from "@/lib/db";
+import prisma from "@/lib/database/db";
 import { hasPermission } from "@/lib/auth/permissions";
 
 export interface DashboardActionResult {
