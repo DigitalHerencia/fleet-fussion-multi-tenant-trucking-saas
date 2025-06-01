@@ -20,7 +20,14 @@ export default function SignUpPage() {
   // Redirect already signed-in users away from sign-up page
   if (isSignedIn && isUserLoaded && user) {
     router.replace("/onboarding");
-    return null;
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-black px-4 py-12 sm:px-6 lg:px-8">
+        <div className="w-full max-w-md space-y-8 text-center">
+          <h1 className="text-2xl font-bold text-white">Redirecting...</h1>
+          <p className="text-gray-400">You are already signed in. Redirecting to onboarding.</p>
+        </div>
+      </div>
+    );
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -50,9 +57,11 @@ export default function SignUpPage() {
       if (res.status === "complete") {
         await setActive({ session: res.createdSessionId });
         router.replace("/onboarding");
+        return;
       } else {
         // Handle email verification flow
         router.replace("/verify-email");
+        return;
       }
     } catch (err: any) {
       console.error("Sign up error:", err);
@@ -168,4 +177,4 @@ export default function SignUpPage() {
       </div>
     </div>
   );
-} 
+}

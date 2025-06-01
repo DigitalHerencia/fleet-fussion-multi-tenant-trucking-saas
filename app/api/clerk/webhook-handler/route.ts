@@ -54,7 +54,9 @@ async function handleClerkEvent(eventType: WebhookEventType, data: any) {
     }
     case 'user.deleted': {
       const user: UserWebhookPayload = data;
-      await DatabaseQueries.deleteUser(user.id);
+      console.log('[Webhook] user.deleted event received:', { clerkId: user.id });
+      const result = await DatabaseQueries.deleteUser(user.id);
+      console.log('[Webhook] user.deleted DB result:', result);
       authCache.invalidateUser(user.id);
       break;
     }
@@ -83,7 +85,9 @@ async function handleClerkEvent(eventType: WebhookEventType, data: any) {
     }
     case 'organization.deleted': {
       const org: OrganizationWebhookPayload = data;
-      await DatabaseQueries.deleteOrganization(org.id);
+      console.log('[Webhook] organization.deleted event received:', { clerkId: org.id });
+      const result = await DatabaseQueries.deleteOrganization(org.id);
+      console.log('[Webhook] organization.deleted DB result:', result);
       authCache.invalidateOrganization(org.id);
       break;
     }
@@ -94,6 +98,7 @@ async function handleClerkEvent(eventType: WebhookEventType, data: any) {
       const orgId = membership.organization?.id;
       const email = getUserEmail(membership, eventType);
       if (!userId || !orgId || !email) throw new Error('Membership event missing user/org/email');
+      // Upsert user (ensure user exists)
       await DatabaseQueries.upsertUser({
         clerkId: userId,
         organizationId: orgId,
@@ -104,14 +109,27 @@ async function handleClerkEvent(eventType: WebhookEventType, data: any) {
         isActive: true,
         onboardingComplete: true,
       });
+      // Upsert organization membership (join table)
+      await DatabaseQueries.upsertOrganizationMembership({
+        organizationClerkId: orgId,
+        userClerkId: userId,
+        role: membership.role,
+        createdAt: membership.created_at ? new Date(membership.created_at) : undefined,
+        updatedAt: membership.updated_at ? new Date(membership.updated_at) : undefined,
+      });
       authCache.invalidateUser(userId);
       break;
     }
     case 'organizationMembership.deleted': {
       const membership: OrganizationMembershipWebhookPayload = data;
       const userId = membership.public_user_data?.user_id;
-      if (userId) {
-        await DatabaseQueries.deleteUser(userId);
+      const orgId = membership.organization?.id;
+      if (userId && orgId) {
+        // Remove organization membership (do NOT delete user)
+        await DatabaseQueries.deleteOrganizationMembership({
+          organizationClerkId: orgId,
+          userClerkId: userId,
+        });
         authCache.invalidateUser(userId);
       }
       break;

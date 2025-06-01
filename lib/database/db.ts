@@ -63,12 +63,82 @@ async function generateUniqueOrgSlug(baseSlug: string): Promise<string> {
 
 // Type-safe database queries helper (rewritten for Prisma)
 export class DatabaseQueries {
-  static upsertOrganizationMembership(arg0: { clerkId: any; organizationId: any; userId: any; role: any; createdAt: Date | undefined; updatedAt: Date | undefined; }) {
-    throw new Error('Method not implemented.');
+  /**
+   * Upsert (create or update) an organization membership from Clerk webhook
+   * Looks up internal org/user IDs by Clerk IDs, upserts membership, sets role and timestamps
+   */
+  static async upsertOrganizationMembership({ organizationClerkId, userClerkId, role, createdAt, updatedAt }: {
+    organizationClerkId: string;
+    userClerkId: string;
+    role: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+  }) {
+    try {
+      // Look up internal IDs
+      const organization = await db.organization.findUnique({ where: { clerkId: organizationClerkId } });
+      if (!organization) throw new Error(`Organization not found for clerkId: ${organizationClerkId}`);
+      const user = await db.user.findUnique({ where: { clerkId: userClerkId } });
+      if (!user) throw new Error(`User not found for clerkId: ${userClerkId}`);
+      // Upsert membership (unique on orgId+userId)
+      const membership = await db.organizationMembership.upsert({
+        where: {
+          // Composite unique constraint name is org_user_unique, so use { organizationId, userId }
+          org_user_unique: {
+            organizationId: organization.id,
+            userId: user.id,
+          },
+        },
+        update: {
+          role,
+          updatedAt: updatedAt || new Date(),
+        },
+        create: {
+          organizationId: organization.id,
+          userId: user.id,
+          role,
+          createdAt: createdAt || new Date(),
+          updatedAt: updatedAt || new Date(),
+        },
+      });
+      return membership;
+    } catch (error) {
+      console.error('Error in upsertOrganizationMembership:', error);
+      handleDatabaseError(error);
+    }
   }
-  static deleteOrganizationMembership(id: any) {
-    throw new Error('Method not implemented.');
+
+  /**
+   * Delete an organization membership (by orgClerkId and userClerkId)
+   */
+  static async deleteOrganizationMembership({ organizationClerkId, userClerkId }: {
+    organizationClerkId: string;
+    userClerkId: string;
+  }) {
+    try {
+      const organization = await db.organization.findUnique({ where: { clerkId: organizationClerkId } });
+      if (!organization) throw new Error(`Organization not found for clerkId: ${organizationClerkId}`);
+      const user = await db.user.findUnique({ where: { clerkId: userClerkId } });
+      if (!user) throw new Error(`User not found for clerkId: ${userClerkId}`);
+      await db.organizationMembership.delete({
+        where: {
+          org_user_unique: {
+            organizationId: organization.id,
+            userId: user.id,
+          },
+        },
+      });
+      return { success: true };
+    } catch (error) {
+      // If not found, treat as idempotent
+      if (error instanceof PrismaClientKnownRequestError && error.code === 'P2025') {
+        return { success: true };
+      }
+      console.error('Error in deleteOrganizationMembership:', error);
+      handleDatabaseError(error);
+    }
   }
+
   /**
    * Get organization by Clerk ID
    */
@@ -214,11 +284,10 @@ export class DatabaseQueries {
   }
 
   /**
-   * Create or update user from Clerk webhook
+   * Create or update user from Clerk webhook (no organization connection)
    */
   static async upsertUser(data: {
     clerkId: string;
-    organizationId: string;
     email: string;
     firstName?: string | null;
     lastName?: string | null;
@@ -226,55 +295,27 @@ export class DatabaseQueries {
     isActive?: boolean;
     onboardingComplete: boolean;
     lastLogin?: Date | null;
+    organizationId?: string | null; // Optional, can be null
   }) {
     try {
-      const { clerkId, organizationId, ...updateData } = data;
+      const { clerkId, ...updateData } = data;
       if (!clerkId) throw new Error('clerkId is required for user upsert');
-      if (!organizationId) throw new Error('organizationId is required for user upsert');
       if (!data.email) throw new Error('email is required for user upsert');
-      let organizationExists = await db.organization.findUnique({
-        where: { clerkId: organizationId },
-      });
-      if (!organizationExists) {
-        let createAttempts = 0;
-        const maxAttempts = 3;
-        let lastError;
-        while (!organizationExists && createAttempts < maxAttempts) {
-          createAttempts++;
-          try {
-            const baseSlug = `org-${organizationId.substring(0, 8)}`;
-            const uniqueSlug = await generateUniqueOrgSlug(baseSlug);
-            organizationExists = await db.organization.create({
-              data: {
-                clerkId: organizationId,
-                name: `Organization ${organizationId.substring(0, 8)}`,
-                slug: uniqueSlug,
-                subscriptionTier: 'free',
-                subscriptionStatus: 'trial',
-                maxUsers: 5,
-                isActive: true,
-              },
-            });
-            break;
-          } catch (createError: any) {
-            lastError = createError;
-            if (createError?.code === 'P2002') {
-              await new Promise(resolve => setTimeout(resolve, 100 * createAttempts));
-              organizationExists = await db.organization.findUnique({ where: { clerkId: organizationId } });
-              if (organizationExists) {
-                break;
-              }
-            } else {
-              break;
-            }
-          }
-        }
-        if (!organizationExists) {
-          throw lastError || new Error(`Could not create or find organization with ID ${organizationId} after ${maxAttempts} attempts`);
+
+      // Validate organizationId if provided
+      let validOrganizationId: string | null = null;
+      if (data.organizationId) {
+        const org = await db.organization.findUnique({ where: { id: data.organizationId } });
+        if (org) {
+          validOrganizationId = data.organizationId;
+        } else {
+          validOrganizationId = null;
         }
       }
+
       const userDataForUpdate = {
         ...updateData,
+        organizationId: validOrganizationId,
       };
       const userDataForCreate = {
         clerkId,
@@ -285,10 +326,9 @@ export class DatabaseQueries {
         isActive: data.isActive === undefined ? true : data.isActive,
         onboardingComplete: data.onboardingComplete === undefined ? false : data.onboardingComplete,
         lastLogin: data.lastLogin,
-        organization: {
-          connect: { id: organizationExists.id },
-        },
+        organizationId: validOrganizationId,
       };
+
       const user = await db.user.upsert({
         where: { clerkId },
         update: userDataForUpdate,
@@ -306,20 +346,24 @@ export class DatabaseQueries {
    */
   static async deleteOrganization(clerkId: string) {
     try {
+      console.log('[DB] deleteOrganization called with clerkId:', clerkId);
       const organization = await db.organization.findUnique({
         where: { clerkId },
       });
       if (!organization) {
+        console.warn(`[DB] Organization with clerkId ${clerkId} does not exist, skipping delete.`);
         return { success: true, message: 'Organization already deleted or does not exist' };
       }
       await db.organization.delete({
         where: { clerkId },
       });
+      console.log(`[DB] Organization deleted successfully: ${clerkId}`);
       return { success: true, message: 'Organization deleted successfully' };
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError && error.code === 'P2025') {
         return { success: true, message: 'Organization already deleted or does not exist' };
       }
+      console.error(`[DB] Error deleting organization ${clerkId}:`, error);
       return { success: false, message: `Failed to delete organization: ${error instanceof Error ? error.message : 'Unknown error'}` };
     }
   }
@@ -329,20 +373,24 @@ export class DatabaseQueries {
    */
   static async deleteUser(clerkId: string) {
     try {
+      console.log('[DB] deleteUser called with clerkId:', clerkId);
       const user = await db.user.findUnique({
         where: { clerkId },
       });
       if (!user) {
+        console.warn(`[DB] User with clerkId ${clerkId} does not exist, skipping delete.`);
         return { success: true, message: 'User already deleted or does not exist' };
       }
       await db.user.delete({
         where: { clerkId },
       });
+      console.log(`[DB] User deleted successfully: ${clerkId}`);
       return { success: true, message: 'User deleted successfully' };
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError && error.code === 'P2025') {
         return { success: true, message: 'User already deleted or does not exist' };
       }
+      console.error(`[DB] Error deleting user ${clerkId}:`, error);
       return { success: false, message: `Failed to delete user: ${error instanceof Error ? error.message : 'Unknown error'}` };
     }
   }

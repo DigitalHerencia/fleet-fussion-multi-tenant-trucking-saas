@@ -57,25 +57,27 @@ export async function submitOnboardingStepAction(step: string, data: OnboardingS
       case 'company':
         const companyData = data as CompanySetupData;
         if (dbUser.role === 'admin' || dbUser.role === 'manager') {
-          await db.organization.update({
-            where: { id: dbUser.organizationId },
-            data: {
-              dotNumber: companyData.dotNumber,
-              mcNumber: companyData.mcNumber,
-              address: companyData.address,
-              city: companyData.city,
-              state: companyData.state,
-              zip: companyData.zip,
-              phone: companyData.phone,
-              settings: {
-                ...dbUser.organization.settings as object,
-                timezone: companyData.timezone,
-                dateFormat: companyData.dateFormat,
-                distanceUnit: companyData.distanceUnit,
-                fuelUnit: companyData.fuelUnit
+          if (dbUser.organizationId) { // Ensure organizationId is not null
+            await db.organization.update({
+              where: { id: dbUser.organizationId },
+              data: {
+                dotNumber: companyData.dotNumber,
+                mcNumber: companyData.mcNumber,
+                address: companyData.address,
+                city: companyData.city,
+                state: companyData.state,
+                zip: companyData.zip,
+                phone: companyData.phone,
+                settings: {
+                  ...(dbUser.organization?.settings as object || {}),
+                  timezone: companyData.timezone,
+                  dateFormat: companyData.dateFormat,
+                  distanceUnit: companyData.distanceUnit,
+                  fuelUnit: companyData.fuelUnit
+                }
               }
-            }
-          });
+            });
+          }
         }
         await db.user.update({
           where: { id: dbUser.id },

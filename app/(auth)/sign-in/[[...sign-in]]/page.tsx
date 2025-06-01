@@ -126,6 +126,18 @@ export default function SignInPage() {
     }
   }
 
+  // If already signed in, show a redirecting message and disable the form
+  if (isSignedIn && isUserLoaded && user && !signInAttempted) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-black px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-md space-y-8 text-center">
+          <h1 className="text-2xl font-bold text-white">Redirecting...</h1>
+          <p className="text-gray-400">You are already signed in. Redirecting to your dashboard.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-black px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">

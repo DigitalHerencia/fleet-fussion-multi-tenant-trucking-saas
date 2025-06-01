@@ -11,6 +11,8 @@ export async function getOnboardingStatus(userId: string, orgId?: string): Promi
 
     if (!dbUser) return null;
 
+    if (!dbUser.organization) return null; // Ensure organization is not null
+
     const steps = dbUser.onboardingSteps as Record<string, boolean> || {};
     
     return {

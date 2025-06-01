@@ -1,18 +1,390 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
+}
+
+model Organization {
+  id                  String                   @id @default(uuid())
+  clerkId             String                   @unique @map("clerk_id")
+  name                String
+  slug                String                   @unique
+  mcNumber            String?                  @map("mc_number")
+  address             String?
+  city                String?
+  state               String?
+  zip                 String?
+  phone               String?
+  email               String?
+  logoUrl             String?                  @map("logo_url")
+  subscriptionTier    SubscriptionTier         @default(free) @map("subscription_tier")
+  subscriptionStatus  SubscriptionStatus       @default(trial) @map("subscription_status")
+  maxUsers            Int                      @default(5) @map("max_users")
+  billingEmail        String?                  @map("billing_email")
+  settings            Json?                    @default("{\"fuelUnit\": \"gallons\", \"timezone\": \"America/Denver\", \"dateFormat\": \"MM/dd/yyyy\", \"distanceUnit\": \"miles\"}")
+  isActive            Boolean                  @default(true) @map("is_active")
+  createdAt           DateTime                 @default(now()) @map("created_at")
+  updatedAt           DateTime                 @updatedAt @map("updated_at")
+  dotNumber           String?
+  auditLogs           AuditLog[]
+  complianceDocuments ComplianceDocument[]
+  drivers             Driver[]
+  IftaFuelPurchase    IftaFuelPurchase[]
+  iftaReports         IftaReport[]
+  IftaTrip            IftaTrip[]
+  loads               Load[]
+  users               User[]
+  vehicles            Vehicle[]
+  memberships         OrganizationMembership[]
+
+  @@index([clerkId])
+  @@index([slug])
+  @@map("organizations")
+}
+
+model User {
+  id                 String                   @id @default(uuid())
+  clerkId            String                   @unique @map("clerk_id")
+  organizationId     String?                  @map("organization_id") // <-- Make nullable
+  email              String
+  firstName          String?                  @map("first_name")
+  lastName           String?                  @map("last_name")
+  profileImage       String?                  @map("profile_image")
+  role               UserRole                 @default(viewer)
+  permissions        Json?                    @default("[]")
+  isActive           Boolean                  @default(true) @map("is_active")
+  lastLogin          DateTime?                @map("last_login")
+  createdAt          DateTime                 @default(now()) @map("created_at")
+  updatedAt          DateTime                 @updatedAt @map("updated_at")
+  onboardingSteps    Json?                    @default("{}") @map("onboarding_steps")
+  onboardingComplete Boolean                  @default(false) @map("onboarding_complete")
+  auditLogs          AuditLog[]
+  ComplianceDocument ComplianceDocument[]     @relation("VerifiedByUser")
+  driver             Driver?
+  IftaReport         IftaReport[]             @relation("SubmittedByUser")
+  organization       Organization?            @relation(fields: [organizationId], references: [id], onDelete: Cascade) // <-- Make relation optional
+  memberships        OrganizationMembership[]
+
+  @@index([clerkId])
+  @@index([organizationId])
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
+
+model Vehicle {
+  id                     String               @id @default(uuid())
+  organizationId         String               @map("organization_id")
+  type                   String
+  status                 VehicleStatus        @default(active)
+  make                   String?
+  model                  String?
+  year                   Int?
+  vin                    String?
+  licensePlate           String?              @map("license_plate")
+  licensePlateState      String?              @map("license_plate_state")
+  unitNumber             String               @map("unit_number")
+  currentOdometer        Int?                 @map("current_odometer")
+  lastOdometerUpdate     DateTime?            @map("last_odometer_update")
+  fuelType               String?              @map("fuel_type")
+  lastInspectionDate     DateTime?            @map("last_inspection_date") @db.Date
+  insuranceExpiration    DateTime?            @map("insurance_expiration") @db.Date
+  notes                  String?
+  customFields           Json?                @default("{}") @map("custom_fields")
+  createdAt              DateTime             @default(now()) @map("created_at")
+  updatedAt              DateTime             @updatedAt @map("updated_at")
+  nextInspectionDue      DateTime?            @map("next_inspection_date") @db.Date
+  registrationExpiration DateTime?            @map("registration_expiry") @db.Date
+  complianceDocuments    ComplianceDocument[]
+  iftaFuelPurchases      IftaFuelPurchase[]   @relation("VehicleIftaFuelPurchases")
+  iftaTrips              IftaTrip[]           @relation("VehicleIftaTrips")
+  trailerLoads           Load[]               @relation("TrailerLoads")
+  loads                  Load[]               @relation("VehicleLoads")
+  organization           Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, unitNumber], name: "vehicles_org_unit_unique")
+  @@index([organizationId])
+  @@index([unitNumber])
+  @@index([status])
+  @@index([type])
+  @@map("vehicles")
+}
+
+model Driver {
+  id                    String               @id @default(uuid())
+  organizationId        String               @map("organization_id")
+  userId                String?              @unique @map("user_id")
+  employeeId            String?              @map("employee_id")
+  firstName             String               @map("first_name")
+  lastName              String               @map("last_name")
+  email                 String?
+  phone                 String?
+  address               String?
+  city                  String?
+  state                 String?
+  zip                   String?
+  licenseNumber         String?              @map("license_number")
+  licenseState          String?              @map("license_state")
+  licenseClass          String?              @map("license_class")
+  licenseExpiration     DateTime?            @map("license_expiration") @db.Date
+  drugTestDate          DateTime?            @map("drug_test_date") @db.Date
+  hireDate              DateTime?            @map("hire_date") @db.Date
+  terminationDate       DateTime?            @map("termination_date") @db.Date
+  status                DriverStatus         @default(active)
+  notes                 String?
+  customFields          Json?                @default("{}") @map("custom_fields")
+  createdAt             DateTime             @default(now()) @map("created_at")
+  updatedAt             DateTime             @updatedAt @map("updated_at")
+  backgroundCheckDate   DateTime?            @map("background_check") @db.Date
+  emergencyContact1     String?              @map("emergency_contact_1")
+  emergencyContact2     String?              @map("emergency_contact_2")
+  emergencyContact3     String?              @map("emergency_contact_3")
+  medicalCardExpiration DateTime?            @map("medical_card_exp") @db.Date
+  complianceDocuments   ComplianceDocument[]
+  organization          Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user                  User?                @relation(fields: [userId], references: [id])
+  loads                 Load[]
+
+  @@unique([organizationId, employeeId], name: "drivers_org_employee_unique")
+  @@index([organizationId])
+  @@index([userId])
+  @@index([status])
+  @@index([licenseNumber])
+  @@map("drivers")
+}
+
+model Load {
+  id                    String       @id @default(uuid())
+  organizationId        String       @map("organization_id")
+  driverId              String?      @map("driver_id")
+  vehicleId             String?      @map("vehicle_id")
+  trailerId             String?      @map("trailer_id")
+  loadNumber            String       @map("load_number")
+  referenceNumber       String?      @map("reference_number")
+  status                LoadStatus   @default(pending)
+  customerName          String?      @map("customer_name")
+  customerContact       String?      @map("customer_contact")
+  customerPhone         String?      @map("customer_phone")
+  customerEmail         String?      @map("customer_email")
+  originAddress         String       @map("origin_address")
+  originCity            String       @map("origin_city")
+  originState           String       @map("origin_state")
+  originZip             String       @map("origin_zip")
+  originLat             Decimal?     @map("origin_lat") @db.Decimal(10, 6)
+  originLng             Decimal?     @map("origin_lng") @db.Decimal(10, 6)
+  destinationAddress    String       @map("destination_address")
+  destinationCity       String       @map("destination_city")
+  destinationState      String       @map("destination_state")
+  destinationZip        String       @map("destination_zip")
+  destinationLat        Decimal?     @map("destination_lat") @db.Decimal(10, 6)
+  destinationLng        Decimal?     @map("destination_lng") @db.Decimal(10, 6)
+  rate                  Decimal?     @db.Decimal(10, 2)
+  currency              String?      @default("USD")
+  scheduledPickupDate   DateTime?    @map("scheduled_pickup_date")
+  actualPickupDate      DateTime?    @map("actual_pickup_date")
+  scheduledDeliveryDate DateTime?    @map("scheduled_delivery_date")
+  actualDeliveryDate    DateTime?    @map("actual_delivery_date")
+  weight                Int?
+  pieces                Int?
+  commodity             String?
+  hazmat                Boolean?     @default(false)
+  estimatedMiles        Int?         @map("estimated_miles")
+  actualMiles           Int?         @map("actual_miles")
+  notes                 String?
+  instructions          String?
+  customFields          Json?        @default("{}") @map("custom_fields")
+  createdAt             DateTime     @default(now()) @map("created_at")
+  updatedAt             DateTime     @updatedAt @map("updated_at")
+  driver                Driver?      @relation(fields: [driverId], references: [id])
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  trailer               Vehicle?     @relation("TrailerLoads", fields: [trailerId], references: [id])
+  vehicle               Vehicle?     @relation("VehicleLoads", fields: [vehicleId], references: [id])
+
+  @@unique([organizationId, loadNumber], name: "loads_org_load_unique")
+  @@index([organizationId])
+  @@index([driverId])
+  @@index([vehicleId])
+  @@index([trailerId])
+  @@index([status])
+  @@index([loadNumber])
+  @@index([scheduledPickupDate], map: "loads_scheduled_pickup_idx")
+  @@map("loads")
+}
+
+model ComplianceDocument {
+  id               String       @id @default(uuid())
+  organizationId   String       @map("organization_id")
+  driverId         String?      @map("driver_id")
+  vehicleId        String?      @map("vehicle_id")
+  type             String
+  title            String
+  documentNumber   String?      @map("document_number")
+  issuingAuthority String?      @map("issuing_authority")
+  fileUrl          String?      @map("file_url")
+  fileName         String?      @map("file_name")
+  fileSize         Int?         @map("file_size")
+  mimeType         String?      @map("mime_type")
+  issueDate        DateTime?    @map("issue_date") @db.Date
+  expirationDate   DateTime?    @map("expiration_date") @db.Date
+  status           String       @default("active")
+  isVerified       Boolean?     @default(false) @map("is_verified")
+  verifiedBy       String?      @map("verified_by")
+  verifiedAt       DateTime?    @map("verified_at")
+  notes            String?
+  tags             Json?        @default("[]")
+  createdAt        DateTime     @default(now()) @map("created_at")
+  updatedAt        DateTime     @updatedAt @map("updated_at")
+  driver           Driver?      @relation(fields: [driverId], references: [id])
+  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  vehicle          Vehicle?     @relation(fields: [vehicleId], references: [id])
+  verifiedByUser   User?        @relation("VerifiedByUser", fields: [verifiedBy], references: [id])
+
+  @@index([organizationId])
+  @@index([driverId])
+  @@index([vehicleId])
+  @@index([verifiedBy])
+  @@index([type])
+  @@index([status])
+  @@index([expirationDate], map: "compliance_documents_expiration_idx")
+  @@map("compliance_documents")
+}
+
+model IftaReport {
+  id              String       @id @default(uuid())
+  organizationId  String       @map("organization_id")
+  quarter         Int
+  year            Int
+  status          String       @default("draft")
+  totalMiles      Int?         @map("total_miles")
+  totalGallons    Decimal?     @map("total_gallons") @db.Decimal(10, 3)
+  totalTaxOwed    Decimal?     @map("total_tax_owed") @db.Decimal(10, 2)
+  totalTaxPaid    Decimal?     @map("total_tax_paid") @db.Decimal(10, 2)
+  submittedAt     DateTime?    @map("submitted_at")
+  submittedBy     String?      @map("submitted_by")
+  dueDate         DateTime?    @map("due_date") @db.Date
+  filedDate       DateTime?    @map("filed_date") @db.Date
+  reportFileUrl   String?      @map("report_file_url")
+  notes           String?
+  calculationData Json?        @default("{}") @map("calculation_data")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+  supportingDocs  String?      @map("supporting_docs")
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  submittedByUser User?        @relation("SubmittedByUser", fields: [submittedBy], references: [id])
+
+  @@index([organizationId])
+  @@index([submittedBy])
+  @@index([quarter, year])
+  @@index([status])
+  @@index([dueDate])
+  @@map("ifta_reports")
+}
+
+model AuditLog {
+  id             String       @id @default(uuid())
+  organizationId String       @map("organization_id")
+  userId         String?      @map("user_id")
+  entityType     String       @map("entity_type")
+  entityId       String       @map("entity_id")
+  action         String
+  changes        Json?
+  metadata       Json?
+  timestamp      DateTime     @default(now())
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User?        @relation(fields: [userId], references: [id])
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([entityType])
+  @@index([entityId])
+  @@index([action])
+  @@index([timestamp])
+  @@map("audit_logs")
+}
+
+model WebhookEvent {
+  id              String    @id @default(uuid())
+  eventType       String    @map("event_type")
+  eventId         String    @unique(map: "webhook_events_event_id_unique") @map("event_id")
+  organizationId  String?   @map("organization_id")
+  userId          String?   @map("user_id")
+  payload         Json
+  status          String    @default("pending")
+  processingError String?   @map("processing_error")
+  processedAt     DateTime? @map("processed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  retryCount      Int       @default(0) @map("retry_count")
+
+  @@index([eventType])
+  @@index([organizationId])
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("webhook_events")
+}
+
+model IftaTrip {
+  id             String       @id @default(uuid())
+  organizationId String       @map("organization_id")
+  vehicleId      String       @map("vehicle_id")
+  date           DateTime     @map("date")
+  distance       Int          @map("distance")
+  jurisdiction   String       @map("jurisdiction")
+  fuelUsed       Decimal?     @map("fuel_used") @db.Decimal(10, 3)
+  notes          String?      @map("notes")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  vehicle        Vehicle      @relation("VehicleIftaTrips", fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([vehicleId])
+  @@index([date])
+  @@map("ifta_trips")
+}
+
+model IftaFuelPurchase {
+  id             String       @id @default(uuid())
+  organizationId String       @map("organization_id")
+  vehicleId      String       @map("vehicle_id")
+  date           DateTime     @map("date")
+  jurisdiction   String       @map("jurisdiction")
+  gallons        Decimal      @map("gallons") @db.Decimal(10, 3)
+  amount         Decimal      @map("amount") @db.Decimal(10, 2)
+  vendor         String?      @map("vendor")
+  receiptNumber  String?      @map("receipt_number")
+  notes          String?      @map("notes")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  vehicle        Vehicle      @relation("VehicleIftaFuelPurchases", fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([vehicleId])
+  @@index([date])
+  @@map("ifta_fuel_purchases")
+}
+
+model OrganizationMembership {
+  id             String   @id @default(uuid())
+  organizationId String   @map("organization_id")
+  userId         String   @map("user_id")
+  role           String   @map("role")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId], name: "org_user_unique")
+  @@index([organizationId])
+  @@index([userId])
+  @@map("organization_memberships")
 }
 
 enum UserRole {
@@ -59,373 +431,4 @@ enum LoadStatus {
   in_transit
   delivered
   cancelled
-}
-
-model Organization {
-  id                 String             @id @default(uuid())
-  clerkId            String             @unique @map("clerk_id")
-  name               String
-  slug               String             @unique
-  dotNumber          String?
-  mcNumber           String?            @map("mc_number")
-  address            String?
-  city               String?
-  state              String?
-  zip                String?
-  phone              String?
-  email              String?
-  logoUrl            String?            @map("logo_url")
-  subscriptionTier   SubscriptionTier   @default(free) @map("subscription_tier")
-  subscriptionStatus SubscriptionStatus @default(trial) @map("subscription_status")
-  maxUsers           Int                @default(5) @map("max_users")
-  billingEmail       String?            @map("billing_email")
-  settings           Json?              @default("{\"timezone\": \"America/Denver\", \"dateFormat\": \"MM/dd/yyyy\", \"distanceUnit\": \"miles\", \"fuelUnit\": \"gallons\"}")
-  isActive           Boolean            @default(true) @map("is_active")
-  createdAt          DateTime           @default(now()) @map("created_at")
-  updatedAt          DateTime           @updatedAt @map("updated_at")
-
-  users               User[]
-  vehicles            Vehicle[]
-  drivers             Driver[]
-  loads               Load[]
-  complianceDocuments ComplianceDocument[]
-  iftaReports         IftaReport[]
-  auditLogs           AuditLog[]
-
-  @@map("organizations")
-  @@index([clerkId], name: "organizations_clerk_id_idx")
-  @@index([slug], name: "organizations_slug_idx")
-  IftaFuelPurchase IftaFuelPurchase[]
-  IftaTrip IftaTrip[]
-}
-
-model User {
-  id                  String       @id @default(uuid())
-  clerkId             String       @unique @map("clerk_id")
-  organizationId      String       @map("organization_id")
-  email               String
-  firstName           String?      @map("first_name")
-  lastName            String?      @map("last_name")
-  profileImage        String?      @map("profile_image")
-  role                UserRole     @default(viewer)
-  permissions         Json?        @default("[]")
-  isActive            Boolean      @default(true) @map("is_active")
-  onboardingComplete  Boolean      @default(false) @map("onboarding_complete") // Corrected mapping
-  onboardingSteps     Json?        @default("{}") @map("onboarding_steps") // Track detailed onboarding progress
-  lastLogin           DateTime?    @map("last_login")
-  createdAt           DateTime     @default(now()) @map("created_at")
-  updatedAt           DateTime     @updatedAt @map("updated_at")
-
-  organization        Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  driver              Driver?
-  ComplianceDocument  ComplianceDocument[] @relation("VerifiedByUser")
-  IftaReport          IftaReport[]       @relation("SubmittedByUser")
-  auditLogs           AuditLog[]
-
-  @@map("users")
-  @@index([clerkId], name: "users_clerk_id_idx")
-  @@index([organizationId], name: "users_organization_id_idx")
-  @@index([email], name: "users_email_idx")
-  @@index([role], name: "users_role_idx")
-}
-
-model Vehicle {
-  id                     String        @id @default(uuid())
-  organizationId         String        @map("organization_id")
-  type                   String // 'tractor', 'trailer', 'straight_truck'
-  status                 VehicleStatus @default(active)
-  make                   String?
-  model                  String?
-  year                   Int?
-  vin                    String?
-  licensePlate           String?       @map("license_plate")
-  licensePlateState      String?       @map("license_plate_state")
-  unitNumber             String        @map("unit_number")
-  currentOdometer        Int?          @map("current_odometer")
-  lastOdometerUpdate     DateTime?     @map("last_odometer_update")
-  fuelType               String?       @map("fuel_type") // 'diesel', 'gas'
-  lastInspectionDate     DateTime?     @db.Date @map("last_inspection_date")
-  nextInspectionDue      DateTime?     @db.Date @map("next_inspection_date")
-  registrationExpiration DateTime?     @db.Date @map("registration_expiry")
-  insuranceExpiration    DateTime?     @db.Date @map("insurance_expiration")
-  notes                  String?
-  customFields           Json?         @default("{}") @map("custom_fields")
-  createdAt              DateTime      @default(now()) @map("created_at")
-  updatedAt              DateTime      @updatedAt @map("updated_at")
-
-  organization        Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  loads               Load[]               @relation("VehicleLoads")
-  trailerLoads        Load[]               @relation("TrailerLoads")
-  complianceDocuments ComplianceDocument[]
-  iftaTrips         IftaTrip[]         @relation("VehicleIftaTrips")
-  iftaFuelPurchases IftaFuelPurchase[] @relation("VehicleIftaFuelPurchases")
-
-  @@map("vehicles")
-  @@index([organizationId], name: "vehicles_organization_id_idx")
-  @@index([unitNumber], name: "vehicles_unit_number_idx")
-  @@index([status], name: "vehicles_status_idx")
-  @@index([type], name: "vehicles_type_idx")
-  @@unique([organizationId, unitNumber], name: "vehicles_org_unit_unique")
-}
-
-model Driver {
-  id                       String        @id @default(uuid())
-  organizationId           String        @map("organization_id")
-  userId                   String?       @unique @map("user_id") // Link to user account if driver has login
-  employeeId               String?       @map("employee_id")
-  firstName                String        @map("first_name")
-  lastName                 String        @map("last_name")
-  email                    String?
-  phone                    String?
-  address                  String?
-  city                     String?
-  state                    String?
-  zip                      String?
-  licenseNumber            String?       @map("license_number")
-  licenseState             String?       @map("license_state")
-  licenseClass             String?       @map("license_class")
-  licenseExpiration        DateTime?     @db.Date @map("license_expiration")
-  medicalCardExpiration    DateTime?     @db.Date @map("medical_card_exp")
-  drugTestDate             DateTime?     @db.Date @map("drug_test_date")
-  backgroundCheckDate      DateTime?     @db.Date @map("background_check")
-  hireDate                 DateTime?     @db.Date @map("hire_date")
-  terminationDate          DateTime?     @db.Date @map("termination_date")
-  status                   DriverStatus  @default(active)
-  emergencyContact1       String?       @map("emergency_contact_1")
-  emergencyContact2       String?       @map("emergency_contact_2")
-  emergencyContact3       String?       @map("emergency_contact_3")
-  notes                    String?
-  customFields             Json?         @default("{}") @map("custom_fields")
-  createdAt                DateTime      @default(now()) @map("created_at")
-  updatedAt                DateTime      @updatedAt @map("updated_at")
-
-  organization        Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  user                User?                @relation(fields: [userId], references: [id])
-  loads               Load[]
-  complianceDocuments ComplianceDocument[]
-
-  @@map("drivers")
-  @@index([organizationId], name: "drivers_organization_id_idx")
-  @@index([userId], name: "drivers_user_id_idx")
-  @@index([status], name: "drivers_status_idx")
-  @@index([licenseNumber], name: "drivers_license_number_idx")
-  @@unique([organizationId, employeeId], name: "drivers_org_employee_unique")
-}
-
-model Load {
-  id                    String     @id @default(uuid())
-  organizationId        String     @map("organization_id")
-  driverId              String?    @map("driver_id")
-  vehicleId             String?    @map("vehicle_id")
-  trailerId             String?    @map("trailer_id")
-  loadNumber            String     @map("load_number")
-  referenceNumber       String?    @map("reference_number")
-  status                LoadStatus @default(pending)
-  customerName          String?    @map("customer_name")
-  customerContact       String?    @map("customer_contact")
-  customerPhone         String?    @map("customer_phone")
-  customerEmail         String?    @map("customer_email")
-  originAddress         String     @map("origin_address")
-  originCity            String     @map("origin_city")
-  originState           String     @map("origin_state")
-  originZip             String     @map("origin_zip")
-  originLat             Decimal?   @db.Decimal(10, 6) @map("origin_lat")
-  originLng             Decimal?   @db.Decimal(10, 6) @map("origin_lng")
-  destinationAddress    String     @map("destination_address")
-  destinationCity       String     @map("destination_city")
-  destinationState      String     @map("destination_state")
-  destinationZip        String     @map("destination_zip")
-  destinationLat        Decimal?   @db.Decimal(10, 6) @map("destination_lat")
-  destinationLng        Decimal?   @db.Decimal(10, 6) @map("destination_lng")
-  rate                  Decimal?   @db.Decimal(10, 2)
-  currency              String?    @default("USD")
-  scheduledPickupDate   DateTime?  @map("scheduled_pickup_date")
-  actualPickupDate      DateTime?  @map("actual_pickup_date")
-  scheduledDeliveryDate DateTime?  @map("scheduled_delivery_date")
-  actualDeliveryDate    DateTime?  @map("actual_delivery_date")
-  weight                Int?
-  pieces                Int?
-  commodity             String?
-  hazmat                Boolean?   @default(false)
-  estimatedMiles        Int?       @map("estimated_miles")
-  actualMiles           Int?       @map("actual_miles")
-  notes                 String?
-  instructions          String?
-  customFields          Json?      @default("{}") @map("custom_fields")
-  createdAt             DateTime   @default(now()) @map("created_at")
-  updatedAt             DateTime   @updatedAt @map("updated_at")
-
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  driver       Driver?      @relation(fields: [driverId], references: [id])
-  vehicle      Vehicle?     @relation("VehicleLoads", fields: [vehicleId], references: [id])
-  trailer      Vehicle?     @relation("TrailerLoads", fields: [trailerId], references: [id])
-
-  @@map("loads")
-  @@index([organizationId], name: "loads_organization_id_idx")
-  @@index([driverId], name: "loads_driver_id_idx")
-  @@index([vehicleId], name: "loads_vehicle_id_idx")
-  @@index([trailerId], name: "loads_trailer_id_idx")
-  @@index([status], name: "loads_status_idx")
-  @@index([loadNumber], name: "loads_load_number_idx")
-  @@index([scheduledPickupDate], name: "loads_scheduled_pickup_idx")
-  @@unique([organizationId, loadNumber], name: "loads_org_load_unique")
-}
-
-model ComplianceDocument {
-  id                 String    @id @default(uuid())
-  organizationId     String    @map("organization_id")
-  driverId           String?   @map("driver_id")
-  vehicleId          String?   @map("vehicle_id")
-  type               String // 'license', 'medical', 'insurance', 'registration', etc.
-  title              String
-  documentNumber     String?   @map("document_number")
-  issuingAuthority   String?   @map("issuing_authority")
-  fileUrl            String?   @map("file_url")
-  fileName           String?   @map("file_name")
-  fileSize           Int?      @map("file_size")
-  mimeType           String?   @map("mime_type")
-  issueDate          DateTime? @db.Date @map("issue_date")
-  expirationDate     DateTime? @db.Date @map("expiration_date")
-  status             String    @default("active") // 'active', 'expired', 'pending'
-  isVerified         Boolean?  @default(false) @map("is_verified")
-  verifiedBy         String?   @map("verified_by") 
-  verifiedAt         DateTime? @map("verified_at")
-  notes              String?
-  tags               Json?     @default("[]")
-  createdAt          DateTime  @default(now()) @map("created_at")
-  updatedAt          DateTime  @updatedAt @map("updated_at")
-
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  driver         Driver?      @relation(fields: [driverId], references: [id])
-  vehicle        Vehicle?     @relation(fields: [vehicleId], references: [id])
-  verifiedByUser User?        @relation("VerifiedByUser", fields: [verifiedBy], references: [id])
-
-  @@map("compliance_documents")
-  @@index([organizationId], name: "compliance_documents_organization_id_idx")
-  @@index([driverId], name: "compliance_documents_driver_id_idx")
-  @@index([vehicleId], name: "compliance_documents_vehicle_id_idx")
-  @@index([verifiedBy], name: "compliance_documents_verified_by_idx")
-  @@index([type], name: "compliance_documents_type_idx")
-  @@index([status], name: "compliance_documents_status_idx")
-  @@index([expirationDate], name: "compliance_documents_expiration_idx")
-}
-
-model IftaReport {
-  id                String    @id @default(uuid())
-  organizationId    String    @map("organization_id")
-  quarter           Int
-  year              Int
-  status            String    @default("draft") // 'draft', 'submitted', 'filed'
-  totalMiles        Int?      @map("total_miles")
-  totalGallons      Decimal?  @db.Decimal(10, 3) @map("total_gallons")
-  totalTaxOwed      Decimal?  @db.Decimal(10, 2) @map("total_tax_owed")
-  totalTaxPaid      Decimal?  @db.Decimal(10, 2) @map("total_tax_paid")
-  submittedAt       DateTime? @map("submitted_at")
-  submittedBy       String?   @map("submitted_by") 
-  dueDate           DateTime? @db.Date @map("due_date")
-  filedDate         DateTime? @db.Date @map("filed_date")
-  reportFileUrl     String?   @map("report_file_url")
-  supportingDocs    String?   @map("supporting_docs")
-  notes             String?
-  calculationData   Json?     @default("{}") @map("calculation_data")
-  createdAt         DateTime  @default(now()) @map("created_at")
-  updatedAt         DateTime  @updatedAt @map("updated_at")
-
-  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  submittedByUser User?        @relation("SubmittedByUser", fields: [submittedBy], references: [id])
-
-  @@map("ifta_reports")
-  @@index([organizationId], name: "ifta_reports_organization_id_idx")
-  @@index([submittedBy], name: "ifta_reports_submitted_by_idx")
-  @@index([quarter, year], name: "ifta_reports_quarter_year_idx")
-  @@index([status], name: "ifta_reports_status_idx")
-  @@index([dueDate], name: "ifta_reports_due_date_idx")
-}
-
-model AuditLog {
-  id           String    @id @default(uuid())
-  organizationId String  @map("organization_id")
-  userId       String?   @map("user_id")
-  entityType   String    @map("entity_type") // 'user', 'vehicle', 'driver', 'load', etc.
-  entityId     String    @map("entity_id")
-  action       String    // 'created', 'updated', 'deleted', 'login', 'logout'
-  changes      Json?     // Store what changed (before/after values)
-  metadata     Json?     // Additional context (IP address, user agent, etc.)
-  timestamp    DateTime  @default(now())
-
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  user         User?        @relation(fields: [userId], references: [id])
-
-  @@map("audit_logs")
-  @@index([organizationId], name: "audit_logs_organization_id_idx")
-  @@index([userId], name: "audit_logs_user_id_idx")
-  @@index([entityType], name: "audit_logs_entity_type_idx")
-  @@index([entityId], name: "audit_logs_entity_id_idx")
-  @@index([action], name: "audit_logs_action_idx")
-  @@index([timestamp], name: "audit_logs_timestamp_idx")
-}
-
-model WebhookEvent {
-  id              String    @id @default(uuid())
-  eventType       String    @map("event_type") // Clerk event type
-  eventId         String    @map("event_id") @unique(map: "webhook_events_event_id_unique") // Clerk event ID, must be unique and non-null
-  organizationId  String?   @map("organization_id")
-  userId          String?   @map("user_id")
-  payload         Json      // Full webhook payload
-  status          String    @default("pending") // 'pending', 'processed', 'failed', 'retried'
-  processingError String?   @map("processing_error")
-  processedAt     DateTime? @map("processed_at")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  retryCount      Int       @default(0) @map("retry_count")
-
-  @@map("webhook_events")
-  @@index([eventType], name: "webhook_events_event_type_idx")
-  @@index([organizationId], name: "webhook_events_organization_id_idx")
-  @@index([userId], name: "webhook_events_user_id_idx")
-  @@index([status], name: "webhook_events_status_idx")
-  @@index([createdAt], name: "webhook_events_created_at_idx")
-}
-
-model IftaTrip {
-  id              String    @id @default(uuid())
-  organizationId  String    @map("organization_id")
-  vehicleId       String    @map("vehicle_id")
-  date            DateTime  @map("date")
-  distance        Int       @map("distance")
-  jurisdiction    String    @map("jurisdiction")
-  fuelUsed        Decimal?  @db.Decimal(10, 3) @map("fuel_used")
-  notes           String?   @map("notes")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
-
-  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  vehicle         Vehicle      @relation("VehicleIftaTrips", fields: [vehicleId], references: [id], onDelete: Cascade)
-
-  @@map("ifta_trips")
-  @@index([organizationId], name: "ifta_trips_organization_id_idx")
-  @@index([vehicleId], name: "ifta_trips_vehicle_id_idx")
-  @@index([date], name: "ifta_trips_date_idx")
-}
-
-model IftaFuelPurchase {
-  id              String    @id @default(uuid())
-  organizationId  String    @map("organization_id")
-  vehicleId       String    @map("vehicle_id")
-  date            DateTime  @map("date")
-  jurisdiction    String    @map("jurisdiction")
-  gallons         Decimal   @db.Decimal(10, 3) @map("gallons")
-  amount          Decimal   @db.Decimal(10, 2) @map("amount")
-  vendor          String?   @map("vendor")
-  receiptNumber   String?   @map("receipt_number")
-  notes           String?   @map("notes")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
-
-  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  vehicle         Vehicle      @relation("VehicleIftaFuelPurchases", fields: [vehicleId], references: [id], onDelete: Cascade)
-
-  @@map("ifta_fuel_purchases")
-  @@index([organizationId], name: "ifta_fuel_purchases_organization_id_idx")
-  @@index([vehicleId], name: "ifta_fuel_purchases_vehicle_id_idx")
-  @@index([date], name: "ifta_fuel_purchases_date_idx")
 }

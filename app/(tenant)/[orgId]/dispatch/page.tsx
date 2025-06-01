@@ -23,9 +23,9 @@ async function DispatchData() {
 
 	// Fetch all required data in parallel
 	const [loadsResult, driversResult, vehiclesResult] = await Promise.all([
-		listLoadsByOrg(user.organizationId),
-		listDriversByOrg(user.organizationId),
-		listVehiclesByOrg(user.organizationId, {})
+		user.organizationId ? listLoadsByOrg(user.organizationId) : Promise.resolve([]),
+		user.organizationId ? listDriversByOrg(user.organizationId) : Promise.resolve({ drivers: [] }),
+		user.organizationId ? listVehiclesByOrg(user.organizationId, {}) : Promise.resolve([]),
 	])
 
 	// Extract the data from the results

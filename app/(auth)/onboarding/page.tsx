@@ -27,8 +27,8 @@ function toBaseSlug(name: string): string {
 }
 
 export default function OnboardingPage() {
-  const { user } = useUser()
-  const router = useRouter()
+  const { user, isLoaded } = useUser();
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [successMessage, setSuccessMessage] = useState('')  
@@ -200,6 +200,23 @@ export default function OnboardingPage() {
       }
     }
   }, [user, router])
+
+  // Loading state: wait for Clerk to finish loading
+  if (!isLoaded) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-black">
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    );
+  }
+  // If not signed in, show message (middleware should redirect, but this is a fallback)
+  if (!user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-black">
+        <div className="text-white text-xl">You must be signed in to complete onboarding.</div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center mt-8 mb-8 bg-black px-4 sm:px-6 lg:px-8">

@@ -257,7 +257,7 @@ function forbiddenOrRedirect(req: NextRequest, redirectUrl?: string) {
   if (redirectUrl) {
     return NextResponse.redirect(new URL(redirectUrl, req.url));
   }
-  return NextResponse.redirect(new URL('/sign-in?error=forbidden', req.url));
+  return NextResponse.redirect(new URL('/sign-in', req.url));
 }
 
 export default clerkMiddleware(async (auth, req: NextRequest) => {
@@ -297,7 +297,7 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
 
   // Check route permissions with optimized lookup
   if (!RouteProtection.canAccessRoute(userContext, req.nextUrl.pathname)) {
-    return forbiddenOrRedirect(req, '/sign-in?error=unauthorized');
+    return forbiddenOrRedirect(req, '/sign-in');
   }
 
   // Set optimized headers
