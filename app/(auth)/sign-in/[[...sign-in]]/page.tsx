@@ -50,14 +50,13 @@ export default function SignInPage() {
       const organizationId = publicMetadata?.organizationId as string | undefined;
       const userId = user.id;
       if (onboardingComplete && organizationId && userId) {
-        router.push(`/${organizationId}/dashboard/${userId}`);
+        router.replace(`/${organizationId}/dashboard/${userId}`);
       } else {
-        router.push('/onboarding');
+        router.replace('/onboarding');
       }
       setSignInAttempted(false);
     } else if (signInAttempted && isSignedIn && isUserLoaded && !user) {
-      console.warn("User is signed in but user object is not available. Redirecting to home.");
-      router.push('/'); 
+      router.push('/');
       setSignInAttempted(false);
     }
   }, [signInAttempted, isSignedIn, isUserLoaded, user, router]);

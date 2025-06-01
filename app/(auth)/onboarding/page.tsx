@@ -188,15 +188,14 @@ export default function OnboardingPage() {
   }
 
   React.useEffect(() => {
+    // If onboardingComplete, redirect to dashboard
     if (user && user.publicMetadata?.onboardingComplete) {
-      // Get organization ID from user metadata
-      const organizationId = user.publicMetadata?.organizationId;
-      if (organizationId) {
-        router.replace(`/${organizationId}/dashboard/${user.id}`);
+      const organizationId = user.publicMetadata?.organizationId as string | undefined;
+      const userId = user.id;
+      if (organizationId && userId) {
+        router.replace(`/${organizationId}/dashboard/${userId}`);
       } else {
-        // Fallback: if no org ID, try to redirect to a general dashboard or sign out
-        console.warn('User completed onboarding but no organization ID found');
-        router.replace('/sign-out'); // Sign out instead of redirecting to non-existent /dashboard
+        router.replace('/');
       }
     }
   }, [user, router])

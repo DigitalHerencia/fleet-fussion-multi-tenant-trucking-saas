@@ -117,9 +117,15 @@ export class DatabaseQueries {
   }) {
     try {
       const organization = await db.organization.findUnique({ where: { clerkId: organizationClerkId } });
-      if (!organization) throw new Error(`Organization not found for clerkId: ${organizationClerkId}`);
+      if (!organization) {
+        console.warn(`[DB] Organization not found for clerkId: ${organizationClerkId}, skipping membership delete.`);
+        return { success: true, message: 'Organization not found, skipping membership delete.' };
+      }
       const user = await db.user.findUnique({ where: { clerkId: userClerkId } });
-      if (!user) throw new Error(`User not found for clerkId: ${userClerkId}`);
+      if (!user) {
+        console.warn(`[DB] User not found for clerkId: ${userClerkId}, skipping membership delete.`);
+        return { success: true, message: 'User not found, skipping membership delete.' };
+      }
       await db.organizationMembership.delete({
         where: {
           org_user_unique: {

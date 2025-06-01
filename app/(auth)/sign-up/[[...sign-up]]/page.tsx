@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSignUp, useUser, useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { MapPinned } from "lucide-react";
@@ -18,13 +18,24 @@ export default function SignUpPage() {
   const router = useRouter();
 
   // Redirect already signed-in users away from sign-up page
+  useEffect(() => {
+    if (isSignedIn && isUserLoaded && user) {
+      const onboardingComplete = user.publicMetadata?.onboardingComplete as boolean | undefined;
+      const organizationId = user.publicMetadata?.organizationId as string | undefined;
+      const userId = user.id;
+      if (onboardingComplete && organizationId && userId) {
+        router.replace(`/${organizationId}/dashboard/${userId}`);
+      } else {
+        router.replace('/onboarding');
+      }
+    }
+  }, [isSignedIn, isUserLoaded, user, router]);
+
   if (isSignedIn && isUserLoaded && user) {
-    router.replace("/onboarding");
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-black px-4 py-12 sm:px-6 lg:px-8">
         <div className="w-full max-w-md space-y-8 text-center">
-          <h1 className="text-2xl font-bold text-white">Redirecting...</h1>
-          <p className="text-gray-400">You are already signed in. Redirecting to onboarding.</p>
+          <span className="text-white">Redirecting...</span>
         </div>
       </div>
     );

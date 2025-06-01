@@ -28,7 +28,7 @@ export async function getOnboardingStatus(userId: string, orgId?: string): Promi
       user: {
         id: dbUser.id,
         clerkId: dbUser.clerkId,
-        email: dbUser.email,
+        email: dbUser.email ? dbUser.email : '',
         firstName: dbUser.firstName,
         lastName: dbUser.lastName,
         role: dbUser.role as SystemRole,

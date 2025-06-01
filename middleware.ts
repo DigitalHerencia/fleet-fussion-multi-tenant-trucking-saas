@@ -2,9 +2,8 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { RouteProtection } from "@/lib/auth/permissions";
-import type { UserContext, ClerkUserMetadata, ClerkOrganizationMetadata } from "@/types/auth";
+import type { UserContext, ClerkOrganizationMetadata } from "@/types/auth";
 import { SystemRoles, getPermissionsForRole, type SystemRole } from "@/types/abac";
-import { authCache } from "@/lib/cache/auth-cache";
 
 // Pre-compiled route matchers for better performance
 const publicRoutePatterns = [
@@ -12,7 +11,7 @@ const publicRoutePatterns = [
   '/sign-in(.*)',
   '/sign-up(.*)',
   '/forgot-password(.*)',
-  '/api/clerk/(.*)', // Clerk webhooks
+  '/api/clerk/webhook-handler', // Ensure webhook-handler is public
   '/about',
   '/contact',
   '/pricing',
@@ -61,20 +60,20 @@ function getDashboardPath(userContext: UserContext): string {
   const orgId = userContext.organizationId;
   const userId = userContext.userId;
   switch (userContext.role) {
-    case SystemRoles.ADMIN:
+    case 'admin':
       return `/${orgId}/dashboard/${userId}`;
-    case SystemRoles.DISPATCHER:
-      return `/${orgId}/dispatcher/${userId}`;
-    case SystemRoles.DRIVER:
-      return `/${orgId}/driver/${userId}`;
-    case SystemRoles.COMPLIANCE_OFFICER:
-      return `/${orgId}/compliance/${userId}`;
-    case SystemRoles.ACCOUNTANT:
-      return `/${orgId}/dashboard/${userId}`; // Default to dashboard
-    case SystemRoles.VIEWER:
+    case 'dispatcher':
+      return `/${orgId}/dashboard/${userId}`;
+    case 'driver':
+      return `/${orgId}/dashboard/${userId}`;
+    case 'compliance_officer':
+      return `/${orgId}/dashboard/${userId}`;
+    case 'accountant':
+      return `/${orgId}/dashboard/${userId}`;
+    case 'viewer':
       return `/${orgId}/dashboard/${userId}`;
     default:
-      return `/${orgId}/dashboard/${userId}`;
+      return '/';
   }
 }
 
@@ -82,7 +81,7 @@ function getDashboardPath(userContext: UserContext): string {
 const defaultOrgMetadata: ClerkOrganizationMetadata = {
   subscriptionTier: 'free',
   subscriptionStatus: 'inactive',
-  maxUsers: 1,
+  maxUsers: 5,
   features: [],
   billingEmail: '',
   createdAt: new Date().toISOString(),
@@ -105,90 +104,22 @@ async function handlePublicRoute(auth: any, req: NextRequest) {
 
   // Authenticated user on sign-in/up: route to correct dashboard or onboarding
   if (authData.userId && (req.nextUrl.pathname.startsWith('/sign-in') || req.nextUrl.pathname.startsWith('/sign-up'))) {
-    const { sessionClaims } = authData;
-    const userMetadata = sessionClaims?.metadata || sessionClaims?.publicMetadata;
-    const userRole = userMetadata?.role;
-    const onboardingComplete = userMetadata?.onboardingComplete;
-    const orgId = authData.orgId || userMetadata?.organizationId;
-    const userId = authData.userId;
-
-    // Only admins (org creators) can access onboarding
-    if (!onboardingComplete) {
-      if (userRole === SystemRoles.ADMIN) {
-        // Allow onboarding for admins only
-        if (!req.nextUrl.pathname.startsWith('/onboarding')) {
-          return NextResponse.redirect(new URL('/onboarding', req.url));
-        }
-        return NextResponse.next();
-      } else {
-        // Invited users (not admin) skip onboarding, go to their dashboard
-        if (orgId) {
-          const dashPath = getDashboardPath({
-            userId,
-            organizationId: orgId,
-            role: userRole,
-            permissions: [],
-            isActive: true,
-            name: '',
-            email: '',
-            firstName: '',
-            lastName: '',
-            onboardingComplete: false,
-            organizationMetadata: defaultOrgMetadata,
-          });
-          return NextResponse.redirect(new URL(dashPath, req.url));
-        }
-        return NextResponse.redirect(new URL('/sign-in', req.url));
+    // Fetch user context (from session or DB)
+    const userContext = getCachedUserContext( authData.userId );
+    if (userContext) {
+      if (userContext.role === 'admin' && !userContext.onboardingComplete) {
+        return NextResponse.redirect(new URL('/onboarding', req.url));
       }
+      // All other roles go to their dashboard
+      return NextResponse.redirect(new URL(getDashboardPath(userContext), req.url));
     }
-
-    // If onboarding complete, always route to correct dashboard
-    if (orgId) {
-      const dashPath = getDashboardPath({
-        userId,
-        organizationId: orgId,
-        role: userRole,
-        permissions: [],
-        isActive: true,
-        name: '',
-        email: '',
-        firstName: '',
-        lastName: '',
-        onboardingComplete: true,
-        organizationMetadata: defaultOrgMetadata,
-      });
-      return NextResponse.redirect(new URL(dashPath, req.url));
-    }
-    return NextResponse.redirect(new URL('/onboarding', req.url));
   }
 
   // Block onboarding for non-admins
   if (req.nextUrl.pathname.startsWith('/onboarding')) {
-    if (authData.userId) {
-      const { sessionClaims } = authData;
-      const userMetadata = sessionClaims?.metadata || sessionClaims?.publicMetadata;
-      const userRole = userMetadata?.role;
-      if (userRole !== SystemRoles.ADMIN) {
-        // Not admin, redirect to dashboard
-        const orgId = authData.orgId || userMetadata?.organizationId;
-        if (orgId) {
-          const dashPath = getDashboardPath({
-            userId: authData.userId,
-            organizationId: orgId,
-            role: userRole,
-            permissions: [],
-            isActive: true,
-            name: '',
-            email: '',
-            firstName: '',
-            lastName: '',
-            onboardingComplete: false,
-            organizationMetadata: defaultOrgMetadata,
-          });
-          return NextResponse.redirect(new URL(dashPath, req.url));
-        }
-        return NextResponse.redirect(new URL('/sign-in', req.url));
-      }
+    const userContext = authData.userId ? getCachedUserContext(authData.userId) : null;
+    if (!userContext || userContext.role !== 'admin') {
+      return NextResponse.redirect(new URL('/', req.url));
     }
   }
 
@@ -291,7 +222,7 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
     const requestedOrgId = matches[1];
     if (userContext.organizationId && userContext.organizationId !== requestedOrgId) {
       // Always redirect to correct org dashboard for this user
-      return NextResponse.redirect(new URL(getDashboardPath(userContext) + '?error=wrong-org', req.url));
+      return NextResponse.redirect(new URL(getDashboardPath(userContext), req.url));
     }
   }
 
