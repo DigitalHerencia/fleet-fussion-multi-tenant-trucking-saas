@@ -5,74 +5,46 @@
  */
 
 import { Suspense } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { DashboardMetrics } from '@/features/analytics/dashboard-metrics'
-import { QuickActions } from '@/features/dashboard/quick-actions'
-import { LoadingSpinner } from '@/components/shared/loading-spinner'
+import LoadingSpinner from '@/components/ui/loading-spinner'
+import FleetOverviewHeader from '@/features/dashboard/fleet-overview-header'
+import KpiGrid from '@/features/dashboard/kpi-grid'
+import QuickActionsWidget from '@/features/dashboard/quick-actions-widget'
+import RecentAlertsWidget from '@/features/dashboard/recent-alerts-widget'
+import TodaysScheduleWidget from '@/features/dashboard/todays-schedule-widget'
+import { DashboardSkeleton } from '@/components/dashboard/dashboard-skeleton' // Corrected import
 
 export default function DashboardPage() {
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Welcome back! Here&apos;s what&apos;s happening with your fleet.
-        </p>
-      </div>
-
-      {/* Quick Actions */}
-      <QuickActions />
-
-      {/* Key Metrics */}
-      <Suspense fallback={<LoadingSpinner />}>
-        <DashboardMetrics />
+    <div className="space-y-6 p-4 md:p-6 lg:p-8">
+      {/* Fleet Overview Header */}
+      <Suspense fallback={<Skeleton className="h-12 w-full" />}>
+        <FleetOverviewHeader />
       </Suspense>
 
-      {/* Dashboard Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {/* Recent Activity */}
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>
-              Latest updates from your fleet operations
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Suspense fallback={<LoadingSpinner />}>
-            </Suspense>
-          </CardContent>
-        </Card>
+      {/* KPI Grid */}
+      <Suspense fallback={<DashboardSkeleton />}>
+        <KpiGrid />
+      </Suspense>
 
-        {/* Compliance Alerts */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Compliance Alerts</CardTitle>
-            <CardDescription>
-              Important compliance items requiring attention
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Suspense fallback={<LoadingSpinner />}>
-            </Suspense>
-          </CardContent>
-        </Card>
-
-        {/* Upcoming Maintenance */}
-        <Card className="md:col-span-2 lg:col-span-3">
-          <CardHeader>
-            <CardTitle>Upcoming Maintenance</CardTitle>
-            <CardDescription>
-              Vehicles requiring maintenance in the next 30 days
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Suspense fallback={<LoadingSpinner />}>
-            </Suspense>
-          </CardContent>
-        </Card>
+      {/* Bottom Widgets Grid */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+          <QuickActionsWidget />
+        </Suspense>
+        <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+          <RecentAlertsWidget />
+        </Suspense>
+        <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+          <TodaysScheduleWidget />
+        </Suspense>
       </div>
     </div>
   )
 }
+
+// Helper Skeleton component (can be moved to a shared UI file)
+// For now, defining it here if not already globally available or part of a library like ShadCN
+// If you have a Skeleton component from a UI library, prefer using that.
+const Skeleton = ({ className }: { className?: string }) => (
+  <div className={`bg-gray-700 animate-pulse rounded-md ${className}`} />
+)

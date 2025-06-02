@@ -1,208 +1,159 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { Truck, Users, Package, DollarSign, TrendingUp, Wrench, AlertTriangle, CheckCircle, Clock } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { DollarSign, Users, Truck, Package, Route, ClipboardCheck, Wrench, Clock } from "lucide-react";
 
 interface DashboardCardsProps {
   kpis: {
-    activeVehicles: number
-    activeDrivers: number
-    totalLoads: number
-    completedLoads: number
-    pendingLoads: number
-    inTransitLoads: number
-    totalMiles: number
-    totalRevenue: number
-    upcomingMaintenance: number
-    recentInspections: number
-    failedInspections: number
-    utilizationRate: string | number
-    revenuePerMile: string | number
-  }
+    activeVehicles: number;
+    activeVehiclesChange?: string;
+    activeDrivers: number;
+    activeDriversChange?: string;
+    activeLoads: number;
+    activeLoadsLive?: number;
+    completedLoads: number;
+    inTransitLoads: number;
+    totalRevenue: number;
+    revenueChange?: string;
+    revenuePerMile: string | number;
+    revenueTarget?: string | number;
+    totalMiles: number;
+    milesChange?: string;
+    milesPerVehicleAvg?: number;
+    milesTarget?: number;
+    recentInspections: number;
+    failedInspections?: number; // Made optional as it might be 0
+    inspectionSuccessRate?: string | number;
+    upcomingMaintenance: number;
+    maintenanceOverdue?: number;
+    maintenanceThisWeek?: number;
+    pendingLoads: number;
+    pendingLoadsUrgent?: number;
+    pendingLoadsAwaitingPickup?: number;
+    pendingLoadsAwaitingAssignment?: number;
+  };
 }
 
+const iconMap: { [key: string]: React.ElementType } = {
+  Truck,
+  Users,
+  Package,
+  DollarSign,
+  Route,
+  ClipboardCheck,
+  Wrench,
+  Clock,
+};
+
 export function DashboardCards({ kpis }: DashboardCardsProps) {
-  const utilizationPercentage = Number.parseFloat(kpis.utilizationRate.toString()) * 10
-  const completionRate = (kpis.completedLoads / kpis.totalLoads) * 100
-  const inspectionSuccessRate = ((kpis.recentInspections - kpis.failedInspections) / kpis.recentInspections) * 100
+  const cardData = [
+    { title: "Active Vehicles", value: kpis.activeVehicles, change: kpis.activeVehiclesChange, icon: "Truck" },
+    { title: "Active Drivers", value: kpis.activeDrivers, change: kpis.activeDriversChange, icon: "Users" },
+    { title: "Active Loads", value: kpis.activeLoads, live: kpis.activeLoadsLive, completed: kpis.completedLoads, inTransit: kpis.inTransitLoads, icon: "Package" },
+    { title: "Revenue (30d)", value: kpis.totalRevenue, change: kpis.revenueChange, unit: "$", perMileAvg: kpis.revenuePerMile, target: kpis.revenueTarget, icon: "DollarSign" },
+    { title: "Total Miles (30d)", value: kpis.totalMiles, change: kpis.milesChange, unit: "k", perVehicleAvg: kpis.milesPerVehicleAvg, target: kpis.milesTarget, icon: "Route" },
+    { title: "Inspections (30d)", value: kpis.recentInspections, failed: kpis.failedInspections, successRate: kpis.inspectionSuccessRate, icon: "ClipboardCheck" },
+    { title: "Upcoming Maintenance", value: kpis.upcomingMaintenance, overdue: kpis.maintenanceOverdue, thisWeek: kpis.maintenanceThisWeek, icon: "Wrench" },
+    { title: "Pending Loads", value: kpis.pendingLoads, urgent: kpis.pendingLoadsUrgent, awaitingPickup: kpis.pendingLoadsAwaitingPickup, awaitingAssignment: kpis.pendingLoadsAwaitingAssignment, icon: "Clock" },
+  ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-0">
-      {/* Active Vehicles */}
-      <Card className="bg-black border-none shadow-lg">
-        <CardHeader className="pb-2 flex flex-row items-center justify-between">
-          <CardTitle className="text-base font-semibold text-zinc-100 flex items-center gap-2">
-            <Truck className="h-5 w-5 text-blue-400" />
-            Active Vehicles
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold text-white">{kpis.activeVehicles}</div>
-          <div className="text-xs text-zinc-400 mt-1">
-            Maintenance due:{" "}
-            <span className="text-orange-400 font-semibold">3</span>
-          </div>
-        </CardContent>
-      </Card>
-      {/* Active Drivers */}
-      <Card className="bg-black border-none shadow-lg">
-        <CardHeader className="pb-2 flex flex-row items-center justify-between">
-          <CardTitle className="text-base font-semibold text-zinc-100 flex items-center gap-2">
-            <Users className="h-5 w-5 text-green-400" />
-            Active Drivers
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold text-white">{kpis.activeDrivers}</div>
-          <div className="text-xs text-zinc-400 mt-1">Utilization rate</div>
-          <Progress
-            value={utilizationPercentage}
-            className="h-2 mt-2 bg-zinc-800"
-          />
-          <div className="text-xs text-green-400 mt-1">
-            {utilizationPercentage.toFixed(1)}%
-          </div>
-        </CardContent>
-      </Card>
-      {/* Active Loads */}
-      <Card className="bg-black border-none shadow-lg">
-        <CardHeader className="pb-2 flex flex-row items-center justify-between">
-          <CardTitle className="text-base font-semibold text-zinc-100 flex items-center gap-2">
-            <Package className="h-5 w-5 text-purple-400" />
-            Active Loads
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold text-white">{kpis.totalLoads}</div>
-          <div className="text-xs text-zinc-400 mt-1">
-            Completed:{" "}
-            <span className="text-emerald-400 font-semibold">
-              {kpis.completedLoads}
-            </span>{" "}
-            | In Transit:{" "}
-            <span className="text-blue-400 font-semibold">
-              {kpis.inTransitLoads}
-            </span>
-          </div>
-          <div className="text-xs text-zinc-400 mt-1">Completion rate</div>
-          <Progress
-            value={completionRate}
-            className="h-2 mt-2 bg-zinc-800"
-          />
-          <div className="text-xs text-emerald-400 mt-1">
-            {completionRate.toFixed(1)}%
-          </div>
-        </CardContent>
-      </Card>
-      {/* Revenue */}
-      <Card className="bg-black border-none shadow-lg">
-        <CardHeader className="pb-2 flex flex-row items-center justify-between">
-          <CardTitle className="text-base font-semibold text-zinc-100 flex items-center gap-2">
-            <DollarSign className="h-5 w-5 text-green-300" />
-            Revenue (30d)
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold text-white">
-            ${(kpis.totalRevenue / 1000).toFixed(1)}k
-          </div>
-          <div className="text-xs text-zinc-400 mt-1">
-            Per mile avg:{" "}
-            <span className="text-green-400 font-semibold">
-              ${kpis.revenuePerMile}
-            </span>
-          </div>
-        </CardContent>
-      </Card>
-      {/* Total Miles */}
-      <Card className="bg-black border-none shadow-lg">
-        <CardHeader className="pb-2 flex flex-row items-center justify-between">
-          <CardTitle className="text-base font-semibold text-zinc-100 flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-orange-400" />
-            Total Miles (30d)
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold text-white">
-            {(kpis.totalMiles / 1000).toFixed(1)}k
-          </div>
-          <div className="text-xs text-zinc-400 mt-1">
-            Per vehicle avg:{" "}
-            <span className="text-blue-400 font-semibold">2,468</span>
-          </div>
-        </CardContent>
-      </Card>
-      {/* Inspections */}
-      <Card className="bg-black border-none shadow-lg">
-        <CardHeader className="pb-2 flex flex-row items-center justify-between">
-          <CardTitle className="text-base font-semibold text-zinc-100 flex items-center gap-2">
-            <CheckCircle className="h-5 w-5 text-cyan-400" />
-            Inspections (30d)
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold text-white">{kpis.recentInspections}</div>
-          <div className="text-xs text-zinc-400 mt-1">
-            Failed:{" "}
-            <span className="text-red-400 font-semibold">
-              {kpis.failedInspections}
-            </span>
-          </div>
-          <div className="text-xs text-zinc-400 mt-1">Success rate</div>
-          <Progress
-            value={inspectionSuccessRate}
-            className="h-2 mt-2 bg-zinc-800"
-          />
-          <div className="text-xs text-cyan-400 mt-1">
-            {inspectionSuccessRate.toFixed(1)}%
-          </div>
-        </CardContent>
-      </Card>
-      {/* Upcoming Maintenance */}
-      <Card className="bg-black border-none shadow-lg">
-        <CardHeader className="pb-2 flex flex-row items-center justify-between">
-          <CardTitle className="text-base font-semibold text-zinc-100 flex items-center gap-2">
-            <Wrench className="h-5 w-5 text-yellow-400" />
-            Upcoming Maintenance
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold text-white">{kpis.upcomingMaintenance}</div>
-          <div className="text-xs text-zinc-400 mt-1">Next 7 days</div>
-        </CardContent>
-      </Card>
-      {/* Pending Loads */}
-      <Card className="bg-black border-none shadow-lg">
-        <CardHeader className="pb-2 flex flex-row items-center justify-between">
-          <CardTitle className="text-base font-semibold text-zinc-100 flex items-center gap-2">
-            <Clock className="h-5 w-5 text-violet-400" />
-            Pending Loads
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold text-white">{kpis.pendingLoads}</div>
-          <div className="text-xs text-zinc-400 mt-1">
-            Awaiting pickup:{" "}
-            <span className="text-orange-400 font-semibold">4</span>
-          </div>
-          <div className="text-xs text-zinc-400 mt-1">
-            Awaiting assignment:{" "}
-            <span className="text-yellow-400 font-semibold">4</span>
-          </div>
-        </CardContent>
-      </Card>
-      {/* Alerts/Warnings */}
-      <Card className="bg-black border-none shadow-lg">
-        <CardHeader className="pb-2 flex flex-row items-center justify-between">
-          <CardTitle className="text-base font-semibold text-zinc-100 flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-red-400" />
-            Alerts
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold text-white">1</div>
-          <div className="text-xs text-zinc-400 mt-1">See recent alerts above</div>
-        </CardContent>
-      </Card>
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mt-6">
+      {cardData.map((item, i) => {
+        const IconComponent = iconMap[item.icon];
+        return (
+          <Card key={i} className="bg-background-soft shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-foreground-muted">
+                {item.title}
+              </CardTitle>
+              {IconComponent && <IconComponent className="h-4 w-4 text-foreground-muted" />}
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground">
+                {item.unit === "$" && item.unit}
+                {typeof item.value === 'number' ? item.value.toLocaleString() : item.value}
+                {item.unit === "k" && item.unit}
+              </div>
+              {item.change && (
+                <p className={`text-xs ${item.change.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>
+                  {item.change}
+                </p>
+              )}
+              {item.title === "Active Loads" && (
+                <div className="text-xs text-foreground-muted mt-1">
+                  {item.live && <span className="text-green-400 mr-2">{item.live} Live</span>}
+                  <span>{item.completed} Completed</span>, <span>{item.inTransit} In Transit</span>
+                </div>
+              )}
+              {item.title === "Revenue (30d)" && item.perMileAvg && item.target && (
+                <div className="text-xs text-foreground-muted mt-1 space-y-1">
+                  <div>Per mile avg: ${item.perMileAvg}</div>
+                  <div className="flex items-center gap-2">
+                    <span>Target: ${item.target}/mile</span>
+                    <Progress 
+                      value={Math.min((Number(item.perMileAvg) / Number(item.target)) * 100, 100)} 
+                      className="h-2 flex-1"
+                    />
+                    <span className="text-xs">
+                      {Math.round((Number(item.perMileAvg) / Number(item.target)) * 100)}%
+                    </span>
+                  </div>
+                </div>
+              )}
+              {item.title === "Total Miles (30d)" && item.perVehicleAvg && item.target && (
+                <div className="text-xs text-foreground-muted mt-1 space-y-1">
+                  <div>Per vehicle avg: {item.perVehicleAvg?.toLocaleString()}</div>
+                  <div className="flex items-center gap-2">
+                    <span>Monthly target: {item.target?.toLocaleString()} miles</span>
+                    <Progress 
+                      value={Math.min((Number(item.value) / Number(item.target)) * 100, 100)} 
+                      className="h-2 flex-1"
+                    />
+                    <span className="text-xs">
+                      {Math.round((Number(item.value) / Number(item.target)) * 100)}%
+                    </span>
+                  </div>
+                </div>
+              )}
+              {item.title === "Inspections (30d)" && item.successRate !== undefined && (
+                <div className="text-xs text-foreground-muted mt-1 space-y-1">
+                  {item.failed !== undefined && item.failed > 0 && (
+                    <div className="text-red-500">{item.failed} Failed</div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <span>Success rate: {item.successRate}%</span>
+                    <Progress 
+                      value={Number(item.successRate)} 
+                      className="h-2 flex-1"
+                    />
+                  </div>
+                </div>
+              )}
+              {item.title === "Upcoming Maintenance" && item.overdue !== undefined && item.thisWeek !== undefined && (
+                <div className="text-xs text-foreground-muted mt-1 space-y-1">
+                  <div className="flex justify-between">
+                    <span>{item.overdue} Overdue</span>
+                    <span>{item.thisWeek} This week</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span>Maintenance status</span>
+                    <Progress 
+                      value={item.value > 0 ? ((item.value - item.overdue) / item.value) * 100 : 100} 
+                      className="h-2 flex-1"
+                    />
+                  </div>
+                </div>
+              )}
+              {item.title === "Pending Loads" && item.awaitingPickup !== undefined && item.awaitingAssignment !== undefined && (
+                <div className="text-xs text-foreground-muted mt-1">
+                  {item.urgent !== undefined && item.urgent > 0 && <span className="text-orange-500 mr-2">{item.urgent} Urgent</span>}
+                  <span>{item.awaitingPickup} Awaiting pickup</span>, <span>{item.awaitingAssignment} Awaiting assignment</span>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
-  )
+  );
 }

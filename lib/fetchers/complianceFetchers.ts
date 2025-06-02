@@ -13,6 +13,177 @@ import {
 import { parsePermission } from '@/lib/auth/permissions';
 import { z } from 'zod';
 import { handleError } from "@/lib/errors/handleError";
+import { getCachedData, setCachedData, CACHE_TTL } from "@/lib/cache/auth-cache";
+
+/**
+ * Get compliance dashboard overview data
+ */
+export async function getComplianceDashboard(organizationId: string) {
+  const { userId } = await auth();
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
+
+  const cacheKey = `compliance:dashboard:${organizationId}`;
+  const cached = getCachedData(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
+  try {
+    const today = new Date();
+    const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const sixtyDaysAgo = new Date(today.getTime() - 60 * 24 * 60 * 60 * 1000);
+
+    const [
+      totalDocuments,
+      pendingDocuments,
+      expiredDocuments,
+      expiringDocuments,
+      driverCompliance,
+      vehicleCompliance,
+      inspectionData,
+    ] = await Promise.all([
+      // Total compliance documents
+      prisma.complianceDocument.count({
+        where: { organizationId },
+      }),
+
+      // Pending documents (null status or pending)
+      prisma.complianceDocument.count({
+        where: {
+          organizationId,
+          OR: [
+            { status: undefined },
+            { status: 'pending' },
+          ],
+        },
+      }),
+
+      // Expired documents
+      prisma.complianceDocument.count({
+        where: {
+          organizationId,
+          expirationDate: {
+            lt: today,
+          },
+        },
+      }),
+
+      // Expiring within 30 days
+      prisma.complianceDocument.count({
+        where: {
+          organizationId,
+          expirationDate: {
+            gte: today,
+            lte: new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000),
+          },
+        },
+      }),
+
+      // Driver compliance summary
+      prisma.driver.findMany({
+        where: {
+          organizationId,
+          status: 'active',
+        },
+        include: {
+          complianceDocuments: {
+            select: {
+              type: true,
+              status: true,
+              expirationDate: true,
+            },
+          },
+        },
+      }),
+
+      // Vehicle compliance summary
+      prisma.vehicle.findMany({
+        where: {
+          organizationId,
+          status: 'active',
+        },
+        include: {
+          complianceDocuments: {
+            select: {
+              type: true,
+              status: true,
+              expirationDate: true,
+            },
+          },
+        },
+      }),
+
+      // Inspection data
+      prisma.vehicle.findMany({
+        where: {
+          organizationId,
+          lastInspectionDate: {
+            gte: thirtyDaysAgo,
+          },
+        },
+        select: {
+          id: true,
+          lastInspectionDate: true,
+          nextInspectionDue: true,
+        },
+      }),
+    ]);
+
+    // Calculate compliance rates
+    const driversInCompliance = driverCompliance.filter(driver => {
+      const requiredDocs = ['license', 'medical_certificate', 'drug_test'];
+      return requiredDocs.every(docType => {
+        const doc = driver.complianceDocuments.find(d => d.type === docType);
+        return doc && doc.status === 'approved' && 
+               (!doc.expirationDate || new Date(doc.expirationDate) > today);
+      });
+    }).length;
+
+    const vehiclesInCompliance = vehicleCompliance.filter(vehicle => {
+      const requiredDocs = ['registration', 'insurance', 'inspection'];
+      return requiredDocs.every(docType => {
+        const doc = vehicle.complianceDocuments.find(d => d.type === docType);
+        return doc && doc.status === 'approved' && 
+               (!doc.expirationDate || new Date(doc.expirationDate) > today);
+      });
+    }).length;
+
+    // Calculate inspection compliance
+    const overdueInspections = inspectionData.filter(v => 
+      v.nextInspectionDue && new Date(v.nextInspectionDue) < today
+    ).length;
+
+    const dashboard = {
+      totalDocuments,
+      pendingDocuments,
+      expiredDocuments,
+      expiringDocuments,
+      driverComplianceRate: driverCompliance.length > 0 
+        ? (driversInCompliance / driverCompliance.length * 100).toFixed(1)
+        : "100",
+      vehicleComplianceRate: vehicleCompliance.length > 0 
+        ? (vehiclesInCompliance / vehicleCompliance.length * 100).toFixed(1)
+        : "100",
+      totalDrivers: driverCompliance.length,
+      driversInCompliance,
+      totalVehicles: vehicleCompliance.length,
+      vehiclesInCompliance,
+      recentInspections: inspectionData.length,
+      overdueInspections,
+      inspectionComplianceRate: inspectionData.length > 0 
+        ? ((inspectionData.length - overdueInspections) / inspectionData.length * 100).toFixed(1)
+        : "100",
+    };
+
+    setCachedData(cacheKey, dashboard, CACHE_TTL.KPI);
+    return dashboard;
+  } catch (error) {
+    console.error('Error fetching compliance dashboard:', error);
+    throw new Error('Failed to fetch compliance dashboard');
+  }
+}
 
 // Document Fetchers
 export async function getComplianceDocuments(
@@ -25,7 +196,7 @@ export async function getComplianceDocuments(
     }
 
     // Check permissions
-    const hasPermission = parsePermission( userId);
+    const hasPermission = parsePermission(userId);
     if (!hasPermission) {
       throw new Error('Insufficient permissions');
     }
@@ -38,7 +209,6 @@ export async function getComplianceDocuments(
       search,
       status,
       type,
-
       sortBy = 'createdAt',
       sortOrder = 'desc'
     } = validatedFilter;
@@ -50,9 +220,9 @@ export async function getComplianceDocuments(
 
     if (search) {
       where.OR = [
-        { title: { contains: search, mode: 'insensitive' } },
-        { documentNumber: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } }
+        { fileName: { contains: search, mode: 'insensitive' } },
+        { type: { contains: search, mode: 'insensitive' } },
+        { notes: { contains: search, mode: 'insensitive' } },
       ];
     }
 
@@ -64,6 +234,162 @@ export async function getComplianceDocuments(
       where.type = type;
     }
 
+    // Execute query with pagination
+    const [documents, totalCount] = await Promise.all([
+      prisma.complianceDocument.findMany({
+        where,
+        include: {
+          driver: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+          vehicle: {
+            select: {
+              id: true,
+              unitNumber: true,
+              make: true,
+              model: true,
+            },
+          },
+          verifiedByUser: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+        orderBy: {
+          [sortBy]: sortOrder,
+        },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      
+      prisma.complianceDocument.count({ where }),
+    ]);
+
+    return {
+      success: true,
+      data: {
+        documents,
+        pagination: {
+          page,
+          limit,
+          total: totalCount,
+          pages: Math.ceil(totalCount / limit),
+        },
+      },
+    };
+  } catch (error) {
+    console.error('Error fetching compliance documents:', error);
+    return handleError(error, "Compliance Documents Fetcher");
+  }
+}
+export async function getComplianceDocumentById(documentId: string) {
+  try {
+    const { userId, orgId } = await auth();
+    if (!userId || !orgId) {
+      throw new Error('Unauthorized');
+    }
+
+    // Check permissions
+    const hasPermission = parsePermission(userId);
+    if (!hasPermission) {
+      throw new Error('Insufficient permissions');
+    }
+
+    const document = await prisma.complianceDocument.findUnique({
+      where: { id: documentId },
+      include: {
+        driver: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true
+          }
+        },
+        vehicle: {
+          select: {
+            id: true,
+            unitNumber: true,
+            make: true,
+            model: true
+          }
+        }
+      }
+    });
+
+    if (!document) {
+      throw new Error('Document not found');
+    }
+
+    return {
+      success: true,
+      data: document
+    };
+  } catch (error) {
+    console.error('Error fetching compliance document by ID:', error);
+    return handleError(error, "Compliance Document Fetcher");
+  }
+}
+/**
+ * Get compliance documents with pagination and filtering   
+ * @param filter - Filter options
+ * @returns Paginated compliance documents
+**/
+
+
+export async function getPaginatedComplianceDocuments(
+  filter: z.infer<typeof complianceDocumentFilterSchema> = {}
+) {
+  try {
+    const { userId, orgId } = await auth();
+    if (!userId || !orgId) {
+      throw new Error('Unauthorized');
+    }
+
+    // Check permissions
+    const hasPermission = parsePermission(userId);
+    if (!hasPermission) {
+      throw new Error('Insufficient permissions');
+    }
+
+    // Validate and parse filter
+    const validatedFilter = complianceDocumentFilterSchema.parse(filter);
+    const {
+      page = 1,
+      limit = 20,
+      search,
+      status,
+      type,
+      sortBy = 'createdAt',
+      sortOrder = 'desc'
+    } = validatedFilter;
+
+    // Build where clause
+    const where: any = {
+      organizationId: orgId
+    };
+
+    if (search) {
+      where.OR = [
+        { fileName: { contains: search, mode: 'insensitive' } },
+        { type: { contains: search, mode: 'insensitive' } },
+        { notes: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    if (status) {
+      where.status = status;
+    }
+
+    if (type) {
+      where.type = type;
+    }
 
     // Execute query with pagination
     const [documents, totalCount] = await Promise.all([
@@ -165,18 +491,254 @@ export async function getHOSLogs(
       where.startTime = { gte: startDate };
     } else if (endDate) {
       where.startTime = { lte: endDate };
-    }
+    }    // Execute query with pagination
+    const [hosLogs, totalCount] = await Promise.all([
+      prisma.driver.findMany({
+        where: {
+          organizationId: orgId,
+          ...(driverId && { id: driverId }),
+        },
+        include: {
+          complianceDocuments: {
+            where: {
+              type: 'hos_log',
+              ...(startDate && endDate && {
+                createdAt: {
+                  gte: startDate,
+                  lte: endDate,
+                },
+              }),
+            },
+            orderBy: {
+              createdAt: sortOrder,
+            },
+            take: limit,
+            skip: (page - 1) * limit,
+          },
+        },
+      }),
+      
+      // Get total count for pagination
+      prisma.complianceDocument.count({
+        where: {
+          organizationId: orgId,
+          type: 'hos_log',
+          ...(driverId && { driverId }),
+          ...(startDate && endDate && {
+            createdAt: {
+              gte: startDate,
+              lte: endDate,
+            },
+          }),
+        },
+      }),
+    ]);
 
-    
+    // Transform data to HOS log format
+    const transformedLogs = hosLogs.flatMap(driver => 
+      driver.complianceDocuments.map(doc => ({
+        id: doc.id,
+        driverId: driver.id,
+        driverName: `${driver.firstName} ${driver.lastName}`,
+        date: doc.createdAt,
+        status: doc.status as 'compliant' | 'violation' | 'pending_review',
+        totalDriveTime: 0, // TODO: Calculate from actual HOS entries
+        totalOnDutyTime: 0, // TODO: Calculate from actual HOS entries
+        violations: [], // TODO: Check for violations
+        certifiedBy: doc.verifiedBy,
+        certifiedAt: doc.verifiedAt,
+        notes: doc.notes,
+        createdAt: doc.createdAt,
+        updatedAt: doc.updatedAt,
+      }))
+    );
+
+    const totalPages = Math.ceil(totalCount / limit);
+
     return {
       success: true,
       data: {
-      
+        logs: transformedLogs,
+        pagination: {
+          page,
+          limit,
+          totalCount,
+          totalPages,
+          hasNext: page < totalPages,
+          hasPrev: page > 1,
+        },
       }
     };
   } catch (error) {
     console.error('Error fetching HOS logs:', error);
     return handleError(error, "HOS Logs Fetcher")
+  }
+}
+
+/**
+ * Get HOS status for a specific driver
+ */
+export async function getDriverHOSStatus(driverId: string) {
+  try {
+    const { userId, orgId } = await auth();
+    if (!userId || !orgId) {
+      throw new Error('Unauthorized');
+    }
+
+    const cacheKey = `hos:status:${orgId}:${driverId}`;
+    const cached = getCachedData(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    const today = new Date();
+    const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const eightDaysAgo = new Date(today.getTime() - 8 * 24 * 60 * 60 * 1000);
+
+    // Get recent HOS logs for the driver
+    const recentLogs = await prisma.complianceDocument.findMany({
+      where: {
+        organizationId: orgId,
+        driverId,
+        type: 'hos_log',
+        createdAt: {
+          gte: eightDaysAgo,
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: 10,
+    });
+
+    // Calculate available hours (simplified logic - would need actual HOS entries)
+    const mockHOSStatus = {
+      driverId,
+      currentStatus: 'off_duty',
+      availableDriveTime: 11 * 60, // 11 hours in minutes
+      availableOnDutyTime: 14 * 60, // 14 hours in minutes
+      usedDriveTime: 0,
+      usedOnDutyTime: 0,
+      cycleHours: 70 * 60, // 70 hours in minutes
+      usedCycleHours: 0,
+      restartAvailable: false,
+      violations: [],
+      lastLoggedAt: recentLogs[0]?.createdAt || null,
+      complianceStatus: recentLogs.length > 0 ? 'compliant' : 'pending',
+    };
+
+    setCachedData(cacheKey, mockHOSStatus, CACHE_TTL.SHORT);
+    return {
+      success: true,
+      data: mockHOSStatus,
+    };
+  } catch (error) {
+    console.error('Error fetching driver HOS status:', error);
+    return handleError(error, "Driver HOS Status Fetcher");
+  }
+}
+
+/**
+ * Get HOS violations for organization
+ */
+export async function getHOSViolations(organizationId: string, options: {
+  severity?: string[];
+  resolved?: boolean;
+  startDate?: Date;
+  endDate?: Date;
+  limit?: number;
+  page?: number;
+} = {}) {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      throw new Error('Unauthorized');
+    }
+
+    const {
+      severity = ['minor', 'major', 'critical'],
+      resolved = false,
+      startDate,
+      endDate,
+      limit = 50,
+      page = 1,
+    } = options;
+
+    const where: any = {
+      organizationId,
+      type: 'hos_violation',
+      status: resolved ? 'resolved' : { not: 'resolved' },
+    };
+
+    if (startDate && endDate) {
+      where.createdAt = {
+        gte: startDate,
+        lte: endDate,
+      };
+    }
+
+    // For now, use compliance documents as proxy for violations
+    const [violations, totalCount] = await Promise.all([
+      prisma.complianceDocument.findMany({
+        where: {
+          organizationId,
+          type: 'hos_log',
+          status: 'pending', // Pending could indicate violations
+        },
+        include: {
+          driver: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+        take: limit,
+        skip: (page - 1) * limit,
+      }),
+      
+      prisma.complianceDocument.count({
+        where: {
+          organizationId,
+          type: 'hos_log',
+          status: 'pending',
+        },
+      }),
+    ]);
+
+    const transformedViolations = violations.map(doc => ({
+      id: doc.id,
+      type: 'other' as const,
+      description: doc.notes || 'HOS compliance review required',
+      severity: 'minor' as const,
+      timestamp: doc.createdAt,
+      resolved: false,
+      driver: doc.driver ? {
+        id: doc.driver.id,
+        name: `${doc.driver.firstName} ${doc.driver.lastName}`,
+      } : null,
+      status: 'open' as const,
+    }));
+
+    return {
+      success: true,
+      data: {
+        violations: transformedViolations,
+        pagination: {
+          page,
+          limit,
+          total: totalCount,
+          pages: Math.ceil(totalCount / limit),
+        },
+      },
+    };
+  } catch (error) {
+    console.error('Error fetching HOS violations:', error);
+    return handleError(error, "HOS Violations Fetcher");
   }
 }
 

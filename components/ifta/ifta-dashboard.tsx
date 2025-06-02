@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
@@ -9,86 +9,199 @@ import { Progress } from "@/components/ui/progress"
 import { IftaReportTable } from "./ifta-report-table"
 import { IftaTripTable } from "./ifta-trip-table"
 import { BarChart, Calendar, Download, FileText, TrendingUp } from "lucide-react"
+import { getIftaDataForPeriod, getIftaTripData, getIftaFuelPurchases } from "@/lib/fetchers/iftaFetchers"
+import { useParams } from "next/navigation"
+
+interface IftaData {
+  summary: {
+    totalMiles: number;
+    totalGallons: number;
+    averageMpg: number;
+    totalFuelCost: number;
+  };
+  trips: any[];
+  fuelPurchases: any[];
+  jurisdictionSummary: any[];
+  report: any;
+}
 
 export function IftaDashboard() {
-  const [quarter, setQuarter] = useState("2023-Q2")
+  const params = useParams()
+  const orgId = params?.orgId as string
+  const [quarter, setQuarter] = useState("2025-Q2")
+  const [iftaData, setIftaData] = useState<IftaData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchIftaData = async () => {
+      if (!orgId) return
+      
+      try {
+        setLoading(true)
+        const [quarterPart, yearPart] = quarter.split('-')
+        const data = await getIftaDataForPeriod(orgId, quarterPart, yearPart)
+        // Ensure data matches IftaData shape
+        if (
+          data &&
+          typeof data === "object" &&
+          "summary" in data &&
+          "trips" in data &&
+          "fuelPurchases" in data &&
+          "jurisdictionSummary" in data &&
+          "report" in data
+        ) {
+          // Transform data to match IftaData type
+          setIftaData({
+            summary: {
+              totalMiles: Number((data as any).summary?.totalMiles) || 0,
+              totalGallons: Number((data as any).summary?.totalGallons) || 0,
+              averageMpg: Number((data as any).summary?.averageMpg) || 0,
+              totalFuelCost: Number((data as any).summary?.totalFuelCost) || 0,
+            },
+            trips: Array.isArray((data as any).trips) ? (data as any).trips : [],
+            fuelPurchases: Array.isArray((data as any).fuelPurchases) ? (data as any).fuelPurchases : [],
+            jurisdictionSummary: Array.isArray((data as any).jurisdictionSummary) ? (data as any).jurisdictionSummary : [],
+            report: (data as any).report ?? null,
+          })
+        } else {
+          setIftaData({
+            summary: {
+              totalMiles: 0,
+              totalGallons: 0,
+              averageMpg: 0,
+              totalFuelCost: 0,
+            },
+            trips: [],
+            fuelPurchases: [],
+            jurisdictionSummary: [],
+            report: null,
+          })
+        }
+        setError(null)
+      } catch (err) {
+        console.error('Error fetching IFTA data:', err)
+        setError('Failed to load IFTA data')
+        // Set default data for UI demonstration
+        setIftaData({
+          summary: {
+            totalMiles: 0,
+            totalGallons: 0,
+            averageMpg: 0,
+            totalFuelCost: 0,
+          },
+          trips: [],
+          fuelPurchases: [],
+          jurisdictionSummary: [],
+          report: null,
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchIftaData()
+  }, [orgId, quarter])
+
+  const handleQuarterChange = (newQuarter: string) => {
+    setQuarter(newQuarter)
+  }
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col space-y-6">
       <div className="flex flex-row flex-wrap items-center justify-between gap-6">
         <div className="flex flex-col gap-1 min-w-0">
           <h2 className="text-3xl font-bold tracking-tight whitespace-nowrap">IFTA Management</h2>
           <p className="text-muted-foreground whitespace-nowrap">Track and manage International Fuel Tax Agreement reporting</p>
         </div>
-        <div className="flex flex-col gap-2 w-full max-w-xs sm:w-auto">
-          <Button variant="outline" size="sm" className="w-full">
-            <span className="flex items-center justify-center w-full">
-              <Calendar className="mr-2 h-4 w-4" />
-              Select Period
-            </span>
-          </Button>
-          <Button size="sm" className="w-full">
-            <span className="flex items-center justify-center w-full">
-              <FileText className="mr-2 h-4 w-4" />
-              Generate Report
-            </span>
-          </Button>
+      
+      <div className="flex flex-col gap-2 w-full max-w-xs sm:w-auto">
+        <Select value={quarter} onValueChange={handleQuarterChange}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select Quarter" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="2025-Q1">2025 Q1</SelectItem>
+            <SelectItem value="2025-Q2">2025 Q2</SelectItem>
+            <SelectItem value="2025-Q3">2025 Q3</SelectItem>
+            <SelectItem value="2025-Q4">2025 Q4</SelectItem>
+            <SelectItem value="2024-Q1">2024 Q1</SelectItem>
+            <SelectItem value="2024-Q2">2024 Q2</SelectItem>
+            <SelectItem value="2024-Q3">2024 Q3</SelectItem>
+            <SelectItem value="2024-Q4">2024 Q4</SelectItem>
+          </SelectContent>
+        </Select>
+        <Button size="sm" className="w-full">
+          <span className="flex items-center justify-center w-full">
+            <FileText className="mr-2 h-4 w-4" />
+            Generate Report
+          </span>
+        </Button>
+      </div>
+      
+      {loading ? (
+        <div className="flex items-center justify-center h-32">
+          <div className="text-sm text-muted-foreground">Loading IFTA data...</div>
         </div>
-      </div>
+      ) : error ? (
+        <div className="flex items-center justify-center h-32">
+          <div className="text-sm text-red-500">{error}</div>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Miles</CardTitle>
+                <BarChart className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{iftaData?.summary.totalMiles?.toLocaleString() || '0'}</div>
+                <p className="text-xs text-muted-foreground">For {quarter.replace("-", " ")}</p>
+              </CardContent>
+            </Card>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Miles</CardTitle>
-            <BarChart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">42,587</div>
-            <p className="text-xs text-muted-foreground">For {quarter.replace("-", " ")}</p>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Fuel Purchased</CardTitle>
+                <BarChart className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{iftaData?.summary.totalGallons?.toLocaleString() || '0'} gal</div>
+                <p className="text-xs text-muted-foreground">For {quarter.replace("-", " ")}</p>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Fuel Purchased</CardTitle>
-            <BarChart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">6,842 gal</div>
-            <p className="text-xs text-muted-foreground">For {quarter.replace("-", " ")}</p>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Average MPG</CardTitle>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{iftaData?.summary.averageMpg?.toFixed(2) || '0.00'}</div>
+                <p className="text-xs text-muted-foreground">For {quarter.replace("-", " ")}</p>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average MPG</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">6.22</div>
-            <p className="text-xs text-muted-foreground">For {quarter.replace("-", " ")}</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tax Due</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">$1,245.87</div>
-            <p className="text-xs text-muted-foreground">Estimated for {quarter.replace("-", " ")}</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Quarterly Filing Status</CardTitle>
-            <CardDescription>IFTA filing progress for {quarter.replace("-", " ")}</CardDescription>
-          </CardHeader>
-          <CardContent>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Fuel Cost</CardTitle>
+                <FileText className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">${iftaData?.summary.totalFuelCost?.toLocaleString() || '0.00'}</div>
+                <p className="text-xs text-muted-foreground">For {quarter.replace("-", " ")}</p>
+              </CardContent>
+            </Card>
+          </div>
+        
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Quarterly Filing Status</CardTitle>
+                <CardDescription>IFTA filing progress for {quarter.replace("-", " ")}</CardDescription>
+              </CardHeader>
+              <CardContent>
             <div className="space-y-8">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -161,36 +274,22 @@ export function IftaDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr className="border-b">
-                    <td className="p-2 text-sm font-medium">IL</td>
-                    <td className="p-2 text-sm text-right">12,458</td>
-                    <td className="p-2 text-sm text-right">1,985</td>
-                    <td className="p-2 text-sm text-right">$386.42</td>
-                  </tr>
-                  <tr className="border-b">
-                    <td className="p-2 text-sm font-medium">IN</td>
-                    <td className="p-2 text-sm text-right">8,742</td>
-                    <td className="p-2 text-sm text-right">1,402</td>
-                    <td className="p-2 text-sm text-right">$268.75</td>
-                  </tr>
-                  <tr className="border-b">
-                    <td className="p-2 text-sm font-medium">OH</td>
-                    <td className="p-2 text-sm text-right">7,895</td>
-                    <td className="p-2 text-sm text-right">1,265</td>
-                    <td className="p-2 text-sm text-right">$245.18</td>
-                  </tr>
-                  <tr className="border-b">
-                    <td className="p-2 text-sm font-medium">MI</td>
-                    <td className="p-2 text-sm text-right">6,542</td>
-                    <td className="p-2 text-sm text-right">1,050</td>
-                    <td className="p-2 text-sm text-right">$198.32</td>
-                  </tr>
-                  <tr>
-                    <td className="p-2 text-sm font-medium">WI</td>
-                    <td className="p-2 text-sm text-right">6,950</td>
-                    <td className="p-2 text-sm text-right">1,140</td>
-                    <td className="p-2 text-sm text-right">$147.20</td>
-                  </tr>
+                  {Array.isArray(iftaData?.jurisdictionSummary) && iftaData.jurisdictionSummary.length > 0 ? (
+                    iftaData.jurisdictionSummary.map((jurisdiction: any, index: number) => (
+                      <tr key={jurisdiction.jurisdiction || index} className="border-b">
+                        <td className="p-2 text-sm font-medium">{jurisdiction.jurisdiction || 'N/A'}</td>
+                        <td className="p-2 text-sm text-right">{jurisdiction.totalMiles?.toLocaleString() || '0'}</td>
+                        <td className="p-2 text-sm text-right">{jurisdiction.totalGallons?.toLocaleString() || '0'}</td>
+                        <td className="p-2 text-sm text-right">${jurisdiction.estimatedTax?.toFixed(2) || '0.00'}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr className="border-b">
+                      <td colSpan={4} className="p-4 text-center text-sm text-muted-foreground">
+                        No jurisdiction data available for {quarter.replace("-", " ")}
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -217,7 +316,7 @@ export function IftaDashboard() {
               <CardDescription>Record of trips for IFTA reporting</CardDescription>
             </CardHeader>
             <CardContent>
-              <IftaTripTable trips={ [] } />
+              <IftaTripTable trips={iftaData?.trips || []} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -243,51 +342,25 @@ export function IftaDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr className="border-b">
-                      <td className="p-2 text-sm">06/28/2023</td>
-                      <td className="p-2 text-sm">T-101</td>
-                      <td className="p-2 text-sm">Flying J #342</td>
-                      <td className="p-2 text-sm">IL</td>
-                      <td className="p-2 text-sm text-right">125.8</td>
-                      <td className="p-2 text-sm text-right">$3.89</td>
-                      <td className="p-2 text-sm text-right">$489.36</td>
-                    </tr>
-                    <tr className="border-b">
-                      <td className="p-2 text-sm">06/25/2023</td>
-                      <td className="p-2 text-sm">T-102</td>
-                      <td className="p-2 text-sm">Pilot #156</td>
-                      <td className="p-2 text-sm">IN</td>
-                      <td className="p-2 text-sm text-right">118.2</td>
-                      <td className="p-2 text-sm text-right">$3.92</td>
-                      <td className="p-2 text-sm text-right">$463.34</td>
-                    </tr>
-                    <tr className="border-b">
-                      <td className="p-2 text-sm">06/22/2023</td>
-                      <td className="p-2 text-sm">T-103</td>
-                      <td className="p-2 text-sm">TA #078</td>
-                      <td className="p-2 text-sm">OH</td>
-                      <td className="p-2 text-sm text-right">132.5</td>
-                      <td className="p-2 text-sm text-right">$3.85</td>
-                      <td className="p-2 text-sm text-right">$510.13</td>
-                    </tr>
-                    <tr className="border-b">
-                      <td className="p-2 text-sm">06/20/2023</td>
-                      <td className="p-2 text-sm">T-101</td>
-                      <td className="p-2 text-sm">Love's #234</td>
-                      <td className="p-2 text-sm">MI</td>
-                      <td className="p-2 text-sm text-right">115.6</td>
-                      <td className="p-2 text-sm text-right">$3.94</td>
-                      <td className="p-2 text-sm text-right">$455.46</td>
-                    </tr>
-                    <tr>
-                      <td className="p-2 text-sm">06/18/2023</td>
-                      <td className="p-2 text-sm">T-102</td>
-                      <td className="p-2 text-sm">Petro #112</td>
-                      <td className="p-2 text-sm">WI</td>
-                      <td className="p-2 text-sm text-right">128.3</td>
-                      <td className="p-2 text-sm text-right">$3.88</td>
-                      <td className="p-2 text-sm text-right">$497.80</td>
-                    </tr>
+                    {Array.isArray(iftaData?.fuelPurchases) && iftaData.fuelPurchases.length > 0 ? (
+                      iftaData.fuelPurchases.map((purchase: any, index: number) => (
+                        <tr key={purchase.id || index} className="border-b">
+                          <td className="p-2 text-sm">{new Date(purchase.date).toLocaleDateString()}</td>
+                          <td className="p-2 text-sm">{purchase.vehicleNumber || 'N/A'}</td>
+                          <td className="p-2 text-sm">{purchase.location || 'N/A'}</td>
+                          <td className="p-2 text-sm">{purchase.jurisdiction || 'N/A'}</td>
+                          <td className="p-2 text-sm text-right">{purchase.gallons?.toFixed(1) || '0.0'}</td>
+                          <td className="p-2 text-sm text-right">${purchase.pricePerGallon?.toFixed(2) || '0.00'}</td>
+                          <td className="p-2 text-sm text-right">${purchase.totalCost?.toFixed(2) || '0.00'}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr className="border-b">
+                        <td colSpan={7} className="p-4 text-center text-sm text-muted-foreground">
+                          No fuel purchase data available for {quarter.replace("-", " ")}
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -315,6 +388,9 @@ export function IftaDashboard() {
           </Card>
         </TabsContent>
       </Tabs>
+        </div>
+      )}
+      </div>
     </div>
   )
 }
