@@ -1,5 +1,5 @@
 import { SettingsDashboard } from "@/components/settings/settings-dashboard"
-import { PageHeader } from "@/components/shared/page-header"
+import { PageHeader } from "@/components/shared/PageHeader"
 import { Button } from "@/components/ui/button"
 import { Save } from "lucide-react"
 

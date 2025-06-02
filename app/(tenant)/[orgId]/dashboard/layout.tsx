@@ -5,15 +5,17 @@
  */
 
 import { Suspense } from 'react'
-import { LoadingSpinner } from '@/components/shared/loading-spinner'
+import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 
 interface DashboardLayoutProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
-    <div className="min-h-screen bg-background">
+    // Assuming ThemeProvider is already wrapping your app in a higher-level layout
+    // The `dark` class will be applied to <html> by next-themes
+    <div className="min-h-screen bg-neutral-900 text-shadow-white">
       {/* Mobile Header */}
       <div className="lg:hidden">
       </div>
@@ -23,14 +25,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="hidden lg:flex lg:flex-shrink-0">
         </div>
 
-        {/* Main Content */}
         <div className="flex-1 lg:ml-0">
-          {/* Desktop Header */}
-          <div className="hidden lg:block">
-          </div>
-
-          {/* Page Content */}
-          <main className="flex-1 p-4 lg:p-6">
+          {/* Main content area */}
+          <main className="p-4 sm:p-6 lg:p-8">
             <Suspense fallback={<LoadingSpinner />}>
               {children}
             </Suspense>
@@ -42,5 +39,5 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <div className="lg:hidden">
       </div>
     </div>
-  )
+  );
 }

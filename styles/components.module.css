@@ -1,0 +1,205 @@
+/**
+ * Component Styles
+ * Defines base styling for reusable UI components
+ *
+ * @format
+ */
+
+/* Button Variants */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: var(--font-weight-semibold);
+    border-radius: var(--radius-lg);
+    padding: var(--space-2) var(--space-4);
+    transition-property: color, background-color, border-color;
+    transition-duration: 150ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-primary {
+    background-color: hsl(var(--color-blue-500));
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: hsl(var(--color-blue-800));
+}
+
+.btn-secondary {
+    background-color: hsl(240 5% 25%);
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: hsl(var(--color-blue-500));
+}
+
+.btn-full {
+    width: 100%;
+}
+
+/* Card Styles */
+.card {
+    border-radius: var(--radius-lg);
+    border: 1px solid hsl(var(--color-border));
+    padding: var(--space-4);
+}
+
+.card-feature {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    space-y: var(--space-2);
+}
+
+.card-pricing {
+    display: flex;
+    flex-direction: column;
+    border-radius: var(--radius-2xl);
+    padding: var(--space-8);
+    background-color: white;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+
+.card-pricing-highlight {
+    position: relative;
+    z-index: var(--z-content);
+    transform: scale(1.05);
+    ring: 2px hsl(var(--color-blue-200));
+}
+
+.dark .card-pricing {
+    background-color: hsl(240 8% 12%);
+}
+
+.dark .card-pricing-highlight {
+    ring: 2px hsl(var(--color-blue-900));
+}
+
+/* Feature List */
+.feature-list {
+    list-style-type: none;
+    padding-left: 0;
+    width: 100%;
+}
+
+.feature-list-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: hsl(var(--color-foreground-hsl));
+}
+
+.dark .feature-list-item {
+    color: hsl(0 0% 82%);
+}
+
+/* Navigation */
+.nav {
+    display: flex;
+    align-items: center;
+    gap: var(--space-6);
+}
+
+.nav-link {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: white;
+}
+
+.nav-link:hover {
+    color: hsl(var(--color-blue-500));
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+/* Header */
+.header {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-sticky);
+    padding-left: var(--space-4);
+    padding-right: var(--space-6);
+    height: var(--height-header);
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid hsl(var(--color-border));
+    background-color: black;
+}
+
+/* Brand Logo */
+.logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo:hover {
+    color: hsl(var(--color-blue-500));
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+/* Hero Section */
+.hero {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+}
+
+.hero-content {
+    position: relative;
+    z-index: var(--z-content);
+    display: flex;
+    align-items: center;
+}
+
+.hero-background {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: var(--z-base);
+}
+
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Image Components */
+.img-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.img-contain {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* Icon Classes */
+.icon {
+    flex-shrink: 0;
+}
+
+.icon-sm {
+    width: 1rem;
+    height: 1rem;
+}
+
+.icon-md {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.icon-lg {
+    width: 2.5rem;
+    height: 2.5rem;
+}

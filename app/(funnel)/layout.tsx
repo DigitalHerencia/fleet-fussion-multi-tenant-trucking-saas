@@ -1,5 +1,5 @@
 import type React from "react"
-import { PublicNav } from "@/components/shared/public-nav"
+import { PublicNav } from "@/components/shared/PublicNav"
 
 export default function PublicLayout({
   children,

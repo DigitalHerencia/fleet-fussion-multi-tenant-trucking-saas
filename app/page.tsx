@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Truck, Shield, BarChart3, FileText, MapPin, Users, Calendar, CreditCard } from "lucide-react"
 import PricingSection from "@/components/pricing/pricing-section"
-import { SharedFooter } from "@/components/shared/shared-footer"
+import { SharedFooter } from "@/components/shared/SharedFooter"
 import Image from "next/image"
 import Link from "next/link"
-import { PublicNav } from "@/components/shared/public-nav"
+import { PublicNav } from "@/components/shared/PublicNav"
 
 export default function Home() {
   return (

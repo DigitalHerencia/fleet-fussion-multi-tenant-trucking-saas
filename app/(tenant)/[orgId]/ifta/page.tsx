@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { BarChart3, CalendarIcon, FileText, MapPin } from "lucide-react"
-import { PageHeader } from "@/components/shared/page-header"
+import { PageHeader } from "@/components/shared/PageHeader"
 import { IftaReportTableClient } from "@/components/ifta/ifta-tables"
 
 

@@ -1,9 +1,7 @@
 // features/dashboard/kpi-grid.tsx
 import { DashboardCards } from "@/components/dashboard/dashboard-cards";
-import { DashboardSkeleton } from "@/components/dashboard/dashboard-skeleton"; // Corrected import
 import { getOrganizationId } from "@/lib/auth/utils"; // Assuming this utility exists
 import { getOrganizationKPIs } from "@/lib/fetchers/kpiFetchers";
-import { Suspense } from "react";
 
 export default async function KpiGrid() {
   const organizationId = await getOrganizationId();

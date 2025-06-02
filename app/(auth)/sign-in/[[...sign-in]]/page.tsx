@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSignIn, useUser, useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { MapPinned } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 // Add this at the top of the file, before any usage of window.Clerk
 declare global {
@@ -18,6 +19,29 @@ declare global {
   }
 }
 
+function FadeTransition({ show, children }: { show: boolean, children: React.ReactNode }) {
+  const [visible, setVisible] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (show) {
+      setVisible(true);
+    } else {
+      setTimeout(() => setVisible(false), 1000); // 1s fade out
+    }
+  }, [show]);
+
+  return (
+    <div
+      ref={ref}
+      className={`transition-opacity duration-1000 ${show ? "opacity-100" : "opacity-0"}`}
+      style={{ minHeight: "100vh" }}
+    >
+      {visible && children}
+    </div>
+  );
+}
+
 export default function SignInPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,20 +52,25 @@ export default function SignInPage() {
   const { isSignedIn } = useAuth();
   const router = useRouter();
   const [signInAttempted, setSignInAttempted] = useState(false);
+  const [showRedirect, setShowRedirect] = useState(false);
 
   useEffect(() => {
     // If already signed in, redirect immediately (prevents showing sign-in page to signed-in users)
     if (isSignedIn && isUserLoaded && user && !signInAttempted) {
-      const { publicMetadata } = user;
-      const onboardingComplete = publicMetadata?.onboardingComplete as boolean | undefined;
-      const organizationId = publicMetadata?.organizationId as string | undefined;
-      const userId = user.id;
-      if (onboardingComplete && organizationId && userId) {
-        router.replace(`/${organizationId}/dashboard/${userId}`);
-      } else {
-        router.replace('/onboarding');
-      }
-      return;
+      setShowRedirect(true);
+      const timeout = setTimeout(() => {
+        setShowRedirect(false);
+        const { publicMetadata } = user;
+        const onboardingComplete = publicMetadata?.onboardingComplete as boolean | undefined;
+        const organizationId = publicMetadata?.organizationId as string | undefined;
+        const userId = user.id;
+        if (onboardingComplete && organizationId && userId) {
+          router.replace(`/${organizationId}/dashboard/${userId}`);
+        } else {
+          router.replace('/onboarding');
+        }
+      }, 1000); // 1s fade out before redirect
+      return () => clearTimeout(timeout);
     }
     // After sign-in, redirect as before
     if (signInAttempted && isSignedIn && isUserLoaded && user) {
@@ -128,12 +157,26 @@ export default function SignInPage() {
   // If already signed in, show a redirecting message and disable the form
   if (isSignedIn && isUserLoaded && user && !signInAttempted) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-black px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-md space-y-8 text-center">
-          <h1 className="text-2xl font-bold text-white">Redirecting...</h1>
-          <p className="text-gray-400">You are already signed in. Redirecting to your dashboard.</p>
+      <FadeTransition show={showRedirect}>
+        <div className="fixed inset-0 w-full h-full overflow-hidden bg-black z-50">
+          {/* Fullscreen background image */}
+          <Image
+            src="/twighlight_loading.png"
+            alt="Loading Background"
+            fill
+            style={{ objectFit: "cover", zIndex: 1 }}
+            className="w-full h-full transition-opacity duration-1000"
+            priority
+          />
+          {/* Overlay for contrast and message */}
+          <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center z-10">
+            <div className="w-full max-w-md space-y-8 text-center">
+              <h1 className="text-2xl font-bold text-white">Redirecting...</h1>
+              <p className="text-gray-400">You are already signed in. Redirecting to your dashboard.</p>
+            </div>
+          </div>
         </div>
-      </div>
+      </FadeTransition>
     );
   }
 

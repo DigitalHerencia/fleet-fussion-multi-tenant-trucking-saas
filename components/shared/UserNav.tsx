@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { User } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { ThemeToggle } from "@/components/shared/theme-toggle"
 
 export function UserNav() {
   const { user, organization } = useAuth()
@@ -30,11 +29,10 @@ export function UserNav() {
 
   return (
     <div className="flex items-center gap-2 sm:gap-4">
-      <ThemeToggle />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
-            className="relative flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background shadow-sm transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+            className="relative flex h-10 w-10 items-center justify-center rounded-full border border-border bg-black shadow-sm transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
             aria-label="Open user menu"
           >
             <Avatar className="h-10 w-10">

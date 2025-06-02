@@ -6,8 +6,8 @@
 
 import { Suspense, type JSX } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { PageHeader } from '@/components/shared/page-header'
-import { LoadingSpinner } from '@/components/shared/loading-spinner'
+import { PageHeader } from '@/components/shared/PageHeader'
+import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { HosLogViewer } from '@/components/compliance/hos-log-viewer'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'

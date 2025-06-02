@@ -1,0 +1,111 @@
+/**
+ * Color System
+ * Defines the color palette, theme variables, and color utilities
+ *
+ * @format
+ */
+
+:root {
+    /* Base HSL Values for Colors */
+    --color-background-hsl: 240 10% 3.9%;
+    --color-foreground-hsl: 0 0% 98%;
+    --color-primary-hsl: 217 91% 60%;
+    --color-secondary-hsl: 240 5% 25%;
+    --color-accent-hsl: 190 80% 50%;
+    --color-muted-hsl: 240 5% 15%;
+    --color-destructive-hsl: 0 70% 50%;
+    --color-success-hsl: 140 60% 45%;
+    --color-warning-hsl: 45 90% 50%;
+
+    /* Brand Colors */
+    --color-blue-500: 217 91% 60%;
+    --color-blue-800: 217 91% 35%;
+    --color-green-500: 142 71% 45%;
+    --color-purple-500: 271 91% 65%;
+    --color-yellow-500: 45 93% 47%;
+    --color-red-500: 0 91% 60%;
+    --color-cyan-500: 190 90% 50%;
+
+    /* Interface Colors */
+    --color-border: 240 4% 20%;
+    --color-ring: 217 91% 65%;
+    --color-input: 240 5% 18%;
+    --color-card: 240 8% 12%;
+    --color-popover: 240 10% 8%;
+
+    /* Chart Colors for Data Visualization */
+    --color-chart-1: 221 83% 53%;
+    --color-chart-2: 162 70% 51%;
+    --color-chart-3: 41 97% 56%;
+    --color-chart-4: 340 82% 52%;
+    --color-chart-5: 271 91% 65%;
+
+    /* Opacity Variants */
+    --opacity-hover: 0.8;
+    --opacity-disabled: 0.5;
+    --opacity-overlay-light: 0.2;
+    --opacity-overlay-medium: 0.5;
+    --opacity-overlay-dark: 0.7;
+}
+
+/* Dark Mode Overrides */
+.dark {
+    --color-background-hsl: 240 10% 3.9%;
+    --color-foreground-hsl: 0 0% 98%;
+    --color-border: 240 4% 20%;
+    --color-card: 240 8% 12%;
+}
+
+/* Color Utility Classes */
+.text-primary {
+    color: hsl(var(--color-primary-hsl));
+}
+
+.text-secondary {
+    color: hsl(var(--color-secondary-hsl));
+}
+
+.text-muted {
+    color: hsl(var(--color-muted-hsl));
+}
+
+.text-white {
+    color: white;
+}
+
+.bg-primary {
+    background-color: hsl(var(--color-primary-hsl));
+}
+
+.bg-secondary {
+    background-color: hsl(var(--color-secondary-hsl));
+}
+
+.bg-black {
+    background-color: black;
+}
+
+.bg-white {
+    background-color: white;
+}
+
+/* Feature Icon Colors */
+.icon-primary {
+    color: hsl(var(--color-blue-500));
+}
+
+.icon-success {
+    color: hsl(var(--color-green-500));
+}
+
+.icon-warning {
+    color: hsl(var(--color-yellow-500));
+}
+
+.icon-danger {
+    color: hsl(var(--color-red-500));
+}
+
+.icon-info {
+    color: hsl(var(--color-cyan-500));
+}

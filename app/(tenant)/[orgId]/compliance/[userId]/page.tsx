@@ -6,8 +6,8 @@
 
 import { Suspense } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { PageHeader } from '@/components/shared/page-header'
-import { LoadingSpinner } from '@/components/shared/loading-spinner'
+import { PageHeader } from '@/components/shared/PageHeader'
+import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { ComplianceDashboard } from '@/components/compliance/compliance-dashboard'
 import { DriverComplianceTable } from '@/components/compliance/driver-compliance-table'
 import { Button } from '@/components/ui/button'

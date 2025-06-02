@@ -5,7 +5,6 @@
  */
 
 import { Suspense } from 'react'
-import LoadingSpinner from '@/components/ui/loading-spinner'
 import FleetOverviewHeader from '@/features/dashboard/fleet-overview-header'
 import KpiGrid from '@/features/dashboard/kpi-grid'
 import QuickActionsWidget from '@/features/dashboard/quick-actions-widget'
@@ -15,7 +14,7 @@ import { DashboardSkeleton } from '@/components/dashboard/dashboard-skeleton' //
 
 export default function DashboardPage() {
   return (
-    <div className="space-y-6 p-4 md:p-6 lg:p-8">
+    <div className="min-h-screen bg-neutral-900 p-4 md:p-6 lg:p-8">
       {/* Fleet Overview Header */}
       <Suspense fallback={<Skeleton className="h-12 w-full" />}>
         <FleetOverviewHeader />
@@ -27,7 +26,7 @@ export default function DashboardPage() {
       </Suspense>
 
       {/* Bottom Widgets Grid */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 mt-8">
         <Suspense fallback={<Skeleton className="h-64 w-full" />}>
           <QuickActionsWidget />
         </Suspense>
@@ -46,5 +45,5 @@ export default function DashboardPage() {
 // For now, defining it here if not already globally available or part of a library like ShadCN
 // If you have a Skeleton component from a UI library, prefer using that.
 const Skeleton = ({ className }: { className?: string }) => (
-  <div className={`bg-gray-700 animate-pulse rounded-md ${className}`} />
+  <div className={`bg-gray-800 animate-pulse rounded-md ${className}`} />
 )
