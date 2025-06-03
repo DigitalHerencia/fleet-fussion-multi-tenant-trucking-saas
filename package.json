@@ -4,14 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "next build",
     "start": "next start",
-    "postinstall": "prisma generate",
-    "test": "playwright test",
-    "test:headed": "playwright test --headed",
-    "test:ui": "playwright test --ui",
-    "test:debug": "playwright test --debug",
-    "test:report": "playwright show-report"
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.20.0",
@@ -59,7 +54,7 @@
     "input-otp": "1.4.1",
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.511.0",
-    "next": "15.3.2",
+    "next": "15.3.3",
     "next-themes": "0.4.6",
     "prisma": "^6.8.2",
     "react": "^19.1.0",
@@ -77,16 +72,12 @@
     "zod": "3.25.28"
   },
   "devDependencies": {
-    "@faker-js/faker": "^9.8.0",
-    "@playwright/experimental-ct-react": "^1.52.0",
-    "@playwright/test": "^1.52.0",
     "@types/js-cookie": "^3.0.6",
     "@types/node": "^22.15.21",
-    "@types/react": "^19.1.5",
+    "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.5",
-    "playwright": "^1.52.0",
-    "postcss": "^8.5.3",
-    "tailwindcss": "^4.1.7",
+    "postcss": "^8.5.4",
+    "tailwindcss": "^4.1.8",
     "typescript": "5.8.3"
   }
 }

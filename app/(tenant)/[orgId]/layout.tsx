@@ -4,8 +4,8 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { TopNavBar } from "@/components/shared/TopNavBar"
 import { MainNav } from "@/components/shared/MainNav"
 import { MobileNav } from "@/components/shared/MobileNav"
+import { useUserContext } from "@/components/auth/context"
 import { useState } from "react"
-import type { UserContext } from "@/types/auth" // <-- Import types
 
 export default function ProtectedLayout({
   children,
@@ -14,34 +14,9 @@ export default function ProtectedLayout({
 }) {
   const isMobile = useIsMobile()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-
-  // Use a valid SystemRole value for role
-  const userContext: UserContext = {
-    organizationId: "demo-org", // Replace with real orgId from session/auth
-    userId: "demo-user",        // Replace with real userId from session/auth
-    role: "admin",              // Must be a valid SystemRole, not just string
-    permissions: [],            // Example: permissions array
-    isActive: true,
-    name: "Demo User",
-    email: "demo@example.com",
-    firstName: "Demo",
-    lastName: "User",
-    onboardingComplete: true,
-    organizationMetadata: {
-      subscriptionTier: "free",
-      subscriptionStatus: "active",
-      maxUsers: 5,
-      features: [],
-      billingEmail: "",
-      createdAt: new Date().toISOString(),
-      settings: {
-        timezone: "UTC",
-        dateFormat: "MM/DD/YYYY",
-        distanceUnit: "miles",
-        fuelUnit: "gallons",
-      },
-    },
-  }
+  const userContext = useUserContext()
+  const orgId = userContext?.organizationId || ""
+  const userId = userContext?.userId || ""
 
   if (isMobile) {
     return (
@@ -60,30 +35,27 @@ export default function ProtectedLayout({
   }
 
   // Sidebar width based on collapsed state
-  const sidebarWidth = sidebarCollapsed ? 64 : 288 // 16px or 72px (w-16/w-72)
+  const sidebarWidth = sidebarCollapsed ? 80 : 256 // 80px (w-20) or 256px (w-64)
 
   return (
-    <div className="min-h-screen bg-gray-900 flex">
+    <div className="min-h-screen bg-neutral-900">
+      <header className="fixed top-0 left-0 w-full z-50">
+      {/* Top Navigation Bar */}
+      <TopNavBar />
+      </header>
       {/* Sidebar */}
-      <aside
-        className={`fixed top-0 left-0 h-screen z-40 transition-all duration-300 bg-gray-800 border-r border-gray-700 shadow-lg flex flex-col ${sidebarCollapsed ? "w-16" : "w-72"}`}
-      >
         <MainNav
           collapsed={sidebarCollapsed}
           setCollapsed={setSidebarCollapsed}
-          userContext={userContext}
+          orgId={orgId}
+          userId={userId}
         />
-      </aside>
-      {/* Top Navigation Bar */}
-      <header className="fixed top-0 left-0 w-full z-50">
-        <TopNavBar />
-      </header>
       {/* Main content area */}
       <div
         className="flex-1 flex flex-col min-w-0 transition-all duration-300"
         style={{ marginLeft: sidebarWidth }}
       >
-        <main className="flex-1 pt-16 bg-gray-900">
+        <main className="flex-1 pt-16">
           {children}
         </main>
       </div>

@@ -1,27 +1,12 @@
 // features/dashboard/todays-schedule-widget.tsx
 import { getOrganizationId } from "@/lib/auth/utils";
 import { Calendar, Sun, Sunset, Moon } from "lucide-react";
-// import { getTodaysScheduleAction } from "@/lib/actions/dashboardActions"; // Assuming this action exists
+import { getTodaysScheduleAction } from "@/lib/actions/dashboardActions";
 
 interface ScheduleItem {
   id: string;
   description: string;
-  timePeriod: "Morning" | "Afternoon" | "Evening"; // Example time periods
-}
-
-async function fetchSchedule(organizationId: string): Promise<ScheduleItem[]> {
-  // const result = await getTodaysScheduleAction(organizationId);
-  // if (result.success && result.data) {
-  //   return result.data as ScheduleItem[];
-  // }
-  // return [];
-
-  // Placeholder data
-  return [
-    { id: "1", description: "5 loads departing", timePeriod: "Morning" },
-    { id: "2", description: "3 loads arriving", timePeriod: "Afternoon" },
-    { id: "3", description: "2 maintenance scheduled", timePeriod: "Evening" },
-  ];
+  timePeriod: string;
 }
 
 export default async function TodaysScheduleWidget() {
@@ -30,9 +15,21 @@ export default async function TodaysScheduleWidget() {
     return <p className="text-red-400">Organization not found.</p>;
   }
 
-  const scheduleItems = await fetchSchedule(organizationId);
+  let scheduleItems: ScheduleItem[] = [];
+  try {
+    const result = await getTodaysScheduleAction(organizationId);
+    if (result.success && Array.isArray(result.data)) {
+      scheduleItems = result.data.map((item: any) => ({
+        id: item.id,
+        description: item.description,
+        timePeriod: item.timePeriod || "Today",
+      }));
+    }
+  } catch (e) {
+    scheduleItems = [];
+  }
 
-  const getTimePeriodIcon = (timePeriod: ScheduleItem['timePeriod']) => {
+  const getTimePeriodIcon = (timePeriod: string) => {
     switch (timePeriod) {
       case 'Morning': return <Sun className="h-4 w-4 text-yellow-400" />;
       case 'Afternoon': return <Sunset className="h-4 w-4 text-orange-400" />;
@@ -41,7 +38,7 @@ export default async function TodaysScheduleWidget() {
     }
   };
 
-  const getTimePeriodColor = (timePeriod: ScheduleItem['timePeriod']) => {
+  const getTimePeriodColor = (timePeriod: string) => {
     switch (timePeriod) {
       case 'Morning': return 'text-yellow-400';
       case 'Afternoon': return 'text-orange-400';
@@ -51,7 +48,7 @@ export default async function TodaysScheduleWidget() {
   };
 
   return (
-    <div className="bg-black border border-gray-700 p-6 rounded-lg shadow-lg">
+    <div className="bg-black border border-gray-200 p-6 rounded-lg shadow-lg">
       <div className="flex items-center gap-2 mb-6">
         <div className="bg-blue-500 p-1.5 rounded">
           <Calendar className="h-4 w-4 text-white" />

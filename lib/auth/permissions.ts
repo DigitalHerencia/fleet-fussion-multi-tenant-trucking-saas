@@ -254,21 +254,51 @@ export function requirePermission(permission: Permission) {
  * Route protection utilities
  */
 export class RouteProtection {  
-  // Define PROTECTED_ROUTES using SystemRole
+  // Define PROTECTED_ROUTES using SystemRole and real route patterns
   static PROTECTED_ROUTES: Record<string, SystemRole[]> = {
-    '/dashboard': [SystemRoles.ADMIN, SystemRoles.DISPATCHER, SystemRoles.DRIVER, SystemRoles.COMPLIANCE_OFFICER, SystemRoles.ACCOUNTANT, SystemRoles.VIEWER],
-    '/admin': [SystemRoles.ADMIN],
-    '/tenant': [SystemRoles.ADMIN],
-    '/settings': [SystemRoles.ADMIN],
-    '/users': [SystemRoles.ADMIN],
-    '/analytics': [SystemRoles.ADMIN, SystemRoles.DISPATCHER, SystemRoles.COMPLIANCE_OFFICER],
-    '/dispatch': [SystemRoles.ADMIN, SystemRoles.DISPATCHER],
-    '/drivers': [SystemRoles.ADMIN, SystemRoles.DISPATCHER, SystemRoles.DRIVER],
-    '/vehicles': [SystemRoles.ADMIN, SystemRoles.DISPATCHER],
-    '/compliance': [SystemRoles.ADMIN, SystemRoles.COMPLIANCE_OFFICER],
-    '/ifta': [SystemRoles.ADMIN, SystemRoles.ACCOUNTANT],
-    '/billing': [SystemRoles.ADMIN, SystemRoles.ACCOUNTANT],
-    // Add other routes and their required roles
+    // Dashboard: Admin, Dispatcher, Accountant, Viewer
+    '/tenant/:orgId/dashboard/:userId': [
+      SystemRoles.ADMIN,
+      SystemRoles.ACCOUNTANT,
+      SystemRoles.VIEWER
+    ],
+    // Compliance dashboard: Compliance Officer, Admin
+    '/tenant/:orgId/compliance/:userId': [
+      SystemRoles.COMPLIANCE_OFFICER,
+      SystemRoles.ADMIN
+    ],
+    // Drivers dashboard: Driver, Admin, Dispatcher
+    '/tenant/:orgId/drivers/:userId': [
+      SystemRoles.DRIVER,
+      SystemRoles.ADMIN,
+      SystemRoles.DISPATCHER
+    ],
+    // Dispatch dashboard: Dispatcher, Admin
+    '/tenant/:orgId/dispatch/:userId': [
+      SystemRoles.DISPATCHER,
+      SystemRoles.ADMIN
+    ],
+    // Analytics: Admin, Dispatcher, Compliance Officer
+    '/tenant/:orgId/analytics': [
+      SystemRoles.ADMIN,
+      SystemRoles.DISPATCHER,
+      SystemRoles.COMPLIANCE_OFFICER
+    ],
+    // Vehicles: Admin, Dispatcher
+    '/tenant/:orgId/vehicles': [
+      SystemRoles.ADMIN,
+      SystemRoles.DISPATCHER
+    ],
+    // IFTA: Admin, Accountant
+    '/tenant/:orgId/ifta': [
+      SystemRoles.ADMIN,
+      SystemRoles.ACCOUNTANT
+    ],
+    // Settings: Admin
+    '/tenant/:orgId/settings': [
+      SystemRoles.ADMIN
+    ],
+    // Add more as needed for other tenant routes
   };
   
   /**

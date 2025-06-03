@@ -34,6 +34,7 @@ export interface DashboardCardsProps {
 }
 
 export function DashboardCards({ kpis }: DashboardCardsProps) {
+  // Logical order: assets, people, work, outcomes, maintenance
   const cards = [
     {
       title: "Active Vehicles",
@@ -42,11 +43,9 @@ export function DashboardCards({ kpis }: DashboardCardsProps) {
       icon: Truck,
       iconBg: "bg-blue-500",
       description: "Fleet vehicles in service",
-      status: "Live",
-      statusColor: "bg-green-500",
     },
     {
-      title: "Active Drivers", 
+      title: "Active Drivers",
       value: kpis.activeDrivers,
       change: kpis.activeDriversChange,
       icon: Users,
@@ -57,9 +56,9 @@ export function DashboardCards({ kpis }: DashboardCardsProps) {
       title: "Active Loads",
       value: kpis.activeLoads,
       icon: Package,
-      iconBg: "bg-orange-500", 
+      iconBg: "bg-orange-500",
       description: "Loads assigned or in transit",
-      progress: Math.round((kpis.activeLoads / (kpis.activeLoads + kpis.completedLoads)) * 100),
+      progress: kpis.activeLoads + kpis.completedLoads > 0 ? Math.round((kpis.activeLoads / (kpis.activeLoads + kpis.completedLoads)) * 100) : 0,
     },
     {
       title: "Completed Loads",
@@ -67,8 +66,6 @@ export function DashboardCards({ kpis }: DashboardCardsProps) {
       icon: TrendingUp,
       iconBg: "bg-green-500",
       description: "Loads delivered in last 30 days",
-      status: `${kpis.failedInspections} Failed`,
-      statusColor: "bg-red-500",
     },
     {
       title: "Total Revenue",
@@ -83,7 +80,7 @@ export function DashboardCards({ kpis }: DashboardCardsProps) {
       value: `$${kpis.revenuePerMile}`,
       icon: Activity,
       iconBg: "bg-blue-500",
-      description: "Efficiency metric",
+      description: "Revenue per mile (efficiency)",
     },
     {
       title: "Total Miles",
@@ -98,64 +95,43 @@ export function DashboardCards({ kpis }: DashboardCardsProps) {
       value: kpis.upcomingMaintenance,
       icon: Wrench,
       iconBg: "bg-yellow-500",
-      description: "Vehicles due in 30 days",
-      progress: Math.round((kpis.upcomingMaintenance / (kpis.upcomingMaintenance + kpis.maintenanceOverdue + 20)) * 100),
-      status: kpis.maintenanceOverdue > 0 ? "Urgent" : undefined,
-      statusColor: kpis.maintenanceOverdue > 0 ? "bg-red-500" : undefined,
+      description: "Vehicles maintenance (30 days)",
+      progress: kpis.upcomingMaintenance + kpis.maintenanceOverdue + 20 > 0 ? Math.round((kpis.upcomingMaintenance / (kpis.upcomingMaintenance + kpis.maintenanceOverdue + 20)) * 100) : 0,
     },
   ];
 
   const formatTrendChange = (change: string) => {
     const isPositive = change.startsWith('+');
     const isNegative = change.startsWith('-');
-    
     return (
-      <div className={`flex items-center gap-1 text-xs ${
-        isPositive ? 'text-green-400' : isNegative ? 'text-red-400' : 'text-gray-400'
-      }`}>
-        {isPositive && <TrendingUp className="h-3 w-3" />}
-        {isNegative && <TrendingDown className="h-3 w-3" />}
-        <span>{change}</span>
-      </div>
+      <span className={`ml-2 text-xs font-medium ${isPositive ? 'text-green-400' : isNegative ? 'text-red-400' : 'text-gray-400'}`}>{change}</span>
     );
   };
 
   return (
-    <div className="grid gap-6 grid-cols-1 sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4">
+    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4">
       {cards.map((card) => {
         const Icon = card.icon;
         return (
-          <Card key={card.title} className="bg-black border-gray-700 hover:bg-gray-750 transition-colors">
-            <CardHeader className="flex flex-row items-start justify-between pb-3">
-              <div className="flex-1">
-                <CardTitle className="text-sm font-medium text-gray-300 mb-2">{card.title}</CardTitle>
-                {card.status && (
-                  <Badge className={`${card.statusColor} text-white text-xs px-2 py-1`}>
-                    {card.status}
-                  </Badge>
-                )}
+          <Card key={card.title} className="bg-black border-gray-200 text-lg py-2 h-44 flex flex-col justify-between">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 pt-2">
+              <div className="flex flex-col gap-1 flex-1">
+                <CardTitle className="text-sm font-semibold text-zinc-200">{card.title}</CardTitle>
               </div>
-              <div className={`${card.iconBg} p-2 rounded-lg`}>
+              <div className={`${card.iconBg} p-1.5 rounded-lg`}>
                 <Icon className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-end gap-2">
-                <div className="text-2xl font-bold text-white">{card.value}</div>
-                {card.change && formatTrendChange(card.change)}
-              </div>
-              
-              {card.progress !== undefined && (
-                <div className="space-y-1">
-                  <Progress 
-                    value={card.progress} 
-                    className="h-2 bg-gray-700"
-                  />
-                  <div className="text-xs text-gray-400">{card.progress}% complete</div>
+            <CardContent className="flex flex-1 flex-col justify-between">
+              <div className="flex flex-col flex-1 justify-end">
+                <div className="flex items-end gap-2 mt-2">
+                  <span className="text-4xl font-extrabold text-white leading-tight">{card.value}</span>
+                  {card.change && formatTrendChange(card.change)}
                 </div>
-              )}
-              
-              <div className="text-xs text-gray-400">{card.description}</div>
+              </div>
+              <div className="flex flex-col gap-1 mt-auto pb-2">
+                <div className="text-xs text-zinc-200">{card.description}</div>
+              </div>
             </CardContent>
           </Card>
         );

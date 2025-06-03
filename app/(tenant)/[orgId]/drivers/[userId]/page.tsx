@@ -23,22 +23,12 @@ import {
   Route,
   Timer
 } from 'lucide-react'
-import { getCurrentUser } from '@/lib/auth/auth'
-import { redirect } from 'next/navigation'
-import { SystemRoles } from '@/types/abac'
 
 export default async function DriverDashboardPage(): Promise<JSX.Element> {
-
-  // Verify driver access
-  const user = await getCurrentUser()
-  if (!user || user.role !== SystemRoles.DRIVER) {
-    redirect('/sign-in')
-  }
-
+  // RBAC logic removed; handled by middleware
   return (
     <>
-      <PageHeader />
-      <div className="pt-16 space-y-6 p-6">
+      <div className="pt-8  space-y-6 p-6">
         {/* Page Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -51,7 +41,7 @@ export default async function DriverDashboardPage(): Promise<JSX.Element> {
             <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
               On Duty
             </Badge>
-            <Button variant="outline">
+            <Button variant="default" className="bg-black border border-gray-200 hover:bg-neutral-800">
               <Clock className="mr-2 h-4 w-4" />
               Log Hours
             </Button>
@@ -60,7 +50,7 @@ export default async function DriverDashboardPage(): Promise<JSX.Element> {
 
         {/* HOS Status */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
+          <Card className="bg-black">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Driving Hours</CardTitle>
               <Timer className="h-4 w-4 text-muted-foreground" />
@@ -72,7 +62,7 @@ export default async function DriverDashboardPage(): Promise<JSX.Element> {
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="bg-black">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">On Duty Hours</CardTitle>
               <Clock className="h-4 w-4 text-muted-foreground" />
@@ -84,7 +74,7 @@ export default async function DriverDashboardPage(): Promise<JSX.Element> {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-black">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">70-Hour Rule</CardTitle>
               <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -96,8 +86,8 @@ export default async function DriverDashboardPage(): Promise<JSX.Element> {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <Card className="bg-black">
+            <CardHeader className="flex flex-row items-center justify-between space-y-4 pb-2">
               <CardTitle className="text-sm font-medium">Compliance Status</CardTitle>
               <CheckCircle className="h-4 w-4 text-green-500" />
             </CardHeader>
@@ -109,7 +99,7 @@ export default async function DriverDashboardPage(): Promise<JSX.Element> {
         </div>
 
         {/* Current Load */}
-        <Card>
+        <Card className="bg-black">
           <CardHeader>
             <CardTitle>Current Load</CardTitle>
             <CardDescription>
@@ -170,7 +160,7 @@ export default async function DriverDashboardPage(): Promise<JSX.Element> {
         {/* Dashboard Grid */}
         <div className="grid gap-6 md:grid-cols-2">
           {/* Upcoming Loads */}
-          <Card>
+          <Card className="bg-black">
             <CardHeader>
               <CardTitle>Upcoming Loads</CardTitle>
               <CardDescription>
@@ -179,7 +169,7 @@ export default async function DriverDashboardPage(): Promise<JSX.Element> {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 border rounded-md">
+                <div className="flex items-center justify-between p-3 border rounded-md bg-neutral-900">
                   <div className="space-y-1">
                     <div className="font-medium">Load #FFL-2024-1206</div>
                     <div className="text-sm text-muted-foreground">Chicago, IL → Detroit, MI</div>
@@ -188,7 +178,7 @@ export default async function DriverDashboardPage(): Promise<JSX.Element> {
                   <Badge variant="outline">Scheduled</Badge>
                 </div>
                 
-                <div className="flex items-center justify-between p-3 border rounded-md">
+                <div className="flex items-center justify-between p-3 border rounded-md bg-neutral-900">
                   <div className="space-y-1">
                     <div className="font-medium">Load #FFL-2024-1207</div>
                     <div className="text-sm text-muted-foreground">Detroit, MI → Cleveland, OH</div>
@@ -201,7 +191,7 @@ export default async function DriverDashboardPage(): Promise<JSX.Element> {
           </Card>
 
           {/* Recent Activity */}
-          <Card>
+          <Card className="bg-black">
             <CardHeader>
               <CardTitle>Recent Activity</CardTitle>
               <CardDescription>
@@ -239,7 +229,7 @@ export default async function DriverDashboardPage(): Promise<JSX.Element> {
         </div>
 
         {/* Document Status */}
-        <Card>
+        <Card className="bg-black">
           <CardHeader>
             <CardTitle>Document Status</CardTitle>
             <CardDescription>
@@ -248,7 +238,7 @@ export default async function DriverDashboardPage(): Promise<JSX.Element> {
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-3">
-              <div className="flex items-center justify-between p-3 border rounded-md">
+              <div className="flex items-center justify-between p-3 border rounded-md bg-neutral-900">
                 <div className="flex items-center gap-2">
                   <FileText className="h-4 w-4" />
                   <div>
@@ -259,7 +249,7 @@ export default async function DriverDashboardPage(): Promise<JSX.Element> {
                 <CheckCircle className="h-4 w-4 text-green-500" />
               </div>
               
-              <div className="flex items-center justify-between p-3 border rounded-md">
+              <div className="flex items-center justify-between p-3 border rounded-md bg-neutral-900">
                 <div className="flex items-center gap-2">
                   <FileText className="h-4 w-4" />
                   <div>
@@ -270,7 +260,7 @@ export default async function DriverDashboardPage(): Promise<JSX.Element> {
                 <AlertTriangle className="h-4 w-4 text-amber-500" />
               </div>
               
-              <div className="flex items-center justify-between p-3 border rounded-md">
+              <div className="flex items-center justify-between p-3 border rounded-md bg-neutral-900">
                 <div className="flex items-center gap-2">
                   <FileText className="h-4 w-4" />
                   <div>
@@ -285,7 +275,7 @@ export default async function DriverDashboardPage(): Promise<JSX.Element> {
         </Card>
 
         {/* Performance Metrics */}
-        <Card>
+        <Card className="bg-black">
           <CardHeader>
             <CardTitle>Performance Overview</CardTitle>
             <CardDescription>

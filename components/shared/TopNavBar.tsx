@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Bell, MapPinned, Moon, User } from "lucide-react"
+import { Bell, MapPinned, Menu, Moon, User } from "lucide-react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 
@@ -48,37 +48,33 @@ export function TopNavBar({ className }: TopNavBarProps) {
         </div>
         <div className="flex items-center gap-4">
           {/* Company Name */}
-          <span className="text-lg font-medium text-gray-200 hidden sm:block">
+          <span className="text-xl font-medium text-zinc-200 hidden sm:block">
             {organization.name || " "}
           </span>
           {/* Notifications */}
           <div className="flex items-center gap-2">
-            <Button variant="link" size="sm" className="h-9 w-9 p-0 rounded-4xl relative">
-              <Bell className="h-4 w-4 text-gray-400" />
+            <Button variant="default" size="sm" className="h-7 w-7 p-0 border border-zinc-400 rounded-4xl relative hover:bg-zinc-900">
+              <Bell className="h-4 w-4 text-zinc-400" />
               <Badge 
                 variant="destructive" 
                 className="absolute -top-1 -right-1 h-5 w-5 text-xs p-0 flex items-center justify-center"
               >
-              
               </Badge>
             </Button>
           </div>
           {/* User Profile */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                className="relative flex h-9 w-9 items-center justify-center rounded-full border border-gray-600 bg-gray-700 shadow-sm transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                aria-label="Open user menu"
+              <div className="flex items-center gap-2">
+            <Button variant="default" size="sm" className="h-7 w-7 p-0 border border-zinc-400 rounded-4xl relative hover:bg-zinc-900">
+              <Menu className="h-4 w-4 text-gray-400" />
+              <Badge 
+                variant="destructive" 
+                className="absolute -top-1 -right-1 h-5 w-5 text-xs p-0 flex items-center justify-center"
               >
-                <Avatar className="h-9 w-9">
-                  <AvatarImage src={user.profileImage} alt={user.name} />
-                  <AvatarFallback className="bg-gray-600 text-gray-200">
-                    <User className="h-4 w-4" />
-                  </AvatarFallback>
-                </Avatar>
-                {/* Status dot */}
-                <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full border-2 border-gray-800 bg-green-500" />
-              </Button>
+              </Badge>
+            </Button>
+          </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-64 p-2 bg-black border-gray-700" align="end">
               <div className="flex items-center gap-3 px-2 py-2">
@@ -89,19 +85,19 @@ export function TopNavBar({ className }: TopNavBarProps) {
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col min-w-0">
-                  <span className="truncate text-sm font-semibold leading-tight text-gray-200">{user.name}</span>
-                  <span className="truncate text-xs text-gray-400">{user.email}</span>
-                  <Badge className="mt-1 bg-blue-600 text-blue-100 text-xs text-center">{organization.name}</Badge>
+                  <span className="truncate text-sm font-semibold leading-tight text-zinc-200">{user.name}</span>
+                  <span className="truncate text-xs text-zinc-200">{user.email}</span>
+                  <Badge className="mt-1 bg-blue-500 text-zinc-200 text-xs text-center">{organization.name}</Badge>
                 </div>
               </div>
-              <DropdownMenuSeparator className="bg-gray-700" />
-              <DropdownMenuItem className="rounded-md px-3 py-2 hover:bg-gray-700 transition-colors cursor-pointer text-gray-200">
+              <DropdownMenuSeparator className="bg-gray-600" />
+              <DropdownMenuItem className="rounded-md px-3 py-2 hover:bg-gray-600 transition-colors cursor-pointer text-zinc-200">
                 Profile
               </DropdownMenuItem>
-              <DropdownMenuItem className="rounded-md px-3 py-2 hover:bg-gray-700 transition-colors cursor-pointer text-gray-200">
+              <DropdownMenuItem className="rounded-md px-3 py-2 hover:bg-gray-600 transition-colors cursor-pointer text-zinc-200">
                 Settings
               </DropdownMenuItem>
-              <DropdownMenuSeparator className="bg-gray-700" />
+              <DropdownMenuSeparator className="bg-gray-600" />
               <DropdownMenuItem 
                 onClick={handleLogout} 
                 className="rounded-md px-3 py-2 text-red-400 hover:bg-red-500/10 cursor-pointer"

@@ -160,22 +160,22 @@ export function DriverComplianceTable() {
           <Input
             type="search"
             placeholder="Search drivers..."
-            className="pl-8 w-full"
+            className="pl-8 w-full bg-neutral-900"
             value={searchTerm}
             onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
           />
         </div>
         <div className="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
-          <Button variant="outline" className="flex-1 sm:flex-none">
+          <Button variant="default" className="flex-1 sm:flex-none p-4.5 border border-gray-200 bg-neutral-900 hover:bg-gray-600">
             Filter
           </Button>
-          <Button className="flex-1 sm:flex-none">Add Driver</Button>
+          <Button variant="default" className="flex-1 sm:flex-none p-4.5 border border-gray-200 bg-neutral-900 hover:bg-gray-600">Add Driver</Button>
         </div>
       </div>
 
       <div className="rounded-md border overflow-x-auto">
         <Table>
-          <TableHeader>
+          <TableHeader className="bg-neutral-900">
             <TableRow>
               <TableHead>Driver Name</TableHead>
               <TableHead>CDL Status</TableHead>

@@ -24,21 +24,11 @@ import {
   Users,
   Truck
 } from 'lucide-react'
-import { getCurrentUser } from '@/lib/auth/auth'
-import { redirect } from 'next/navigation'
-import { SystemRoles } from '@/types/abac'
 
 export default async function ComplianceDashboardPage() {
-  // Verify compliance officer access
-  const user = await getCurrentUser()
-  if (!user || user.role !== SystemRoles.COMPLIANCE_OFFICER) {
-    redirect('/sign-in?error=unauthorized')
-  }
-
   return (
     <>
-      <PageHeader />
-      <div className="pt-16 space-y-6 p-6">
+      <div className="pt-8 space-y-6 p-6">
         {/* Page Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -47,12 +37,12 @@ export default async function ComplianceDashboardPage() {
               Monitor and manage compliance for drivers, vehicles, and documentation.
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline">
+          <div className="flex flex-col items-center gap-2">
+            <Button variant="default" className='w-full border border-gray-200 hover:bg-neutral-900 bg-black'>
               <FileText className="mr-2 h-4 w-4" />
               Export Report
             </Button>
-            <Button>
+            <Button variant="default" className='w-full border border-gray-200 hover:bg-neutral-900 bg-black'>
               <Upload className="mr-2 h-4 w-4" />
               Upload Document
             </Button>
@@ -61,7 +51,7 @@ export default async function ComplianceDashboardPage() {
 
         {/* Compliance Metrics */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
+          <Card className="border-gray-200 bg-black">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Driver Compliance</CardTitle>
               <CheckCircle className="h-4 w-4 text-green-500" />
@@ -72,8 +62,8 @@ export default async function ComplianceDashboardPage() {
               <Progress value={92} className="mt-2" />
             </CardContent>
           </Card>
-          
-          <Card>
+
+          <Card className="border-gray-200 bg-black">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Vehicle Compliance</CardTitle>
               <AlertTriangle className="h-4 w-4 text-amber-500" />
@@ -85,7 +75,7 @@ export default async function ComplianceDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-gray-200 bg-black">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">HOS Violations</CardTitle>
               <Clock className="h-4 w-4 text-red-500" />
@@ -97,7 +87,7 @@ export default async function ComplianceDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-gray-200 bg-black">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Document Status</CardTitle>
               <FileText className="h-4 w-4 text-blue-500" />
@@ -111,7 +101,7 @@ export default async function ComplianceDashboardPage() {
         </div>
 
         {/* Critical Alerts */}
-        <Card className="border-red-200 bg-red-50">
+        <Card className="border-gray-200 bg-black">
           <CardHeader>
             <CardTitle className="text-red-800 flex items-center gap-2">
               <AlertTriangle className="h-5 w-5" />
@@ -155,7 +145,7 @@ export default async function ComplianceDashboardPage() {
         {/* Dashboard Grid */}
         <div className="grid gap-6 md:grid-cols-2">
           {/* Upcoming Deadlines */}
-          <Card>
+          <Card className="border-gray-200 bg-black">
             <CardHeader>
               <CardTitle>Upcoming Deadlines</CardTitle>
               <CardDescription>
@@ -208,7 +198,7 @@ export default async function ComplianceDashboardPage() {
           </Card>
 
           {/* Compliance Trends */}
-          <Card>
+          <Card className="border-gray-200 bg-black">
             <CardHeader>
               <CardTitle>Compliance Trends</CardTitle>
               <CardDescription>
@@ -228,14 +218,14 @@ export default async function ComplianceDashboardPage() {
         </div>
 
         {/* Document Management */}
-        <Card>
+        <Card className="border-gray-200 bg-black">
           <CardHeader>
             <CardTitle>Document Management</CardTitle>
             <CardDescription>
               Recent uploads and document status tracking
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="bg-neutral-900">
             <div className="space-y-4">
               <div className="flex items-center justify-between p-3 border rounded-md">
                 <div className="flex items-center gap-3">
@@ -285,7 +275,7 @@ export default async function ComplianceDashboardPage() {
         </Card>
 
         {/* Driver Compliance Table */}
-        <Card>
+        <Card className="border-gray-200 bg-black">
           <CardHeader>
             <CardTitle>Driver Compliance Status</CardTitle>
             <CardDescription>
@@ -300,7 +290,7 @@ export default async function ComplianceDashboardPage() {
         </Card>
 
         {/* Audit Preparation */}
-        <Card>
+        <Card className="border-gray-200 bg-black">
           <CardHeader>
             <CardTitle>Audit Preparation</CardTitle>
             <CardDescription>
@@ -308,7 +298,7 @@ export default async function ComplianceDashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-3  bg-neutral-900">
               <Button variant="outline" className="h-20 flex flex-col gap-2">
                 <Shield className="h-6 w-6" />
                 <span>Generate Compliance Report</span>

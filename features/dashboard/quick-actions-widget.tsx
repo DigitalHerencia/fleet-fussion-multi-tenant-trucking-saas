@@ -12,7 +12,7 @@ export default function QuickActionsWidget() {
   // TODO: Add permission checks for each action
 
   return (
-    <div className="bg-black border border-gray-700 p-6 rounded-lg shadow-lg">
+    <div className="bg-black border border-gray-200 p-6 rounded-lg shadow-lg">
       <div className="flex items-center gap-2 mb-6">
         <div className="bg-green-500 p-1.5 rounded">
           <Zap className="h-4 w-4 text-white" />
@@ -22,7 +22,7 @@ export default function QuickActionsWidget() {
       <div className="space-y-3">
         <Button
           variant="default"
-          className="w-full justify-start text-left bg-gray-700 border-gray-600 hover:bg-gray-600 text-white"
+          className="w-full justify-start text-left bg-neutral-900 border-gray-200 hover:bg-gray-600 text-white"
           onClick={() => router.push("/dispatch/loads/new")} // Example route
         >
           <PlusCircle className="mr-3 h-5 w-5 text-green-400" />
@@ -30,7 +30,7 @@ export default function QuickActionsWidget() {
         </Button>
         <Button
           variant="default"
-          className="w-full justify-start text-left bg-gray-700 border-gray-600 hover:bg-gray-600 text-white"
+          className="w-full justify-start text-left bg-neutral-900 border-gray-200 hover:bg-gray-600 text-white"
           onClick={() => router.push("/maintenance/schedule/new")} // Example route
         >
           <CalendarClock className="mr-3 h-5 w-5 text-blue-400" />
@@ -38,7 +38,7 @@ export default function QuickActionsWidget() {
         </Button>
         <Button
           variant="default"
-          className="w-full justify-start text-left bg-gray-700 border-gray-600 hover:bg-gray-600 text-white"
+          className="w-full justify-start text-left bg-neutral-900 border-gray-200 hover:bg-gray-600 text-white"
           onClick={() => router.push("/compliance/alerts")} // Example route
         >
           <AlertTriangle className="mr-3 h-5 w-5 text-orange-400" />

@@ -9,13 +9,15 @@ import { LoadCard } from "@/components/dispatch/load-card"
 import { LoadForm } from "@/components/dispatch/load-form"
 import { LoadDetailsDialog } from "@/components/dispatch/load-details-dialog"
 import { PlusCircle, Filter } from "lucide-react"
-import Link from "next/link"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from "@/hooks/use-toast"
-import type { ReactNode } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { updateLoadAction } from "@/lib/actions/dispatchActions"
+import type { LoadStatus } from "@/types/dispatch"
+import { string } from "zod"
 
 interface Driver {
   id: string
@@ -89,7 +91,7 @@ export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) 
   })
   
   // Loading states for status updates
-  const [statusUpdating, setStatusUpdating] = useState<string | null>(null)
+  const [updatingId, setUpdatingId] = useState<string | null>(null)
 
   const pendingLoads = loads.filter((load) => load.status === "pending")
   const assignedLoads = loads.filter((load) => load.status === "assigned")
@@ -134,16 +136,10 @@ export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) 
   }
   
   // Handle status updates
-  const handleStatusUpdate = async (loadId: string, newStatus: string) => {
-    setStatusUpdating(loadId)
-    
+  const handleStatusUpdate = async (loadId: string, newStatus: LoadStatus) => {
+    setUpdatingId(loadId)
     try {
-      const result = await updateLoadStatusAction({
-        loadId,
-        status: newStatus,
-        timestamp: new Date()
-      })
-      
+      const result = await updateLoadAction(loadId, { id: loadId, status: newStatus })
       if (result.success) {
         toast({
           title: "Status Updated",
@@ -153,7 +149,7 @@ export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) 
       } else {
         toast({
           title: "Error",
-          description: result.message || "Failed to update load status",
+          description: result.error || "Failed to update load status",
           variant: "destructive",
         })
       }
@@ -165,7 +161,7 @@ export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) 
         variant: "destructive",
       })
     } finally {
-      setStatusUpdating(null)
+      setUpdatingId(null)
     }
   }
 
@@ -201,6 +197,10 @@ export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) 
     make: v.make || "",
     model: v.model ?? "",
   }))
+
+  if (!loads || loads.length === 0) {
+    return <div className="text-gray-400 text-center py-12">No loads found for this organization.</div>
+  }
 
   return (
     <div className="space-y-6 mt-6">
@@ -250,13 +250,19 @@ export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredLoads.length > 0 ? (
               filteredLoads.map((load) => (
-                <LoadCard 
-                  key={load.id} 
-                  load={load} 
-                  onClick={() => handleLoadClick(load)}
-                  onStatusUpdate={handleStatusUpdate}
-                  isUpdating={statusUpdating === load.id}
-                />
+                <Card key={load.id} className="bg-neutral-900 border border-gray-700 shadow-lg flex flex-col h-full">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg font-semibold text-white truncate">{load.referenceNumber || "Load"}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex-1 flex flex-col justify-between">
+                    <LoadCard
+                      load={load}
+                      onClick={() => handleLoadClick(load)}
+                      onStatusUpdate={(loadId, status) => handleStatusUpdate(loadId, status as LoadStatus)}
+                      isUpdating={updatingId === load.id}
+                    />
+                  </CardContent>
+                </Card>
               ))
             ) : (
               <div className="col-span-full text-center py-10">
@@ -270,13 +276,19 @@ export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredPendingLoads.length > 0 ? (
               filteredPendingLoads.map((load) => (
-                <LoadCard 
-                  key={load.id} 
-                  load={load} 
-                  onClick={() => handleLoadClick(load)}
-                  onStatusUpdate={handleStatusUpdate}
-                  isUpdating={statusUpdating === load.id}
-                />
+                <Card key={load.id} className="bg-neutral-900 border border-gray-700 shadow-lg flex flex-col h-full">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg font-semibold text-white truncate">{load.referenceNumber || "Load"}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex-1 flex flex-col justify-between">
+                    <LoadCard
+                      load={load}
+                      onClick={() => handleLoadClick(load)}
+                      onStatusUpdate={(loadId, status) => handleStatusUpdate(loadId, status as LoadStatus)}
+                      isUpdating={updatingId === load.id}
+                    />
+                  </CardContent>
+                </Card>
               ))
             ) : (
               <div className="col-span-full text-center py-10">
@@ -290,13 +302,19 @@ export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredAssignedLoads.length > 0 ? (
               filteredAssignedLoads.map((load) => (
-                <LoadCard 
-                  key={load.id} 
-                  load={load} 
-                  onClick={() => handleLoadClick(load)}
-                  onStatusUpdate={handleStatusUpdate}
-                  isUpdating={statusUpdating === load.id}
-                />
+                <Card key={load.id} className="bg-neutral-900 border border-gray-700 shadow-lg flex flex-col h-full">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg font-semibold text-white truncate">{load.referenceNumber || "Load"}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex-1 flex flex-col justify-between">
+                    <LoadCard
+                      load={load}
+                      onClick={() => handleLoadClick(load)}
+                      onStatusUpdate={(loadId, status) => handleStatusUpdate(loadId, status as LoadStatus)}
+                      isUpdating={updatingId === load.id}
+                    />
+                  </CardContent>
+                </Card>
               ))
             ) : (
               <div className="col-span-full text-center py-10">
@@ -310,13 +328,19 @@ export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredInTransitLoads.length > 0 ? (
               filteredInTransitLoads.map((load) => (
-                <LoadCard 
-                  key={load.id} 
-                  load={load} 
-                  onClick={() => handleLoadClick(load)}
-                  onStatusUpdate={handleStatusUpdate}
-                  isUpdating={statusUpdating === load.id}
-                />
+                <Card key={load.id} className="bg-neutral-900 border border-gray-700 shadow-lg flex flex-col h-full">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg font-semibold text-white truncate">{load.referenceNumber || "Load"}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex-1 flex flex-col justify-between">
+                    <LoadCard
+                      load={load}
+                      onClick={() => handleLoadClick(load)}
+                      onStatusUpdate={(loadId, status) => handleStatusUpdate(loadId, status as LoadStatus)}
+                      isUpdating={updatingId === load.id}
+                    />
+                  </CardContent>
+                </Card>
               ))
             ) : (
               <div className="col-span-full text-center py-10">
@@ -330,13 +354,19 @@ export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredCompletedLoads.length > 0 ? (
               filteredCompletedLoads.map((load) => (
-                <LoadCard 
-                  key={load.id} 
-                  load={load} 
-                  onClick={() => handleLoadClick(load)}
-                  onStatusUpdate={handleStatusUpdate}
-                  isUpdating={statusUpdating === load.id}
-                />
+                <Card key={load.id} className="bg-neutral-900 border border-gray-700 shadow-lg flex flex-col h-full">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg font-semibold text-white truncate">{load.referenceNumber || "Load"}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex-1 flex flex-col justify-between">
+                    <LoadCard
+                      load={load}
+                      onClick={() => handleLoadClick(load)}
+                      onStatusUpdate={(loadId, status) => handleStatusUpdate(loadId, status as LoadStatus)}
+                      isUpdating={updatingId === load.id}
+                    />
+                  </CardContent>
+                </Card>
               ))
             ) : (
               <div className="col-span-full text-center py-10">
@@ -464,20 +494,5 @@ export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) 
       </Dialog>
     </div>
   )
-}
-
-// Simulate an async status update action
-async function updateLoadStatusAction({
-  loadId,
-  status,
-  timestamp,
-}: { loadId: string; status: string; timestamp: Date }) {
-  // Simulate an API call delay
-  await new Promise((resolve) => setTimeout(resolve, 500))
-  // Simulate success
-  return {
-    success: true,
-    message: "Status updated successfully",
-  }
 }
 

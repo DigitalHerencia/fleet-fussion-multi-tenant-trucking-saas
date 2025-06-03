@@ -44,39 +44,20 @@ interface LoadCardProps {
 export function LoadCard({ load, onClick, onStatusUpdate, isUpdating }: LoadCardProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "pending":
-        return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
-      case "assigned":
-        return "bg-blue-100 text-blue-800 hover:bg-blue-200"
-      case "in_transit":
-        return "bg-indigo-100 text-indigo-800 hover:bg-indigo-200"
-      case "completed":
-        return "bg-green-100 text-green-800 hover:bg-green-200"
-      case "cancelled":
-        return "bg-red-100 text-red-800 hover:bg-red-200"
-      default:
-        return "bg-gray-100 text-gray-800 hover:bg-gray-200"
+      case "assigned": return "bg-blue-500 text-white"
+      case "in_transit": return "bg-yellow-500 text-black"
+      case "delivered": return "bg-green-500 text-white"
+      case "cancelled": return "bg-red-500 text-white"
+      default: return "bg-gray-600 text-white"
     }
   }
 
   const getNextStatusOptions = (currentStatus: string) => {
     switch (currentStatus) {
-      case "pending":
-        return [
-          { value: "assigned", label: "Mark Assigned" },
-          { value: "cancelled", label: "Cancel Load" }
-        ]
-      case "assigned":
-        return [
-          { value: "in_transit", label: "Mark In Transit" },
-          { value: "cancelled", label: "Cancel Load" }
-        ]
-      case "in_transit":
-        return [
-          { value: "completed", label: "Mark Completed" }
-        ]
-      default:
-        return []
+      case "assigned": return ["in_transit", "cancelled"]
+      case "in_transit": return ["delivered", "cancelled"]
+      case "delivered": return []
+      default: return ["assigned"]
     }
   }
 
@@ -84,50 +65,16 @@ export function LoadCard({ load, onClick, onStatusUpdate, isUpdating }: LoadCard
 
   const handleStatusClick = (e: React.MouseEvent, status: string) => {
     e.stopPropagation()
-    onStatusUpdate?.(load.id, status)
-  }
-
-  const handleCardClick = (e: React.MouseEvent) => {
-    // Only trigger onClick if not clicking on dropdown or status update buttons
-    const target = e.target as HTMLElement
-    if (!target.closest('[data-status-action]')) {
-      onClick()
-    }
+    if (onStatusUpdate) onStatusUpdate(load.id, status)
   }
 
   return (
-    <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={handleCardClick}>
+    <Card className="cursor-pointer hover:shadow-md transition-shadow">
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <CardTitle className="text-lg">{load.referenceNumber}</CardTitle>
           <div className="flex items-center gap-2">
-            <Badge className={`${getStatusColor(load.status)}`}>{load.status.replace("_", " ")}</Badge>
-            {onStatusUpdate && nextStatusOptions.length > 0 && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="h-6 w-6 p-0" 
-                    data-status-action
-                    disabled={isUpdating}
-                  >
-                    <MoreVertical className="h-3 w-3" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" data-status-action>
-                  {nextStatusOptions.map((option) => (
-                    <DropdownMenuItem
-                      key={option.value}
-                      onClick={(e) => handleStatusClick(e, option.value)}
-                      disabled={isUpdating}
-                    >
-                      {option.label}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+            <Badge className={getStatusColor(load.status)}>{load.status.replace(/_/g, " ")}</Badge>
           </div>
         </div>
         <p className="text-sm text-muted-foreground">{load.customerName}</p>
@@ -185,6 +132,22 @@ export function LoadCard({ load, onClick, onStatusUpdate, isUpdating }: LoadCard
           ) : null}
         </div>
       </CardFooter>
+      {nextStatusOptions.length > 0 && (
+        <div className="flex gap-2 mt-2">
+          {nextStatusOptions.map((status) => (
+            <Button
+              key={status}
+              size="sm"
+              variant="secondary"
+              className="text-xs px-3 py-1"
+              disabled={isUpdating}
+              onClick={(e) => handleStatusClick(e, status)}
+            >
+              {isUpdating ? "Updating..." : `Mark as ${status.replace(/_/g, " ")}`}
+            </Button>
+          ))}
+        </div>
+      )}
     </Card>
   )
 }

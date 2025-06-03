@@ -34,7 +34,7 @@ export async function listLoadsByOrg(orgId: string, filters: LoadFilterInput = {
 
     // Build where clause
     const where: any = {
-      tenantId: orgId,
+      organizationId: orgId, // FIX: use organizationId, not tenantId
     };
 
     // Status filter
@@ -179,10 +179,15 @@ export async function listLoadsByOrg(orgId: string, filters: LoadFilterInput = {
 
     // Build order by clause
     const orderBy: any = {};
-    const sortBy = validatedFilters.sortBy || "pickupDate";
+    let sortBy = validatedFilters.sortBy || "pickupDate";
     const sortOrder = validatedFilters.sortOrder || "asc";
 
-    if (sortBy === "customer") {
+    // Map UI sort keys to Prisma field names only in orderBy
+    if (sortBy === "pickupDate") {
+      orderBy.scheduledPickupDate = sortOrder;
+    } else if (sortBy === "deliveryDate") {
+      orderBy.scheduledDeliveryDate = sortOrder;
+    } else if (sortBy === "customer") {
       orderBy.customer = { path: ["name"], sort: sortOrder };
     } else if (sortBy === "rate") {
       orderBy.rate = { path: ["total"], sort: sortOrder };
