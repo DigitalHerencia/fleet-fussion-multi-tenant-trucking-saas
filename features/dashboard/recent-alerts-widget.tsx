@@ -24,7 +24,7 @@ export default async function RecentAlertsWidget() {
       alerts = result.data.map((a: any) => ({
         id: a.id,
         message: a.message,
-        severity: a.severity as Alert['severity'],
+        severity: a.severity as Alert["severity"],
         timestamp: a.timestamp,
       }));
     }
@@ -32,42 +32,58 @@ export default async function RecentAlertsWidget() {
     alerts = [];
   }
 
-  const getSeverityColor = (severity: Alert['severity']) => {
+  const getSeverityColor = (severity: Alert["severity"]) => {
     switch (severity) {
-      case 'high': return 'bg-red-500';
-      case 'medium': return 'bg-yellow-500';
-      case 'low': return 'bg-blue-500';
-      default: return 'bg-gray-500';
+      case "high":
+        return "bg-destructive";
+      case "medium":
+        return "bg-warning";
+      case "low":
+        return "bg-primary";
+      default:
+        return "bg-muted";
     }
   };
 
   return (
-    <div className="bg-black border border-gray-200 p-6 rounded-lg shadow-lg">
+    <div className="bg-background border border-border p-6 rounded-lg shadow-lg">
       <div className="flex items-center gap-2 mb-6">
-        <div className="bg-red-500 p-1.5 rounded">
-          <AlertTriangle className="h-4 w-4 text-white" />
+        <div className="bg-destructive p-1.5 rounded">
+          <AlertTriangle className="h-4 w-4 text-destructive-foreground" />
         </div>
-        <h2 className="text-lg font-semibold text-white">Recent Alerts</h2>
+        <h2 className="text-lg font-semibold text-foreground">Recent Alerts</h2>
       </div>
       {alerts.length === 0 ? (
-        <p className="text-gray-400">No recent alerts.</p>
+        <p className="text-muted-foreground">No recent alerts.</p>
       ) : (
         <div className="space-y-4">
           {alerts.map((alert) => (
-            <div key={alert.id} className="flex items-start justify-between gap-3">
+            <div
+              key={alert.id}
+              className="flex items-start justify-between gap-3"
+            >
               <div className="flex items-start gap-3 flex-1">
-                <div className={`w-2 h-2 rounded-full mt-2 ${getSeverityColor(alert.severity)}`} />
+                <div
+                  className={`w-2 h-2 rounded-full mt-2 ${getSeverityColor(alert.severity)}`}
+                />
                 <div className="flex-1">
-                  <p className="text-sm text-gray-200 leading-relaxed">{alert.message}</p>
+                  <p className="text-sm text-foreground leading-relaxed">
+                    {alert.message}
+                  </p>
                 </div>
               </div>
-              <div className="flex items-center gap-1 text-xs text-gray-400 flex-shrink-0">
+              <div className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0">
                 <Clock className="h-3 w-3" />
-                <span>{alert.timestamp ? new Date(alert.timestamp).toLocaleTimeString() : ""}</span>
+                <span>
+                  {alert.timestamp
+                    ? new Date(alert.timestamp).toLocaleTimeString()
+                    : ""}
+                </span>
               </div>
             </div>
           ))}
         </div>
-      )}    </div>
+      )}{" "}
+    </div>
   );
 }
