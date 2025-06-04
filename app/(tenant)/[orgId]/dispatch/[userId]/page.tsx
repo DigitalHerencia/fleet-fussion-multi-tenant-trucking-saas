@@ -3,8 +3,12 @@ import { DispatchSkeleton } from "@/components/dispatch/dispatch-skeleton"
 import { LoadCard } from "@/components/dispatch/load-card";
 import { listLoadsByOrg, getAvailableDriversForLoad, getAvailableVehiclesForLoad } from "@/lib/fetchers/dispatchFetchers"
 
-export default async function DispatchPage({ params }: { params: { orgId: string; userId: string } }) {
-  const { orgId } = params
+export default async function DispatchPage({
+  params,
+}: {
+  params: Promise<{ orgId: string; userId: string }>
+}) {
+  const { orgId } = await params
   if (!orgId) {
     return <div className="text-red-400 p-8">Organization not found.</div>
   }
