@@ -13,8 +13,8 @@ interface FinancialMetricsProps {
 export function FinancialMetrics({ timeRange, financialData, expenseBreakdown }: FinancialMetricsProps) {
   return (
     <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-medium mb-4">Revenue & Expenses</h3>
+      <div className="bg-black border border-gray-200 rounded-md p-4">
+        <h3 className="text-lg font-bold text-white mb-4">Revenue & Expenses</h3>
         <ChartContainer
           config={{
             revenue: {
@@ -46,10 +46,9 @@ export function FinancialMetrics({ timeRange, financialData, expenseBreakdown }:
           </ResponsiveContainer>
         </ChartContainer>
       </div>
-
       <div className="grid gap-4 md:grid-cols-2">
-        <div>
-          <h3 className="text-lg font-medium mb-4">Expense Breakdown</h3>
+        <div className="bg-black border border-gray-200 rounded-md p-4">
+          <h3 className="text-lg font-bold text-white mb-4">Expense Breakdown</h3>
           <ChartContainer
             config={{
               value: {
@@ -71,13 +70,12 @@ export function FinancialMetrics({ timeRange, financialData, expenseBreakdown }:
             </ResponsiveContainer>
           </ChartContainer>
         </div>
-
-        <div>
-          <h3 className="text-lg font-medium mb-4">Financial Summary</h3>
-          <div className="rounded-md border">
+        <div className="bg-black border border-gray-200 rounded-md p-4">
+          <h3 className="text-lg font-bold text-white mb-4">Financial Summary</h3>
+          <div className="rounded-md border border-gray-200 bg-zinc-900 text-white">
             <table className="w-full">
               <thead>
-                <tr className="border-b bg-muted/50">
+                <tr className="border-b border-gray-200 bg-zinc-900/50">
                   <th className="p-2 text-left text-sm font-medium">Metric</th>
                   <th className="p-2 text-right text-sm font-medium">Current Period</th>
                   <th className="p-2 text-right text-sm font-medium">Previous Period</th>

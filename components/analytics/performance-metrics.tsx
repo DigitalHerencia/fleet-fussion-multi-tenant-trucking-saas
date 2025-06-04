@@ -13,8 +13,8 @@ export function PerformanceMetrics({ performanceData }: PerformanceMetricsProps)
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2">
-        <div>
-          <h3 className="text-lg font-medium mb-4">Loads Delivered</h3>
+        <div className="bg-black border border-gray-200 rounded-md p-4">
+          <h3 className="text-lg font-bold text-white mb-4">Loads Delivered</h3>
           <ChartContainer
             config={{
               loads: {
@@ -37,8 +37,8 @@ export function PerformanceMetrics({ performanceData }: PerformanceMetricsProps)
           </ChartContainer>
         </div>
 
-        <div>
-          <h3 className="text-lg font-medium mb-4">Miles Driven</h3>
+        <div className="bg-black border border-gray-200 rounded-md p-4">
+          <h3 className="text-lg font-bold text-white mb-4">Miles Driven</h3>
           <ChartContainer
             config={{
               miles: {
@@ -61,8 +61,8 @@ export function PerformanceMetrics({ performanceData }: PerformanceMetricsProps)
           </ChartContainer>
         </div>
 
-        <div>
-          <h3 className="text-lg font-medium mb-4">On-Time Delivery (%)</h3>
+        <div className="bg-black border border-gray-200 rounded-md p-4">
+          <h3 className="text-lg font-bold text-white mb-4">On-Time Delivery (%)</h3>
           <ChartContainer
             config={{
               onTimeDelivery: {
@@ -90,8 +90,8 @@ export function PerformanceMetrics({ performanceData }: PerformanceMetricsProps)
           </ChartContainer>
         </div>
 
-        <div>
-          <h3 className="text-lg font-medium mb-4">Fleet Utilization (%)</h3>
+        <div className="bg-black border border-gray-200 rounded-md p-4">
+          <h3 className="text-lg font-bold text-white mb-4">Fleet Utilization (%)</h3>
           <ChartContainer
             config={{
               utilization: {
@@ -115,10 +115,10 @@ export function PerformanceMetrics({ performanceData }: PerformanceMetricsProps)
         </div>
       </div>
 
-      <div className="rounded-md border">
+      <div className="rounded-md border border-gray-200 bg-black text-white">
         <table className="w-full">
           <thead>
-            <tr className="border-b bg-muted/50">
+            <tr className="border-b border-gray-200 bg-zinc-900/50">
               <th className="p-2 text-left text-sm font-medium">Metric</th>
               <th className="p-2 text-right text-sm font-medium">Current Period</th>
               <th className="p-2 text-right text-sm font-medium">Previous Period</th>
