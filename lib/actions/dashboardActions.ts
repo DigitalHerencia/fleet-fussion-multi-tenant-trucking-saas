@@ -4,6 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/database/db";
 import { hasPermission } from "@/lib/auth/permissions";
+import { getOrganizationKPIs } from "@/lib/fetchers/kpiFetchers";
 
 export interface DashboardActionResult {
   success: boolean;
@@ -30,9 +31,13 @@ export async function getDashboardOverviewAction(): Promise<DashboardActionResul
       return { success: false, error: "User organization not found" };
     }
 
+    const overview = await getOrganizationKPIs(user.organizationId);
 
-    
-    return { success: true };
+    // Revalidate to keep dashboard data fresh
+    revalidatePath("/dashboard");
+    revalidatePath("/");
+
+    return { success: true, data: overview };
   } catch (error) {
     console.error("Get dashboard overview error:", error);
     return {
