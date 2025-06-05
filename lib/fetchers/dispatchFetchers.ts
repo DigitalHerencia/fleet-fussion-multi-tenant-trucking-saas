@@ -757,3 +757,49 @@ export async function getLoadAlerts(orgId: string, severity?: string[]) {
     throw new Error("Failed to fetch load alerts");
   }
 }
+
+// Fetch recent activity across loads and drivers for an organization
+export async function getRecentDispatchActivity(orgId: string, limit = 10) {
+  try {
+    await checkUserAccess(orgId);
+
+    const logs = await prisma.auditLog.findMany({
+      where: {
+        organizationId: orgId,
+        OR: [
+          { entityType: 'Load' },
+          { entityType: 'Driver' },
+          { entityType: 'dispatch' },
+        ],
+      },
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+      orderBy: {
+        timestamp: 'desc',
+      },
+      take: limit,
+    });
+
+    const activity = logs.map(log => ({
+      id: log.id,
+      entityType: log.entityType,
+      action: log.action,
+      entityId: log.entityId,
+      timestamp: log.timestamp,
+      userName: log.user
+        ? `${log.user.firstName ?? ''} ${log.user.lastName ?? ''}`.trim()
+        : 'System',
+    }));
+
+    return { success: true, data: activity };
+  } catch (error) {
+    console.error('Error fetching dispatch activity:', error);
+    throw new Error('Failed to fetch dispatch activity');
+  }
+}
