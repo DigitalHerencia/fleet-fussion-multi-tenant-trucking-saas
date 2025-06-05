@@ -11,7 +11,7 @@ export default async function VehiclesPage({
   const vehicles = await listVehiclesByOrg(orgId)
   return (
     <Suspense>
-      <VehicleListClient orgId={orgId} initialVehicles={vehicles} />
+      <VehicleListClient orgId={orgId} initialVehicles={vehicles.vehicles} />
     </Suspense>
   )
 }

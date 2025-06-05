@@ -9,7 +9,10 @@ interface VehicleListPageProps {
 }
 
 export default async function VehicleListPage({ orgId, page = 1 }: VehicleListPageProps) {
-  const { vehicles, totalPages } = await listVehiclesByOrg(orgId, { page });
+  const { vehicles, totalPages } = await listVehiclesByOrg(orgId, {
+    page,
+    limit: 0
+  });
 
   return (
     <div className="space-y-4">

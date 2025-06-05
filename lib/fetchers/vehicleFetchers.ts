@@ -1,9 +1,7 @@
-
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
 import { cache } from "react";
-import { z } from "zod";
 
 import prisma from "@/lib/database/db";
 import { vehicleFilterSchema, type VehicleFiltersData } from "@/schemas/vehicles";
@@ -81,16 +79,7 @@ export const listVehiclesByOrg = cache(async (
       prisma.vehicle.findMany({
         where,
         orderBy: { unitNumber: "asc" },
-        include: {
-          driver: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-            },
-          },
-          organization: { select: { id: true, name: true } },
-        },
+        // Remove invalid includes
         skip,
         take: limit,
       }),
@@ -118,25 +107,18 @@ export const listVehiclesByOrg = cache(async (
       insuranceProvider: undefined,
       insurancePolicyNumber: undefined,
       insuranceExpiry: v.insuranceExpiration ?? undefined,
-      currentDriverId: v.currentDriverId ?? undefined,
+      // Remove currentDriverId, currentDriver, nextMaintenanceDate, nextInspectionDue, organization
+      currentDriverId: undefined,
       currentLoadId: undefined,
       currentLocation: undefined,
       totalMileage: v.currentOdometer ?? undefined,
       lastMaintenanceMileage: undefined,
-      nextMaintenanceDate: v.nextMaintenanceDate ?? v.nextInspectionDue ?? undefined,
+      nextMaintenanceDate: undefined,
       nextMaintenanceMileage: undefined,
       createdAt: v.createdAt,
       updatedAt: v.updatedAt,
-      driver: v.driver
-        ? {
-            id: v.driver.id,
-            firstName: v.driver.firstName,
-            lastName: v.driver.lastName,
-          }
-        : undefined,
-      organization: v.organization
-        ? { id: v.organization.id, name: v.organization.name }
-        : undefined,
+      driver: undefined,
+      organization: undefined,
     }));
 
     return {
