@@ -1,4 +1,3 @@
-import { getOrganizationId } from "@/lib/auth/utils";
 import { getRecentDispatchActivity } from "@/lib/fetchers/dispatchFetchers";
 import { Activity, Clock } from "lucide-react";
 
@@ -11,8 +10,11 @@ interface ActivityItem {
   userName: string;
 }
 
-export default async function RecentDispatchActivity() {
-  const orgId = await getOrganizationId();
+interface RecentDispatchActivityProps {
+  orgId: string;
+}
+
+export default async function RecentDispatchActivity({ orgId }: RecentDispatchActivityProps) {
   if (!orgId) {
     return <p className="text-red-400">Organization not found.</p>;
   }

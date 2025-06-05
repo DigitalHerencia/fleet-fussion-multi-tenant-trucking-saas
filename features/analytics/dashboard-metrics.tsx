@@ -16,7 +16,6 @@ import {
   CheckCircle
 } from 'lucide-react'
 import { getDashboardSummary, type DashboardSummary } from "@/lib/fetchers/analyticsFetchers";
-import { getOrganizationId } from "@/lib/auth/utils";
 import { FC } from 'react';
 
 interface MetricCardProps {
@@ -51,8 +50,11 @@ function MetricCard({ title, value, change, changeType, icon: Icon }: MetricCard
   )
 }
 
-const DashboardMetrics: FC = async () => {
-  const orgId = await getOrganizationId();
+interface DashboardMetricsProps {
+  orgId: string;
+}
+
+const DashboardMetrics: FC<DashboardMetricsProps> = async ({ orgId }) => {
   if (!orgId) {
     return <div className="text-red-500">Organization not found</div>;
   }

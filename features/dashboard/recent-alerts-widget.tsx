@@ -1,5 +1,4 @@
 // features/dashboard/recent-alerts-widget.tsx
-import { getOrganizationId } from "@/lib/auth/utils";
 import { getDashboardAlertsAction } from "@/lib/actions/dashboardActions";
 import type { DashboardAlert } from "@/lib/actions/dashboardActions";
 import { AlertTriangle, Clock } from "lucide-react";
@@ -7,15 +6,17 @@ import { Badge } from "@/components/ui/badge";
 
 interface Alert extends DashboardAlert {}
 
-export default async function RecentAlertsWidget() {
-  const organizationId = await getOrganizationId();
-  if (!organizationId) {
+interface RecentAlertsWidgetProps {
+  orgId: string;
+}
+
+export default async function RecentAlertsWidget({ orgId }: RecentAlertsWidgetProps) {
+  if (!orgId) {
     return <p className="text-red-400">Organization not found.</p>;
   }
-
   let alerts: Alert[] = [];
   try {
-    const result = await getDashboardAlertsAction(organizationId);
+    const result = await getDashboardAlertsAction(orgId);
     if (result.success && Array.isArray(result.data)) {
       alerts = result.data.map((a: any) => ({
         id: a.id,

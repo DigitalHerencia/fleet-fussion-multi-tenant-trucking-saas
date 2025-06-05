@@ -3,10 +3,13 @@ import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
-import { getOrganizationId } from "@/lib/auth/utils";
 import { getDriverComplianceStatuses, type DriverComplianceRow } from "@/lib/fetchers/complianceFetchers";
-export async function DriverComplianceTable() {
-  const orgId = await getOrganizationId();
+
+interface DriverComplianceTableProps {
+  orgId: string;
+}
+
+export async function DriverComplianceTable({ orgId }: DriverComplianceTableProps) {
   if (!orgId) {
     return <p className="text-red-500">Organization not found.</p>;
   }

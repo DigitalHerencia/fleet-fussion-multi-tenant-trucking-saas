@@ -1,9 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getComplianceDashboard } from "@/lib/fetchers/complianceFetchers";
-import { getOrganizationId } from "@/lib/auth/utils";
 
-export async function ComplianceDashboard() {
-  const orgId = await getOrganizationId();
+interface ComplianceDashboardProps {
+  orgId: string;
+}
+
+export async function ComplianceDashboard({ orgId }: ComplianceDashboardProps) {
   if (!orgId) {
     return <p className="text-red-500">Organization not found.</p>;
   }

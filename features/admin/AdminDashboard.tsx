@@ -1,9 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getOrganizationId } from "@/lib/auth/utils";
 import { getOrganizationStatsAction } from "@/lib/actions/adminActions";
 
-export async function AdminDashboard() {
-  const orgId = await getOrganizationId();
+interface AdminDashboardProps {
+  orgId: string;
+}
+
+export async function AdminDashboard({ orgId }: AdminDashboardProps) {
   if (!orgId) {
     return <p className="text-red-500">Organization not found.</p>;
   }

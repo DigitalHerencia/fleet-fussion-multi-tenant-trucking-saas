@@ -25,7 +25,15 @@ import {
   Truck
 } from 'lucide-react'
 
-export default async function ComplianceDashboardPage() {
+interface ComplianceDashboardPageProps {
+  params: {
+    orgId: string;
+    userId: string;
+  };
+}
+
+export default async function ComplianceDashboardPage({ params }: ComplianceDashboardPageProps) {
+  const { orgId } = params;
   return (
     <>
       <div className="pt-8 space-y-6 p-6">
@@ -282,9 +290,8 @@ export default async function ComplianceDashboardPage() {
               Monitor driver licenses, medical cards, and HOS compliance
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <Suspense fallback={<LoadingSpinner />}>
-              <DriverComplianceTable />
+          <CardContent>            <Suspense fallback={<LoadingSpinner />}>
+              <DriverComplianceTable orgId={orgId} />
             </Suspense>
           </CardContent>
         </Card>

@@ -1,5 +1,4 @@
 // features/dashboard/todays-schedule-widget.tsx
-import { getOrganizationId } from "@/lib/auth/utils";
 import { Calendar, Sun, Sunset, Moon } from "lucide-react";
 import { getTodaysScheduleAction } from "@/lib/actions/dashboardActions";
 
@@ -11,15 +10,17 @@ interface ScheduleItem {
   type: string;
 }
 
-export default async function TodaysScheduleWidget() {
-  const organizationId = await getOrganizationId();
-  if (!organizationId) {
+interface TodaysScheduleWidgetProps {
+  orgId: string;
+}
+
+export default async function TodaysScheduleWidget({ orgId }: TodaysScheduleWidgetProps) {
+  if (!orgId) {
     return <p className="text-red-400">Organization not found.</p>;
   }
-
   let scheduleItems: ScheduleItem[] = [];
   try {
-    const result = await getTodaysScheduleAction(organizationId);
+    const result = await getTodaysScheduleAction(orgId);
     if (result.success && Array.isArray(result.data)) {
       scheduleItems = result.data.map((item: any) => ({
         id: item.id,

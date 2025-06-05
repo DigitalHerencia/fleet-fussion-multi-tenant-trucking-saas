@@ -8,8 +8,14 @@ import { VehicleComplianceTable } from "@/components/compliance/vehicle-complian
 import { ComplianceDocuments } from "@/components/compliance/compliance-documents"
 import { PageHeader } from "@/components/shared/PageHeader"
 
+interface CompliancePageProps {
+  params: {
+    orgId: string;
+  };
+}
 
-export default function CompliancePage() {
+export default function CompliancePage({ params }: CompliancePageProps) {
+	const { orgId } = params;
 	return (
 		<div className="compliance-page flex flex-col gap-6 p-4 md:p-6">
 			<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mt-14 mb-2">
@@ -85,9 +91,8 @@ export default function CompliancePage() {
 								Monitor driver compliance with regulations including HOS, licenses, and medical certifications.
 							</CardDescription>
 						</CardHeader>
-						<CardContent className="overflow-x-auto">
-                                                        <Suspense fallback={<div>Loading driver compliance data...</div>}>
-                                                                <DriverComplianceTable />
+						<CardContent className="overflow-x-auto">                                                        <Suspense fallback={<div>Loading driver compliance data...</div>}>
+                                                                <DriverComplianceTable orgId={orgId} />
                                                         </Suspense>
 						</CardContent>
 					</Card>

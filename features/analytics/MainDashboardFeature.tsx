@@ -1,9 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getDashboardSummary } from "@/lib/fetchers/analyticsFetchers";
-import { getOrganizationId } from "@/lib/auth/utils";
 
-export async function MainDashboardFeature() {
-  const orgId = await getOrganizationId();
+interface MainDashboardFeatureProps {
+  orgId: string;
+}
+
+export async function MainDashboardFeature({ orgId }: MainDashboardFeatureProps) {
   if (!orgId) {
     return <p className="text-red-500">Organization not found.</p>;
   }

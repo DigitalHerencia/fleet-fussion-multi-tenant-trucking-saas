@@ -1,15 +1,17 @@
 // features/dashboard/kpi-grid.tsx
 import { DashboardCards } from "@/components/dashboard/dashboard-cards";
-import { getOrganizationId } from "@/lib/auth/utils"; // Assuming this utility exists
 import { getOrganizationKPIs } from "@/lib/fetchers/kpiFetchers";
 
-export default async function KpiGrid() {
-  const organizationId = await getOrganizationId();
-  if (!organizationId) {
+interface KpiGridProps {
+  orgId: string;
+}
+
+export default async function KpiGrid({ orgId }: KpiGridProps) {
+  if (!orgId) {
     return <p className="text-destructive">Organization not found.</p>;
   }
 
-  const kpis = await getOrganizationKPIs(organizationId);
+  const kpis = await getOrganizationKPIs(orgId);
 
   if (!kpis) {
     // Handle case where kpis might be null or undefined if fetch fails
@@ -20,7 +22,6 @@ export default async function KpiGrid() {
   // If not, a transformation step will be needed here.
   // For now, we'll cast it, but this should be validated or typed correctly.
   const cardKpis = kpis as Parameters<typeof DashboardCards>[0]['kpis'];
-
 
   return <DashboardCards kpis={cardKpis} />;
 }

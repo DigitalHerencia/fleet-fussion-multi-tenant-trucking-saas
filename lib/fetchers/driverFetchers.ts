@@ -41,12 +41,30 @@ function parseDriverData(raw: any): Driver {
 
 // ================== Core Fetchers ==================
 
+// Add this type for driver with assignment info
+type DriverWithAssignment = Driver & {
+  currentAssignment?: {
+    loadId: string;
+    loadNumber: string;
+    status: string;
+    customerName: string | null;
+    scheduledPickupDate: Date | null;
+    scheduledDeliveryDate: Date | null;
+    vehicleId: string | null;
+    vehicleUnit?: string;
+  } | null;
+};
+
+// Update DriverListResponse for this fetcher
+type DriverListWithAssignmentResponse = Omit<DriverListResponse, 'drivers'> & {
+  drivers: DriverWithAssignment[];
+};
+
 /**
  * Get driver by ID with permission check
  */
 export const getDriverById = async (driverId: string): Promise<Driver | null> => {
-  try {
-    const { userId } = await auth()
+  try {    const { userId } = await auth()
     if (!userId) return null
 
     const driver = await prisma.driver.findFirst({
@@ -58,6 +76,30 @@ export const getDriverById = async (driverId: string): Promise<Driver | null> =>
         organization: true,
         user: true,
         complianceDocuments: true,
+        loads: {
+          where: {
+            status: {
+              in: ['assigned', 'dispatched', 'in_transit', 'at_pickup', 'picked_up', 'en_route']
+            }
+          },
+          select: {
+            id: true,
+            loadNumber: true,
+            status: true,
+            customerName: true,
+            scheduledPickupDate: true,
+            scheduledDeliveryDate: true,
+            vehicleId: true,
+            vehicle: {
+              select: {
+                unitNumber: true
+              }
+            }
+          },
+          orderBy: {
+            createdAt: 'desc'
+          }
+        }
       },
     })
 
@@ -76,7 +118,7 @@ export const getDriverById = async (driverId: string): Promise<Driver | null> =>
 export const listDriversByOrg = async (
   orgId: string, 
   filters: DriverFilters = {}
-): Promise<DriverListResponse> => {
+): Promise<DriverListWithAssignmentResponse> => {
   try {
     const { userId } = await auth()
     if (!userId) {
@@ -179,17 +221,59 @@ export const listDriversByOrg = async (
     }
 
     // Get total count
-    const total = await prisma.driver.count({ where })
-
-    // Fetch drivers
+    const total = await prisma.driver.count({ where })    // Fetch drivers with assignment information
     const driverResults = await prisma.driver.findMany({
       where,
+      include: {
+        loads: {
+          where: {
+            status: {
+              in: ['assigned', 'dispatched', 'in_transit', 'at_pickup', 'picked_up', 'en_route']
+            }
+          },
+          select: {
+            id: true,
+            loadNumber: true,
+            status: true,
+            customerName: true,
+            scheduledPickupDate: true,
+            scheduledDeliveryDate: true,
+            vehicleId: true,
+            vehicle: {
+              select: {
+                unitNumber: true
+              }
+            }
+          },
+          take: 1, // Only get the most recent active assignment
+          orderBy: {
+            createdAt: 'desc'
+          }
+        }
+      },
       orderBy,
       skip,
       take: limit
     })
 
-    const parsedDriversData = driverResults.map(parseDriverData) as Driver[]
+    const parsedDriversData = driverResults.map(driver => {
+      const baseDriver = parseDriverData(driver) as DriverWithAssignment;
+      // Add current assignment information
+      const currentAssignment = driver.loads?.[0] || null
+      return {
+        ...baseDriver,
+        currentAssignment: currentAssignment ? {
+          loadId: currentAssignment.id,
+          loadNumber: currentAssignment.loadNumber,
+          status: currentAssignment.status,
+          customerName: currentAssignment.customerName,
+          scheduledPickupDate: currentAssignment.scheduledPickupDate,
+          scheduledDeliveryDate: currentAssignment.scheduledDeliveryDate,
+          vehicleId: currentAssignment.vehicleId,
+          vehicleUnit: currentAssignment.vehicle?.unitNumber
+        } : null
+      } as DriverWithAssignment
+    })
 
     return {
       drivers: parsedDriversData,

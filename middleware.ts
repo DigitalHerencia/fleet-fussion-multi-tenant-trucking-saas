@@ -93,13 +93,13 @@ function getDashboardPath(userContext: UserContext): string {
     case 'admin':
     case 'accountant':
     case 'viewer':
-      return `/tenant/${orgId}/dashboard/${userId}`;
+      return `/${orgId}/dashboard/${userId}`;
     case 'dispatcher':
-      return `/tenant/${orgId}/dispatch/${userId}`;
+      return `/${orgId}/dispatch/${userId}`;
     case 'compliance_officer':
-      return `/tenant/${orgId}/compliance/${userId}`;
+      return `/${orgId}/compliance/${userId}`;
     case 'driver':
-      return `/tenant/${orgId}/drivers/${userId}`;
+      return `/${orgId}/drivers/${userId}`;
     default:
       return '/';
   }
@@ -161,10 +161,9 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
 
   // [F] Determine requested route/resource (pathname)
   const pathname = req.nextUrl.pathname;
-
   // [G] Check org context in route vs. user context (if applicable)
-  // Example: /tenant/[orgId]/...
-  const orgPathMatch = pathname.match(/^\/tenant\/([^\/]+)/);
+  // Example: /[orgId]/...
+  const orgPathMatch = pathname.match(/^\/([^\/]+)\/(?:dashboard|drivers|dispatch|compliance|vehicles|analytics|ifta|settings)/);
   if (orgPathMatch && orgPathMatch[1]) {
     const requestedOrgId = orgPathMatch[1];
     if (userContext.organizationId && userContext.organizationId !== requestedOrgId) {

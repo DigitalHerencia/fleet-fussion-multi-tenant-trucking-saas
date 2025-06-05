@@ -12,12 +12,18 @@ import RecentAlertsWidget from '@/features/dashboard/recent-alerts-widget'
 import TodaysScheduleWidget from '@/features/dashboard/todays-schedule-widget'
 import { DashboardSkeleton } from '@/components/dashboard/dashboard-skeleton'
 
-export default function DashboardPage() {
+export default async function DashboardPage({ 
+  params 
+}: { 
+  params: Promise<{ orgId: string; userId: string }> 
+}) {
+  const { orgId, userId } = await params;
+
   return (
     <div className="pt-8 space-y-6 p-6 min-h-screen bg-neutral-900">
       {/* Fleet Overview Header */}
       <Suspense fallback={<DashboardSkeleton />}>
-        <FleetOverviewHeader />
+        <FleetOverviewHeader orgId={orgId} />
       </Suspense>
 
       {/* Bottom Widgets Grid (now on top) */}
@@ -26,17 +32,17 @@ export default function DashboardPage() {
           <QuickActionsWidget />
         </Suspense>
         <Suspense fallback={<DashboardSkeleton />}>
-          <RecentAlertsWidget />
+          <RecentAlertsWidget orgId={orgId} />
         </Suspense>
         <Suspense fallback={<DashboardSkeleton />}>
-          <TodaysScheduleWidget />
+          <TodaysScheduleWidget orgId={orgId} />
         </Suspense>
       </div>
 
       {/* KPI Grid */}
       <div>
         <Suspense fallback={<DashboardSkeleton />}>
-          <KpiGrid />
+          <KpiGrid orgId={orgId} />
         </Suspense>
       </div>
     </div>
