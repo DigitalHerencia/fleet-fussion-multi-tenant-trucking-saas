@@ -1,3 +1,8 @@
+// --- IMPORTANT ENUM SYNC ---
+// When updating VehicleStatus or VehicleType:
+// - Update enums in: types/vehicles.ts, schemas/vehicles.ts, prisma/schema.prisma
+// - Keep all mappings in this file in sync with those enums.
+// ---------------------------
 "use server";
 
 import { revalidatePath } from "next/cache";
@@ -29,43 +34,65 @@ function toPrismaVehicleStatus(status: VehicleStatus): PrismaVehicleStatus {
 
 // Helper: Map Prisma Vehicle to public Vehicle type
 function toPublicVehicle(prismaVehicle: any): Vehicle {
+  // Map Prisma status to app VehicleStatus
+  let status: VehicleStatus;
+  switch (prismaVehicle.status) {
+    case "active":
+      status = "available";
+      break;
+    case "maintenance":
+      status = "in_maintenance";
+      break;
+    case "inactive":
+      status = "out_of_service";
+      break;
+    case "decommissioned":
+      status = "retired";
+      break;
+    case "assigned":
+      status = "assigned";
+      break;
+    default:
+      status = "available";
+  }
+
+  // Map Prisma type to VehicleType (ensure fallback)
+  let type: VehicleType = ["tractor", "trailer", "straight_truck", "other"].includes(prismaVehicle.type)
+    ? prismaVehicle.type
+    : "other";
+
   return {
     id: prismaVehicle.id,
     organizationId: prismaVehicle.organizationId,
-    type: prismaVehicle.type as VehicleType,
-    status: (() => {
-      switch (prismaVehicle.status) {
-        case "active": return "available";
-        case "maintenance": return "in_maintenance";
-        case "inactive": return "out_of_service";
-        case "decommissioned": return "retired";
-        default: return "available";
-      }
-    })(),
-    make: prismaVehicle.make ?? "",
-    model: prismaVehicle.model ?? "",
-    year: prismaVehicle.year ?? 0,
-    vin: prismaVehicle.vin ?? "",
-    licensePlate: prismaVehicle.licensePlate ?? undefined,
-    unitNumber: prismaVehicle.unitNumber ?? undefined,
-    grossVehicleWeight: undefined,
-    maxPayload: undefined,
-    fuelType: prismaVehicle.fuelType ?? undefined,
-    engineType: undefined,
-    registrationNumber: undefined,
-    registrationExpiry: prismaVehicle.registrationExpiration ?? undefined,
-    insuranceProvider: undefined,
-    insurancePolicyNumber: undefined,
-    insuranceExpiry: prismaVehicle.insuranceExpiration ?? undefined,
-    currentDriverId: prismaVehicle.currentDriverId ?? undefined,
-    currentLoadId: undefined,
-    currentLocation: undefined,
-    totalMileage: undefined,
-    lastMaintenanceMileage: undefined,
-    nextMaintenanceDate: prismaVehicle.nextMaintenanceDate ?? undefined,
-    nextMaintenanceMileage: undefined,
-    createdAt: prismaVehicle.createdAt,
-    updatedAt: prismaVehicle.updatedAt,
+    type,
+    status,
+    make: typeof prismaVehicle.make === "string" ? prismaVehicle.make : "",
+    model: typeof prismaVehicle.model === "string" ? prismaVehicle.model : "",
+    year: typeof prismaVehicle.year === "number" ? prismaVehicle.year : 0,
+    vin: typeof prismaVehicle.vin === "string" ? prismaVehicle.vin : "",
+    licensePlate: typeof prismaVehicle.licensePlate === "string" ? prismaVehicle.licensePlate : undefined,
+    unitNumber: typeof prismaVehicle.unitNumber === "string" ? prismaVehicle.unitNumber : undefined,
+    grossVehicleWeight: typeof prismaVehicle.grossVehicleWeight === "number" ? prismaVehicle.grossVehicleWeight : undefined,
+    maxPayload: typeof prismaVehicle.maxPayload === "number" ? prismaVehicle.maxPayload : undefined,
+    fuelType: typeof prismaVehicle.fuelType === "string" ? prismaVehicle.fuelType : undefined,
+    engineType: typeof prismaVehicle.engineType === "string" ? prismaVehicle.engineType : undefined,
+    registrationNumber: typeof prismaVehicle.registrationNumber === "string" ? prismaVehicle.registrationNumber : undefined,
+    registrationExpiry: prismaVehicle.registrationExpiration instanceof Date ? prismaVehicle.registrationExpiration : undefined,
+    insuranceProvider: typeof prismaVehicle.insuranceProvider === "string" ? prismaVehicle.insuranceProvider : undefined,
+    insurancePolicyNumber: typeof prismaVehicle.insurancePolicyNumber === "string" ? prismaVehicle.insurancePolicyNumber : undefined,
+    insuranceExpiry: prismaVehicle.insuranceExpiration instanceof Date ? prismaVehicle.insuranceExpiration : undefined,
+    currentDriverId: typeof prismaVehicle.currentDriverId === "string" ? prismaVehicle.currentDriverId : undefined,
+    currentLoadId: typeof prismaVehicle.currentLoadId === "string" ? prismaVehicle.currentLoadId : undefined,
+    currentLocation: typeof prismaVehicle.currentLocation === "string" ? prismaVehicle.currentLocation : undefined,
+    totalMileage: typeof prismaVehicle.currentOdometer === "number" ? prismaVehicle.currentOdometer : undefined,
+    lastMaintenanceMileage: typeof prismaVehicle.lastMaintenanceMileage === "number" ? prismaVehicle.lastMaintenanceMileage : undefined,
+    nextMaintenanceDate: prismaVehicle.nextMaintenanceDate instanceof Date ? prismaVehicle.nextMaintenanceDate : undefined,
+    nextMaintenanceMileage: typeof prismaVehicle.nextMaintenanceMileage === "number" ? prismaVehicle.nextMaintenanceMileage : undefined,
+    createdAt: prismaVehicle.createdAt instanceof Date ? prismaVehicle.createdAt : new Date(),
+    updatedAt: prismaVehicle.updatedAt instanceof Date ? prismaVehicle.updatedAt : new Date(),
+    // Relations (optional, set to undefined if not present)
+    driver: undefined,
+    organization: undefined,
   };
 }
 

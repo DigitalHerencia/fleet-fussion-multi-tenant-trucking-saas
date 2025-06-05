@@ -7,6 +7,8 @@ interface ScheduleItem {
   id: string;
   description: string;
   timePeriod: string;
+  count: number;
+  type: string;
 }
 
 export default async function TodaysScheduleWidget() {
@@ -23,6 +25,8 @@ export default async function TodaysScheduleWidget() {
         id: item.id,
         description: item.description,
         timePeriod: item.timePeriod || "Today",
+        count: item.count ?? 0,
+        type: item.type ?? "none",
       }));
     }
   } catch (e) {
@@ -56,10 +60,10 @@ export default async function TodaysScheduleWidget() {
   };
 
   return (
-    <div className="bg-background border border-border p-6 rounded-lg shadow-lg">
+    <div className="bg-black border border-border p-6 rounded-lg shadow-lg">
       <div className="flex items-center gap-2 mb-6">
-        <div className="bg-primary p-1.5 rounded">
-          <Calendar className="h-4 w-4 text-primary-foreground" />
+        <div className="bg-blue-500 p-1.5 rounded">
+          <Calendar className="h-4 w-4 text-white" />
         </div>
         <h2 className="text-lg font-semibold text-foreground">
           Today's Schedule
@@ -78,6 +82,9 @@ export default async function TodaysScheduleWidget() {
                 {getTimePeriodIcon(item.timePeriod)}
                 <span className="text-sm text-foreground">
                   {item.description}
+                </span>
+                <span className="text-xs text-muted-foreground ml-2">
+                  {item.count > 1 ? `(${item.count})` : null}
                 </span>
               </div>
               <span

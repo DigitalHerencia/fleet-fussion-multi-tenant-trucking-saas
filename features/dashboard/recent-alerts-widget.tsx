@@ -1,15 +1,11 @@
 // features/dashboard/recent-alerts-widget.tsx
 import { getOrganizationId } from "@/lib/auth/utils";
 import { getDashboardAlertsAction } from "@/lib/actions/dashboardActions";
+import type { DashboardAlert } from "@/lib/actions/dashboardActions";
 import { AlertTriangle, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
-interface Alert {
-  id: string;
-  message: string;
-  severity: "high" | "medium" | "low";
-  timestamp: string;
-}
+interface Alert extends DashboardAlert {}
 
 export default async function RecentAlertsWidget() {
   const organizationId = await getOrganizationId();
@@ -26,6 +22,7 @@ export default async function RecentAlertsWidget() {
         message: a.message,
         severity: a.severity as Alert["severity"],
         timestamp: a.timestamp,
+        type: a.type ?? "other",
       }));
     }
   } catch (e) {
@@ -46,10 +43,10 @@ export default async function RecentAlertsWidget() {
   };
 
   return (
-    <div className="bg-background border border-border p-6 rounded-lg shadow-lg">
+    <div className="bg-black border border-border p-6 rounded-lg shadow-lg">
       <div className="flex items-center gap-2 mb-6">
-        <div className="bg-destructive p-1.5 rounded">
-          <AlertTriangle className="h-4 w-4 text-destructive-foreground" />
+        <div className="bg-yellow-300 p-1.5 rounded">
+          <AlertTriangle className="h-4 w-4 text-white" />
         </div>
         <h2 className="text-lg font-semibold text-foreground">Recent Alerts</h2>
       </div>

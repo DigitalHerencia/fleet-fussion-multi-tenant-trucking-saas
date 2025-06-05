@@ -294,19 +294,32 @@ export async function getVehicleAnalytics(
   }
 }
 
+// Add type for dashboard summary
+export interface DashboardSummary {
+  totalRevenue: number;
+  totalMiles: number;
+  totalLoads: number;
+  activeDrivers: number;
+  activeVehicles: number;
+  averageRevenuePerMile: number;
+}
+
 /**
  * Get dashboard summary for analytics overview
  */
-export async function getDashboardSummary(organizationId: string, timeRange: string = "30d") {
+export async function getDashboardSummary(
+  organizationId: string,
+  timeRange: string = "30d"
+): Promise<DashboardSummary> {
   const { userId } = await auth();
   if (!userId) {
     throw new Error("Unauthorized");
   }
 
   const cacheKey = `analytics:summary:${organizationId}:${timeRange}`;
-  const cached = getCachedData(cacheKey);
-  if (cached) {
-    return cached;
+  const cached: any = getCachedData(cacheKey);
+  if (cached && typeof cached.totalRevenue === 'number') {
+    return cached as DashboardSummary;
   }
 
   try {

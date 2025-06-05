@@ -185,6 +185,23 @@ export function DriverComplianceTable() {
               <TableHead className="w-[80px]"></TableHead>
             </TableRow>
           </TableHeader>
+          <TableBody>
+            {/* TODO: Replace with real driver data */}
+            {[1,2,3].map((_, idx) => (
+              <TableRow key={idx}>
+                <TableCell>John Doe</TableCell>
+                <TableCell>
+                  <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Valid</Badge>
+                </TableCell>
+                <TableCell>
+                  <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Valid</Badge>
+                </TableCell>
+                <TableCell>
+                  <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Compliant</Badge>
+                </TableCell>
+                <TableCell>
+                  <span className="text-muted-foreground">None</span>
+                </TableCell>
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -201,8 +218,11 @@ export function DriverComplianceTable() {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
-                </Table>
-                </div>
-              </div>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
   )
 }

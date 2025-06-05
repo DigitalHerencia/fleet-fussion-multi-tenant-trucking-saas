@@ -4,8 +4,6 @@
  * Displays key performance indicators and metrics cards
  */
 
-'use client'
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { 
   Truck, 
@@ -17,6 +15,9 @@ import {
   AlertTriangle,
   CheckCircle
 } from 'lucide-react'
+import { getDashboardSummary, type DashboardSummary } from "@/lib/fetchers/analyticsFetchers";
+import { getOrganizationId } from "@/lib/auth/utils";
+import { FC } from 'react';
 
 interface MetricCardProps {
   title: string
@@ -50,66 +51,55 @@ function MetricCard({ title, value, change, changeType, icon: Icon }: MetricCard
   )
 }
 
-export function DashboardMetrics() {
-  // In a real app, this data would come from your API
+const DashboardMetrics: FC = async () => {
+  const orgId = await getOrganizationId();
+  if (!orgId) {
+    return <div className="text-red-500">Organization not found</div>;
+  }
+  let summary: DashboardSummary;
+  try {
+    summary = await getDashboardSummary(orgId);
+  } catch (e) {
+    return <div className="text-red-500">Failed to load metrics</div>;
+  }
+
   const metrics = [
     {
       title: 'Active Vehicles',
-      value: '24',
-      change: '+2 from last month',
-      changeType: 'positive' as const,
+      value: summary.activeVehicles.toString(),
+      change: '',
+      changeType: 'neutral' as const,
       icon: Truck
     },
     {
       title: 'Active Drivers',
-      value: '18',
-      change: '+1 from last month',
-      changeType: 'positive' as const,
+      value: summary.activeDrivers.toString(),
+      change: '',
+      changeType: 'neutral' as const,
       icon: Users
     },
     {
       title: 'Active Loads',
-      value: '12',
-      change: '+3 from yesterday',
-      changeType: 'positive' as const,
+      value: summary.totalLoads.toString(),
+      change: '',
+      changeType: 'neutral' as const,
       icon: Package
     },
     {
       title: 'Revenue (MTD)',
-      value: '$47,250',
-      change: '+12% from last month',
-      changeType: 'positive' as const,
+      value: `$${summary.totalRevenue.toLocaleString()}`,
+      change: '',
+      changeType: 'neutral' as const,
       icon: DollarSign
     },
     {
-      title: 'On-Time Delivery',
-      value: '94%',
-      change: '+2% from last month',
-      changeType: 'positive' as const,
-      icon: CheckCircle
-    },
-    {
-      title: 'Avg Delivery Time',
-      value: '2.4 days',
-      change: '-0.2 days',
-      changeType: 'positive' as const,
-      icon: Clock
-    },
-    {
-      title: 'Fuel Efficiency',
-      value: '6.8 MPG',
-      change: '+0.3 from last month',
-      changeType: 'positive' as const,
+      title: 'Revenue per Mile',
+      value: `$${summary.averageRevenuePerMile.toFixed(2)}`,
+      change: '',
+      changeType: 'neutral' as const,
       icon: TrendingUp
-    },
-    {
-      title: 'Open Violations',
-      value: '3',
-      change: '-2 from last week',
-      changeType: 'positive' as const,
-      icon: AlertTriangle
     }
-  ]
+  ];
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -124,5 +114,7 @@ export function DashboardMetrics() {
         />
       ))}
     </div>
-  )
+  );
 }
+
+export default DashboardMetrics;

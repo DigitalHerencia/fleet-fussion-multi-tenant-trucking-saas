@@ -5,9 +5,9 @@ import { Suspense } from "react"
 export default async function VehiclesPage({
   params,
 }: {
-  params: Promise<{ orgId: string }>
+  params: { orgId: string }
 }) {
-  const { orgId } = await params
+  const { orgId } = params
   const vehicles = await listVehiclesByOrg(orgId)
   return (
     <Suspense>

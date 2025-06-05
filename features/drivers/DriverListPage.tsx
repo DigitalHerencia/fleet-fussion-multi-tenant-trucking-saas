@@ -29,22 +29,54 @@ export default async function DriverListPage({
           <DriverCard
             key={driver.id}
             driver={{
-              id: driver.id,
-              firstName: driver.firstName,
-              lastName: driver.lastName,
-              email: driver.email,
-              phone: driver.phone,
-              status: driver.status,
-              licenseState: driver.cdlState,
-              licenseExpiration: new Date(driver.cdlExpiration),
-              medicalCardExpiration: new Date(driver.medicalCardExpiration),
-              hireDate: new Date(driver.hireDate),
+              id: driver.id ?? "",
+              firstName: driver.firstName ?? "",
+              lastName: driver.lastName ?? "",
+              email: driver.email ?? "",
+              phone: driver.phone ?? "",
+              status: driver.status ?? "",
+              licenseState: driver.cdlState ?? "",
+              licenseExpiration:
+                driver.cdlExpiration !== null && driver.cdlExpiration !== undefined
+                  ? new Date(driver.cdlExpiration)
+                  : new Date(0),
+              medicalCardExpiration:
+                driver.medicalCardExpiration !== null && driver.medicalCardExpiration !== undefined
+                  ? new Date(driver.medicalCardExpiration)
+                  : new Date(0),
+              hireDate:
+                driver.hireDate !== null && driver.hireDate !== undefined
+                  ? new Date(driver.hireDate)
+                  : new Date(0),
             }}
             onClick={() => {}}
           />
         ))}
       </div>
-      <DriverForm onSubmit={() => {}} />
+      {/* Pass a form prop as required by DriverFormProps */}
+      <DriverForm
+        form={{
+          values: {
+            firstName: "",
+            lastName: "",
+            email: "",
+            phone: "",
+            hireDate: "",
+            homeTerminal: "",
+            cdlNumber: "",
+            cdlState: "",
+            cdlClass: "A",
+            cdlExpiration: "",
+            medicalCardExpiration: "",
+            tags: [],
+          },
+          errors: {},
+          onChange: () => {},
+          onSubmit: async () => {},
+          submitting: false,
+          mode: "create",
+        }}
+      />
     </div>
   );
 }

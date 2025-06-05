@@ -7,21 +7,46 @@ import { PerformanceMetrics } from "@/components/analytics/performance-metrics"
 import { FinancialMetrics } from "@/components/analytics/financial-metrics"
 import { DriverPerformance } from "@/components/analytics/driver-performance"
 import { VehicleUtilization } from "@/components/analytics/vehicle-utilization"
+import { getDashboardSummary, getPerformanceAnalytics, getFinancialAnalytics, getDriverAnalytics, getVehicleAnalytics } from "@/lib/fetchers/analyticsFetchers"
 
-export default function AnalyticsPage() {
-  // Example static data for cards (replace with real data/fetchers)
+export default async function AnalyticsPage({ params }: { params: { orgId: string } }) {
+  const orgId = params.orgId
+  const timeRange = "30d"
+
+  // Fetch all analytics data in parallel
+  const [summary, performanceDataRaw, financialDataRaw, driverPerformanceMetricsRaw, vehicleDataRaw] = await Promise.all([
+    getDashboardSummary(orgId, timeRange),
+    getPerformanceAnalytics(orgId, timeRange),
+    getFinancialAnalytics(orgId, timeRange),
+    getDriverAnalytics(orgId, timeRange),
+    getVehicleAnalytics(orgId, timeRange),
+  ])
+
+  // Defensive: ensure arrays/objects for all analytics data
+  const performanceData = Array.isArray(performanceDataRaw) ? performanceDataRaw : [];
+  const driverPerformanceMetrics = Array.isArray(driverPerformanceMetricsRaw) ? driverPerformanceMetricsRaw : [];
+  const vehicleData = Array.isArray(vehicleDataRaw) ? vehicleDataRaw : [];
+  const financialData = (financialDataRaw && typeof financialDataRaw === 'object' && financialDataRaw !== null)
+    ? {
+        revenue: Array.isArray((financialDataRaw as any).revenue) ? (financialDataRaw as any).revenue : [],
+        expenses: Array.isArray((financialDataRaw as any).expenses) ? (financialDataRaw as any).expenses : [],
+        profitMargin: Array.isArray((financialDataRaw as any).profitMargin) ? (financialDataRaw as any).profitMargin : [],
+      }
+    : { revenue: [], expenses: [], profitMargin: [] };
+
+  // Metrics for cards
   const metrics = [
     {
-      icon: <DollarSign className="h-4 w-4 text-[hsl(var(--info))]" />, label: "Total Revenue", value: "$45,231.89", change: "+20.1% from last month"
+      icon: <DollarSign className="h-4 w-4 text-[hsl(var(--info))]" />, label: "Total Revenue", value: summary ? `$${summary.totalRevenue.toLocaleString()}` : "-", change: summary && summary.totalRevenue && summary.averageRevenuePerMile ? `Avg $${summary.averageRevenuePerMile.toFixed(2)}/mile` : ""
     },
     {
-      icon: <Truck className="h-4 w-4 text-[hsl(var(--info))]" />, label: "Total Miles", value: "24,565", change: "+12.5% from last month"
+      icon: <Truck className="h-4 w-4 text-[hsl(var(--info))]" />, label: "Total Miles", value: summary ? summary.totalMiles.toLocaleString() : "-", change: summary && summary.totalMiles ? `Loads: ${summary.totalLoads}` : ""
     },
     {
-      icon: <BarChart3 className="h-4 w-4 text-[hsl(var(--info))]" />, label: "Load Count", value: "126", change: "+8.2% from last month"
+      icon: <BarChart3 className="h-4 w-4 text-[hsl(var(--info))]" />, label: "Load Count", value: summary ? summary.totalLoads.toLocaleString() : "-", change: summary && summary.totalLoads ? `Drivers: ${summary.activeDrivers}` : ""
     },
     {
-      icon: <User className="h-4 w-4 text-[hsl(var(--info))]" />, label: "Driver Utilization", value: "87%", change: "+5.1% from last month"
+      icon: <User className="h-4 w-4 text-[hsl(var(--info))]" />, label: "Active Vehicles", value: summary ? summary.activeVehicles.toLocaleString() : "-", change: summary && summary.activeVehicles ? `Active` : ""
     },
   ]
 
@@ -72,9 +97,7 @@ export default function AnalyticsPage() {
               <span className="text-lg font-bold text-white">Performance Metrics</span>
             </CardHeader>
             <CardContent className="overflow-x-auto pb-4">
-              <Suspense fallback={ <div>Loading performance metrics...</div> }>
-                <PerformanceMetrics timeRange={ "" } performanceData={ [] }  />
-              </Suspense>
+              <PerformanceMetrics timeRange={timeRange} performanceData={performanceData} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -84,9 +107,7 @@ export default function AnalyticsPage() {
               <span className="text-lg font-bold text-white">Financial Metrics</span>
             </CardHeader>
             <CardContent className="overflow-x-auto pb-4">
-              <Suspense fallback={ <div>Loading financial metrics...</div> }>
-                <FinancialMetrics timeRange="30d" financialData={ [] } expenseBreakdown={ [] } />
-              </Suspense>
+              <FinancialMetrics timeRange={timeRange} financialData={financialData.revenue} expenseBreakdown={financialData.expenses} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -96,9 +117,7 @@ export default function AnalyticsPage() {
               <span className="text-lg font-bold text-white">Driver Performance</span>
             </CardHeader>
             <CardContent className="overflow-x-auto pb-4">
-              <Suspense fallback={ <div>Loading driver performance data...</div> }>
-                <DriverPerformance timeRange="30d" driverPerformanceMetrics={ [] } />
-              </Suspense>
+              <DriverPerformance timeRange={timeRange} driverPerformanceMetrics={driverPerformanceMetrics} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -108,9 +127,7 @@ export default function AnalyticsPage() {
               <span className="text-lg font-bold text-white">Vehicle Utilization</span>
             </CardHeader>
             <CardContent className="overflow-x-auto pb-4">
-              <Suspense fallback={ <div>Loading vehicle utilization data...</div> }>
-                <VehicleUtilization timeRange="30d" vehicleData={ [] } />
-              </Suspense>
+              <VehicleUtilization timeRange={timeRange} vehicleData={vehicleData} />
             </CardContent>
           </Card>
         </TabsContent>

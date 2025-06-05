@@ -41,6 +41,7 @@ model Organization {
   users               User[]
   vehicles            Vehicle[]
   memberships         OrganizationMembership[]
+  complianceAlerts     ComplianceAlert[]
 
   @@index([clerkId])
   @@index([slug])
@@ -69,6 +70,7 @@ model User {
   IftaReport         IftaReport[]             @relation("SubmittedByUser")
   organization       Organization?            @relation(fields: [organizationId], references: [id], onDelete: Cascade) // <-- Make relation optional
   memberships        OrganizationMembership[]
+  complianceAlerts    ComplianceAlert[]
 
   @@index([clerkId])
   @@index([organizationId])
@@ -106,6 +108,7 @@ model Vehicle {
   trailerLoads           Load[]               @relation("TrailerLoads")
   loads                  Load[]               @relation("VehicleLoads")
   organization           Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  complianceAlerts        ComplianceAlert[]
 
   @@unique([organizationId, unitNumber], name: "vehicles_org_unit_unique")
   @@index([organizationId])
@@ -149,6 +152,7 @@ model Driver {
   organization          Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   user                  User?                @relation(fields: [userId], references: [id])
   loads                 Load[]
+  complianceAlerts      ComplianceAlert[]
 
   @@unique([organizationId, employeeId], name: "drivers_org_employee_unique")
   @@index([organizationId])
@@ -200,6 +204,11 @@ model Load {
   customFields          Json?        @default("{}") @map("custom_fields")
   createdAt             DateTime     @default(now()) @map("created_at")
   updatedAt             DateTime     @updatedAt @map("updated_at")
+  priority              LoadPriority   @default(medium)
+  tags                  String[]       @default([])
+  createdBy             String?        @map("created_by")
+  lastModifiedBy        String?        @map("last_modified_by")
+  statusEvents          LoadStatusEvent[]
   driver                Driver?      @relation(fields: [driverId], references: [id])
   organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   trailer               Vehicle?     @relation("TrailerLoads", fields: [trailerId], references: [id])
@@ -214,6 +223,22 @@ model Load {
   @@index([loadNumber])
   @@index([scheduledPickupDate], map: "loads_scheduled_pickup_idx")
   @@map("loads")
+}
+
+model LoadStatusEvent {
+  id             String     @id @default(uuid())
+  loadId         String     @map("load_id")
+  status         LoadStatus
+  timestamp      DateTime   @default(now())
+  location       Json?
+  notes          String?
+  automaticUpdate Boolean   @default(false) @map("automatic_update")
+  source         String     @default("dispatcher")
+  createdBy      String?
+  load           Load       @relation(fields: [loadId], references: [id], onDelete: Cascade)
+  
+  @@index([loadId])
+  @@map("load_status_events")
 }
 
 model ComplianceDocument {
@@ -239,6 +264,7 @@ model ComplianceDocument {
   tags             Json?        @default("[]")
   createdAt        DateTime     @default(now()) @map("created_at")
   updatedAt        DateTime     @updatedAt @map("updated_at")
+  metadata         Json?        @default("{}")
   driver           Driver?      @relation(fields: [driverId], references: [id])
   organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   vehicle          Vehicle?     @relation(fields: [vehicleId], references: [id])
@@ -387,6 +413,48 @@ model OrganizationMembership {
   @@map("organization_memberships")
 }
 
+model ComplianceAlert {
+  id             String       @id @default(uuid())
+  organizationId String       @map("organization_id")
+  userId         String?      @map("user_id")
+  driverId       String?      @map("driver_id")
+  vehicleId      String?      @map("vehicle_id")
+  type           String       // expiring_document, hos_violation, maintenance_due, etc.
+  severity       String       // low, medium, high, critical
+  title          String
+  message        String
+  entityType     String       // driver, vehicle, trailer, company, load
+  entityId       String
+  dueDate        DateTime?    @map("due_date")
+  acknowledged   Boolean      @default(false)
+  acknowledgedBy String?      @map("acknowledged_by")
+  acknowledgedAt DateTime?    @map("acknowledged_at")
+  resolved       Boolean      @default(false)
+  resolvedBy     String?      @map("resolved_by")
+  resolvedAt     DateTime?    @map("resolved_at")
+  resolutionNotes String?     @map("resolution_notes")
+  metadata       Json?        @default("{}")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User?        @relation(fields: [userId], references: [id])
+  driver         Driver?      @relation(fields: [driverId], references: [id])
+  vehicle        Vehicle?     @relation(fields: [vehicleId], references: [id])
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([driverId])
+  @@index([vehicleId])
+  @@index([type])
+  @@index([severity])
+  @@index([entityType])
+  @@index([entityId])
+  @@index([dueDate])
+  @@index([acknowledged])
+  @@index([resolved])
+  @@map("compliance_alerts")
+}
+
 enum UserRole {
   admin
   manager
@@ -426,9 +494,30 @@ enum DriverStatus {
 }
 
 enum LoadStatus {
+  draft
   pending
+  posted
+  booked
+  confirmed
   assigned
+  dispatched
   in_transit
+  at_pickup
+  picked_up
+  en_route
+  at_delivery
   delivered
+  pod_required
+  completed
+  invoiced
+  paid
   cancelled
+  problem
+}
+
+enum LoadPriority {
+  low
+  medium
+  high
+  urgent
 }

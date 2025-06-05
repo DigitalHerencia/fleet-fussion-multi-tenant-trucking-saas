@@ -1,5 +1,4 @@
 import { auth } from "@clerk/nextjs/server"
-import { cache } from "react"
 
 import prisma from "@/lib/database/db"
 import type { 
@@ -45,7 +44,7 @@ function parseDriverData(raw: any): Driver {
 /**
  * Get driver by ID with permission check
  */
-export const getDriverById = cache(async (driverId: string): Promise<Driver | null> => {
+export const getDriverById = async (driverId: string): Promise<Driver | null> => {
   try {
     const { userId } = await auth()
     if (!userId) return null
@@ -58,8 +57,8 @@ export const getDriverById = cache(async (driverId: string): Promise<Driver | nu
       include: {
         organization: true,
         user: true,
-        complianceDocuments: true
-      }
+        complianceDocuments: true,
+      },
     })
 
     if (!driver) return null
@@ -69,12 +68,12 @@ export const getDriverById = cache(async (driverId: string): Promise<Driver | nu
     console.error("Error fetching driver:", error)
     return null
   }
-})
+}
 
 /**
  * List drivers by organization with filtering and pagination
  */
-export const listDriversByOrg = cache(async (
+export const listDriversByOrg = async (
   orgId: string, 
   filters: DriverFilters = {}
 ): Promise<DriverListResponse> => {
@@ -204,7 +203,7 @@ export const listDriversByOrg = cache(async (
     console.error("Error listing drivers:", error)
     return { drivers: [], total: 0, page: 1, limit: 20, totalPages: 0 }
   }
-})
+}
 
 /**
  * Get available drivers for assignment
@@ -215,7 +214,7 @@ export const listDriversByOrg = cache(async (
 /**
  * Get driver statistics for dashboard
  */
-export const getDriverStats = cache(async (orgId: string): Promise<DriverStatsResponse> => {
+export const getDriverStats = async (orgId: string): Promise<DriverStatsResponse> => {
   try {
     // Example stats: total, active, inactive, expiring licenses, etc.
     const total = await prisma.driver.count({
@@ -235,9 +234,8 @@ export const getDriverStats = cache(async (orgId: string): Promise<DriverStatsRe
     const expiringMedicalCards = await prisma.driver.count({
       where: {
         organizationId: orgId,
-        medicalCardExpiration: { lte: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) } // next 30 days
+        medicalCardExpiration: { lte: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) }
       }
-      // ...add other stats as needed...
     });
 
     // Return the stats object (fill in other fields as needed)
@@ -268,7 +266,7 @@ export const getDriverStats = cache(async (orgId: string): Promise<DriverStatsRe
       // ...default values for other stats...
     };
   }
-})
+}
 
 // ================== HOS Fetchers ==================
 

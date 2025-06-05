@@ -6,7 +6,7 @@ import type { User } from "./index"
 
 export interface Load {
   id: string
-  tenantId: string
+  organizationId: string
   referenceNumber: string
   status: LoadStatus
   priority: LoadPriority
@@ -40,11 +40,12 @@ export interface Load {
   tags?: string[]
   createdAt: Date
   updatedAt: Date
-  createdBy: string
-  lastModifiedBy: string
+  createdBy?: string
+  lastModifiedBy?: string
+  statusEvents?: LoadStatusEvent[]
 }
 
-export type LoadStatus = 
+export type LoadStatus =
   | "draft"
   | "pending"
   | "posted"
@@ -76,7 +77,7 @@ export interface LoadStatusEvent {
   notes?: string
   automaticUpdate: boolean
   source: "system" | "driver" | "dispatcher" | "customer" | "eld"
-  createdBy: string
+  createdBy?: string
 }
 
 export interface TrackingUpdate {
