@@ -130,3 +130,11 @@ export interface VehicleUtilizationStats {
   loadCount: number;
   avgLoadRevenue: number;
 }
+
+// ================== Action Result Types ==================
+
+export interface VehicleActionResult {
+  success: boolean;
+  data?: Vehicle | Vehicle[];
+  error?: string;
+}
