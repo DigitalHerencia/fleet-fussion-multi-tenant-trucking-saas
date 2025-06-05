@@ -1,6 +1,5 @@
-import React from "react";
+import { IftaDashboard } from "@/components/ifta/ifta-dashboard";
 
 export function IftaReportingFeature() {
-  // ...ifta reporting logic...
-  return <div>{/* ...ifta reports... */}</div>;
+  return <IftaDashboard />;
 }
