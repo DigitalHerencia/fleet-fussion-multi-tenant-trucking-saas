@@ -1,6 +1,7 @@
 // features/dashboard/fleet-overview-header.tsx
 import { getOrganizationId } from "@/lib/auth/utils";
 import { getDashboardSummary } from "@/lib/fetchers/kpiFetchers";
+import type { DashboardSummary } from "@/types/kpi";
 import { RefreshCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -12,7 +13,7 @@ export default async function FleetOverviewHeader() {
   // Fetch dashboard summary to get last updated time
   let lastUpdated: string | null = null;
   try {
-    const summary = (await getDashboardSummary(organizationId)) as any;
+    const summary: DashboardSummary = await getDashboardSummary(organizationId);
     lastUpdated =
       summary && summary.lastUpdated
         ? new Date(summary.lastUpdated).toLocaleString()

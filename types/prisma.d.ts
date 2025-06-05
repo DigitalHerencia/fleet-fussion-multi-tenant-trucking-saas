@@ -246,14 +246,14 @@ export type LoadFormData = Omit<Prisma.LoadCreateInput, 'organization'>
 export type ComplianceFormData = Omit<Prisma.ComplianceRecordCreateInput, 'organization'>
 
 // API response types
-export type ApiResponse<T = any> = {
+export type ApiResponse<T> = {
   success: boolean
   data?: T
   error?: string
   message?: string
 }
 
-export type PaginatedResponse<T = any> = ApiResponse<{
+export type PaginatedResponse<T> = ApiResponse<{
   items: T[]
   pagination: {
     page: number
@@ -264,8 +264,8 @@ export type PaginatedResponse<T = any> = ApiResponse<{
 }>
 
 // Database operation result types
-export type CreateResult<T = any> = ApiResponse<T>
-export type UpdateResult<T = any> = ApiResponse<T>
+export type CreateResult<T> = ApiResponse<T>
+export type UpdateResult<T> = ApiResponse<T>
 export type DeleteResult = ApiResponse<{ deletedCount: number }>
 
 // File upload types

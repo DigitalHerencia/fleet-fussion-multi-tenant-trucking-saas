@@ -185,6 +185,60 @@ export async function getComplianceDashboard(organizationId: string) {
   }
 }
 
+export interface DriverComplianceRow {
+  id: string;
+  name: string;
+  cdlStatus: string;
+  cdlExpiration: Date | null;
+  medicalStatus: string;
+  medicalExpiration: Date | null;
+  hosStatus: string;
+  lastViolation: Date | null;
+}
+
+export async function getDriverComplianceStatuses(organizationId: string): Promise<DriverComplianceRow[]> {
+  try {
+    const drivers = await prisma.driver.findMany({
+      where: { organizationId, status: 'active' },
+      include: { complianceDocuments: true },
+    });
+    const today = new Date();
+    const soon = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+    return drivers.map(d => {
+      const cdlExp = d.licenseExpiration;
+      const medExp = d.medicalCardExpiration;
+      const cdlStatus = !cdlExp
+        ? 'Valid'
+        : cdlExp < today
+        ? 'Expired'
+        : cdlExp < soon
+        ? 'Expiring Soon'
+        : 'Valid';
+      const medicalStatus = !medExp
+        ? 'Valid'
+        : medExp < today
+        ? 'Expired'
+        : medExp < soon
+        ? 'Expiring Soon'
+        : 'Valid';
+
+      return {
+        id: d.id,
+        name: `${d.firstName} ${d.lastName}`,
+        cdlStatus,
+        cdlExpiration: cdlExp,
+        medicalStatus,
+        medicalExpiration: medExp,
+        hosStatus: 'Unknown',
+        lastViolation: null,
+      } as DriverComplianceRow;
+    });
+  } catch (error) {
+    console.error('Error fetching driver compliance status:', error);
+    throw new Error('Failed to fetch driver compliance status');
+  }
+}
+
 // Document Fetchers
 export async function getComplianceDocuments(
   filter: z.infer<typeof complianceDocumentFilterSchema> = {}

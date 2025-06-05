@@ -57,7 +57,7 @@ export default function VehicleListClient({ orgId, initialVehicles }: Props) {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map(v => (
-            <VehicleCard key={v.id} vehicle={v as any} onClick={() => {}} />
+            <VehicleCard key={v.id} vehicle={v} onClick={() => {}} />
           ))}
         </div>
       )}

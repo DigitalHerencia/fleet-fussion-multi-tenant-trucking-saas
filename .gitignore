@@ -18,6 +18,7 @@ yarn-error.log*
 
 # env files
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -33,7 +34,7 @@ next-env.d.ts
 /.notes
 
 /generated/prisma
-/tests
+!/tests
 /playwright-report
 /test-results
 playwright.config.ts

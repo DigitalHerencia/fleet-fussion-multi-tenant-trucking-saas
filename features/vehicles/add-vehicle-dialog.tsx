@@ -24,6 +24,7 @@ const initialState: VehicleFormData = {
   year: new Date().getFullYear(),
   vin: "",
   licensePlate: "",
+  licensePlateState: "",
   fuelType: undefined,
   engineType: undefined,
   registrationNumber: undefined,
@@ -74,7 +75,7 @@ export default function AddVehicleDialog({ orgId, onSuccess, open, onOpenChange 
             </div>
             <div className="space-y-2">
               <Label htmlFor="type">Vehicle Type</Label>
-              <Select value={form.type} onValueChange={val => setForm(prev => ({ ...prev, type: val as any }))}>
+              <Select value={form.type} onValueChange={val => setForm(prev => ({ ...prev, type: val as VehicleFormData["type"] }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
@@ -114,7 +115,7 @@ export default function AddVehicleDialog({ orgId, onSuccess, open, onOpenChange 
             </div>
             <div className="space-y-2">
               <Label htmlFor="state">State</Label>
-              <Input id="state" name="state" value={(form as any).state || ""} onChange={handleChange} />
+              <Input id="licensePlateState" name="licensePlateState" value={form.licensePlateState} onChange={handleChange} />
             </div>
           </div>
         </div>

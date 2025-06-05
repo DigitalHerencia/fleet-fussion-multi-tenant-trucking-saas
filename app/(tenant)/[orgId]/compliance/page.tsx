@@ -3,10 +3,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { CalendarIcon, ClipboardCheck, FileText, TruckIcon, UserIcon } from "lucide-react"
-import { DataTable } from "@/components/ui/data-table"
-import { columns as driverColumns } from "@/components/compliance/driver-compliance-table"
-import { columns as vehicleColumns } from "@/components/compliance/vehicle-compliance-table"
-import { columns as documentColumns } from "@/components/compliance/compliance-documents"
+import { DriverComplianceTable } from "@/components/compliance/driver-compliance-table"
+import { VehicleComplianceTable } from "@/components/compliance/vehicle-compliance-table"
+import { ComplianceDocuments } from "@/components/compliance/compliance-documents"
 import { PageHeader } from "@/components/shared/PageHeader"
 
 
@@ -87,9 +86,9 @@ export default function CompliancePage() {
 							</CardDescription>
 						</CardHeader>
 						<CardContent className="overflow-x-auto">
-							<Suspense fallback={<div>Loading driver compliance data...</div>}>
-								<DataTable columns={ [] } data={ [] }  />
-							</Suspense>
+                                                        <Suspense fallback={<div>Loading driver compliance data...</div>}>
+                                                                <DriverComplianceTable />
+                                                        </Suspense>
 						</CardContent>
 					</Card>
 				</TabsContent>
@@ -100,9 +99,9 @@ export default function CompliancePage() {
 							<CardDescription>Track vehicle inspections, maintenance, and registration compliance.</CardDescription>
 						</CardHeader>
 						<CardContent className="overflow-x-auto">
-							<Suspense fallback={<div>Loading vehicle compliance data...</div>}>
-								<DataTable columns={ [] } data={ [] }  />
-							</Suspense>
+                                                        <Suspense fallback={<div>Loading vehicle compliance data...</div>}>
+                                                                <VehicleComplianceTable />
+                                                        </Suspense>
 						</CardContent>
 					</Card>
 				</TabsContent>
@@ -113,9 +112,9 @@ export default function CompliancePage() {
 							<CardDescription>Manage required documentation for regulatory compliance.</CardDescription>
 						</CardHeader>
 						<CardContent className="overflow-x-auto">
-							<Suspense fallback={<div>Loading compliance documents...</div>}>
-								<DataTable columns={ [] } data={ [] } />
-							</Suspense>
+                                                        <Suspense fallback={<div>Loading compliance documents...</div>}>
+                                                                <ComplianceDocuments documents={ [] } />
+                                                        </Suspense>
 						</CardContent>
 					</Card>
 				</TabsContent>

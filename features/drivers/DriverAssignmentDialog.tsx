@@ -24,10 +24,20 @@ interface DriverAssignmentDialogProps {
 }
 
 export function DriverAssignmentDialog({ driverId, open, onClose, currentAssignment, onAssigned }: DriverAssignmentDialogProps) {
-  const [form, setForm] = useState({
+  type AssignmentType = z.infer<typeof driverAssignmentSchema>["assignmentType"];
+
+  const [form, setForm] = useState<{
+    loadId: string;
+    vehicleId: string;
+    assignmentType: AssignmentType;
+    scheduledStart: string;
+    scheduledEnd: string;
+    submitting: boolean;
+    error: string;
+  }>({
     loadId: currentAssignment?.loadId || "",
     vehicleId: currentAssignment?.vehicleId || "",
-    assignmentType: currentAssignment?.assignmentType || "load",
+    assignmentType: (currentAssignment?.assignmentType as AssignmentType) || "load",
     scheduledStart: currentAssignment?.scheduledStart || "",
     scheduledEnd: currentAssignment?.scheduledEnd || "",
     submitting: false,
@@ -41,7 +51,7 @@ export function DriverAssignmentDialog({ driverId, open, onClose, currentAssignm
         driverId,
         loadId: form.loadId || undefined,
         vehicleId: form.vehicleId || undefined,
-        assignmentType: form.assignmentType as any,
+        assignmentType: form.assignmentType,
         scheduledStart: form.scheduledStart,
         scheduledEnd: form.scheduledEnd || undefined,
       });
@@ -100,7 +110,9 @@ export function DriverAssignmentDialog({ driverId, open, onClose, currentAssignm
           <Input
             placeholder="Assignment Type (e.g. load, maintenance)"
             value={form.assignmentType}
-            onChange={e => setForm(f => ({ ...f, assignmentType: e.target.value }))}
+            onChange={e =>
+              setForm(f => ({ ...f, assignmentType: e.target.value as AssignmentType }))
+            }
             disabled={form.submitting}
           />
           <Input
