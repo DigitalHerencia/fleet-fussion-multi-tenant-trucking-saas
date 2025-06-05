@@ -9,8 +9,8 @@ import { DriverPerformance } from "@/components/analytics/driver-performance"
 import { VehicleUtilization } from "@/components/analytics/vehicle-utilization"
 import { getDashboardSummary, getPerformanceAnalytics, getFinancialAnalytics, getDriverAnalytics, getVehicleAnalytics } from "@/lib/fetchers/analyticsFetchers"
 
-export default async function AnalyticsPage({ params }: { params: { orgId: string } }) {
-  const orgId = params.orgId
+export default async function AnalyticsPage({ params }: { params: Promise<{ orgId: string }> }) {
+  const { orgId } = await params
   const timeRange = "30d"
 
   // Fetch all analytics data in parallel

@@ -29,14 +29,15 @@ function getAssignmentLabel(assignment: any) {
   return 'N/A';
 }
 
-export default async function DriverDashboardPage({ params }: { params: { userId: string, orgId: string } }): Promise<JSX.Element> {
+export default async function DriverDashboardPage({ params }: { params: Promise<{ userId: string, orgId: string }> }): Promise<JSX.Element> {
+  const { userId, orgId } = await params
   // Fetch driver data by ID
-  const driverData = await getDriverById(params.userId);
+  const driverData = await getDriverById(userId);
   if (!driverData) return notFound();
 
   // Real-time status: poll HOS status and assignment every 10s
   // (React 19: use() with revalidation)
-  const hosStatusPromise = getDriverHOSStatus(params.userId);
+  const hosStatusPromise = getDriverHOSStatus(userId);
   // @ts-expect-error: use() is React 19 experimental
   const hosStatus = use(hosStatusPromise, { revalidate: 10 });
   let currentStatus: string = driverData.status;
@@ -46,9 +47,8 @@ export default async function DriverDashboardPage({ params }: { params: { userId
       currentStatus = hs.data.currentStatus;
     }
   }
-
   // Fetch analytics for this driver
-  const analytics = await getDriverAnalytics(params.orgId, "30d");
+  const analytics = await getDriverAnalytics(orgId, "30d");
   const driverAnalytics = Array.isArray(analytics) ? analytics.find(a => a.id === driverData.id) : null;
 
   return (

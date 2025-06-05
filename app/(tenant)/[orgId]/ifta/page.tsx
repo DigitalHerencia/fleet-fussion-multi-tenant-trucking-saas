@@ -61,8 +61,8 @@ interface IftaData {
   report: any
 }
 
-export default async function IFTAPage({ params }: { params: { orgId: string } }) {
-  const orgId = params.orgId
+export default async function IFTAPage({ params }: { params: Promise<{ orgId: string }> }) {
+  const { orgId } = await params
   // Default to current quarter/year, but allow query param override in the future
   const { quarter, year } = getCurrentQuarterAndYear()
   const period = `Q${quarter}`
