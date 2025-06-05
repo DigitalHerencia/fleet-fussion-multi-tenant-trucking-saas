@@ -3,6 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/database/db";
 import { getCachedData, setCachedData, CACHE_TTL } from "@/lib/cache/auth-cache";
+import type { DashboardSummary } from "@/types/kpi";
 
 /**
  * KPI aggregation fetcher with optimized batch queries and caching
@@ -306,7 +307,10 @@ export async function getOrganizationKPIs(organizationId: string) {
 /**
  * Get dashboard summary data for analytics
  */
-export async function getDashboardSummary(organizationId: string, dateRange?: { from: Date; to: Date }) {
+export async function getDashboardSummary(
+  organizationId: string,
+  dateRange?: { from: Date; to: Date }
+): Promise<DashboardSummary> {
   const { userId } = await auth();
   if (!userId) {
     throw new Error("Unauthorized");
@@ -324,7 +328,7 @@ export async function getDashboardSummary(organizationId: string, dateRange?: { 
     const kpis = await getOrganizationKPIs(organizationId);
     
     // Additional dashboard-specific data could be fetched here
-    const summary = {
+    const summary: DashboardSummary = {
       ...kpis,
       lastUpdated: new Date().toISOString(),
     };

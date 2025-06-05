@@ -15,6 +15,7 @@ export interface Vehicle {
   year: number;
   vin: string;
   licensePlate?: string;
+  licensePlateState?: string;
   unitNumber?: string;
   
   // Specifications

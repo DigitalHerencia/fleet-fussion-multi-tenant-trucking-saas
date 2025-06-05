@@ -2,6 +2,7 @@
 
 import React, { useRef, useState } from "react";
 import { saveUploadedDocument } from "@/lib/actions/fileUploadActions";
+import { upload } from "@vercel/blob/client";
 
 export function DocumentUploadForm({ onUpload }: { onUpload: (file: File, metadata: any) => void }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -23,15 +24,13 @@ export function DocumentUploadForm({ onUpload }: { onUpload: (file: File, metada
     }
     setUploading(true);
     try {
-      // TODO: Replace with actual signed URL upload logic
-      // For demo, use a fake URL
-      const fakeUrl = URL.createObjectURL(file);
-      // Call server action to save metadata
+      const token = process.env.NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN;
+      const { url } = await upload(file.name, file, { access: "public", token });
       const result = await saveUploadedDocument({
         fileName: file.name,
         fileSize: file.size,
         mimeType: file.type,
-        url: fakeUrl,
+        url,
         entityType: "company", // TODO: make dynamic
         entityId: "demo-entity-id", // TODO: make dynamic
         documentType: "other",
