@@ -17,14 +17,12 @@ interface Props {
 }
 
 const initialState: VehicleFormData = {
-  unitNumber: "",
-  type: "tractor",
+  unitNumber: "",  type: "tractor",
   make: "",
   model: "",
   year: new Date().getFullYear(),
   vin: "",
   licensePlate: "",
-  licensePlateState: "",
   fuelType: undefined,
   engineType: undefined,
   registrationNumber: undefined,
@@ -108,14 +106,9 @@ export default function AddVehicleDialog({ orgId, onSuccess, open, onOpenChange 
               <Input id="vin" name="vin" value={form.vin} onChange={handleChange} />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-4">            <div className="space-y-2">
               <Label htmlFor="licensePlate">License Plate</Label>
               <Input id="licensePlate" name="licensePlate" value={form.licensePlate} onChange={handleChange} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="state">State</Label>
-              <Input id="licensePlateState" name="licensePlateState" value={form.licensePlateState} onChange={handleChange} />
             </div>
           </div>
         </div>

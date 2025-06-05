@@ -24,8 +24,11 @@ export function DocumentUploadForm({ onUpload }: { onUpload: (file: File, metada
     }
     setUploading(true);
     try {
-      const token = process.env.NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN;
-      const { url } = await upload(file.name, file, { access: "public", token });
+      // const token = process.env.NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN;
+      const { url } = await upload(file.name, file, {
+        access: "public",
+        handleUploadUrl: "/api/files/upload",
+      });
       const result = await saveUploadedDocument({
         fileName: file.name,
         fileSize: file.size,

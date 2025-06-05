@@ -3,16 +3,16 @@
 import { auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/database/db";
 import { getCachedData, setCachedData, CACHE_TTL } from "@/lib/cache/auth-cache";
-import type { DashboardSummary } from "@/types/kpi";
+import type { DashboardSummary, OrganizationKPIs } from "@/types/kpi";
 
 /**
  * KPI aggregation fetcher with optimized batch queries and caching
  */
-export async function getOrganizationKPIs(organizationId: string) {
+export async function getOrganizationKPIs(organizationId: string): Promise<OrganizationKPIs> {
   const cacheKey = `kpis:${organizationId}`;
   
   // Check cache first
-  const cached = getCachedData(cacheKey);
+  const cached = getCachedData(cacheKey) as OrganizationKPIs | null;
   if (cached) { 
     return cached; 
   }
@@ -317,20 +317,19 @@ export async function getDashboardSummary(
   }
 
   const cacheKey = `dashboard:${organizationId}:${dateRange?.from.toISOString() || 'default'}:${dateRange?.to.toISOString() || 'default'}`;
-  
-  // Check cache first
-  const cached = getCachedData(cacheKey);
+    // Check cache first
+  const cached = getCachedData(cacheKey) as DashboardSummary | null;
   if (cached) {
     return cached;
   }
 
   try {
     const kpis = await getOrganizationKPIs(organizationId);
-    
-    // Additional dashboard-specific data could be fetched here
+      // Additional dashboard-specific data could be fetched here
     const summary: DashboardSummary = {
-      ...kpis,
       lastUpdated: new Date().toISOString(),
+      totalVehicles: kpis.activeVehicles,
+      activeDrivers: kpis.activeDrivers,
     };
 
     setCachedData(cacheKey, summary, CACHE_TTL.KPI);
