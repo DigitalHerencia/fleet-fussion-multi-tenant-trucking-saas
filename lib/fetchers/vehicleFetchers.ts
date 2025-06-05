@@ -2,16 +2,21 @@
 
 import { auth } from "@clerk/nextjs/server";
 import { cache } from "react";
+import { z } from "zod";
 
 import prisma from "@/lib/database/db";
-import type { Vehicle, VehicleFilters, VehicleListResponse } from "@/types/vehicles";
+import { vehicleFilterSchema, type VehicleFiltersData } from "@/schemas/vehicles";
+import type { Vehicle, VehicleListResponse } from "@/types/vehicles";
 
 /**
- * List vehicles for an organization with optional filtering and pagination
+ * List vehicles for an organization with optional filtering and pagination.
+ * - Validates the filter input using `vehicleFilterSchema`.
+ * - Returns paginated results (vehicles, total, page, limit, totalPages).
+ * - Server-first, feature-driven.
  */
 export const listVehiclesByOrg = cache(async (
   orgId: string,
-  filters: VehicleFilters = {}
+  filters: VehicleFiltersData = {} as VehicleFiltersData
 ): Promise<VehicleListResponse> => {
   try {
     const { userId } = await auth();
@@ -19,54 +24,62 @@ export const listVehiclesByOrg = cache(async (
       return { vehicles: [], total: 0, page: 1, limit: 10, totalPages: 0 };
     }
 
+    const parsed = vehicleFilterSchema.parse(filters);
+
     const where: any = { organizationId: orgId };
 
-    if (filters.search) {
-      const search = filters.search;
+    if (parsed.search) {
+      const term = parsed.search;
       where.OR = [
-        { unitNumber: { contains: search, mode: "insensitive" } },
-        { make: { contains: search, mode: "insensitive" } },
-        { model: { contains: search, mode: "insensitive" } },
-        { vin: { contains: search, mode: "insensitive" } },
-        { licensePlate: { contains: search, mode: "insensitive" } },
+        { unitNumber: { contains: term, mode: "insensitive" } },
+        { vin: { contains: term, mode: "insensitive" } },
+        { make: { contains: term, mode: "insensitive" } },
+        { model: { contains: term, mode: "insensitive" } },
+        { licensePlate: { contains: term, mode: "insensitive" } },
       ];
     }
 
-    if (filters.type) {
-      where.type = filters.type;
+    if (parsed.type) {
+      where.type = parsed.type;
     }
 
-    if (filters.status) {
-      where.status = filters.status;
+    if (parsed.status) {
+      where.status = parsed.status;
     }
 
-    if (filters.make) {
-      where.make = { contains: filters.make, mode: "insensitive" };
+    if (parsed.make) {
+      where.make = { contains: parsed.make, mode: "insensitive" };
     }
 
-    if (filters.model) {
-      where.model = { contains: filters.model, mode: "insensitive" };
+    if (parsed.model) {
+      where.model = { contains: parsed.model, mode: "insensitive" };
     }
 
-    if (filters.year) {
-      where.year = filters.year;
+    if (parsed.year) {
+      where.year = parsed.year;
     }
 
-    if (filters.assignedDriverId) {
-      where.currentDriverId = filters.assignedDriverId;
+    if (parsed.assignedDriverId) {
+      where.currentDriverId = parsed.assignedDriverId;
     }
 
-    if (filters.maintenanceDue) {
-      where.nextMaintenanceDate = { lte: new Date() };
+    if (parsed.maintenanceDue) {
+      // Support both nextMaintenanceDate and nextInspectionDue fields
+      where.OR = [
+        { nextMaintenanceDate: { lte: new Date() } },
+        { nextInspectionDue: { lte: new Date() } },
+      ];
     }
 
-    const page = filters.page || 1;
-    const limit = Math.min(filters.limit || 10, 100);
+    // Pagination
+    const page = parsed.page || 1;
+    const limit = Math.min(parsed.limit || 10, 100);
     const skip = (page - 1) * limit;
 
-    const [vehicles, total] = await Promise.all([
+    const [results, total] = await Promise.all([
       prisma.vehicle.findMany({
         where,
+        orderBy: { unitNumber: "asc" },
         include: {
           driver: {
             select: {
@@ -77,12 +90,53 @@ export const listVehiclesByOrg = cache(async (
           },
           organization: { select: { id: true, name: true } },
         },
-        orderBy: { unitNumber: "asc" },
         skip,
         take: limit,
       }),
       prisma.vehicle.count({ where }),
     ]);
+
+    // Map Prisma result to public Vehicle type
+    const vehicles: Vehicle[] = results.map((v) => ({
+      id: v.id,
+      organizationId: v.organizationId,
+      type: v.type as Vehicle["type"],
+      status: v.status as Vehicle["status"],
+      make: v.make ?? "",
+      model: v.model ?? "",
+      year: v.year ?? 0,
+      vin: v.vin ?? "",
+      licensePlate: v.licensePlate ?? undefined,
+      unitNumber: v.unitNumber ?? undefined,
+      grossVehicleWeight: undefined,
+      maxPayload: undefined,
+      fuelType: v.fuelType ?? undefined,
+      engineType: undefined,
+      registrationNumber: undefined,
+      registrationExpiry: v.registrationExpiration ?? undefined,
+      insuranceProvider: undefined,
+      insurancePolicyNumber: undefined,
+      insuranceExpiry: v.insuranceExpiration ?? undefined,
+      currentDriverId: v.currentDriverId ?? undefined,
+      currentLoadId: undefined,
+      currentLocation: undefined,
+      totalMileage: v.currentOdometer ?? undefined,
+      lastMaintenanceMileage: undefined,
+      nextMaintenanceDate: v.nextMaintenanceDate ?? v.nextInspectionDue ?? undefined,
+      nextMaintenanceMileage: undefined,
+      createdAt: v.createdAt,
+      updatedAt: v.updatedAt,
+      driver: v.driver
+        ? {
+            id: v.driver.id,
+            firstName: v.driver.firstName,
+            lastName: v.driver.lastName,
+          }
+        : undefined,
+      organization: v.organization
+        ? { id: v.organization.id, name: v.organization.name }
+        : undefined,
+    }));
 
     return {
       vehicles,
@@ -96,4 +150,3 @@ export const listVehiclesByOrg = cache(async (
     return { vehicles: [], total: 0, page: 1, limit: 10, totalPages: 0 };
   }
 });
-
