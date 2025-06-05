@@ -95,6 +95,14 @@ export interface VehicleFilters {
   limit?: number;
 }
 
+export interface VehicleListResponse {
+  vehicles: Vehicle[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export interface VehicleMaintenanceRecord {
   id: string;
   vehicleId: string;
@@ -129,4 +137,12 @@ export interface VehicleUtilizationStats {
   profit: number;
   loadCount: number;
   avgLoadRevenue: number;
+}
+
+// ================== Action Result Types ==================
+
+export interface VehicleActionResult {
+  success: boolean;
+  data?: Vehicle | Vehicle[];
+  error?: string;
 }

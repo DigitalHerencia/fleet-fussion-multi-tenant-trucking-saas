@@ -5,9 +5,10 @@ import { auth } from "@clerk/nextjs/server";
 import  prisma  from "@/lib/database/db";
 import { VehicleFormSchema, VehicleUpdateStatusSchema, VehicleMaintenanceSchema } from "@/schemas/vehicles";
 import type { VehicleFormData, VehicleUpdateStatusData, VehicleMaintenanceData } from "@/schemas/vehicles";
+import type { Vehicle, VehicleActionResult } from "@/types/vehicles";
 import { hasPermission } from "@/lib/auth/permissions";
 
-export async function createVehicleAction(organizationId: string, data: VehicleFormData) {
+export async function createVehicleAction(organizationId: string, data: VehicleFormData): Promise<VehicleActionResult> {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -46,12 +47,15 @@ export async function createVehicleAction(organizationId: string, data: VehicleF
         ? new Date(validatedData.nextMaintenanceDate) 
         : null,
     };
+    const vehicle = await prisma.vehicle.create({ data: vehicleData });
+
+    revalidatePath(`/dashboard/${organizationId}/vehicles`);
+    return { success: true, data: vehicle };
 
   
 
 
 
-    revalidatePath(`/dashboard/${organizationId}/vehicles`);
   } catch (error) {
     console.error("Create vehicle error:", error);
     return { 
@@ -61,7 +65,7 @@ export async function createVehicleAction(organizationId: string, data: VehicleF
   }
 }
 
-export async function updateVehicleAction(vehicleId: string, data: VehicleFormData) {
+export async function updateVehicleAction(vehicleId: string, data: VehicleFormData): Promise<VehicleActionResult> {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -131,7 +135,7 @@ export async function updateVehicleAction(vehicleId: string, data: VehicleFormDa
   }
 }
 
-export async function updateVehicleStatusAction(vehicleId: string, data: VehicleUpdateStatusData) {
+export async function updateVehicleStatusAction(vehicleId: string, data: VehicleUpdateStatusData): Promise<VehicleActionResult> {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -171,7 +175,7 @@ export async function updateVehicleStatusAction(vehicleId: string, data: Vehicle
   }
 }
 
-export async function deleteVehicleAction(vehicleId: string) {
+export async function deleteVehicleAction(vehicleId: string): Promise<VehicleActionResult> {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -197,7 +201,7 @@ export async function deleteVehicleAction(vehicleId: string) {
   }
 }
 
-export async function assignVehicleToDriverAction(vehicleId: string, driverId: string) {
+export async function assignVehicleToDriverAction(vehicleId: string, driverId: string): Promise<VehicleActionResult> {
   try {
     const { userId } = await auth();
     if (!userId) {

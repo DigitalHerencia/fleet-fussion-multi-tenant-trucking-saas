@@ -1,10 +1,14 @@
-"use server";
+'use server';
 
-import { auth } from "@clerk/nextjs/server";
-import { db } from "@/lib/database/db";
-import { revalidatePath } from "next/cache";
-import type { CreateLoadInput, UpdateLoadInput } from "@/schemas/dispatch";
-import { updateLoadSchema } from "@/schemas/dispatch";
+import { auth } from '@clerk/nextjs/server';
+import { db } from '@/lib/database/db';
+import { revalidatePath } from 'next/cache';
+import {
+  updateLoadSchema,
+  loadAssignmentSchema,
+  type UpdateLoadInput,
+  type LoadAssignmentInput,
+} from '@/schemas/dispatch';
 
 /**
  * Update an existing load with the provided fields.
@@ -21,66 +25,56 @@ export async function updateLoadAction(id: string, data: UpdateLoadInput) {
       return { success: false, error: "Unauthorized" };
     }
 
-    const validated = updateLoadSchema.parse(data);
-    const {
-      rate,
-      customer,
-      origin,
-      destination,
-      driver,
-      vehicle,
-      trailer,
-      ...rest
-    } = validated;
+    const validated = updateLoadSchema.parse({ ...data, id });
 
-    const dbData: any = {
+    const { rate, customer, origin, destination, driver, vehicle, trailer, ...rest } = validated;
+
+    const updateData: any = {
       ...rest,
       updatedAt: new Date(),
     };
 
-    if (typeof rate !== "undefined") dbData.rate = rate;
+    if (typeof rate !== 'undefined') updateData.rate = rate;
 
-    if (customer && typeof customer === "object") {
-      dbData.customerName = customer.name ?? null;
-      dbData.customerContact = customer.contactName ?? null;
-      dbData.customerPhone = customer.phone ?? null;
-      dbData.customerEmail = customer.email ?? null;
+    if (customer && typeof customer === 'object') {
+      updateData.customerName = customer.name ?? null;
+      updateData.customerContact = customer.contactName ?? null;
+      updateData.customerPhone = customer.phone ?? null;
+      updateData.customerEmail = customer.email ?? null;
     }
 
-    if (origin && typeof origin === "object") {
-      dbData.originAddress = origin.address ?? null;
-      dbData.originCity = origin.city ?? null;
-      dbData.originState = origin.state ?? null;
-      dbData.originZip = origin.zip ?? null;
-      dbData.originLat = origin.latitude ?? null;
-      dbData.originLng = origin.longitude ?? null;
+    if (origin && typeof origin === 'object') {
+      updateData.originAddress = origin.address ?? null;
+      updateData.originCity = origin.city ?? null;
+      updateData.originState = origin.state ?? null;
+      updateData.originZip = origin.zip ?? null;
+      updateData.originLat = origin.latitude ?? null;
+      updateData.originLng = origin.longitude ?? null;
     }
 
-    if (destination && typeof destination === "object") {
-      dbData.destinationAddress = destination.address ?? null;
-      dbData.destinationCity = destination.city ?? null;
-      dbData.destinationState = destination.state ?? null;
-      dbData.destinationZip = destination.zip ?? null;
-      dbData.destinationLat = destination.latitude ?? null;
-      dbData.destinationLng = destination.longitude ?? null;
+    if (destination && typeof destination === 'object') {
+      updateData.destinationAddress = destination.address ?? null;
+      updateData.destinationCity = destination.city ?? null;
+      updateData.destinationState = destination.state ?? null;
+      updateData.destinationZip = destination.zip ?? null;
+      updateData.destinationLat = destination.latitude ?? null;
+      updateData.destinationLng = destination.longitude ?? null;
     }
 
-    if (driver && typeof driver === "object" && driver.id)
-      dbData.driverId = driver.id;
-    if (vehicle && typeof vehicle === "object" && vehicle.id)
-      dbData.vehicleId = vehicle.id;
-    if (trailer && typeof trailer === "object" && trailer.id)
-      dbData.trailerId = trailer.id;
+    if (driver && typeof driver === 'object' && driver.id) updateData.driverId = driver.id;
+    if (vehicle && typeof vehicle === 'object' && vehicle.id) updateData.vehicleId = vehicle.id;
+    if (trailer && typeof trailer === 'object' && trailer.id) updateData.trailerId = trailer.id;
 
     const load = await db.load.update({
       where: {
         id,
         organizationId: orgId,
       },
-      data: dbData,
+      data: updateData,
     });
 
-    revalidatePath("/[orgId]/dispatch", "page");
+    revalidatePath('/[orgId]/dispatch', 'page');
+    revalidatePath(`/[orgId]/dispatch/${id}`, 'page');
     return { success: true, data: load };
   } catch (error) {
     console.error("Error updating load:", error);
@@ -102,6 +96,7 @@ export async function updateLoadStatus(id: string, status: string) {
         organizationId: orgId,
       },
       data: {
+        status,
         updatedAt: new Date(),
       },
     });
@@ -134,5 +129,36 @@ export async function deleteLoadAction(id: string) {
   } catch (error) {
     console.error("Error deleting load:", error);
     return { success: false, error: "Failed to delete load" };
+  }
+}
+
+export async function assignLoadAction(data: LoadAssignmentInput) {
+  try {
+    const { userId, orgId } = await auth();
+
+    if (!userId || !orgId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    const validated = loadAssignmentSchema.parse(data);
+
+    const load = await db.load.update({
+      where: {
+        id: validated.loadId,
+        organizationId: orgId,
+      },
+      data: {
+        driverId: validated.driverId,
+        vehicleId: validated.vehicleId,
+        trailerId: validated.trailerId ?? null,
+        updatedAt: new Date(),
+      },
+    });
+
+    revalidatePath('/[orgId]/dispatch', 'page');
+    return { success: true, data: load };
+  } catch (error) {
+    console.error('Error assigning load:', error);
+    return { success: false, error: 'Failed to assign load' };
   }
 }
