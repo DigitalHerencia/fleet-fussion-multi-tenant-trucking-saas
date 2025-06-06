@@ -7,7 +7,7 @@ import { formatDate } from "@/lib/utils"
 
 interface Vehicle {
   id: string
-  unitNumber: string
+  unitNumber?: string
   type: string
   status: string
   make?: string
@@ -60,7 +60,7 @@ export function VehicleCard({ vehicle, onClick }: VehicleCardProps) {
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-2">
             {getTypeIcon(vehicle.type)}
-            <h3 className="font-medium">{vehicle.unitNumber}</h3>
+            <h3 className="font-medium">{vehicle.unitNumber || 'No Unit Number'}</h3>
           </div>
           <Badge className={getStatusColor(vehicle.status)}>{vehicle.status.replace("_", " ")}</Badge>
         </div>

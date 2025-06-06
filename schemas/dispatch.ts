@@ -128,6 +128,23 @@ export const createLoadSchema = z.object({
   specialInstructions: z.string().optional(),
   brokerInfo: brokerInfoSchema.optional(),
   tags: z.array(z.string()).optional(),
+  createdBy: z.string().optional(),
+  lastModifiedBy: z.string().optional(),
+  statusEvents: z.array(z.object({
+    id: z.string(),
+    loadId: z.string(),
+    status: z.enum([
+      "draft", "pending", "posted", "booked", "confirmed", "assigned", "dispatched",
+      "in_transit", "at_pickup", "picked_up", "en_route", "at_delivery", "delivered",
+      "pod_required", "completed", "invoiced", "paid", "cancelled", "problem"
+    ]),
+    timestamp: z.date(),
+    location: z.any().optional(),
+    notes: z.string().optional(),
+    automaticUpdate: z.boolean().optional(),
+    source: z.string().optional(),
+    createdBy: z.string().optional(),
+  })).optional(),
   driver: z.object({
     id: z.string().optional(),
     name: z.string().optional(),
@@ -172,6 +189,23 @@ export const updateLoadSchema = z.object({
   specialInstructions: z.string().optional(),
   brokerInfo: brokerInfoSchema.optional(),
   tags: z.array(z.string()).optional(),
+  createdBy: z.string().optional(),
+  lastModifiedBy: z.string().optional(),
+  statusEvents: z.array(z.object({
+    id: z.string(),
+    loadId: z.string(),
+    status: z.enum([
+      "draft", "pending", "posted", "booked", "confirmed", "assigned", "dispatched",
+      "in_transit", "at_pickup", "picked_up", "en_route", "at_delivery", "delivered",
+      "pod_required", "completed", "invoiced", "paid", "cancelled", "problem"
+    ]),
+    timestamp: z.date(),
+    location: z.any().optional(),
+    notes: z.string().optional(),
+    automaticUpdate: z.boolean().optional(),
+    source: z.string().optional(),
+    createdBy: z.string().optional(),
+  })).optional(),
   driver: z.object({
     id: z.string().optional(),
     name: z.string().optional(),

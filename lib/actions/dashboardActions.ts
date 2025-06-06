@@ -4,11 +4,12 @@ import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/database/db";
 import { hasPermission } from "@/lib/auth/permissions";
+import { getOrganizationKPIs } from "@/lib/fetchers/kpiFetchers";
 
-export interface DashboardActionResult {
+export interface DashboardActionResult<T = any> {
   success: boolean;
   error?: string;
-  data?: any; // Consider using a more specific type for data
+  data?: T;
 }
 
 /**
@@ -30,9 +31,13 @@ export async function getDashboardOverviewAction(): Promise<DashboardActionResul
       return { success: false, error: "User organization not found" };
     }
 
+    const overview = await getOrganizationKPIs(user.organizationId);
 
-    
-    return { success: true };
+    // Revalidate to keep dashboard data fresh
+    revalidatePath("/dashboard");
+    revalidatePath("/");
+
+    return { success: true, data: overview };
   } catch (error) {
     console.error("Get dashboard overview error:", error);
     return {
@@ -50,7 +55,15 @@ export async function getDashboardOverviewAction(): Promise<DashboardActionResul
 /**
  * Get dashboard alerts and notifications
  */
-export async function getDashboardAlertsAction(organizationId: string): Promise<DashboardActionResult> {
+export type DashboardAlert = {
+  id: string;
+  message: string;
+  severity: 'high' | 'medium' | 'low';
+  timestamp: string;
+  type: string;
+};
+
+export async function getDashboardAlertsAction(organizationId: string): Promise<DashboardActionResult<DashboardAlert[]>> {
   if (!organizationId) {
     return { success: false, error: "Organization ID is required." };
   }
@@ -205,15 +218,21 @@ export async function getDashboardAlertsAction(organizationId: string): Promise<
     });
 
     // Sort alerts by severity and timestamp
+    const severityOrder: { [key: string]: number } = { high: 3, medium: 2, low: 1 };
     const sortedAlerts = alerts.sort((a, b) => {
-      const severityOrder: { [key: string]: number } = { high: 3, medium: 2, low: 1 };
       if (severityOrder[a.severity] !== severityOrder[b.severity]) {
         return severityOrder[b.severity] - severityOrder[a.severity];
       }
       return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
     });
 
-    return { success: true, data: sortedAlerts.slice(0, 10) }; // Return top 10 alerts
+    // Ensure type safety for severity
+    const typedAlerts: DashboardAlert[] = sortedAlerts.slice(0, 10).map(a => ({
+      ...a,
+      severity: (a.severity === 'high' || a.severity === 'medium' || a.severity === 'low') ? a.severity : 'low',
+    }));
+
+    return { success: true, data: typedAlerts }; // Return top 10 alerts
   } catch (error) {
     console.error("Error fetching dashboard alerts:", error);
     return { success: false, error: "Failed to fetch alerts." };
@@ -223,7 +242,15 @@ export async function getDashboardAlertsAction(organizationId: string): Promise<
 /**
  * Get today's schedule for the dashboard
  */
-export async function getTodaysScheduleAction(organizationId: string): Promise<DashboardActionResult> {
+export type DashboardScheduleItem = {
+  id: string;
+  description: string;
+  timePeriod: string;
+  count: number;
+  type: string;
+};
+
+export async function getTodaysScheduleAction(organizationId: string): Promise<DashboardActionResult<DashboardScheduleItem[]>> {
   if (!organizationId) {
     return { success: false, error: "Organization ID is required." };
   }

@@ -17,8 +17,8 @@ export function DriverPerformance({ driverPerformanceMetrics }: DriverPerformanc
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2">
-        <div>
-          <h3 className="text-lg font-medium mb-4">Miles Driven by Driver</h3>
+        <div className="bg-black border border-gray-200 rounded-md p-4">
+          <h3 className="text-lg font-bold text-white mb-4">Miles Driven by Driver</h3>
           <ChartContainer
             config={{
               miles: {
@@ -41,8 +41,8 @@ export function DriverPerformance({ driverPerformanceMetrics }: DriverPerformanc
           </ChartContainer>
         </div>
 
-        <div>
-          <h3 className="text-lg font-medium mb-4">Safety Score by Driver</h3>
+        <div className="bg-black border border-gray-200 rounded-md p-4">
+          <h3 className="text-lg font-bold text-white mb-4">Safety Score by Driver</h3>
           <ChartContainer
             config={{
               safetyScore: {
@@ -66,34 +66,33 @@ export function DriverPerformance({ driverPerformanceMetrics }: DriverPerformanc
         </div>
       </div>
 
-      <div>
-        <h3 className="text-lg font-medium mb-4">Driver Performance Metrics</h3>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Driver</TableHead>
-              <TableHead className="text-right">Miles</TableHead>
-              <TableHead className="text-right">Loads</TableHead>
-              <TableHead className="text-right">On-Time %</TableHead>
-              <TableHead className="text-right">MPG</TableHead>
-              <TableHead className="text-right">Safety Score</TableHead>
+      <div className="rounded-md border border-gray-200 bg-black text-white">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-gray-200 bg-zinc-900/50">
+              <th className="px-4 py-2 text-left">Driver</th>
+              <th className="px-4 py-2 text-right">Miles</th>
+              <th className="px-4 py-2 text-right">Loads</th>
+              <th className="px-4 py-2 text-right">On-Time %</th>
+              <th className="px-4 py-2 text-right">MPG</th>
+              <th className="px-4 py-2 text-right">Safety Score</th>
               {/* Violations column removed as it's not in the type */}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+            </tr>
+          </thead>
+          <tbody>
             {drivers.map((driver) => (
-              <TableRow key={driver.driverId}>
-                <TableCell className="font-medium">{driver.driverName}</TableCell>
-                <TableCell className="text-right">{driver.miles.toLocaleString()}</TableCell>
-                <TableCell className="text-right">{driver.loads}</TableCell>
-                <TableCell className="text-right">{driver.onTimeDelivery}%</TableCell>
-                <TableCell className="text-right">{driver.fuelEfficiency.toFixed(1)}</TableCell>
-                <TableCell className="text-right">{driver.safetyScore}</TableCell>
+              <tr key={driver.driverId} className="border-b border-gray-200">
+                <td className="px-4 py-2 font-medium">{driver.driverName}</td>
+                <td className="px-4 py-2 text-right">{driver.miles.toLocaleString()}</td>
+                <td className="px-4 py-2 text-right">{driver.loads}</td>
+                <td className="px-4 py-2 text-right">{driver.onTimeDelivery}%</td>
+                <td className="px-4 py-2 text-right">{driver.fuelEfficiency.toFixed(1)}</td>
+                <td className="px-4 py-2 text-right">{driver.safetyScore}</td>
                 {/* Violations column removed as it's not in the type */}
-              </TableRow>
+              </tr>
             ))}
-          </TableBody>
-        </Table>
+          </tbody>
+        </table>
       </div>
     </div>
   )

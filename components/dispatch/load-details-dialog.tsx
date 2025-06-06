@@ -12,6 +12,8 @@ import { MapPin, Calendar, DollarSign, Package, FileText, Truck, User, Weight, R
 import { formatDate, formatCurrency } from "@/lib/utils"
 import Link from "next/link"
 import { DocumentUpload, DocumentListEmpty } from "@/components/shared/DocumentUpload"
+import type { Customer, LoadAssignedDriver, LoadAssignedVehicle, LoadAssignedTrailer, EquipmentRequirement, CargoDetails, Rate, LoadDocument, TrackingUpdate, BrokerInfo, FactoringInfo, LoadAlert } from "@/types/dispatch"
+import type { LoadStatus, LoadPriority, LoadStatusEvent } from "@prisma/client"
 
 interface Driver {
   id: string
@@ -31,32 +33,43 @@ interface Vehicle {
 
 interface Load {
   id: string
-  referenceNumber: string
-  status: string
-  customerName: string
-  originCity: string
-  originState: string
-  destinationCity: string
-  destinationState: string
-  pickupDate: Date
-  deliveryDate: Date
-  driver?: {
-    id: string
-    firstName: string
-    lastName: string
-  } | null
-  vehicle?: {
-    id: string
-    unitNumber: string
-  } | null
-  trailer?: {
-    id: string
-    unitNumber: string
-  } | null
-  commodity?: string
-  weight?: number
-  rate?: number
-  miles?: number
+    organizationId: string
+    referenceNumber: string
+    status: LoadStatus
+    priority: LoadPriority
+    customer: Customer
+    origin: string
+    destination: string
+    pickupDate: Date
+    deliveryDate: Date
+    estimatedPickupTime?: string
+    estimatedDeliveryTime?: string
+    actualPickupTime?: Date
+    actualDeliveryTime?: Date
+    driver?: LoadAssignedDriver
+    vehicle?: LoadAssignedVehicle
+    trailer?: LoadAssignedTrailer
+    equipment?: EquipmentRequirement
+    cargo: CargoDetails
+    rate: Rate
+    miles?: number
+    estimatedMiles?: number
+    fuelCost?: number
+    notes?: string
+    internalNotes?: string
+    specialInstructions?: string
+    documents?: LoadDocument[]
+    statusHistory?: LoadStatusEvent[]
+    trackingUpdates?: TrackingUpdate[]
+    brokerInfo?: BrokerInfo
+    factoring?: FactoringInfo
+    alerts?: LoadAlert[]
+    tags?: string[]
+    createdAt: Date
+    updatedAt: Date
+    createdBy?: string
+    lastModifiedBy?: string
+    statusEvents?: LoadStatusEvent[]
 }
 
 interface LoadDetailsDialogProps {
@@ -151,7 +164,7 @@ export function LoadDetailsDialog({ load, drivers, vehicles, isOpen, onClose }: 
                     <div className="space-y-2">
                       <div>
                         <Label className="text-xs">Customer Name</Label>
-                        <div className="font-medium">{load.customerName}</div>
+                        <div className="font-medium">{load.customer.name}</div>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
                         <div>
@@ -180,13 +193,15 @@ export function LoadDetailsDialog({ load, drivers, vehicles, isOpen, onClose }: 
                           <Label className="text-xs flex items-center gap-1">
                             <Package className="h-3 w-3" /> Commodity
                           </Label>
-                          <div className="font-medium">{load.commodity || "N/A"}</div>
+                          <div className="font-medium">
+                            {load.cargo?.commodity || load.cargo?.description || "N/A"}
+                          </div>
                         </div>
                         <div>
                           <Label className="text-xs flex items-center gap-1">
                             <Weight className="h-3 w-3" /> Weight
                           </Label>
-                          <div className="font-medium">{load.weight ? `${load.weight.toLocaleString()} lbs` : "N/A"}</div>
+                          <div className="font-medium">{load.cargo?.weight ? `${load.cargo.weight.toLocaleString()} lbs` : "N/A"}</div>
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
@@ -194,7 +209,10 @@ export function LoadDetailsDialog({ load, drivers, vehicles, isOpen, onClose }: 
                           <Label className="text-xs flex items-center gap-1">
                             <DollarSign className="h-3 w-3" /> Rate
                           </Label>
-                          <div className="font-medium">{load.rate ? formatCurrency(load.rate) : "N/A"}</div>
+                          <div className="font-medium">
+                            {/* FIX: Use the correct property from Rate, e.g., load.rate.rate */}
+                            {load.rate && typeof load.rate === "number" ? formatCurrency(load.rate) : "N/A"}
+                          </div>
                         </div>
                         <div>
                           <Label className="text-xs flex items-center gap-1">
@@ -217,7 +235,7 @@ export function LoadDetailsDialog({ load, drivers, vehicles, isOpen, onClose }: 
                         <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
                         <div>
                           <p className="font-medium">
-                            {load.originCity}, {load.originState}
+                             {load.origin}
                           </p>
                         </div>
                       </div>
@@ -242,7 +260,7 @@ export function LoadDetailsDialog({ load, drivers, vehicles, isOpen, onClose }: 
                         <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
                         <div>
                           <p className="font-medium">
-                            {load.destinationCity}, {load.destinationState}
+                            {load.destination}
                           </p>
                         </div>
                       </div>
@@ -268,20 +286,20 @@ export function LoadDetailsDialog({ load, drivers, vehicles, isOpen, onClose }: 
                           <User className="h-3 w-3" /> Driver
                         </Label>
                         <div className="font-medium">
-                          {load.driver ? `${load.driver.firstName} ${load.driver.lastName}` : "Not Assigned"}
+                          {load.driver ? `${load.driver.name}` : "Not Assigned"}
                         </div>
                       </div>
                       <div>
                         <Label className="text-xs flex items-center gap-1">
                           <Truck className="h-3 w-3" /> Tractor
                         </Label>
-                        <div className="font-medium">{load.vehicle ? load.vehicle.unitNumber : "Not Assigned"}</div>
+                        <div className="font-medium">{load.vehicle ? load.vehicle.unit: "Not Assigned"}</div>
                       </div>
                       <div>
                         <Label className="text-xs flex items-center gap-1">
                           <Truck className="h-3 w-3" /> Trailer
                         </Label>
-                        <div className="font-medium">{load.trailer ? load.trailer.unitNumber : "Not Assigned"}</div>
+                        <div className="font-medium">{load.trailer ? load.trailer.unit: "Not Assigned"}</div>
                       </div>
                     </div>
                   </CardContent>

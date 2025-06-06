@@ -18,6 +18,7 @@ import {
 } from '@/schemas/compliance';
 import { getCurrentUser } from '@/lib/auth/auth';
 import { handleError } from "@/lib/errors/handleError";
+import { createAuditLog } from './auditLogActions';
 
 // Document Management Actions
 export async function createComplianceDocument(data: z.infer<typeof createComplianceDocumentSchema>) {
@@ -86,8 +87,36 @@ export async function createComplianceDocument(data: z.infer<typeof createCompli
       }
     });
 
-    // NOTE: Compliance alert logic removed (no such model in Prisma)
-    // NOTE: Audit log and revalidatePath are stubbed/not implemented
+    // Audit log
+    await createAuditLog({
+      organizationId: orgId,
+      userId,
+      entityType: 'ComplianceDocument',
+      entityId: document.id,
+      action: 'create',
+      changes: document,
+    });
+
+    // Create alert if document is expiring or expired
+    if (document.expirationDate && new Date(document.expirationDate) < new Date()) {
+      await db.complianceAlert.create({
+        data: {
+          organizationId: orgId,
+          userId,
+          driverId,
+          vehicleId,
+          type: 'expiring_document',
+          severity: 'high',
+          title: 'Document Expired',
+          message: `Document ${document.title} has expired.`,
+          entityType: validatedData.entityType,
+          entityId: validatedData.entityId,
+          dueDate: document.expirationDate,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }
+      });
+    }
 
     return { success: true, data: document };
   } catch (error) {
@@ -137,7 +166,36 @@ export async function updateComplianceDocument(
       }
     });
 
-    // NOTE: Audit log and revalidatePath are stubbed/not implemented
+    // Audit log
+    await createAuditLog({
+      organizationId: orgId,
+      userId,
+      entityType: 'ComplianceDocument',
+      entityId: updatedDocument.id,
+      action: 'update',
+      changes: updateData,
+    });
+
+    // Create alert if document is expiring or expired
+    if (updatedDocument.expirationDate && new Date(updatedDocument.expirationDate) < new Date()) {
+      await db.complianceAlert.create({
+        data: {
+          organizationId: orgId,
+          userId,
+          driverId: updatedDocument.driverId,
+          vehicleId: updatedDocument.vehicleId,
+          type: 'expiring_document',
+          severity: 'high',
+          title: 'Document Expired',
+          message: `Document ${updatedDocument.title} has expired.`,
+          entityType: existingDocument.driverId ? 'driver' : existingDocument.vehicleId ? 'vehicle' : 'company',
+          entityId: existingDocument.driverId || existingDocument.vehicleId || orgId,
+          dueDate: updatedDocument.expirationDate,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }
+      });
+    }
 
     return { success: true, data: updatedDocument };
   } catch (error) {
@@ -168,7 +226,15 @@ export async function deleteComplianceDocument(id: string) {
       where: { id }
     });
 
-    // NOTE: Audit log and revalidatePath are stubbed/not implemented
+    // Audit log
+    await createAuditLog({
+      organizationId: orgId,
+      userId,
+      entityType: 'ComplianceDocument',
+      entityId: id,
+      action: 'delete',
+      changes: document,
+    });
 
     return { success: true };
   } catch (error) {
@@ -274,7 +340,7 @@ export async function bulkUpdateComplianceDocuments(
 
     const results = await Promise.allSettled(
       validatedData.ids.map(async (documentId: string) => {
-        return db.complianceDocument.update({
+        const updated = await db.complianceDocument.update({
           where: {
             id: documentId,
             organizationId: orgId
@@ -284,13 +350,21 @@ export async function bulkUpdateComplianceDocuments(
             updatedAt: new Date()
           }
         });
+        // Audit log for each bulk update
+        await createAuditLog({
+          organizationId: orgId,
+          userId,
+          entityType: 'ComplianceDocument',
+          entityId: documentId,
+          action: 'bulk_update',
+          changes: validatedData.data,
+        });
+        return updated;
       })
     );
 
     const successful = results.filter((r: any) => r.status === 'fulfilled').length;
     const failed = results.filter((r: any) => r.status === 'rejected').length;
-
-    // NOTE: Audit log and revalidatePath are stubbed/not implemented
 
     return {
       success: true,

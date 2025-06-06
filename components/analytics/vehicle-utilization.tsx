@@ -15,8 +15,8 @@ export function VehicleUtilization({ timeRange, vehicleData }: VehicleUtilizatio
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2">
-        <div>
-          <h3 className="text-lg font-medium mb-4">Miles by Vehicle</h3>
+        <div className="bg-black border border-gray-200 rounded-md p-4">
+          <h3 className="text-lg font-bold text-white mb-4">Miles by Vehicle</h3>
           <ChartContainer
             config={{
               miles: {
@@ -38,9 +38,8 @@ export function VehicleUtilization({ timeRange, vehicleData }: VehicleUtilizatio
             </ResponsiveContainer>
           </ChartContainer>
         </div>
-
-        <div>
-          <h3 className="text-lg font-medium mb-4">Utilization by Vehicle (%)</h3>
+        <div className="bg-black border border-gray-200 rounded-md p-4">
+          <h3 className="text-lg font-bold text-white mb-4">Utilization by Vehicle (%)</h3>
           <ChartContainer
             config={{
               utilization: {
@@ -63,42 +62,41 @@ export function VehicleUtilization({ timeRange, vehicleData }: VehicleUtilizatio
           </ChartContainer>
         </div>
       </div>
-
-      <div>
-        <h3 className="text-lg font-medium mb-4">Vehicle Performance Metrics</h3>
+      <div className="bg-black border border-gray-200 rounded-md p-4">
+        <h3 className="text-lg font-bold text-white mb-4">Vehicle Performance Metrics</h3>
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Vehicle #</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead className="text-right">Miles</TableHead>
-              <TableHead className="text-right">Utilization</TableHead>
-              <TableHead className="text-right">MPG</TableHead>
-              <TableHead className="text-right">Maintenance Cost</TableHead>
-              <TableHead>Status</TableHead>
+            <TableRow className="border-b border-gray-200 bg-zinc-900/50">
+              <TableHead className="text-white">Vehicle #</TableHead>
+              <TableHead className="text-white">Type</TableHead>
+              <TableHead className="text-right text-white">Miles</TableHead>
+              <TableHead className="text-right text-white">Utilization</TableHead>
+              <TableHead className="text-right text-white">MPG</TableHead>
+              <TableHead className="text-right text-white">Maintenance Cost</TableHead>
+              <TableHead className="text-white">Status</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {vehicleData.map((vehicle) => (
-              <TableRow key={vehicle.id}>
-                <TableCell className="font-medium">{vehicle.id}</TableCell>
-                <TableCell>{vehicle.type}</TableCell>
-                <TableCell className="text-right">
+              <TableRow key={vehicle.id} className="border-b border-gray-200">
+                <TableCell className="font-medium text-white">{vehicle.id}</TableCell>
+                <TableCell className="text-white">{vehicle.type}</TableCell>
+                <TableCell className="text-right text-white">
                   {vehicle.currentOdometer !== undefined && vehicle.currentOdometer !== null
                     ? vehicle.currentOdometer.toLocaleString()
                     : "N/A"}
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-right text-white">
                   {vehicle.lastMaintenanceDate
                     ? vehicle.lastMaintenanceDate.toLocaleString()
                     : "N/A"}
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-right text-white">
                   {typeof vehicle.fuelType === 'string'
                     ? vehicle.fuelType.toLocaleString()
                     : "N/A"}
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-right text-white">
                   {vehicle.nextMaintenanceDate
                     ? `$${vehicle.nextMaintenanceDate.toLocaleString()}`
                     : "N/A"}

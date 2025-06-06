@@ -11,7 +11,11 @@ import { DriverComplianceTable } from "./driver-compliance-table"
 import { VehicleComplianceTable } from "./vehicle-compliance-table"
 import { ComplianceDocuments } from "./compliance-documents"
 
-export function ComplianceDashboard() {
+interface ComplianceDashboardProps {
+  orgId: string;
+}
+
+export function ComplianceDashboard({ orgId }: ComplianceDashboardProps) {
   const [activeTab, setActiveTab] = useState("overview")
 
   return (
@@ -161,7 +165,7 @@ export function ComplianceDashboard() {
               <CardDescription>Monitor driver licenses, medical cards, and HOS compliance</CardDescription>
             </CardHeader>
             <CardContent>
-              <DriverComplianceTable />
+              <DriverComplianceTable orgId={orgId} />
             </CardContent>
           </Card>
         </TabsContent>

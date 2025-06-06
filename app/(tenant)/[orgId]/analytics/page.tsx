@@ -7,37 +7,62 @@ import { PerformanceMetrics } from "@/components/analytics/performance-metrics"
 import { FinancialMetrics } from "@/components/analytics/financial-metrics"
 import { DriverPerformance } from "@/components/analytics/driver-performance"
 import { VehicleUtilization } from "@/components/analytics/vehicle-utilization"
+import { getDashboardSummary, getPerformanceAnalytics, getFinancialAnalytics, getDriverAnalytics, getVehicleAnalytics } from "@/lib/fetchers/analyticsFetchers"
 
-export default function AnalyticsPage() {
-  // Example static data for cards (replace with real data/fetchers)
+export default async function AnalyticsPage({ params }: { params: Promise<{ orgId: string }> }) {
+  const { orgId } = await params
+  const timeRange = "30d"
+
+  // Fetch all analytics data in parallel
+  const [summary, performanceDataRaw, financialDataRaw, driverPerformanceMetricsRaw, vehicleDataRaw] = await Promise.all([
+    getDashboardSummary(orgId, timeRange),
+    getPerformanceAnalytics(orgId, timeRange),
+    getFinancialAnalytics(orgId, timeRange),
+    getDriverAnalytics(orgId, timeRange),
+    getVehicleAnalytics(orgId, timeRange),
+  ])
+
+  // Defensive: ensure arrays/objects for all analytics data
+  const performanceData = Array.isArray(performanceDataRaw) ? performanceDataRaw : [];
+  const driverPerformanceMetrics = Array.isArray(driverPerformanceMetricsRaw) ? driverPerformanceMetricsRaw : [];
+  const vehicleData = Array.isArray(vehicleDataRaw) ? vehicleDataRaw : [];
+  const financialData = (financialDataRaw && typeof financialDataRaw === 'object' && financialDataRaw !== null)
+    ? {
+        revenue: Array.isArray((financialDataRaw as any).revenue) ? (financialDataRaw as any).revenue : [],
+        expenses: Array.isArray((financialDataRaw as any).expenses) ? (financialDataRaw as any).expenses : [],
+        profitMargin: Array.isArray((financialDataRaw as any).profitMargin) ? (financialDataRaw as any).profitMargin : [],
+      }
+    : { revenue: [], expenses: [], profitMargin: [] };
+
+  // Metrics for cards
   const metrics = [
     {
-      icon: <DollarSign className="h-4 w-4 text-[hsl(var(--info))]" />, label: "Total Revenue", value: "$45,231.89", change: "+20.1% from last month"
+      icon: <DollarSign className="h-4 w-4 text-[hsl(var(--info))]" />, label: "Total Revenue", value: summary ? `$${summary.totalRevenue.toLocaleString()}` : "-", change: summary && summary.totalRevenue && summary.averageRevenuePerMile ? `Avg $${summary.averageRevenuePerMile.toFixed(2)}/mile` : ""
     },
     {
-      icon: <Truck className="h-4 w-4 text-[hsl(var(--info))]" />, label: "Total Miles", value: "24,565", change: "+12.5% from last month"
+      icon: <Truck className="h-4 w-4 text-[hsl(var(--info))]" />, label: "Total Miles", value: summary ? summary.totalMiles.toLocaleString() : "-", change: summary && summary.totalMiles ? `Loads: ${summary.totalLoads}` : ""
     },
     {
-      icon: <BarChart3 className="h-4 w-4 text-[hsl(var(--info))]" />, label: "Load Count", value: "126", change: "+8.2% from last month"
+      icon: <BarChart3 className="h-4 w-4 text-[hsl(var(--info))]" />, label: "Load Count", value: summary ? summary.totalLoads.toLocaleString() : "-", change: summary && summary.totalLoads ? `Drivers: ${summary.activeDrivers}` : ""
     },
     {
-      icon: <User className="h-4 w-4 text-[hsl(var(--info))]" />, label: "Driver Utilization", value: "87%", change: "+5.1% from last month"
+      icon: <User className="h-4 w-4 text-[hsl(var(--info))]" />, label: "Active Vehicles", value: summary ? summary.activeVehicles.toLocaleString() : "-", change: summary && summary.activeVehicles ? `Active` : ""
     },
   ]
 
   return (
-    <div className="w-full max-w-7xl mx-auto flex flex-col gap-4 analytics-page">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mt-14 mb-2">
+    <div className="pt-8 space-y-6 p-6 min-h-screen bg-neutral-900 w-full max-w-7xl mx-auto">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
         <div>
-          <h1 className="page-title">Analytics Dashboard</h1>
-          <p className="page-subtitle">Track and analyze fleet performance metrics</p>
+          <h1 className="text-3xl font-extrabold text-white mb-1">Analytics Dashboard</h1>
+          <p className="text-base text-white/90">Track and analyze fleet performance metrics</p>
         </div>
-        <div className="flex flex-col gap-4 mt-4 mr-16 md:mt-0">
-          <Button variant="outline" size="sm" className="btn btn-outline">
+        <div className="flex flex-row gap-2 mt-4 md:mt-0">
+          <Button variant="outline" size="sm" className="border-gray-200 text-white">
             <CalendarIcon className="mr-2 h-4 w-4" />
             Last 30 Days
           </Button>
-          <Button size="sm" className="btn btn-primary">
+          <Button size="sm" className="bg-blue-500 text-white font-semibold">
             <Download className="mr-2 h-4 w-4" />
             Export Report
           </Button>
@@ -45,70 +70,64 @@ export default function AnalyticsPage() {
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {metrics.map((m, i) => (
-          <Card className="card" key={i}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              {m.icon}
+          <Card className="bg-black border border-gray-200 rounded-md flex flex-col justify-between min-h-[120px]" key={i}>
+            <CardHeader className="flex flex-row items-center justify-between pb-0 pt-4">
+              <div className="flex items-center gap-2">
+                {m.icon}
+                <span className="text-sm font-medium text-white">{m.label}</span>
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="card-metric">{m.value}</div>
-              <div className="text-sm text-muted-foreground font-medium mt-1">{m.label}</div>
-              <div className="text-xs text-success mt-1">{m.change}</div>
+            <CardContent className="flex flex-col justify-end flex-1 pb-4 pt-2">
+              <span className="text-4xl font-extrabold text-white leading-tight">{m.value}</span>
+              <span className="text-xs text-muted-foreground mt-1">{m.change}</span>
             </CardContent>
           </Card>
         ))}
       </div>
       <Tabs defaultValue="performance" className="w-full">
-        <TabsList className="tabs w-full md:w-auto grid grid-cols-2 md:grid-cols-4">
+        <TabsList className="w-full md:w-auto grid grid-cols-2 md:grid-cols-4">
           <TabsTrigger value="performance">Performance</TabsTrigger>
           <TabsTrigger value="financial">Financial</TabsTrigger>
           <TabsTrigger value="drivers">Drivers</TabsTrigger>
           <TabsTrigger value="vehicles">Vehicles</TabsTrigger>
         </TabsList>
         <TabsContent value="performance" className="mt-4">
-          <Card className="card">
-            <CardHeader>
-              Performance Metrics
+          <Card className="bg-black border border-gray-200 rounded-md">
+            <CardHeader className="pb-2 pt-4">
+              <span className="text-lg font-bold text-white">Performance Metrics</span>
             </CardHeader>
-            <CardContent className="overflow-x-auto">
-              <Suspense fallback={ <div>Loading performance metrics...</div> }>
-                <PerformanceMetrics timeRange={ "" } performanceData={ [] }  />
-              </Suspense>
+            <CardContent className="overflow-x-auto pb-4">
+              <PerformanceMetrics timeRange={timeRange} performanceData={performanceData} />
             </CardContent>
           </Card>
         </TabsContent>
         <TabsContent value="financial" className="mt-4">
-          <Card className="card">
-            <CardHeader>
-              Financial Metrics
+          <Card className="bg-black border border-gray-200 rounded-md">
+            <CardHeader className="pb-2 pt-4">
+              <span className="text-lg font-bold text-white">Financial Metrics</span>
             </CardHeader>
-            <CardContent className="overflow-x-auto">
-              <Suspense fallback={ <div>Loading financial metrics...</div> }>
-                <FinancialMetrics timeRange="30d" financialData={ [] } expenseBreakdown={ [] } />
-              </Suspense>
+            <CardContent className="overflow-x-auto pb-4">
+              <FinancialMetrics timeRange={timeRange} financialData={financialData.revenue} expenseBreakdown={financialData.expenses} />
             </CardContent>
           </Card>
         </TabsContent>
         <TabsContent value="drivers" className="mt-4">
-          <Card className="card">
-            <CardHeader>
-              Driver Performance
+          <Card className="bg-black border border-gray-200 rounded-md">
+            <CardHeader className="pb-2 pt-4">
+              <span className="text-lg font-bold text-white">Driver Performance</span>
             </CardHeader>
-            <CardContent className="overflow-x-auto">
-              <Suspense fallback={ <div>Loading driver performance data...</div> }>
-                <DriverPerformance timeRange="30d" driverPerformanceMetrics={ [] } />
-              </Suspense>
+            <CardContent className="overflow-x-auto pb-4">
+              <DriverPerformance timeRange={timeRange} driverPerformanceMetrics={driverPerformanceMetrics} />
             </CardContent>
           </Card>
         </TabsContent>
         <TabsContent value="vehicles" className="mt-4">
-          <Card className="card">
-            <CardHeader>
-              Vehicle Utilization
+          <Card className="bg-black border border-gray-200 rounded-md">
+            <CardHeader className="pb-2 pt-4">
+              <span className="text-lg font-bold text-white">Vehicle Utilization</span>
             </CardHeader>
-            <CardContent className="overflow-x-auto">
-              <Suspense fallback={ <div>Loading vehicle utilization data...</div> }>
-                <VehicleUtilization timeRange="30d" vehicleData={ [] } />
-              </Suspense>
+            <CardContent className="overflow-x-auto pb-4">
+              <VehicleUtilization timeRange={timeRange} vehicleData={vehicleData} />
             </CardContent>
           </Card>
         </TabsContent>

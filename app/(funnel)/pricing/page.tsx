@@ -1,5 +1,5 @@
 import PricingSection from "@/components/pricing/pricing-section"
-import { SharedFooter } from "@/components/shared/shared-footer"
+import { SharedFooter } from "@/components/shared/SharedFooter"
 
 export default function PricingPage() {
   return (

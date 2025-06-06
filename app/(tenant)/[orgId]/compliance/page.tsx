@@ -3,14 +3,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { CalendarIcon, ClipboardCheck, FileText, TruckIcon, UserIcon } from "lucide-react"
-import { DataTable } from "@/components/ui/data-table"
-import { columns as driverColumns } from "@/components/compliance/driver-compliance-table"
-import { columns as vehicleColumns } from "@/components/compliance/vehicle-compliance-table"
-import { columns as documentColumns } from "@/components/compliance/compliance-documents"
-import { PageHeader } from "@/components/shared/page-header"
+import { DriverComplianceTable } from "@/components/compliance/driver-compliance-table"
+import { VehicleComplianceTable } from "@/components/compliance/vehicle-compliance-table"
+import { ComplianceDocuments } from "@/components/compliance/compliance-documents"
+import { PageHeader } from "@/components/shared/PageHeader"
 
+interface CompliancePageProps {
+  params: Promise<{
+    orgId: string;
+  }>;
+}
 
-export default function CompliancePage() {
+export default async function CompliancePage({ params }: CompliancePageProps) {
+	const { orgId } = await params;
 	return (
 		<div className="compliance-page flex flex-col gap-6 p-4 md:p-6">
 			<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mt-14 mb-2">
@@ -86,10 +91,9 @@ export default function CompliancePage() {
 								Monitor driver compliance with regulations including HOS, licenses, and medical certifications.
 							</CardDescription>
 						</CardHeader>
-						<CardContent className="overflow-x-auto">
-							<Suspense fallback={<div>Loading driver compliance data...</div>}>
-								<DataTable columns={ [] } data={ [] }  />
-							</Suspense>
+						<CardContent className="overflow-x-auto">                                                        <Suspense fallback={<div>Loading driver compliance data...</div>}>
+                                                                <DriverComplianceTable orgId={orgId} />
+                                                        </Suspense>
 						</CardContent>
 					</Card>
 				</TabsContent>
@@ -100,9 +104,9 @@ export default function CompliancePage() {
 							<CardDescription>Track vehicle inspections, maintenance, and registration compliance.</CardDescription>
 						</CardHeader>
 						<CardContent className="overflow-x-auto">
-							<Suspense fallback={<div>Loading vehicle compliance data...</div>}>
-								<DataTable columns={ [] } data={ [] }  />
-							</Suspense>
+                                                        <Suspense fallback={<div>Loading vehicle compliance data...</div>}>
+                                                                <VehicleComplianceTable />
+                                                        </Suspense>
 						</CardContent>
 					</Card>
 				</TabsContent>
@@ -113,9 +117,9 @@ export default function CompliancePage() {
 							<CardDescription>Manage required documentation for regulatory compliance.</CardDescription>
 						</CardHeader>
 						<CardContent className="overflow-x-auto">
-							<Suspense fallback={<div>Loading compliance documents...</div>}>
-								<DataTable columns={ [] } data={ [] } />
-							</Suspense>
+                                                        <Suspense fallback={<div>Loading compliance documents...</div>}>
+                                                                <ComplianceDocuments documents={ [] } />
+                                                        </Suspense>
 						</CardContent>
 					</Card>
 				</TabsContent>

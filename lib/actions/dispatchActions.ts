@@ -100,8 +100,7 @@ export async function createLoadAction(orgId: string, data: CreateLoadInput) {
         error: "Reference number already exists",
       };
     }
-    // Map nested fields to flat DB fields
-    const { rate, customer, origin, destination, driver, vehicle, trailer, ...rest } = validatedData;
+    const { rate, customer, origin, destination, driver, vehicle, trailer, tags, createdBy, lastModifiedBy, priority, statusEvents, ...rest } = validatedData;
     const dbData: any = {
       ...rest,
       referenceNumber,
@@ -110,6 +109,10 @@ export async function createLoadAction(orgId: string, data: CreateLoadInput) {
       status: "pending",
       createdAt: new Date(),
       updatedAt: new Date(),
+      priority: priority || "medium",
+      tags: tags || [],
+      createdBy: createdBy || user.id,
+      lastModifiedBy: lastModifiedBy || user.id,
     };
     if (customer && typeof customer === "object") {
       dbData.customerName = customer.name ?? null;
@@ -137,6 +140,17 @@ export async function createLoadAction(orgId: string, data: CreateLoadInput) {
     if (vehicle && typeof vehicle === "object" && vehicle.id) dbData.vehicleId = vehicle.id;
     if (trailer && typeof trailer === "object" && trailer.id) dbData.trailerId = trailer.id;
     const createdLoad = await prisma.load.create({ data: dbData });
+    // Create status events if provided
+    if (Array.isArray(statusEvents) && statusEvents.length > 0) {
+      for (const event of statusEvents) {
+        await prisma.loadStatusEvent.create({
+          data: {
+            ...event,
+            loadId: createdLoad.id,
+          },
+        });
+      }
+    }
     await createAuditLog(
       "CREATE",
       "Load",
@@ -178,10 +192,13 @@ export async function updateLoadAction(loadId: string, data: UpdateLoadInput) {
     }
     const user = await checkUserPermissions(existingLoad.organizationId, ["loads:update", "dispatch:manage"]);
     const validatedData = updateLoadSchema.parse(data);
-    const { id, rate, customer, origin, destination, driver, vehicle, trailer, ...updateData } = validatedData;
+    const { id, rate, customer, origin, destination, driver, vehicle, trailer, tags, lastModifiedBy, priority, statusEvents, ...updateData } = validatedData;
     const dbData: any = {
       ...updateData,
       updatedAt: new Date(),
+      priority: priority || undefined,
+      tags: tags || undefined,
+      lastModifiedBy: lastModifiedBy || user.id,
     };
     if (typeof rate !== "undefined") dbData.rate = rate;
     if (customer && typeof customer === "object") {
@@ -213,6 +230,17 @@ export async function updateLoadAction(loadId: string, data: UpdateLoadInput) {
       where: { id: loadId },
       data: dbData,
     });
+    // Update status events if provided
+    if (Array.isArray(statusEvents) && statusEvents.length > 0) {
+      for (const event of statusEvents) {
+        await prisma.loadStatusEvent.create({
+          data: {
+            ...event,
+            loadId: loadId,
+          },
+        });
+      }
+    }
     await createAuditLog(
       "UPDATE",
       "Load",

@@ -253,25 +253,58 @@ export function requirePermission(permission: Permission) {
 /**
  * Route protection utilities
  */
-export class RouteProtection {  
-  // Define PROTECTED_ROUTES using SystemRole
+export class RouteProtection {  // Define PROTECTED_ROUTES using SystemRole and real route patterns
   static PROTECTED_ROUTES: Record<string, SystemRole[]> = {
-    '/dashboard': [SystemRoles.ADMIN, SystemRoles.DISPATCHER, SystemRoles.DRIVER, SystemRoles.COMPLIANCE_OFFICER, SystemRoles.ACCOUNTANT, SystemRoles.VIEWER],
-    '/admin': [SystemRoles.ADMIN],
-    '/tenant': [SystemRoles.ADMIN],
-    '/settings': [SystemRoles.ADMIN],
-    '/users': [SystemRoles.ADMIN],
-    '/analytics': [SystemRoles.ADMIN, SystemRoles.DISPATCHER, SystemRoles.COMPLIANCE_OFFICER],
-    '/dispatch': [SystemRoles.ADMIN, SystemRoles.DISPATCHER],
-    '/drivers': [SystemRoles.ADMIN, SystemRoles.DISPATCHER, SystemRoles.DRIVER],
-    '/vehicles': [SystemRoles.ADMIN, SystemRoles.DISPATCHER],
-    '/compliance': [SystemRoles.ADMIN, SystemRoles.COMPLIANCE_OFFICER],
-    '/ifta': [SystemRoles.ADMIN, SystemRoles.ACCOUNTANT],
-    '/billing': [SystemRoles.ADMIN, SystemRoles.ACCOUNTANT],
-    // Add other routes and their required roles
+    // Dashboard: Admin, Dispatcher, Accountant, Viewer
+    '/:orgId/dashboard/:userId': [
+      SystemRoles.ADMIN,
+      SystemRoles.ACCOUNTANT,
+      SystemRoles.VIEWER
+    ],
+    // Compliance dashboard: Compliance Officer, Admin
+    '/:orgId/compliance/:userId': [
+      SystemRoles.COMPLIANCE_OFFICER,
+      SystemRoles.ADMIN
+    ],
+    // Drivers list: Admin, Dispatcher
+    '/:orgId/drivers': [
+      SystemRoles.ADMIN,
+      SystemRoles.DISPATCHER
+    ],
+    // Drivers dashboard: Driver, Admin, Dispatcher
+    '/:orgId/drivers/:userId': [
+      SystemRoles.DRIVER,
+      SystemRoles.ADMIN,
+      SystemRoles.DISPATCHER
+    ],
+    // Dispatch dashboard: Dispatcher, Admin
+    '/:orgId/dispatch/:userId': [
+      SystemRoles.DISPATCHER,
+      SystemRoles.ADMIN
+    ],
+    // Analytics: Admin, Dispatcher, Compliance Officer
+    '/:orgId/analytics': [
+      SystemRoles.ADMIN,
+      SystemRoles.DISPATCHER,
+      SystemRoles.COMPLIANCE_OFFICER
+    ],
+    // Vehicles list: Admin, Dispatcher
+    '/:orgId/vehicles': [
+      SystemRoles.ADMIN,
+      SystemRoles.DISPATCHER
+    ],
+    // IFTA: Admin, Accountant
+    '/:orgId/ifta': [
+      SystemRoles.ADMIN,
+      SystemRoles.ACCOUNTANT
+    ],
+    // Settings: Admin
+    '/:orgId/settings': [
+      SystemRoles.ADMIN
+    ],
+    // Add more as needed for other tenant routes
   };
-  
-  /**
+    /**
    * Check if user can access a specific route
    */
   static canAccessRoute(user: UserContext | null, path: string): boolean {
@@ -279,13 +312,19 @@ export class RouteProtection {
       return false; // Deny access if user is null or not active
     }
 
+    // Helper function to match dynamic routes
+    const matchesRoute = (pattern: string, actualPath: string): boolean => {
+      // Convert pattern like "/:orgId/drivers/:userId" to regex
+      const regexPattern = pattern
+        .replace(/:[^\/]+/g, '[^/]+') // Replace :param with [^/]+ (non-slash characters)
+        .replace(/\//g, '\\/'); // Escape forward slashes
+      
+      const regex = new RegExp(`^${regexPattern}$`);
+      return regex.test(actualPath);
+    };
+
     const matchedRoute = Object.keys(RouteProtection.PROTECTED_ROUTES).find(routePattern => {
-      if (path === routePattern) return true;
-      // Basic prefix matching for routes like /tenant/*
-      if (routePattern.endsWith('/') && path.startsWith(routePattern)) return true;
-      // More specific prefix matching for /tenant, ensuring it doesn't incorrectly match /tenant-something
-      if (!routePattern.endsWith('/') && path.startsWith(routePattern + '/')) return true; 
-      return false;
+      return matchesRoute(routePattern, path);
     });
 
     if (matchedRoute) {

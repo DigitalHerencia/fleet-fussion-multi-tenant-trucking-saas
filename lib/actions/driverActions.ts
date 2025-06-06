@@ -459,22 +459,179 @@ export async function assignDriverAction(
     }
 
     // Validate input
-    const validatedData = driverAssignmentSchema.parse(assignmentData)
-
-    // Get driver to check permissions
+    const validatedData = driverAssignmentSchema.parse(assignmentData)    // Get driver to check permissions
     const driver = await db.driver.findUnique({
-      where: { id: validatedData.driverId }
+      where: { id: validatedData.driverId },
+      include: {
+        loads: {
+          where: {
+            status: {
+              in: ['assigned', 'dispatched', 'in_transit', 'at_pickup', 'picked_up', 'en_route']
+            }
+          }
+        }
+      }
     })
 
     if (!driver) {
       return { success: false, error: "Driver not found", code: "NOT_FOUND" }
     }
 
+    // Check if driver is available for assignment
+    if (driver.status !== 'active') {
+      return { 
+        success: false, 
+        error: "Driver is not active and cannot be assigned", 
+        code: "DRIVER_NOT_AVAILABLE" 
+      }
+    }
 
+    // Check if driver already has active assignments
+    if (driver.loads.length > 0) {
+      return { 
+        success: false, 
+        error: "Driver is already assigned to an active load", 
+        code: "DRIVER_ALREADY_ASSIGNED" 
+      }
+    }
 
+    // Start database transaction for assignment
+    const result = await db.$transaction(async (tx) => {
+      const updates: any[] = []
 
+      // If assigning to a load
+      if (validatedData.loadId) {
+        // Verify load exists and is available
+        const load = await tx.load.findUnique({
+          where: { id: validatedData.loadId },
+        })
 
+        if (!load) {
+          throw new Error("Load not found")
+        }
 
+        if (load.driverId && load.driverId !== validatedData.driverId) {
+          throw new Error("Load is already assigned to another driver")
+        }
+
+        // Update load assignment
+        updates.push(
+          tx.load.update({
+            where: { id: validatedData.loadId },
+            data: {
+              driverId: validatedData.driverId,
+              status: load.status === 'pending' ? 'assigned' : load.status,
+              updatedAt: new Date(),
+            }
+          })
+        )
+
+        // Create load status event
+        updates.push(
+          tx.loadStatusEvent.create({
+            data: {
+              loadId: validatedData.loadId,
+              status: load.status === 'pending' ? 'assigned' : load.status,
+              timestamp: new Date(),
+              notes: `Driver assigned: ${driver.firstName} ${driver.lastName}`,
+              automaticUpdate: false,
+              source: 'dispatcher'
+            }
+          })
+        )
+      }
+
+      // If assigning to a vehicle
+      if (validatedData.vehicleId) {
+        // Verify vehicle exists and is available
+        const vehicle = await tx.vehicle.findUnique({
+          where: { id: validatedData.vehicleId },
+        })
+
+        if (!vehicle) {
+          throw new Error("Vehicle not found")
+        }
+
+        if (vehicle.status !== 'active') {
+          throw new Error("Vehicle is not active and cannot be assigned")
+        }
+
+        // For vehicle assignment, we may need to create a maintenance or training load
+        if (validatedData.assignmentType === 'maintenance' || validatedData.assignmentType === 'training') {
+          const assignmentLoad = await tx.load.create({
+            data: {
+              organizationId: driver.organizationId,
+              driverId: validatedData.driverId,
+              vehicleId: validatedData.vehicleId,
+              loadNumber: `${validatedData.assignmentType.toUpperCase()}-${Date.now()}`,
+              status: 'assigned',
+              originAddress: 'Assignment',
+              originCity: '',
+              originState: '',
+              originZip: '',
+              destinationAddress: validatedData.assignmentType === 'maintenance' ? 'Maintenance Facility' : 'Training Center',
+              destinationCity: '',
+              destinationState: '',
+              destinationZip: '',
+              scheduledPickupDate: new Date(validatedData.scheduledStart),
+              scheduledDeliveryDate: validatedData.scheduledEnd ? new Date(validatedData.scheduledEnd) : undefined,
+              instructions: validatedData.instructions,
+              notes: `${validatedData.assignmentType} assignment`,
+              priority: validatedData.priority === 'urgent' ? 'urgent' : validatedData.priority === 'high' ? 'high' : 'medium',
+              createdBy: userId,
+              lastModifiedBy: userId,
+            }
+          })
+
+          // Create status event for the assignment load
+          updates.push(
+            tx.loadStatusEvent.create({
+              data: {
+                loadId: assignmentLoad.id,
+                status: 'assigned',
+                timestamp: new Date(),
+                notes: `${validatedData.assignmentType} assignment created`,
+                automaticUpdate: false,
+                source: 'dispatcher'
+              }
+            })
+          )
+        }
+      }      // Update driver's last assignment time (don't change status for assignments)
+      updates.push(
+        tx.driver.update({
+          where: { id: validatedData.driverId },
+          data: {
+            updatedAt: new Date(),
+          }
+        })
+      )
+
+      // Execute all updates
+      await Promise.all(updates)
+
+      return true
+    })
+
+    // Log audit event
+    await logAuditEvent(
+      'driver.assigned', 
+      'driver', 
+      validatedData.driverId, 
+      { 
+        loadId: validatedData.loadId,
+        vehicleId: validatedData.vehicleId,
+        assignmentType: validatedData.assignmentType,
+        assignedBy: userId 
+      }
+    )
+
+    // Revalidate related pages
+    revalidatePath('/[orgId]/drivers', 'page')
+    revalidatePath('/[orgId]/dispatch', 'page')
+    if (validatedData.loadId) {
+      revalidatePath(`/[orgId]/dispatch/loads/${validatedData.loadId}`, 'page')
+    }
 
     return { success: true }
 
@@ -505,18 +662,93 @@ export async function unassignDriverAction(driverId: string): Promise<DriverActi
     const { userId } = await auth()
     if (!userId) {
       return { success: false, error: "Authentication required", code: "UNAUTHORIZED" }
-    }
-
-    // Get driver
+    }    // Get driver with current assignments
     const driver = await db.driver.findUnique({
-      where: { id: driverId }
+      where: { id: driverId },
+      include: {
+        loads: {
+          where: {
+            status: {
+              in: ['assigned', 'dispatched', 'in_transit', 'at_pickup', 'picked_up', 'en_route']
+            }
+          }
+        }
+      }
     })
 
     if (!driver) {
       return { success: false, error: "Driver not found", code: "NOT_FOUND" }
     }
 
-  
+    // Check if driver has any active assignments
+    if (driver.loads.length === 0) {
+      return { 
+        success: false, 
+        error: "Driver has no active assignments to unassign", 
+        code: "NO_ASSIGNMENT" 
+      }
+    }
+
+    // Start database transaction for unassignment
+    await db.$transaction(async (tx) => {
+      const updates: any[] = []
+
+      // Unassign from all active loads
+      for (const load of driver.loads) {
+        // Update load to remove driver assignment
+        updates.push(
+          tx.load.update({
+            where: { id: load.id },
+            data: {
+              driverId: null,
+              status: load.status === 'assigned' ? 'pending' : load.status,
+              updatedAt: new Date(),
+            }
+          })
+        )
+
+        // Create load status event
+        updates.push(
+          tx.loadStatusEvent.create({
+            data: {
+              loadId: load.id,
+              status: load.status === 'assigned' ? 'pending' : load.status,
+              timestamp: new Date(),
+              notes: `Driver unassigned: ${driver.firstName} ${driver.lastName}`,
+              automaticUpdate: false,
+              source: 'dispatcher'
+            }
+          })
+        )
+      }      // Update driver's last modification time (don't change base status)
+      updates.push(
+        tx.driver.update({
+          where: { id: driverId },
+          data: {
+            updatedAt: new Date(),
+          }
+        })
+      )
+
+      // Execute all updates
+      await Promise.all(updates)
+    })
+
+    // Log audit event
+    await logAuditEvent(
+      'driver.unassigned', 
+      'driver', 
+      driverId, 
+      { 
+        loadIds: driver.loads.map(l => l.id),
+        unassignedBy: userId 
+      }
+    )
+
+    // Revalidate related pages
+    revalidatePath('/[orgId]/drivers', 'page')
+    revalidatePath('/[orgId]/dispatch', 'page')
+    
     return { success: true }
 
   } catch (error) {

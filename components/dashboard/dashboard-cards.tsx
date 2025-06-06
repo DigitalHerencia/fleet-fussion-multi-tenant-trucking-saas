@@ -1,155 +1,137 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { DollarSign, Users, Truck, Package, Route, ClipboardCheck, Wrench, Clock } from "lucide-react";
+import { TrendingUp, TrendingDown, Truck, Users, Package, DollarSign, Activity, Wrench, AlertTriangle } from "lucide-react";
 
-interface DashboardCardsProps {
-  kpis: {
-    activeVehicles: number;
-    activeVehiclesChange?: string;
-    activeDrivers: number;
-    activeDriversChange?: string;
-    activeLoads: number;
-    activeLoadsLive?: number;
-    completedLoads: number;
-    inTransitLoads: number;
-    totalRevenue: number;
-    revenueChange?: string;
-    revenuePerMile: string | number;
-    revenueTarget?: string | number;
-    totalMiles: number;
-    milesChange?: string;
-    milesPerVehicleAvg?: number;
-    milesTarget?: number;
-    recentInspections: number;
-    failedInspections?: number; // Made optional as it might be 0
-    inspectionSuccessRate?: string | number;
-    upcomingMaintenance: number;
-    maintenanceOverdue?: number;
-    maintenanceThisWeek?: number;
-    pendingLoads: number;
-    pendingLoadsUrgent?: number;
-    pendingLoadsAwaitingPickup?: number;
-    pendingLoadsAwaitingAssignment?: number;
-  };
-}
-
-const iconMap: { [key: string]: React.ElementType } = {
-  Truck,
-  Users,
-  Package,
-  DollarSign,
-  Route,
-  ClipboardCheck,
-  Wrench,
-  Clock,
+type DashboardKpis = {
+  activeVehicles: number;
+  activeVehiclesChange: string;
+  activeDrivers: number;
+  activeDriversChange: string;
+  activeLoads: number;
+  completedLoads: number;
+  inTransitLoads: number;
+  totalRevenue: number;
+  revenueChange: string;
+  revenuePerMile: number;
+  totalMiles: number;
+  milesChange: string;
+  milesPerVehicleAvg: number;
+  recentInspections: number;
+  failedInspections: number;
+  inspectionSuccessRate: number;
+  upcomingMaintenance: number;
+  maintenanceOverdue: number;
+  maintenanceThisWeek: number;
+  pendingLoads: number;
+  pendingLoadsUrgent: number;
+  pendingLoadsAwaitingPickup: number;
+  pendingLoadsAwaitingAssignment: number;
 };
 
+export interface DashboardCardsProps {
+  kpis: DashboardKpis;
+}
+
 export function DashboardCards({ kpis }: DashboardCardsProps) {
-  const cardData = [
-    { title: "Active Vehicles", value: kpis.activeVehicles, change: kpis.activeVehiclesChange, icon: "Truck" },
-    { title: "Active Drivers", value: kpis.activeDrivers, change: kpis.activeDriversChange, icon: "Users" },
-    { title: "Active Loads", value: kpis.activeLoads, live: kpis.activeLoadsLive, completed: kpis.completedLoads, inTransit: kpis.inTransitLoads, icon: "Package" },
-    { title: "Revenue (30d)", value: kpis.totalRevenue, change: kpis.revenueChange, unit: "$", perMileAvg: kpis.revenuePerMile, target: kpis.revenueTarget, icon: "DollarSign" },
-    { title: "Total Miles (30d)", value: kpis.totalMiles, change: kpis.milesChange, unit: "k", perVehicleAvg: kpis.milesPerVehicleAvg, target: kpis.milesTarget, icon: "Route" },
-    { title: "Inspections (30d)", value: kpis.recentInspections, failed: kpis.failedInspections, successRate: kpis.inspectionSuccessRate, icon: "ClipboardCheck" },
-    { title: "Upcoming Maintenance", value: kpis.upcomingMaintenance, overdue: kpis.maintenanceOverdue, thisWeek: kpis.maintenanceThisWeek, icon: "Wrench" },
-    { title: "Pending Loads", value: kpis.pendingLoads, urgent: kpis.pendingLoadsUrgent, awaitingPickup: kpis.pendingLoadsAwaitingPickup, awaitingAssignment: kpis.pendingLoadsAwaitingAssignment, icon: "Clock" },
+  // Logical order: assets, people, work, outcomes, maintenance
+  const cards = [
+    {
+      title: "Active Vehicles",
+      value: kpis.activeVehicles,
+      change: kpis.activeVehiclesChange,
+      icon: Truck,
+      iconBg: "bg-blue-500",
+      description: "Fleet vehicles in service",
+    },
+    {
+      title: "Active Drivers",
+      value: kpis.activeDrivers,
+      change: kpis.activeDriversChange,
+      icon: Users,
+      iconBg: "bg-purple-500",
+      description: "Drivers currently employed",
+    },
+    {
+      title: "Active Loads",
+      value: kpis.activeLoads,
+      icon: Package,
+      iconBg: "bg-orange-500",
+      description: "Loads assigned or in transit",
+      progress: kpis.activeLoads + kpis.completedLoads > 0 ? Math.round((kpis.activeLoads / (kpis.activeLoads + kpis.completedLoads)) * 100) : 0,
+    },
+    {
+      title: "Completed Loads",
+      value: kpis.completedLoads,
+      icon: TrendingUp,
+      iconBg: "bg-green-500",
+      description: "Loads delivered in last 30 days",
+    },
+    {
+      title: "Total Revenue",
+      value: `$${kpis.totalRevenue.toLocaleString()}`,
+      change: kpis.revenueChange,
+      icon: DollarSign,
+      iconBg: "bg-green-500",
+      description: "Revenue (last 30 days)",
+    },
+    {
+      title: "Revenue per Mile",
+      value: `$${kpis.revenuePerMile}`,
+      icon: Activity,
+      iconBg: "bg-blue-500",
+      description: "Revenue per mile (efficiency)",
+    },
+    {
+      title: "Total Miles",
+      value: kpis.totalMiles.toLocaleString(),
+      change: kpis.milesChange,
+      icon: Activity,
+      iconBg: "bg-indigo-500",
+      description: "Miles driven (last 30 days)",
+    },
+    {
+      title: "Maintenance Due",
+      value: kpis.upcomingMaintenance,
+      icon: Wrench,
+      iconBg: "bg-yellow-500",
+      description: "Vehicles maintenance (30 days)",
+      progress: kpis.upcomingMaintenance + kpis.maintenanceOverdue + 20 > 0 ? Math.round((kpis.upcomingMaintenance / (kpis.upcomingMaintenance + kpis.maintenanceOverdue + 20)) * 100) : 0,
+    },
   ];
 
+  const formatTrendChange = (change: string) => {
+    const isPositive = change.startsWith('+');
+    const isNegative = change.startsWith('-');
+    return (
+      <span className={`ml-2 text-xs font-medium ${isPositive ? 'text-green-400' : isNegative ? 'text-red-400' : 'text-gray-400'}`}>{change}</span>
+    );
+  };
+
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mt-6">
-      {cardData.map((item, i) => {
-        const IconComponent = iconMap[item.icon];
+    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4">
+      {cards.map((card) => {
+        const Icon = card.icon;
         return (
-          <Card key={i} className="bg-background-soft shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-foreground-muted">
-                {item.title}
-              </CardTitle>
-              {IconComponent && <IconComponent className="h-4 w-4 text-foreground-muted" />}
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">
-                {item.unit === "$" && item.unit}
-                {typeof item.value === 'number' ? item.value.toLocaleString() : item.value}
-                {item.unit === "k" && item.unit}
+          <Card key={card.title} className="bg-black border-gray-200 text-lg py-2 h-44 flex flex-col justify-between">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 pt-2">
+              <div className="flex flex-col gap-1 flex-1">
+                <CardTitle className="text-sm font-semibold text-zinc-200">{card.title}</CardTitle>
               </div>
-              {item.change && (
-                <p className={`text-xs ${item.change.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>
-                  {item.change}
-                </p>
-              )}
-              {item.title === "Active Loads" && (
-                <div className="text-xs text-foreground-muted mt-1">
-                  {item.live && <span className="text-green-400 mr-2">{item.live} Live</span>}
-                  <span>{item.completed} Completed</span>, <span>{item.inTransit} In Transit</span>
+              <div className={`${card.iconBg} p-1.5 rounded-lg`}>
+                <Icon className="h-5 w-5 text-white" />
+              </div>
+            </CardHeader>
+            <CardContent className="flex flex-1 flex-col justify-between">
+              <div className="flex flex-col flex-1 justify-end">
+                <div className="flex items-end gap-2 mt-2">
+                  <span className="text-4xl font-extrabold text-white leading-tight">{card.value}</span>
+                  {card.change && formatTrendChange(card.change)}
                 </div>
-              )}
-              {item.title === "Revenue (30d)" && item.perMileAvg && item.target && (
-                <div className="text-xs text-foreground-muted mt-1 space-y-1">
-                  <div>Per mile avg: ${item.perMileAvg}</div>
-                  <div className="flex items-center gap-2">
-                    <span>Target: ${item.target}/mile</span>
-                    <Progress 
-                      value={Math.min((Number(item.perMileAvg) / Number(item.target)) * 100, 100)} 
-                      className="h-2 flex-1"
-                    />
-                    <span className="text-xs">
-                      {Math.round((Number(item.perMileAvg) / Number(item.target)) * 100)}%
-                    </span>
-                  </div>
-                </div>
-              )}
-              {item.title === "Total Miles (30d)" && item.perVehicleAvg && item.target && (
-                <div className="text-xs text-foreground-muted mt-1 space-y-1">
-                  <div>Per vehicle avg: {item.perVehicleAvg?.toLocaleString()}</div>
-                  <div className="flex items-center gap-2">
-                    <span>Monthly target: {item.target?.toLocaleString()} miles</span>
-                    <Progress 
-                      value={Math.min((Number(item.value) / Number(item.target)) * 100, 100)} 
-                      className="h-2 flex-1"
-                    />
-                    <span className="text-xs">
-                      {Math.round((Number(item.value) / Number(item.target)) * 100)}%
-                    </span>
-                  </div>
-                </div>
-              )}
-              {item.title === "Inspections (30d)" && item.successRate !== undefined && (
-                <div className="text-xs text-foreground-muted mt-1 space-y-1">
-                  {item.failed !== undefined && item.failed > 0 && (
-                    <div className="text-red-500">{item.failed} Failed</div>
-                  )}
-                  <div className="flex items-center gap-2">
-                    <span>Success rate: {item.successRate}%</span>
-                    <Progress 
-                      value={Number(item.successRate)} 
-                      className="h-2 flex-1"
-                    />
-                  </div>
-                </div>
-              )}
-              {item.title === "Upcoming Maintenance" && item.overdue !== undefined && item.thisWeek !== undefined && (
-                <div className="text-xs text-foreground-muted mt-1 space-y-1">
-                  <div className="flex justify-between">
-                    <span>{item.overdue} Overdue</span>
-                    <span>{item.thisWeek} This week</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span>Maintenance status</span>
-                    <Progress 
-                      value={item.value > 0 ? ((item.value - item.overdue) / item.value) * 100 : 100} 
-                      className="h-2 flex-1"
-                    />
-                  </div>
-                </div>
-              )}
-              {item.title === "Pending Loads" && item.awaitingPickup !== undefined && item.awaitingAssignment !== undefined && (
-                <div className="text-xs text-foreground-muted mt-1">
-                  {item.urgent !== undefined && item.urgent > 0 && <span className="text-orange-500 mr-2">{item.urgent} Urgent</span>}
-                  <span>{item.awaitingPickup} Awaiting pickup</span>, <span>{item.awaitingAssignment} Awaiting assignment</span>
-                </div>
-              )}
+              </div>
+              <div className="flex flex-col gap-1 mt-auto pb-2">
+                <div className="text-xs text-zinc-200">{card.description}</div>
+              </div>
             </CardContent>
           </Card>
         );

@@ -2,97 +2,30 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  // 1. Create Organization
-  const org = await prisma.organization.create({
-    data: {
-      clerkId: 'org_test_clerk_id',
-      name: 'Test Org',
-      slug: 'test-org',
-      dotNumber: '1234567',
-      mcNumber: '7654321',
-      address: '123 Main St',
-      city: 'Denver',
-      state: 'CO',
-      zip: '80202',
-      phone: '555-555-1234',
-      email: 'info@testorg.com',
-      logoUrl: 'https://placehold.co/128x128',
-      subscriptionTier: 'pro',
-      subscriptionStatus: 'active',
-      maxUsers: 10,
-      billingEmail: 'billing@testorg.com',
-      isActive: true,
-      settings: {
-        timezone: 'America/Denver',
-        dateFormat: 'MM/dd/yyyy',
-        distanceUnit: 'miles',
-        fuelUnit: 'gallons'
-      }
-    }
+  // Find admin user and driver user by email (adjust emails as needed)
+  const adminUser = await prisma.user.findFirst({
+    where: { email: 'admin@fleetfusion.test' },
   });
+  if (!adminUser) {
+    throw new Error('Admin user with email admin@fleetfusion.test not found. Please create it first.');
+  }
 
-  // 2. Create Users (admin, manager, driver, viewer)
-  const adminUser = await prisma.user.create({
-    data: {
-      clerkId: 'user_admin_clerk_id',
-      organizationId: org.id,
-      email: 'admin@fleetfusion.test',
-      firstName: 'Alice',
-      lastName: 'Admin',
-      profileImage: 'https://placehold.co/64x64',
-      role: 'admin',
-      isActive: true,
-      onboardingComplete: true,
-      onboardingSteps: {},
-      lastLogin: new Date(),
-    }
+  const driverUser = await prisma.user.findFirst({
+    where: { email: 'driver@fleetfusion.test' },
   });
+  if (!driverUser) {
+    throw new Error('Driver user with email driver@fleetfusion.test not found. Please create it first.');
+  }
 
-  const managerUser = await prisma.user.create({
-    data: {
-      clerkId: 'user_manager_clerk_id',
-      organizationId: org.id,
-      email: 'manager@fleetfusion.test',
-      firstName: 'Bob',
-      lastName: 'Manager',
-      role: 'manager',
-      isActive: true,
-      onboardingComplete: true,
-      onboardingSteps: {},
-      lastLogin: new Date(),
-    }
+  // 1. Find existing test org by clerkId
+  const org = await prisma.organization.findUnique({
+    where: { clerkId: 'org_2xvBliaRVTLXpaA6Uc5n66Jsw0u' },
   });
+  if (!org) {
+    throw new Error('Test org with clerkId org_2xvBliaRVTLXpaA6Uc5n66Jsw0u not found. Please create it first.');
+  }
 
-  const driverUser = await prisma.user.create({
-    data: {
-      clerkId: 'user_driver_clerk_id',
-      organizationId: org.id,
-      email: 'driver@fleetfusion.test',
-      firstName: 'Charlie',
-      lastName: 'Driver',
-      role: 'driver',
-      isActive: true,
-      onboardingComplete: true,
-      onboardingSteps: {},
-      lastLogin: new Date(),
-    }
-  });
-
-  const viewerUser = await prisma.user.create({
-    data: {
-      clerkId: 'user_viewer_clerk_id',
-      organizationId: org.id,
-      email: 'viewer@fleetfusion.test',
-      firstName: 'Dana',
-      lastName: 'Viewer',
-      role: 'viewer',
-      isActive: true,
-      onboardingComplete: false,
-      onboardingSteps: {},
-      lastLogin: new Date(),
-    }
-  });
-
+  // 2. Generate lots of realistic data for this org (no test users)
   // 3. Create Vehicles (tractor, trailer)
   const tractor = await prisma.vehicle.create({
     data: {

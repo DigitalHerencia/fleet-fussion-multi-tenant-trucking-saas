@@ -9,13 +9,16 @@ import { LoadCard } from "@/components/dispatch/load-card"
 import { LoadForm } from "@/components/dispatch/load-form"
 import { LoadDetailsDialog } from "@/components/dispatch/load-details-dialog"
 import { PlusCircle, Filter } from "lucide-react"
-import Link from "next/link"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from "@/hooks/use-toast"
-import type { ReactNode } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { updateLoadAction } from "@/lib/actions/dispatchActions"
+import type { BrokerInfo, CargoDetails, Customer, EquipmentRequirement, FactoringInfo, LoadAlert, LoadAssignedDriver, LoadAssignedTrailer, LoadAssignedVehicle, LoadDocument, LoadStatus, Rate, TrackingUpdate } from "@/types/dispatch"
+import { string } from "zod"
+import type { $Enums, LoadPriority, LoadStatusEvent } from "@prisma/client"
 
 interface Driver {
   id: string
@@ -27,42 +30,57 @@ interface Driver {
 }
 
 interface Vehicle {
-  id: string
-  unitNumber: string
-  status: string
-  type: string
-  make?: string
-  model?: string
+status: $Enums.VehicleStatus;
+    id: string;
+    type: string;
+    make: string | null;
+    model: string | null;
+    year: number | null;
+    unitNumber: string;
+    currentOdometer: number | null;
+    lastInspectionDate: Date | null;
+    nextInspectionDue: Date | null;
 }
 
 interface Load {
-  id: string
-  referenceNumber: string
-  status: string
-  customerName: string
-  originCity: string
-  originState: string
-  destinationCity: string
-  destinationState: string
-  pickupDate: Date
-  deliveryDate: Date
-  driver?: {
-    id: string
-    firstName: string
-    lastName: string
-  } | null
-  vehicle?: {
-    id: string
-    unitNumber: string
-  } | null
-  trailer?: {
-    id: string
-    unitNumber: string
-  } | null
-  commodity?: string
-  weight?: number
-  rate?: number
-  miles?: number
+id: string
+    organizationId: string
+    referenceNumber: string
+    status: LoadStatus
+    priority: LoadPriority
+    customer: Customer
+    origin: string
+    destination: string
+    pickupDate: Date
+    deliveryDate: Date
+    estimatedPickupTime?: string
+    estimatedDeliveryTime?: string
+    actualPickupTime?: Date
+    actualDeliveryTime?: Date
+    driver?: LoadAssignedDriver
+    vehicle?: LoadAssignedVehicle
+    trailer?: LoadAssignedTrailer
+    equipment?: EquipmentRequirement
+    cargo: CargoDetails
+    rate: Rate
+    miles?: number
+    estimatedMiles?: number
+    fuelCost?: number
+    notes?: string
+    internalNotes?: string
+    specialInstructions?: string
+    documents?: LoadDocument[]
+    statusHistory?: LoadStatusEvent[]
+    trackingUpdates?: TrackingUpdate[]
+    brokerInfo?: BrokerInfo
+    factoring?: FactoringInfo
+    alerts?: LoadAlert[]
+    tags?: string[]
+    createdAt: Date
+    updatedAt: Date
+    createdBy?: string
+    lastModifiedBy?: string
+    statusEvents?: LoadStatusEvent[]
 }
 
 interface DispatchBoardProps {
@@ -83,13 +101,13 @@ export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) 
   const [filters, setFilters] = useState({
     status: "",
     driverId: "",
-    originState: "",
-    destinationState: "",
+    origin: "",
+    destination: "",
     dateRange: ""
   })
   
   // Loading states for status updates
-  const [statusUpdating, setStatusUpdating] = useState<string | null>(null)
+  const [updatingId, setUpdatingId] = useState<string | null>(null)
 
   const pendingLoads = loads.filter((load) => load.status === "pending")
   const assignedLoads = loads.filter((load) => load.status === "assigned")
@@ -127,23 +145,17 @@ export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) 
     setFilters({
       status: "",
       driverId: "",
-      originState: "",
-      destinationState: "",
+      origin: "",
+      destination: "",
       dateRange: ""
     })
   }
   
   // Handle status updates
-  const handleStatusUpdate = async (loadId: string, newStatus: string) => {
-    setStatusUpdating(loadId)
-    
+  const handleStatusUpdate = async (loadId: string, newStatus: LoadStatus) => {
+    setUpdatingId(loadId)
     try {
-      const result = await updateLoadStatusAction({
-        loadId,
-        status: newStatus,
-        timestamp: new Date()
-      })
-      
+      const result = await updateLoadAction(loadId, { id: loadId, status: newStatus })
       if (result.success) {
         toast({
           title: "Status Updated",
@@ -153,7 +165,7 @@ export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) 
       } else {
         toast({
           title: "Error",
-          description: result.message || "Failed to update load status",
+          description: result.error || "Failed to update load status",
           variant: "destructive",
         })
       }
@@ -165,7 +177,7 @@ export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) 
         variant: "destructive",
       })
     } finally {
-      setStatusUpdating(null)
+      setUpdatingId(null)
     }
   }
 
@@ -174,8 +186,8 @@ export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) 
     return loadsToFilter.filter((load) => {
       if (filters.status && load.status !== filters.status) return false
       if (filters.driverId && load.driver?.id !== filters.driverId) return false
-      if (filters.originState && load.originState !== filters.originState) return false
-      if (filters.destinationState && load.destinationState !== filters.destinationState) return false
+      if (filters.origin && load.origin !== filters.origin) return false
+      if (filters.destination && load.destination !== filters.destination) return false
       
       // Date range filtering - simplified to show loads within last 30 days if "recent" is selected
       if (filters.dateRange === "recent") {
@@ -201,6 +213,10 @@ export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) 
     make: v.make || "",
     model: v.model ?? "",
   }))
+
+  if (!loads || loads.length === 0) {
+    return <div className="text-gray-400 text-center py-12">No loads found for this organization.</div>
+  }
 
   return (
     <div className="space-y-6 mt-6">
@@ -250,13 +266,19 @@ export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredLoads.length > 0 ? (
               filteredLoads.map((load) => (
-                <LoadCard 
-                  key={load.id} 
-                  load={load} 
-                  onClick={() => handleLoadClick(load)}
-                  onStatusUpdate={handleStatusUpdate}
-                  isUpdating={statusUpdating === load.id}
-                />
+                <Card key={load.id} className="bg-neutral-900 border border-gray-700 shadow-lg flex flex-col h-full">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg font-semibold text-white truncate">{load.referenceNumber || "Load"}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex-1 flex flex-col justify-between">
+                    <LoadCard
+                      load={load}
+                      onClick={() => handleLoadClick(load)}
+                      onStatusUpdate={(loadId, status) => handleStatusUpdate(loadId, status as LoadStatus)}
+                      isUpdating={updatingId === load.id}
+                    />
+                  </CardContent>
+                </Card>
               ))
             ) : (
               <div className="col-span-full text-center py-10">
@@ -270,13 +292,19 @@ export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredPendingLoads.length > 0 ? (
               filteredPendingLoads.map((load) => (
-                <LoadCard 
-                  key={load.id} 
-                  load={load} 
-                  onClick={() => handleLoadClick(load)}
-                  onStatusUpdate={handleStatusUpdate}
-                  isUpdating={statusUpdating === load.id}
-                />
+                <Card key={load.id} className="bg-neutral-900 border border-gray-700 shadow-lg flex flex-col h-full">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg font-semibold text-white truncate">{load.referenceNumber || "Load"}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex-1 flex flex-col justify-between">
+                    <LoadCard
+                      load={load}
+                      onClick={() => handleLoadClick(load)}
+                      onStatusUpdate={(loadId, status) => handleStatusUpdate(loadId, status as LoadStatus)}
+                      isUpdating={updatingId === load.id}
+                    />
+                  </CardContent>
+                </Card>
               ))
             ) : (
               <div className="col-span-full text-center py-10">
@@ -290,13 +318,19 @@ export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredAssignedLoads.length > 0 ? (
               filteredAssignedLoads.map((load) => (
-                <LoadCard 
-                  key={load.id} 
-                  load={load} 
-                  onClick={() => handleLoadClick(load)}
-                  onStatusUpdate={handleStatusUpdate}
-                  isUpdating={statusUpdating === load.id}
-                />
+                <Card key={load.id} className="bg-neutral-900 border border-gray-700 shadow-lg flex flex-col h-full">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg font-semibold text-white truncate">{load.referenceNumber || "Load"}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex-1 flex flex-col justify-between">
+                    <LoadCard
+                      load={load}
+                      onClick={() => handleLoadClick(load)}
+                      onStatusUpdate={(loadId, status) => handleStatusUpdate(loadId, status as LoadStatus)}
+                      isUpdating={updatingId === load.id}
+                    />
+                  </CardContent>
+                </Card>
               ))
             ) : (
               <div className="col-span-full text-center py-10">
@@ -310,13 +344,19 @@ export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredInTransitLoads.length > 0 ? (
               filteredInTransitLoads.map((load) => (
-                <LoadCard 
-                  key={load.id} 
-                  load={load} 
-                  onClick={() => handleLoadClick(load)}
-                  onStatusUpdate={handleStatusUpdate}
-                  isUpdating={statusUpdating === load.id}
-                />
+                <Card key={load.id} className="bg-neutral-900 border border-gray-700 shadow-lg flex flex-col h-full">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg font-semibold text-white truncate">{load.referenceNumber || "Load"}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex-1 flex flex-col justify-between">
+                    <LoadCard
+                      load={load}
+                      onClick={() => handleLoadClick(load)}
+                      onStatusUpdate={(loadId, status) => handleStatusUpdate(loadId, status as LoadStatus)}
+                      isUpdating={updatingId === load.id}
+                    />
+                  </CardContent>
+                </Card>
               ))
             ) : (
               <div className="col-span-full text-center py-10">
@@ -330,13 +370,19 @@ export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredCompletedLoads.length > 0 ? (
               filteredCompletedLoads.map((load) => (
-                <LoadCard 
-                  key={load.id} 
-                  load={load} 
-                  onClick={() => handleLoadClick(load)}
-                  onStatusUpdate={handleStatusUpdate}
-                  isUpdating={statusUpdating === load.id}
-                />
+                <Card key={load.id} className="bg-neutral-900 border border-gray-700 shadow-lg flex flex-col h-full">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg font-semibold text-white truncate">{load.referenceNumber || "Load"}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex-1 flex flex-col justify-between">
+                    <LoadCard
+                      load={load}
+                      onClick={() => handleLoadClick(load)}
+                      onStatusUpdate={(loadId, status) => handleStatusUpdate(loadId, status as LoadStatus)}
+                      isUpdating={updatingId === load.id}
+                    />
+                  </CardContent>
+                </Card>
               ))
             ) : (
               <div className="col-span-full text-center py-10">
@@ -419,7 +465,7 @@ export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) 
                 <Input
                   id="origin-filter"
                   placeholder="e.g., CA"
-                  value={filters.originState}
+                  value={filters.origin}
                   onChange={(e) => setFilters(prev => ({ ...prev, originState: e.target.value }))}
                 />
               </div>
@@ -429,7 +475,7 @@ export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) 
                 <Input
                   id="destination-filter"
                   placeholder="e.g., TX"
-                  value={filters.destinationState}
+                  value={filters.destination}
                   onChange={(e) => setFilters(prev => ({ ...prev, destinationState: e.target.value }))}
                 />
               </div>
@@ -464,20 +510,5 @@ export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) 
       </Dialog>
     </div>
   )
-}
-
-// Simulate an async status update action
-async function updateLoadStatusAction({
-  loadId,
-  status,
-  timestamp,
-}: { loadId: string; status: string; timestamp: Date }) {
-  // Simulate an API call delay
-  await new Promise((resolve) => setTimeout(resolve, 500))
-  // Simulate success
-  return {
-    success: true,
-    message: "Status updated successfully",
-  }
 }
 

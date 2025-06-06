@@ -1,7 +1,7 @@
 import type React from "react"
 import "@/app/globals.css"
 import { AuthProvider } from "@/components/auth/context"
-import { ThemeProvider } from "@/components/shared/theme-provider"
+import { ThemeProvider } from "@/components/shared/ThemeProvider"
 import { ClerkProvider } from "@clerk/nextjs"
 import type { Metadata } from "next"
 // Import Next.js font utilities

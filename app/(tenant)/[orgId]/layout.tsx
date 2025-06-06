@@ -1,9 +1,10 @@
 "use client"
 
 import { useIsMobile } from "@/hooks/use-mobile"
-import { PageHeader } from "@/components/shared/page-header"
-import { MainNav } from "@/components/shared/main-nav"
-import { MobileNav } from "@/components/shared/mobile-nav"
+import { TopNavBar } from "@/components/shared/TopNavBar"
+import { MainNav } from "@/components/shared/MainNav"
+import { MobileNav } from "@/components/shared/MobileNav"
+import { useUserContext } from "@/components/auth/context"
 import { useState } from "react"
 
 export default function ProtectedLayout({
@@ -13,12 +14,15 @@ export default function ProtectedLayout({
 }) {
   const isMobile = useIsMobile()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const userContext = useUserContext()
+  const orgId = userContext?.organizationId || ""
+  const userId = userContext?.userId || ""
 
   if (isMobile) {
     return (
-      <div className="min-h-screen bg-zinc-600">
-        <header className="fixed top-0 left-0 w-full z-50 border-b bg-zinc-800 border-black shadow-lg">
-          <PageHeader />
+      <div className="min-h-screen bg-gray-900">
+        <header className="fixed top-0 left-0 w-full z-50 border-b bg-gray-800 border-gray-700 shadow-lg">
+          <TopNavBar />
         </header>
         <div className="pt-[64px]"> {/* Height of header */}
           <MobileNav />
@@ -31,28 +35,27 @@ export default function ProtectedLayout({
   }
 
   // Sidebar width based on collapsed state
-  const sidebarWidth = sidebarCollapsed ? 64 : 288 // 16px or 72px (w-16/w-72)
+  const sidebarWidth = sidebarCollapsed ? 80 : 256 // 80px (w-20) or 256px (w-64)
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--background))] flex">
+    <div className="min-h-screen bg-neutral-900">
+      <header className="fixed top-0 left-0 w-full z-50">
+      {/* Top Navigation Bar */}
+      <TopNavBar />
+      </header>
       {/* Sidebar */}
-      <aside
-        className={`fixed top-0 left-0 h-screen z-40 transition-all duration-300 bg-[hsl(var(--sidebar-background))] border-r border-[hsl(var(--sidebar-border))] shadow-lg flex flex-col ${sidebarCollapsed ? "w-16" : "w-72"}`}
-      >
-        <MainNav collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed} />
-      </aside>
+        <MainNav
+          collapsed={sidebarCollapsed}
+          setCollapsed={setSidebarCollapsed}
+          orgId={orgId}
+          userId={userId}
+        />
       {/* Main content area */}
       <div
         className="flex-1 flex flex-col min-w-0 transition-all duration-300"
         style={{ marginLeft: sidebarWidth }}
       >
-        <header
-          className="fixed top-0 right-0 z-50 h-16 border-b bg-[hsl(var(--sidebar-background))] border-[hsl(var(--sidebar-border))] shadow-lg flex items-center"
-          style={{ left: sidebarWidth }}
-        >
-          <PageHeader />
-        </header>
-        <main className="flex-1 pt-20 p-8 md:p-12 max-w-7xl w-full mx-auto">
+        <main className="flex-1 pt-16">
           {children}
         </main>
       </div>

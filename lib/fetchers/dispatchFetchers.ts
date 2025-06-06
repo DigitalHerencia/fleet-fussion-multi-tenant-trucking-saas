@@ -34,7 +34,7 @@ export async function listLoadsByOrg(orgId: string, filters: LoadFilterInput = {
 
     // Build where clause
     const where: any = {
-      tenantId: orgId,
+      organizationId: orgId, // FIX: use organizationId, not tenantId
     };
 
     // Status filter
@@ -179,10 +179,15 @@ export async function listLoadsByOrg(orgId: string, filters: LoadFilterInput = {
 
     // Build order by clause
     const orderBy: any = {};
-    const sortBy = validatedFilters.sortBy || "pickupDate";
+    let sortBy = validatedFilters.sortBy || "pickupDate";
     const sortOrder = validatedFilters.sortOrder || "asc";
 
-    if (sortBy === "customer") {
+    // Map UI sort keys to Prisma field names only in orderBy
+    if (sortBy === "pickupDate") {
+      orderBy.scheduledPickupDate = sortOrder;
+    } else if (sortBy === "deliveryDate") {
+      orderBy.scheduledDeliveryDate = sortOrder;
+    } else if (sortBy === "customer") {
       orderBy.customer = { path: ["name"], sort: sortOrder };
     } else if (sortBy === "rate") {
       orderBy.rate = { path: ["total"], sort: sortOrder };
@@ -750,5 +755,51 @@ export async function getLoadAlerts(orgId: string, severity?: string[]) {
   } catch (error) {
     console.error("Error fetching load alerts:", error);
     throw new Error("Failed to fetch load alerts");
+  }
+}
+
+// Fetch recent activity across loads and drivers for an organization
+export async function getRecentDispatchActivity(orgId: string, limit = 10) {
+  try {
+    await checkUserAccess(orgId);
+
+    const logs = await prisma.auditLog.findMany({
+      where: {
+        organizationId: orgId,
+        OR: [
+          { entityType: 'Load' },
+          { entityType: 'Driver' },
+          { entityType: 'dispatch' },
+        ],
+      },
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+      orderBy: {
+        timestamp: 'desc',
+      },
+      take: limit,
+    });
+
+    const activity = logs.map(log => ({
+      id: log.id,
+      entityType: log.entityType,
+      action: log.action,
+      entityId: log.entityId,
+      timestamp: log.timestamp,
+      userName: log.user
+        ? `${log.user.firstName ?? ''} ${log.user.lastName ?? ''}`.trim()
+        : 'System',
+    }));
+
+    return { success: true, data: activity };
+  } catch (error) {
+    console.error('Error fetching dispatch activity:', error);
+    throw new Error('Failed to fetch dispatch activity');
   }
 }
