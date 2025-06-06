@@ -3,35 +3,50 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { MapPin, Calendar, User, Truck, MoreVertical } from "lucide-react"
+import { MapPin, Calendar, User, Truck } from "lucide-react"
 import { formatDate } from "@/lib/utils"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import type { Customer, LoadAssignedDriver, LoadAssignedVehicle, LoadAssignedTrailer, EquipmentRequirement, CargoDetails, Rate, LoadDocument, TrackingUpdate, BrokerInfo, FactoringInfo, LoadAlert } from "@/types/dispatch"
+import type { LoadStatus, LoadPriority, LoadStatusEvent } from "@prisma/client"
 
 interface Load {
   id: string
+  organizationId: string
   referenceNumber: string
-  status: string
-  customerName: string
-  originCity: string
-  originState: string
-  destinationCity: string
-  destinationState: string
+  status: LoadStatus
+  priority: LoadPriority
+  customer: Customer
+  origin: string
+  destination: string
   pickupDate: Date
   deliveryDate: Date
-  driver?: {
-    id: string
-    firstName: string
-    lastName: string
-  } | null
-  vehicle?: {
-    id: string
-    unitNumber: string
-  } | null
+  estimatedPickupTime?: string
+  estimatedDeliveryTime?: string
+  actualPickupTime?: Date
+  actualDeliveryTime?: Date
+  driver?: LoadAssignedDriver
+  vehicle?: LoadAssignedVehicle
+  trailer?: LoadAssignedTrailer
+  equipment?: EquipmentRequirement
+  cargo: CargoDetails
+  rate: Rate
+  miles?: number
+  estimatedMiles?: number
+  fuelCost?: number
+  notes?: string
+  internalNotes?: string
+  specialInstructions?: string
+  documents?: LoadDocument[]
+  statusHistory?: LoadStatusEvent[]
+  trackingUpdates?: TrackingUpdate[]
+  brokerInfo?: BrokerInfo
+  factoring?: FactoringInfo
+  alerts?: LoadAlert[]
+  tags?: string[]
+  createdAt: Date
+  updatedAt: Date
+  createdBy?: string
+  lastModifiedBy?: string
+  statusEvents?: LoadStatusEvent[]
 }
 
 interface LoadCardProps {
@@ -77,7 +92,10 @@ export function LoadCard({ load, onClick, onStatusUpdate, isUpdating }: LoadCard
             <Badge className={getStatusColor(load.status)}>{load.status.replace(/_/g, " ")}</Badge>
           </div>
         </div>
-        <p className="text-sm text-muted-foreground">{load.customerName}</p>
+        <p className="text-sm text-muted-foreground">
+          {/* Display customer name or fallback to "Unknown Customer" */}
+          {load.customer.name ?? "Unknown Customer"}
+        </p>
       </CardHeader>
       <CardContent className="pb-2">
         <div className="space-y-2">
@@ -86,7 +104,7 @@ export function LoadCard({ load, onClick, onStatusUpdate, isUpdating }: LoadCard
             <div>
               <p className="text-sm font-medium">Origin</p>
               <p className="text-sm text-muted-foreground">
-                {load.originCity}, {load.originState}
+                {load.origin}, {load.origin}
               </p>
             </div>
           </div>
@@ -95,7 +113,7 @@ export function LoadCard({ load, onClick, onStatusUpdate, isUpdating }: LoadCard
             <div>
               <p className="text-sm font-medium">Destination</p>
               <p className="text-sm text-muted-foreground">
-                {load.destinationCity}, {load.destinationState}
+                {load.destination}, {load.destination}
               </p>
             </div>
           </div>
@@ -117,7 +135,7 @@ export function LoadCard({ load, onClick, onStatusUpdate, isUpdating }: LoadCard
                 <span className="text-xs text-muted-foreground">Driver:</span>
               </div>
               <span className="text-xs font-medium">
-                {load.driver.firstName} {load.driver.lastName}
+                {load.driver.name} 
               </span>
             </div>
           ) : null}
@@ -127,7 +145,7 @@ export function LoadCard({ load, onClick, onStatusUpdate, isUpdating }: LoadCard
                 <Truck className="h-3.5 w-3.5 text-muted-foreground" />
                 <span className="text-xs text-muted-foreground">Vehicle:</span>
               </div>
-              <span className="text-xs font-medium">{load.vehicle.unitNumber}</span>
+              <span className="text-xs font-medium">{load.vehicle.unit}</span>
             </div>
           ) : null}
         </div>

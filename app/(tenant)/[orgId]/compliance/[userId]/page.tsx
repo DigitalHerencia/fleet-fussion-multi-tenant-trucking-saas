@@ -6,9 +6,7 @@
 
 import { Suspense } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { PageHeader } from '@/components/shared/PageHeader'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
-import { ComplianceDashboard } from '@/components/compliance/compliance-dashboard'
 import { DriverComplianceTable } from '@/components/compliance/driver-compliance-table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -25,14 +23,8 @@ import {
   Truck
 } from 'lucide-react'
 
-interface ComplianceDashboardPageProps {
-  params: {
-    orgId: string;
-    userId: string;
-  };
-}
 
-export default async function ComplianceDashboardPage({ params }: ComplianceDashboardPageProps) {
+export default async function ComplianceDashboardPage({ params }: { params: { orgId: string } }) {
   const { orgId } = params;
   return (
     <>

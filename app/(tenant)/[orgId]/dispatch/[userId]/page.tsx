@@ -1,7 +1,46 @@
 import { DispatchBoard } from "@/components/dispatch/dispatch-board"
-import { DispatchSkeleton } from "@/components/dispatch/dispatch-skeleton"
-import { LoadCard } from "@/components/dispatch/load-card";
 import { listLoadsByOrg, getAvailableDriversForLoad, getAvailableVehiclesForLoad } from "@/lib/fetchers/dispatchFetchers"
+import type { Customer, LoadAssignedDriver, LoadAssignedVehicle, LoadAssignedTrailer, EquipmentRequirement, CargoDetails, Rate, LoadDocument, TrackingUpdate, BrokerInfo, FactoringInfo, LoadAlert } from "@/types/dispatch"
+import type { LoadStatus, LoadPriority, LoadStatusEvent } from "@prisma/client"
+
+interface loadList {  
+  id: string
+  organizationId: string
+  referenceNumber: string
+  status: LoadStatus
+  priority: LoadPriority
+  customer: Customer
+  origin: string
+  destination: string
+  pickupDate: Date
+  deliveryDate: Date
+  estimatedPickupTime?: string
+  estimatedDeliveryTime?: string
+  actualPickupTime?: Date
+  actualDeliveryTime?: Date
+  driver?: LoadAssignedDriver
+  vehicle?: LoadAssignedVehicle
+  trailer?: LoadAssignedTrailer
+  equipment?: EquipmentRequirement
+  cargo: CargoDetails
+  rate: Rate
+  miles?: number
+  estimatedMiles?: number
+  fuelCost?: number
+  notes?: string
+  internalNotes?: string
+  specialInstructions?: string
+  documents?: LoadDocument[]
+  statusHistory?: LoadStatusEvent[]
+  trackingUpdates?: TrackingUpdate[]
+  brokerInfo?: BrokerInfo
+  factoring?: FactoringInfo
+  alerts?: LoadAlert[]
+  tags?: string[]
+  createdAt: Date
+  updatedAt: Date
+}
+
 
 export default async function DispatchPage({ params }: { params: Promise<{ orgId: string; userId: string }> }) {
   const { orgId } = await params
@@ -16,7 +55,43 @@ export default async function DispatchPage({ params }: { params: Promise<{ orgId
     getAvailableVehiclesForLoad(orgId, {}),
   ])
   const drivers = (driversResult?.data || []).map((d: any) => ({ ...d, email: d.email ?? undefined }))
-  const loadList = loads?.data?.loads || []
+  const loadsList: loadList[] = (loads?.data?.loads || []).map((l: any) => ({
+    id: l.id,
+    organizationId: l.organizationId,
+    referenceNumber: l.referenceNumber,
+    status: l.status,
+    priority: l.priority,
+    customer: l.customer,
+    origin: l.origin,
+    destination: l.destination,
+    pickupDate: l.pickupDate,
+    deliveryDate: l.deliveryDate,
+    estimatedPickupTime: l.estimatedPickupTime,
+    estimatedDeliveryTime: l.estimatedDeliveryTime,
+    actualPickupTime: l.actualPickupTime,
+    actualDeliveryTime: l.actualDeliveryTime,
+    driver: l.driver,
+    vehicle: l.vehicle,
+    trailer: l.trailer,
+    equipment: l.equipment,
+    cargo: l.cargo,
+    rate: l.rate,
+    miles: l.miles,
+    estimatedMiles: l.estimatedMiles,
+    fuelCost: l.fuelCost,
+    notes: l.notes,
+    internalNotes: l.internalNotes,
+    specialInstructions: l.specialInstructions,
+    documents: l.documents,
+    statusHistory: l.statusHistory,
+    trackingUpdates: l.trackingUpdates,
+    brokerInfo: l.brokerInfo,
+    factoring: l.factoring,
+    alerts: l.alerts,
+    tags: l.tags,
+    createdAt: l.createdAt,
+    updatedAt: l.updatedAt,
+  }))
   const vehicleList = vehicles?.data || []
 
   return (
@@ -29,7 +104,7 @@ export default async function DispatchPage({ params }: { params: Promise<{ orgId
         {/* Add quick actions or filters here if needed */}
       </div>
       <div className="w-full">
-        <DispatchBoard loads={[]} drivers={drivers} vehicles={[]} />
+        <DispatchBoard loads={loadsList} drivers={drivers} vehicles={vehicleList} />
       </div>
     </div>
   )

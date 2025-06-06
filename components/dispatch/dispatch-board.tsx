@@ -16,8 +16,9 @@ import { Label } from "@/components/ui/label"
 import { toast } from "@/hooks/use-toast"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { updateLoadAction } from "@/lib/actions/dispatchActions"
-import type { LoadStatus } from "@/types/dispatch"
+import type { BrokerInfo, CargoDetails, Customer, EquipmentRequirement, FactoringInfo, LoadAlert, LoadAssignedDriver, LoadAssignedTrailer, LoadAssignedVehicle, LoadDocument, LoadStatus, Rate, TrackingUpdate } from "@/types/dispatch"
 import { string } from "zod"
+import type { $Enums, LoadPriority, LoadStatusEvent } from "@prisma/client"
 
 interface Driver {
   id: string
@@ -29,42 +30,57 @@ interface Driver {
 }
 
 interface Vehicle {
-  id: string
-  unitNumber: string
-  status: string
-  type: string
-  make?: string
-  model?: string
+status: $Enums.VehicleStatus;
+    id: string;
+    type: string;
+    make: string | null;
+    model: string | null;
+    year: number | null;
+    unitNumber: string;
+    currentOdometer: number | null;
+    lastInspectionDate: Date | null;
+    nextInspectionDue: Date | null;
 }
 
 interface Load {
-  id: string
-  referenceNumber: string
-  status: string
-  customerName: string
-  originCity: string
-  originState: string
-  destinationCity: string
-  destinationState: string
-  pickupDate: Date
-  deliveryDate: Date
-  driver?: {
-    id: string
-    firstName: string
-    lastName: string
-  } | null
-  vehicle?: {
-    id: string
-    unitNumber: string
-  } | null
-  trailer?: {
-    id: string
-    unitNumber: string
-  } | null
-  commodity?: string
-  weight?: number
-  rate?: number
-  miles?: number
+id: string
+    organizationId: string
+    referenceNumber: string
+    status: LoadStatus
+    priority: LoadPriority
+    customer: Customer
+    origin: string
+    destination: string
+    pickupDate: Date
+    deliveryDate: Date
+    estimatedPickupTime?: string
+    estimatedDeliveryTime?: string
+    actualPickupTime?: Date
+    actualDeliveryTime?: Date
+    driver?: LoadAssignedDriver
+    vehicle?: LoadAssignedVehicle
+    trailer?: LoadAssignedTrailer
+    equipment?: EquipmentRequirement
+    cargo: CargoDetails
+    rate: Rate
+    miles?: number
+    estimatedMiles?: number
+    fuelCost?: number
+    notes?: string
+    internalNotes?: string
+    specialInstructions?: string
+    documents?: LoadDocument[]
+    statusHistory?: LoadStatusEvent[]
+    trackingUpdates?: TrackingUpdate[]
+    brokerInfo?: BrokerInfo
+    factoring?: FactoringInfo
+    alerts?: LoadAlert[]
+    tags?: string[]
+    createdAt: Date
+    updatedAt: Date
+    createdBy?: string
+    lastModifiedBy?: string
+    statusEvents?: LoadStatusEvent[]
 }
 
 interface DispatchBoardProps {
@@ -85,8 +101,8 @@ export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) 
   const [filters, setFilters] = useState({
     status: "",
     driverId: "",
-    originState: "",
-    destinationState: "",
+    origin: "",
+    destination: "",
     dateRange: ""
   })
   
@@ -129,8 +145,8 @@ export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) 
     setFilters({
       status: "",
       driverId: "",
-      originState: "",
-      destinationState: "",
+      origin: "",
+      destination: "",
       dateRange: ""
     })
   }
@@ -170,8 +186,8 @@ export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) 
     return loadsToFilter.filter((load) => {
       if (filters.status && load.status !== filters.status) return false
       if (filters.driverId && load.driver?.id !== filters.driverId) return false
-      if (filters.originState && load.originState !== filters.originState) return false
-      if (filters.destinationState && load.destinationState !== filters.destinationState) return false
+      if (filters.origin && load.origin !== filters.origin) return false
+      if (filters.destination && load.destination !== filters.destination) return false
       
       // Date range filtering - simplified to show loads within last 30 days if "recent" is selected
       if (filters.dateRange === "recent") {
@@ -449,7 +465,7 @@ export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) 
                 <Input
                   id="origin-filter"
                   placeholder="e.g., CA"
-                  value={filters.originState}
+                  value={filters.origin}
                   onChange={(e) => setFilters(prev => ({ ...prev, originState: e.target.value }))}
                 />
               </div>
@@ -459,7 +475,7 @@ export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) 
                 <Input
                   id="destination-filter"
                   placeholder="e.g., TX"
-                  value={filters.destinationState}
+                  value={filters.destination}
                   onChange={(e) => setFilters(prev => ({ ...prev, destinationState: e.target.value }))}
                 />
               </div>
