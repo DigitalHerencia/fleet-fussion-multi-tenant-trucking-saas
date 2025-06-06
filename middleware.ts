@@ -184,5 +184,5 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
 
 // 8. Next.js matcher config (which routes this middleware applies to)
 export const config = {
-  matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
+  matcher: ["/(.*)"],
 };
