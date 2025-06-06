@@ -28,12 +28,13 @@ const PROTECTED_ROUTES = {
     SystemRoles.COMPLIANCE_OFFICER,
     SystemRoles.ADMIN
   ],
-  // Drivers list: Admin, Dispatcher, Compliance (need to see drivers for compliance), Viewer
+  // Drivers list: Admin, Dispatcher, Compliance (need to see drivers for compliance), Viewer, Accountant (for payroll/financial reporting)
   '/:orgId/drivers': [
     SystemRoles.ADMIN,
     SystemRoles.DISPATCHER,
     SystemRoles.COMPLIANCE_OFFICER,
-    SystemRoles.VIEWER
+    SystemRoles.VIEWER,
+    SystemRoles.ACCOUNTANT
   ],
   // Drivers dashboard: Driver (own profile), Admin, Dispatcher, Compliance
   '/:orgId/drivers/:userId': [
@@ -47,19 +48,21 @@ const PROTECTED_ROUTES = {
     SystemRoles.DISPATCHER,
     SystemRoles.ADMIN
   ],
-  // Analytics: Admin, Dispatcher, Compliance Officer, Viewer (read-only)
+  // Analytics: Admin, Dispatcher, Compliance Officer, Viewer (read-only), Accountant (for financial analytics)
   '/:orgId/analytics': [
     SystemRoles.ADMIN,
     SystemRoles.DISPATCHER,
     SystemRoles.COMPLIANCE_OFFICER,
-    SystemRoles.VIEWER
+    SystemRoles.VIEWER,
+    SystemRoles.ACCOUNTANT
   ],
-  // Vehicles list: Admin, Dispatcher, Compliance (for inspections), Viewer
+  // Vehicles list: Admin, Dispatcher, Compliance (for inspections), Viewer, Accountant (for asset tracking/financial reporting)
   '/:orgId/vehicles': [
     SystemRoles.ADMIN,
     SystemRoles.DISPATCHER,
     SystemRoles.COMPLIANCE_OFFICER,
-    SystemRoles.VIEWER
+    SystemRoles.VIEWER,
+    SystemRoles.ACCOUNTANT
   ],
   // IFTA: Admin, Accountant
   '/:orgId/ifta': [
@@ -154,8 +157,9 @@ testUsers.forEach(user => {
 
 console.log('\n=== KEY FINDINGS ===');
 console.log('✅ FIXED: Dashboard route now includes ALL roles: [admin, dispatcher, driver, compliance_officer, accountant, viewer]');
-console.log('✅ FIXED: Vehicles route now includes: [admin, dispatcher, compliance_officer, viewer]');
-console.log('✅ FIXED: Drivers list now includes: [admin, dispatcher, compliance_officer, viewer]');
-console.log('✅ FIXED: Analytics now includes viewer role: [admin, dispatcher, compliance_officer, viewer]');
-console.log('\nAll major navigation routes should now work for the common user roles!');
-console.log('The restrictive route protection has been updated to be more inclusive.');
+console.log('✅ FIXED: Vehicles route now includes: [admin, dispatcher, compliance_officer, viewer, accountant]');
+console.log('✅ FIXED: Drivers list now includes: [admin, dispatcher, compliance_officer, viewer, accountant]');
+console.log('✅ FIXED: Analytics now includes: [admin, dispatcher, compliance_officer, viewer, accountant]');
+console.log('✅ CONFIRMED: IFTA route accessible by: [admin, accountant]');
+console.log('\nAll major navigation routes should now work for ALL common user roles including accountants!');
+console.log('The route protection has been updated to be comprehensive and business-logic appropriate.');
