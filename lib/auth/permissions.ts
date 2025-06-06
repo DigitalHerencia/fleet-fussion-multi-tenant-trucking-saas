@@ -255,9 +255,12 @@ export function requirePermission(permission: Permission) {
  */
 export class RouteProtection {  // Define PROTECTED_ROUTES using SystemRole and real route patterns
   static PROTECTED_ROUTES: Record<string, SystemRole[]> = {
-    // Dashboard: Admin, Dispatcher, Accountant, Viewer
+    // Dashboard: All authenticated users should access their dashboard
     '/:orgId/dashboard/:userId': [
       SystemRoles.ADMIN,
+      SystemRoles.DISPATCHER,
+      SystemRoles.DRIVER,
+      SystemRoles.COMPLIANCE_OFFICER,
       SystemRoles.ACCOUNTANT,
       SystemRoles.VIEWER
     ],
@@ -265,40 +268,47 @@ export class RouteProtection {  // Define PROTECTED_ROUTES using SystemRole and 
     '/:orgId/compliance/:userId': [
       SystemRoles.COMPLIANCE_OFFICER,
       SystemRoles.ADMIN
-    ],
-    // Drivers list: Admin, Dispatcher
+    ],    // Drivers list: Admin, Dispatcher, Compliance (need to see drivers for compliance), Viewer, Accountant (for payroll/financial reporting)
     '/:orgId/drivers': [
       SystemRoles.ADMIN,
-      SystemRoles.DISPATCHER
+      SystemRoles.DISPATCHER,
+      SystemRoles.COMPLIANCE_OFFICER,
+      SystemRoles.VIEWER,
+      SystemRoles.ACCOUNTANT
     ],
-    // Drivers dashboard: Driver, Admin, Dispatcher
+    // Drivers dashboard: Driver (own profile), Admin, Dispatcher, Compliance
     '/:orgId/drivers/:userId': [
       SystemRoles.DRIVER,
       SystemRoles.ADMIN,
-      SystemRoles.DISPATCHER
+      SystemRoles.DISPATCHER,
+      SystemRoles.COMPLIANCE_OFFICER
     ],
     // Dispatch dashboard: Dispatcher, Admin
     '/:orgId/dispatch/:userId': [
       SystemRoles.DISPATCHER,
       SystemRoles.ADMIN
-    ],
-    // Analytics: Admin, Dispatcher, Compliance Officer
+    ],    // Analytics: Admin, Dispatcher, Compliance Officer, Viewer (read-only), Accountant (for financial analytics)
     '/:orgId/analytics': [
       SystemRoles.ADMIN,
       SystemRoles.DISPATCHER,
-      SystemRoles.COMPLIANCE_OFFICER
+      SystemRoles.COMPLIANCE_OFFICER,
+      SystemRoles.VIEWER,
+      SystemRoles.ACCOUNTANT
     ],
-    // Vehicles list: Admin, Dispatcher
+    // Vehicles list: Admin, Dispatcher, Compliance (for inspections), Viewer, Accountant (for asset tracking/financial reporting)
     '/:orgId/vehicles': [
       SystemRoles.ADMIN,
-      SystemRoles.DISPATCHER
+      SystemRoles.DISPATCHER,
+      SystemRoles.COMPLIANCE_OFFICER,
+      SystemRoles.VIEWER,
+      SystemRoles.ACCOUNTANT
     ],
     // IFTA: Admin, Accountant
     '/:orgId/ifta': [
       SystemRoles.ADMIN,
       SystemRoles.ACCOUNTANT
     ],
-    // Settings: Admin
+    // Settings: Admin only
     '/:orgId/settings': [
       SystemRoles.ADMIN
     ],
