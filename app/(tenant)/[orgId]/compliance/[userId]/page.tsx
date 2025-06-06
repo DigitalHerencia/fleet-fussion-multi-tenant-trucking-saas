@@ -24,8 +24,8 @@ import {
 } from 'lucide-react'
 
 
-export default async function ComplianceDashboardPage({ params }: { params: { orgId: string } }) {
-  const { orgId } = params;
+export default async function ComplianceDashboardPage({ params }: { params: Promise<{ orgId: string }> }) {
+  const { orgId } = await params;
   return (
     <>
       <div className="pt-8 space-y-6 p-6">
