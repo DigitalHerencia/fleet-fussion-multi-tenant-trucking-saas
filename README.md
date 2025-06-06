@@ -1,7 +1,7 @@
 <!-- FleetFusion SaaS Platform -->
 
 <p align="center">
-  <img src="public/readme_hero.jpeg" alt="FleetFusion Logo" width="1920" />
+  <img src="public/blue_cover.png" alt="FleetFusion Logo" width="1920" />
 </p>
 
 <h1 align="center">FleetFusion 🚚✨</h1>
