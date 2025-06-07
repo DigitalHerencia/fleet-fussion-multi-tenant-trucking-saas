@@ -1,0 +1,28 @@
+name: Documentation Request
+description: Request new or updated documentation
+title: "[Docs]: "
+labels: ["documentation"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Documentation Needed
+      description: What needs documenting or updating?
+      placeholder: Clearly describe the documentation need...
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: What feature, module, or process does this relate to?
+      placeholder: e.g. "API authentication", "Driver onboarding flow", etc.
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - Low
+        - Medium
+        - High
+      default: 1
