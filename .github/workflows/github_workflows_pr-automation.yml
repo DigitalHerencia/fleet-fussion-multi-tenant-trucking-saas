@@ -1,0 +1,71 @@
+name: PR Automation
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+  pull_request_target:
+    types: [opened, synchronize, reopened, edited]
+
+jobs:
+  pr-automation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate PR Title
+        uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            perf
+            test
+            chore
+          requireScope: false
+          
+      - name: Label Based on Branch
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const branch = context.payload.pull_request.head.ref;
+            let label = '';
+            
+            if (branch.startsWith('feature/')) {
+              label = 'feature';
+            } else if (branch.startsWith('fix/')) {
+              label = 'bug';
+            } else if (branch.startsWith('docs/')) {
+              label = 'documentation';
+            }
+            
+            if (label) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                labels: [label]
+              });
+            }
+
+      - name: Auto-link Issues
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.pull_request.body;
+            const issuePattern = /(closes|fixes|resolves)\s+#(\d+)/gi;
+            const matches = [...body.matchAll(issuePattern)];
+            
+            for (const match of matches) {
+              const issueNumber = match[2];
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: parseInt(issueNumber),
+                labels: ['has-pr']
+              });
+            }

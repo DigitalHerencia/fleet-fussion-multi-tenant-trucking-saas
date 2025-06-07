@@ -184,5 +184,8 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
 
 // 8. Next.js matcher config (which routes this middleware applies to)
 export const config = {
-  matcher: ["/(.*)"],
+  matcher: [
+    // Exclude Next.js internals and static files from middleware
+    "/((?!_next|_static|_vercel|favicon.ico|robots.txt|sitemap.xml|manifest.json|public|api\/clerk\/webhook-handler).*)",
+  ],
 };

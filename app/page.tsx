@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Truck, Shield, BarChart3, FileText, MapPin, Users, Calendar, CreditCard } from "lucide-react"
+import { ArrowRight, Truck, Shield, BarChart3, FileText, MapPin, Users } from "lucide-react"
 import PricingSection from "@/components/pricing/pricing-section"
 import { SharedFooter } from "@/components/shared/SharedFooter"
 import Image from "next/image"

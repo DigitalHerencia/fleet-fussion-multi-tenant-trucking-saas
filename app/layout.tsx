@@ -15,7 +15,7 @@ const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfa
 export const metadata: Metadata = {
   title: "FleetFusion - Enterprise-Grade Fleet Management",
   description: "Modern transportation management system for small-to-mid-size trucking fleets",
-  icons:  "map-pinned_icon.png"
+  icons:  "/map-pinned_icon.png"
 }
 
 export default function RootLayout({

@@ -154,8 +154,8 @@ const [statusMessage, setStatusMessage] = useState('')
               >
                 {loading ? 'Resetting...' : 'Reset Password'}
               </button>
-            </>          )}
-          
+            </>          
+          )}
           <div className="flex justify-between">
           <a href="/sign-in" className="text-xs text-blue-400 hover:underline">Back to sign in</a>
           <a href="/sign-up" className="text-xs text-blue-400 hover:underline">Create account</a>

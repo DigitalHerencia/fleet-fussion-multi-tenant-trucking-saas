@@ -1,0 +1,45 @@
+name: Feature Request
+description: Suggest a new feature or enhancement
+title: "[Feature]: "
+labels: ["feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this feature request!
+  - type: textarea
+    id: description
+    attributes:
+      label: Feature Description
+      description: What functionality would you like to add?
+      placeholder: A clear and concise description of the feature...
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: What conditions must be met for this feature to be complete?
+      placeholder: |
+        - [ ] Criteria 1
+        - [ ] Criteria 2
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: List any related issues or PRs that this feature depends on
+      placeholder: |
+        - Depends on #123
+        - Blocked by #456
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - Low
+        - Medium
+        - High
+    validations:
+      required: true

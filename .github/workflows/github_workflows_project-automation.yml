@@ -1,0 +1,34 @@
+name: Project Board Automation
+
+on:
+  issues:
+    types: [opened, closed, reopened]
+  pull_request:
+    types: [opened, closed, reopened]
+
+jobs:
+  project-automation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Add to Project
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Note: You'll need to replace PROJECT_NUMBER with your actual project number
+            const projectNumber = 1;
+            
+            async function addItemToProject(itemId, itemType) {
+              const addToProject = await github.rest.projects.createCard({
+                column_id: projectNumber,
+                content_id: itemId,
+                content_type: itemType
+              });
+            }
+            
+            if (context.eventName === 'issues') {
+              await addItemToProject(context.payload.issue.id, 'Issue');
+            } else if (context.eventName === 'pull_request') {
+              await addItemToProject(context.payload.pull_request.id, 'PullRequest');
+            }

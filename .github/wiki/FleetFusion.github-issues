@@ -1,0 +1,112 @@
+[
+  {
+    "kind": 1,
+    "language": "markdown",
+    "value": "# Fleet Fusion Issues Verification Results\r\n\r\n## Verification Status Summary\r\n\r\nBased on the current codebase examination, here's the status of the 9 identified issues:\r\n\r\n### ✅ RESOLVED Issues:\r\n1. **Missing .env.example** (High Priority) - ✅ RESOLVED\r\n   - `.env.example` file exists with comprehensive environment variables\r\n\r\n9. **Missing Test Suite** (High Priority) - ✅ RESOLVED\r\n   - Vitest configuration exists (`vitest.config.ts`)\r\n   - Test files present in `tests/` directory\r\n   - Package.json includes test scripts\r\n\r\n### ❌ NOT RESOLVED Issues:\r\n2. **Incomplete Driver Features** (Medium Priority) - ❌ NOT RESOLVED\r\n   - `assignDriverAction()` and `unassignDriverAction()` still return `{ success: true }` without database updates\r\n   - Functions have empty implementation blocks where assignment logic should be\r\n\r\n3. **Mock Data in Compliance Fetchers** (Medium Priority) - ❌ NOT RESOLVED\r\n   - `getDriverHOSStatus()` still returns `mockHOSStatus` object with hardcoded values\r\n   - No real HOS calculation logic implemented\r\n\r\n4. **Placeholder Document Upload Logic** (Medium Priority) - ❌ NOT RESOLVED\r\n   - Still contains TODO comments with hardcoded `entityType: \"company\"`\r\n   - Still contains hardcoded `entityId: \"demo-entity-id\"`\r\n\r\n### ❓ NEED VERIFICATION:\r\nThe following issues still require examination:\r\n\r\n5. **User Settings Invitation Revocation Stub** (Medium Priority)\r\n6. **Placeholder Data in Driver Compliance Table** (Low Priority)\r\n7. **Unused Generic Type Defaults** (Low Priority)\r\n8. **Multiple `as any` Casts** (Low Priority)\r\n\r\n---"
+  },
+  {
+    "kind": 1,
+    "language": "markdown",
+    "value": "# Fleet Fusion Code Audit Findings\r\n\r\nThis document summarizes all issues discovered during a comprehensive static review of the repository. The findings are categorized by type, priority, and file location, with suggested solutions and acceptance criteria for each issue.\r\n\r\n### Each TODO includes:\r\n \r\n- **Category** (mapped to labels)\r\n- **Priority** (mapped to labels)\r\n- **Description** (body of the future issue)\r\n- **Acceptance Criteria** (checkbox list)"
+  },
+  {
+    "kind": 2,
+    "language": "github-issues",
+    "value": "$repo=repo:DigitalHerencia/FleetFusion  \r\n"
+  },
+  {
+    "kind": 1,
+    "language": "markdown",
+    "value": "## 1. Missing `.env.example`\r\n- **Category:** configuration\r\n- **Priority:** High\r\n- **File:** none\r\n- **Description:** Repository documentation references an `.env.example` file for environment variables, but the file is absent. This makes it difficult for new contributors to know required environment variables.\r\n- **Solution Approach:** Add a complete `.env.example` listing all variables referenced in code and documentation.\r\n- **Acceptance Criteria:** Repository contains `.env.example` with placeholder values for all env vars and README references it accurately.\r\n"
+  },
+  {
+    "kind": 2,
+    "language": "github-issues",
+    "value": "// TODO [configuration][High]: Missing `.env.example`\r\n// Description: Repository documentation references an `.env.example` file for environment variables, but the file is absent.\r\n// Solution Approach: Add a complete `.env.example` listing all variables referenced in code and documentation.\r\n// Acceptance Criteria:\r\n// - [ ] A new `.env.example` file exists at the repo root containing placeholder values for every env var used in `process.env` calls.\r\n// - [ ] The README is updated to instruct contributors to copy from `.env.example`.\r\n// - [ ] CI scripts (if any) reference the `.env.example` to validate required variables."
+  },
+  {
+    "kind": 1,
+    "language": "markdown",
+    "value": "\r\n## 2. Incomplete Driver Features\r\n- **Category:** technical-debt\r\n- **Priority:** Medium\r\n- **Files:** `features/drivers/DriverListPage.tsx`, `lib/actions/driverActions.ts`\r\n- **Description:** Several driver-related components and actions contain placeholder handlers (`onClick`, `onSubmit`), TODO comments, and stubbed logic (e.g., `assignDriverAction` and `unassignDriverAction` return success without performing any updates).\r\n- **Solution Approach:** Implement full driver CRUD and assignment logic with proper permission checks and validation.\r\n- **Acceptance Criteria:** Driver pages render real data, server actions modify the database, and no TODO placeholders remain.\r\n"
+  },
+  {
+    "kind": 2,
+    "language": "github-issues",
+    "value": "// TODO [technical-debt][Medium]: Incomplete Driver Features\r\n// Files: features/drivers/DriverListPage.tsx, lib/actions/driverActions.ts\r\n// Description: Several driver-related components and actions contain placeholder handlers (`onClick`, `onSubmit`) and stubbed logic.\r\n// - `assignDriverAction` and `unassignDriverAction` return success without modifying the database.\r\n// Solution Approach: Implement full driver CRUD and assignment logic with proper Clerk RBAC permission checks and validation.\r\n// Acceptance Criteria:\r\n// - [ ] Driver list page renders real data from Neon via Prisma.\r\n// - [ ] assignDriverAction() and unassignDriverAction() update the driver record(s) in PostgreSQL.\r\n// - [ ] Landing pages no longer contain TODO placeholders for driver actions."
+  },
+  {
+    "kind": 1,
+    "language": "markdown",
+    "value": "## 3. Mock Data in Compliance Fetchers\r\n- **Category:** technical-debt\r\n- **Priority:** Medium\r\n- **File:** `lib/fetchers/complianceFetchers.ts`\r\n- **Description:** `getDriverHOSStatus` returns a `mockHOSStatus` object instead of real calculations. Comment notes indicate TODO for actual logic.\r\n- **Solution Approach:** Replace mock data with calculations based on HOS log entries and store results in cache.\r\n- **Acceptance Criteria:** Function calculates real driver HOS status and test coverage verifies results."
+  },
+  {
+    "kind": 2,
+    "language": "github-issues",
+    "value": "// TODO [technical-debt][Medium]: Mock Data in Compliance Fetchers\r\n// File: lib/fetchers/complianceFetchers.ts\r\n// Description: getDriverHOSStatus() currently returns a `mockHOSStatus` object instead of calculating real data.\r\n// Solution Approach: Replace mock data with actual calculations based on HOS log entries from the database and cache results.\r\n// Acceptance Criteria:\r\n// - [ ] getDriverHOSStatus() computes real HOS status by reading driver log entries.\r\n// - [ ] Unit tests cover scenarios: on-duty, off-duty, violation, and near-violation cases.\r\n// - [ ] Any cache layer (Redis/Neon) is set up and integration-tested."
+  },
+  {
+    "kind": 1,
+    "language": "markdown",
+    "value": "## 4. Placeholder Document Upload Logic\r\n**Category:** bug\r\n**Priority:** Medium\r\n**File:** `components/compliance/DocumentUploadForm.tsx`\r\n**Description:** Form uses a fake URL and TODO comments for signed URL uploads. Entity IDs are hard-coded.\r\n**Solution Approach:** Integrate actual file upload via signed URL, pass dynamic entityType and entityId, and handle errors.\r\n**Acceptance Criteria:** Documents upload correctly to storage and metadata is persisted via server action."
+  },
+  {
+    "kind": 2,
+    "language": "github-issues",
+    "value": "// TODO [bug][Medium]: Placeholder Document Upload Logic\r\n// File: components/compliance/DocumentUploadForm.tsx\r\n// Description: The form uses a fake URL and has hard-coded `entityType`/`entityId` values with TODO comments about signed URL uploads.\r\n// Solution Approach: Integrate real S3 (or another provider) signed URL generation, pass dynamic `entityType` and `entityId`, and handle upload errors.\r\n// Acceptance Criteria:\r\n// - [ ] DocumentUploadForm obtains a signed upload URL from a server action (Clerk-authorized).\r\n// - [ ] `entityType` and `entityId` are passed dynamically from the calling context.\r\n// - [ ] Uploaded file metadata (URL, file name, size) is persisted in the DB via server action."
+  },
+  {
+    "kind": 1,
+    "language": "markdown",
+    "value": "## 5. User Settings Invitation Revocation Stub\r\n- **Category:** bug\r\n- **Priority:** Medium\r\n- **File:** `components/settings/user-settings.tsx`\r\n- **Description:** `handleRevokeInvitation` contains TODO comments and uses a placeholder response.\r\n- **Solution Approach:** Implement API or server action to revoke invitations and update Clerk/DB accordingly.\r\n- **Acceptance Criteria:** Revoking an invitation updates the UI and underlying data without TODOs."
+  },
+  {
+    "kind": 2,
+    "language": "github-issues",
+    "value": "// TODO [bug][Medium]: User Settings Invitation Revocation Stub\r\n// File: components/settings/user-settings.tsx\r\n// Description: handleRevokeInvitation() contains TODO comments and uses a placeholder response, no actual API call to revoke in Clerk or DB.\r\n// Solution Approach: Implement a server action or API route that calls Clerk to revoke the invitation and update the local DB accordingly.\r\n// Acceptance Criteria:\r\n// - [ ] Revoking an invitation calls the Clerk Admin API to delete or expire the invitation.\r\n// - [ ] UI updates to remove the revoked invitation row.\r\n// - [ ] Error handling if revocation fails (display toast or form error)."
+  },
+  {
+    "kind": 1,
+    "language": "markdown",
+    "value": "## 6. Placeholder Data in Driver Compliance Table\r\n- **Category:** technical-debt\r\n- **Priority:** Low\r\n- **File:** `components/compliance/driver-compliance-table.tsx`\r\n- **Description:** Table renders static rows `[1,2,3].map()` with hard-coded driver information.\r\n- **Solution Approach:** Fetch actual driver compliance data from the server and remove placeholder mapping.\r\n- **Acceptance Criteria:** Table displays real driver data."
+  },
+  {
+    "kind": 2,
+    "language": "github-issues",
+    "value": "// TODO [technical-debt][Low]: Placeholder Data in Driver Compliance Table\r\n// File: components/compliance/driver-compliance-table.tsx\r\n// Description: The table currently maps over `[1, 2, 3]` with hard-coded driver names and data. This is not dynamic.\r\n// Solution Approach: Fetch real driver compliance records from the backend and remove the hard-coded placeholder loop.\r\n// Acceptance Criteria:\r\n// - [ ] driverComplianceTable.tsx fetches real data via getDriverHOSStatus() or a related fetcher.\r\n// - [ ] Static array mapping is replaced with dynamic `.map(driverComplianceData)`.\r\n// - [ ] Table column rendering shows real driver names, violation status, and last inspection date."
+  },
+  {
+    "kind": 1,
+    "language": "markdown",
+    "value": "## 7. Unused Generic Type Defaults\r\n- **Category:** code-quality\r\n- **Priority:** Low\r\n- **File:** `lib/actions/dashboardActions.ts`\r\n- **Description:** `DashboardActionResult<T = any>` uses `any` as a default type parameter, reducing type safety.\r\n- **Solution Approach:** Replace `any` with `unknown` and specify concrete types when used.\r\n- **Acceptance Criteria:** All action result types are strongly typed without `any` defaults."
+  },
+  {
+    "kind": 2,
+    "language": "github-issues",
+    "value": "// TODO [code-quality][Low]: Unused Generic Type Defaults\r\n// File: lib/actions/dashboardActions.ts\r\n// Description: DashboardActionResult<T = any> reduces type safety by defaulting to `any`.\r\n// Solution Approach: Change default type to `unknown` and specify concrete types when the action is consumed.\r\n// Acceptance Criteria:\r\n// - [ ] DashboardActionResult<T = unknown> is used instead of `any`.\r\n// - [ ] Every consumer of dashboardActions.ts explicitly defines the generic type parameter.\r\n// - [ ] TypeScript compile-time checks catch any mismatches after the update."
+  },
+  {
+    "kind": 1,
+    "language": "markdown",
+    "value": "## 8. Multiple `as any` Casts\r\n- **Category:** code-quality\r\n- **Priority:** Low\r\n- **Files:** `components/ifta/ifta-dashboard.tsx` and others\r\n- **Description:** Casts to `any` bypass type checking when mapping API responses.\r\n- **Solution Approach:** Define proper interfaces for API responses and remove unsafe casts.\r\n- **Acceptance Criteria:** No `as any` casts remain and TypeScript compilation succeeds."
+  },
+  {
+    "kind": 2,
+    "language": "github-issues",
+    "value": "// TODO [code-quality][Low]: Multiple `as any` Casts\r\n// Files: components/ifta/ifta-dashboard.tsx, and others\r\n// Description: Several files cast objects to `any` when mapping API responses, bypassing type checking.\r\n// Solution Approach: Define proper TypeScript interfaces for API responses and replace `as any` with the correct type.\r\n// Acceptance Criteria:\r\n// - [ ] Define and export interfaces for all API response shapes (e.g., IftaData, ComplianceRecord).\r\n// - [ ] Replace every `foo as any` with `foo as IftaData` (or the appropriate interface).\r\n// - [ ] Remove any remaining unsafe casts to `any`; the compiler should not complain.\r\n"
+  },
+  {
+    "kind": 1,
+    "language": "markdown",
+    "value": "## 9. Missing Test Suite\r\n- **Category:** testing\r\n- **Priority:** High\r\n- **File:** none\r\n- **Description:** The project lacks unit, integration, or end-to-end tests. Running `npm test` fails because no test script is defined.\r\n- **Solution Approach:** Introduce testing frameworks such as Vitest or Playwright as described in docs, add `test` script in `package.json`, and write coverage for critical logic.\r\n- **Acceptance Criteria:** `npm test` executes successfully with meaningful coverage."
+  },
+  {
+    "kind": 2,
+    "language": "github-issues",
+    "value": "// TODO [testing][High]: Missing Test Suite\r\n// Files: none (no existing tests)\r\n// Description: The project lacks unit, integration, or end-to-end tests. `npm test` fails due to missing test script.\r\n// Solution Approach: Introduce Vitest (unit), Playwright (E2E), and add a `test` script in package.json. Write coverage for critical logic (e.g., server actions, fetchers).\r\n// Acceptance Criteria:\r\n// - [ ] Add `vitest` as a dev dependency, configure `vitest.config.ts`, and add `npm test` script.\r\n// - [ ] Write unit tests for at least 80% coverage of `lib/fetchers`, `lib/actions`, and server actions.\r\n// - [ ] Add E2E tests (e.g., user signup flow, driver assignment, load creation) using Playwright and include a `test:e2e` script.\r\n// - [ ] CI pipeline succeeds on `npm test` (unit + E2E)."
+  },
+  {
+    "kind": 1,
+    "language": "markdown",
+    "value": "## The 9 Issues Covered:\r\n\r\n1. **Missing .env.example** (High Priority)\r\n2. **Incomplete Driver Features** (Medium Priority) \r\n3. **Mock Data in Compliance Fetchers** (Medium Priority)\r\n4. **Placeholder Document Upload Logic** (Medium Priority)\r\n5. **User Settings Invitation Revocation Stub** (Medium Priority)\r\n6. **Placeholder Data in Driver Compliance Table** (Low Priority)\r\n7. **Unused Generic Type Defaults** (Low Priority)\r\n8. **Multiple `as any` Type Casts** (Low Priority)\r\n9. **Missing Test Suite** (High Priority)\r\n\r\n## Conclusion\r\nThis audit identified several areas for improvement, ranging from critical configuration files to technical debt in driver features and compliance logic. Addressing these issues will enhance code quality, maintainability, and overall project robustness. Each TODO provides a clear path forward with acceptance criteria to ensure successful resolution."
+  }
+]
