@@ -421,3 +421,71 @@ export async function getIftaReports(orgId: string, year?: number) {
     throw new Error('Failed to fetch IFTA reports');
   }
 }
+
+// -------------------- Tax Calculation Fetchers --------------------
+
+export async function getJurisdictionRates() {
+  // In a real implementation this would pull from the database
+  return {
+    CA: 0.387,
+    NY: 0.392,
+    TX: 0.20,
+  } as Record<string, number>;
+}
+
+export async function calculateQuarterlyTaxes(
+  orgId: string,
+  quarter: string,
+  year: string
+) {
+  await checkUserAccess(orgId);
+  const data = await getIftaDataForPeriod(orgId, quarter, year);
+  const rates = await getJurisdictionRates();
+
+  const taxes = (data.jurisdictionSummary || []).map((j: any) => {
+    const rate = rates[j.jurisdiction as keyof typeof rates] || 0;
+    const taxDue = ((j.miles || j.totalMiles || 0) / (data.summary.totalMiles || 1)) *
+      (data.summary.totalGallons || 0) * rate;
+    return {
+      jurisdiction: j.jurisdiction,
+      taxRate: rate,
+      taxDue: Math.round(taxDue * 100) / 100,
+    };
+  });
+
+  return taxes;
+}
+
+export async function validateTaxCalculations(
+  orgId: string,
+  quarter: string,
+  year: string
+) {
+  await checkUserAccess(orgId);
+  const calculated = await calculateQuarterlyTaxes(orgId, quarter, year);
+  const report = await prisma.iftaReport.findFirst({
+    where: {
+      organizationId: orgId,
+      quarter: parseInt(quarter.replace('Q', '')),
+      year: parseInt(year),
+    },
+  });
+  return {
+    calculated,
+    report,
+    valid: !!report,
+  };
+}
+
+export async function getTaxAdjustments(orgId: string, year?: number) {
+  await checkUserAccess(orgId);
+  const where: any = { organizationId: orgId };
+  if (year) where.year = year;
+  const reports = await prisma.iftaReport.findMany({ where });
+  return reports.map(r => ({
+    id: r.id,
+    quarter: r.quarter,
+    year: r.year,
+    adjustments: (r.calculationData as any)?.adjustments ?? [],
+  }));
+}
