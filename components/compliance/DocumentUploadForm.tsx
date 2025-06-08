@@ -26,6 +26,7 @@ export function DocumentUploadForm({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [tags, setTags] = useState('');
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     setError(null);
@@ -67,6 +68,10 @@ export function DocumentUploadForm({
         entityType,
         entityId,
         documentType,
+        tags: tags
+          .split(',')
+          .map(t => t.trim())
+          .filter(Boolean),
       });
       if (result.success && 'data' in result) {
         onUpload(file, result.data);
@@ -90,6 +95,13 @@ export function DocumentUploadForm({
         accept=".pdf,.jpg,.jpeg,.png"
         onChange={handleFileChange}
         disabled={uploading}
+      />
+      <input
+        type="text"
+        placeholder="Tags (comma separated)"
+        value={tags}
+        onChange={e => setTags(e.target.value)}
+        className="rounded-md border p-2 text-black"
       />
       {uploading && <span>Uploading...</span>}
       {error && <span className="text-red-500">{error}</span>}

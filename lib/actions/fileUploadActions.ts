@@ -17,6 +17,7 @@ export const fileUploadSchema = z.object({
   entityId: z.string().min(1),
   documentType: z.string().min(1),
   notes: z.string().optional(),
+  tags: z.array(z.string()).optional(),
 });
 
 export async function saveUploadedDocument(
@@ -28,7 +29,20 @@ export async function saveUploadedDocument(
     const orgId = user?.organizationId;
     if (!userId || !orgId) throw new Error('Unauthorized');
     const validated = fileUploadSchema.parse(data);
-    // Save document record
+    // Archive any existing active document of the same type
+    await db.complianceDocument.updateMany({
+      where: {
+        organizationId: orgId,
+        driverId:
+          validated.entityType === 'driver' ? validated.entityId : undefined,
+        vehicleId:
+          validated.entityType === 'vehicle' ? validated.entityId : undefined,
+        type: validated.documentType,
+        status: 'active',
+      },
+      data: { status: 'archived' },
+    });
+
     const doc = await db.complianceDocument.create({
       data: {
         organizationId: orgId,
@@ -43,6 +57,7 @@ export async function saveUploadedDocument(
         fileSize: validated.fileSize,
         mimeType: validated.mimeType,
         notes: validated.notes,
+        tags: validated.tags,
         status: 'active',
         createdAt: new Date(),
         updatedAt: new Date(),
