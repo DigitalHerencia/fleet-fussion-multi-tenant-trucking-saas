@@ -912,6 +912,40 @@ export async function getComplianceAlerts(
   }
 }
 
+// --- Expiring Document Fetcher ---
+export async function getExpiringDocuments(
+  organizationId: string,
+  daysAhead = 30
+) {
+  try {
+    const { userId } = await auth();
+    if (!userId) throw new Error('Unauthorized');
+
+    const today = new Date();
+    const dueDate = new Date(today.getTime() + daysAhead * 24 * 60 * 60 * 1000);
+
+    const documents = await prisma.complianceDocument.findMany({
+      where: {
+        organizationId,
+        expirationDate: {
+          gte: today,
+          lte: dueDate,
+        },
+      },
+      include: {
+        driver: { select: { id: true, firstName: true, lastName: true } },
+        vehicle: { select: { id: true, unitNumber: true } },
+      },
+      orderBy: { expirationDate: 'asc' },
+    });
+
+    return { success: true, data: documents };
+  } catch (error) {
+    console.error('Error fetching expiring documents:', error);
+    return handleError(error, 'Expiring Documents Fetcher');
+  }
+}
+
 // --- Audit Log Fetchers ---
 export async function getAuditLogs(
   organizationId: string,
