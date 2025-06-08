@@ -49,7 +49,7 @@ export default function SignUpPage() {
     if (!isLoaded) return;
     
     // Enforce Clerk CAPTCHA if present
-    const captcha = (window as any).Clerk?.captcha;
+    const captcha = window.Clerk?.captcha;
     if (captcha && !captcha.isSolved()) {
       setError("Please complete the CAPTCHA challenge.");
       setLoading(false);

@@ -8,6 +8,13 @@ import { FinancialMetrics } from "@/components/analytics/financial-metrics"
 import { DriverPerformance } from "@/components/analytics/driver-performance"
 import { VehicleUtilization } from "@/components/analytics/vehicle-utilization"
 import { getDashboardSummary, getPerformanceAnalytics, getFinancialAnalytics, getDriverAnalytics, getVehicleAnalytics } from "@/lib/fetchers/analyticsFetchers"
+import type { ProfitabilityMetrics, ExpenseMetrics } from "@/types/analytics"
+
+interface FinancialAnalyticsData {
+  revenue: unknown[]
+  expenses: unknown[]
+  profitMargin: unknown[]
+}
 
 export default async function AnalyticsPage({ params }: { params: Promise<{ orgId: string }> }) {
   const { orgId } = await params
@@ -26,13 +33,15 @@ export default async function AnalyticsPage({ params }: { params: Promise<{ orgI
   const performanceData = Array.isArray(performanceDataRaw) ? performanceDataRaw : [];
   const driverPerformanceMetrics = Array.isArray(driverPerformanceMetricsRaw) ? driverPerformanceMetricsRaw : [];
   const vehicleData = Array.isArray(vehicleDataRaw) ? vehicleDataRaw : [];
-  const financialData = (financialDataRaw && typeof financialDataRaw === 'object' && financialDataRaw !== null)
-    ? {
-        revenue: Array.isArray((financialDataRaw as any).revenue) ? (financialDataRaw as any).revenue : [],
-        expenses: Array.isArray((financialDataRaw as any).expenses) ? (financialDataRaw as any).expenses : [],
-        profitMargin: Array.isArray((financialDataRaw as any).profitMargin) ? (financialDataRaw as any).profitMargin : [],
-      }
-    : { revenue: [], expenses: [], profitMargin: [] };
+  const financialData: FinancialAnalyticsData =
+    financialDataRaw &&
+    typeof financialDataRaw === 'object' &&
+    financialDataRaw !== null &&
+    Array.isArray((financialDataRaw as { revenue?: unknown }).revenue) &&
+    Array.isArray((financialDataRaw as { expenses?: unknown }).expenses) &&
+    Array.isArray((financialDataRaw as { profitMargin?: unknown }).profitMargin)
+      ? (financialDataRaw as FinancialAnalyticsData)
+      : { revenue: [], expenses: [], profitMargin: [] };
 
   // Metrics for cards
   const metrics = [
@@ -107,7 +116,11 @@ export default async function AnalyticsPage({ params }: { params: Promise<{ orgI
               <span className="text-lg font-bold text-white">Financial Metrics</span>
             </CardHeader>
             <CardContent className="overflow-x-auto pb-4">
-              <FinancialMetrics timeRange={timeRange} financialData={financialData.revenue} expenseBreakdown={financialData.expenses} />
+              <FinancialMetrics
+                timeRange={timeRange}
+                financialData={financialData.revenue as ProfitabilityMetrics[]}
+                expenseBreakdown={financialData.expenses as ExpenseMetrics[]}
+              />
             </CardContent>
           </Card>
         </TabsContent>

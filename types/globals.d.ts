@@ -42,4 +42,12 @@ declare global {
       onboardingComplete?: boolean;
     };
   }
+
+  interface Window {
+    Clerk?: {
+      captcha?: {
+        isSolved: () => boolean;
+      };
+    };
+  }
 }

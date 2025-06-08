@@ -3,6 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/database/db";
+import type { Prisma } from "@prisma/client";
 import {
   createLoadSchema,
   updateLoadSchema,
@@ -53,7 +54,7 @@ async function createAuditLog(
   action: string,
   entityType: string,
   entityId: string,
-  changes: Record<string, any>,
+  changes: Record<string, unknown>,
   userId: string,
   organizationId: string
 ) {
@@ -62,7 +63,7 @@ async function createAuditLog(
       action,
       entityType,
       entityId,
-      changes: changes as any,
+      changes: changes as Prisma.JsonValue,
       userId,
       organizationId,
       timestamp: new Date(),

@@ -3,6 +3,8 @@
 import { auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/database/db";
 import { getCachedData, setCachedData, CACHE_TTL } from "@/lib/cache/auth-cache";
+import type { IftaData } from "@/types/ifta";
+import { iftaDataSchema } from "@/schemas/ifta";
 
 /**
  * Check user access to organization
@@ -28,7 +30,11 @@ async function checkUserAccess(organizationId: string) {
 /**
  * Get IFTA data for a specific period
  */
-export async function getIftaDataForPeriod(orgId: string, quarter: string, year: string) {
+export async function getIftaDataForPeriod(
+  orgId: string,
+  quarter: string,
+  year: string
+): Promise<IftaData> {
   try {
     await checkUserAccess(orgId);
 
@@ -138,7 +144,7 @@ export async function getIftaDataForPeriod(orgId: string, quarter: string, year:
       },
     });
 
-    const result = {
+    const result = iftaDataSchema.parse({
       period: { quarter: quarterNum, year: yearNum },
       summary: {
         totalMiles,
@@ -175,7 +181,7 @@ export async function getIftaDataForPeriod(orgId: string, quarter: string, year:
         submittedAt: existingReport.submittedAt,
         dueDate: existingReport.dueDate,
       } : null,
-    };
+    });
 
     // Cache the result for 1 hour
     setCachedData(cacheKey, result, CACHE_TTL.SHORT);

@@ -7,6 +7,7 @@ import { BarChart3, CalendarIcon, FileText, MapPin } from "lucide-react"
 import { PageHeader } from "@/components/shared/PageHeader"
 import { IftaReportTableClient, IftaTripTableClient } from "@/components/ifta/ifta-tables"
 import { getIftaDataForPeriod, getIftaReports } from "@/lib/fetchers/iftaFetchers"
+import type { IftaData } from "@/types/ifta"
 import { notFound } from "next/navigation"
 import { cache } from "react"
 import type { IFTAReport, IFTATrip } from "@/components/ifta/ifta-columns"
@@ -48,18 +49,6 @@ function getCurrentQuarterAndYear() {
 }
 
 // IftaData type for strong typing
-interface IftaData {
-  summary: {
-    totalMiles: number
-    totalGallons: number
-    averageMpg: number
-    totalFuelCost?: number
-  }
-  trips: IFTATrip[]
-  fuelPurchases: any[]
-  jurisdictionSummary: any[]
-  report: any
-}
 
 export default async function IFTAPage({ params }: { params: Promise<{ orgId: string }> }) {
   const { orgId } = await params
@@ -70,7 +59,7 @@ export default async function IFTAPage({ params }: { params: Promise<{ orgId: st
   let reports: IFTAReport[] = []
   let error: string | null = null
   try {
-    iftaData = await getIftaDataForPeriod(orgId, period, year.toString()) as IftaData
+    iftaData = await getIftaDataForPeriod(orgId, period, year.toString())
     const reportsRes = await getIftaReports(orgId, year)
     // Transform reports to IFTAReport[] for the table
     reports = (reportsRes?.data || []).map((r: any) => ({
@@ -170,7 +159,7 @@ export default async function IFTAPage({ params }: { params: Promise<{ orgId: st
                 </CardHeader>
                 <CardContent className="overflow-x-auto">
                   <Suspense fallback={<div>Loading IFTA trip data...</div>}>
-                    <IftaTripTableClient data={iftaData?.trips || []} />
+                    <IftaTripTableClient data={(iftaData?.trips || []) as unknown as IFTATrip[]} />
                   </Suspense>
                 </CardContent>
               </Card>

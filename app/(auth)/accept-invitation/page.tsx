@@ -124,8 +124,9 @@ export default function AcceptInvitationPage() {
       // Clerk automatically verifies email for invited users
       if (result.status === 'complete') {
         // Get invitation metadata from the result
-        const invitationMetadata = result.createdSessionId 
-          ? (result as any).publicMetadata as InvitationMetadata
+        interface WithPublicMetadata { publicMetadata?: InvitationMetadata }
+        const invitationMetadata = result.createdSessionId
+          ? (result as unknown as WithPublicMetadata).publicMetadata ?? null
           : null;
 
         // Set the session as active

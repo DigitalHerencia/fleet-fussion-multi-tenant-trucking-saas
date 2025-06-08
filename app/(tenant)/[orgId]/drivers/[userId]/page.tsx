@@ -23,6 +23,8 @@ import { DriverPerformance } from "@/components/analytics/driver-performance";
 import { getDriverAnalytics } from "@/lib/fetchers/analyticsFetchers";
 import { DocumentUploadForm } from "@/components/compliance/DocumentUploadForm";
 import { getDriverHOSStatus } from "@/lib/fetchers/complianceFetchers";
+import type { ApiResponse } from "@/types/index";
+import type { DriverHOSStatus } from "@/lib/utils/hos";
 import { use } from "react";
 import { AssignmentDialogButton } from "@/features/drivers/AssignmentDialogButton"; // new client component
 
@@ -50,13 +52,10 @@ export default async function DriverDashboardPage({
   // (React 19: use() with revalidation)
   const hosStatusPromise = getDriverHOSStatus(userId);
   // @ts-expect-error: use() is React 19 experimental
-  const hosStatus = use(hosStatusPromise, { revalidate: 10 });
+  const hosStatus = use(hosStatusPromise, { revalidate: 10 }) as ApiResponse<DriverHOSStatus> | null;
   let currentStatus: string = driverData.status;
-  if (hosStatus && typeof hosStatus === "object") {
-    const hs = hosStatus as any;
-    if (hs.data && typeof hs.data.currentStatus === "string") {
-      currentStatus = hs.data.currentStatus;
-    }
+  if (hosStatus?.data?.currentStatus) {
+    currentStatus = hosStatus.data.currentStatus;
   }
   // Fetch analytics for this driver
   const analytics = await getDriverAnalytics(orgId, "30d");

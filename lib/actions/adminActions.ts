@@ -58,9 +58,9 @@ export async function getOrganizationUsersAction(orgId: string): Promise<AdminAc
  * Update user role (Admin only)
  */
 export async function updateUserRoleAction(
-  orgId: string, 
-  targetUserId: string, 
-  newRole: string
+  orgId: string,
+  targetUserId: string,
+  newRole: SystemRole
 ): Promise<AdminActionResult> {
   try {
     const { userId } = await auth();
@@ -69,7 +69,7 @@ export async function updateUserRoleAction(
     }
 
     // Validate role
-    if (!Object.values(SystemRoles).includes(newRole as any)) {
+    if (!Object.values(SystemRoles).includes(newRole)) {
       return { success: false, error: "Invalid role" };
     }
 

@@ -63,3 +63,34 @@ export const iftaReportFilterSchema = z.object({
   quarter: z.number().min(1).max(4).optional(),
   status: z.enum(["all", "draft", "submitted", "accepted", "rejected"]).optional(),
 })
+
+export const iftaDataSchema = z.object({
+  period: z.object({
+    quarter: z.number().min(1).max(4),
+    year: z.number(),
+  }),
+  summary: z.object({
+    totalMiles: z.number(),
+    totalGallons: z.number(),
+    averageMpg: z.number(),
+    totalFuelCost: z.number(),
+  }),
+  trips: z.array(z.any()),
+  fuelPurchases: z.array(z.any()),
+  jurisdictionSummary: z.array(
+    z.object({
+      jurisdiction: z.string(),
+      miles: z.number(),
+      fuelGallons: z.number(),
+      taxPaid: z.number(),
+    })
+  ),
+  report: z
+    .object({
+      id: z.string(),
+      status: z.string(),
+      submittedAt: z.date().nullable(),
+      dueDate: z.date().nullable(),
+    })
+    .nullable(),
+});

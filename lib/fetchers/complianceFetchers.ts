@@ -1,4 +1,4 @@
-import { HosLog } from "./../../types/compliance";
+import { HosLog, HosEntry, HosViolation, ComplianceRecord } from "./../../types/compliance";
 'use server';
 
 import prisma from '@/lib/database/db';
@@ -13,8 +13,18 @@ import {
 import { parsePermission } from '@/lib/auth/permissions';
 import { z } from 'zod';
 import { handleError } from "@/lib/errors/handleError";
+import type { ApiResponse } from "@/types/index";
+import type { DriverHOSStatus } from '@/lib/utils/hos';
 import { getCachedData, setCachedData, CACHE_TTL } from "@/lib/cache/auth-cache";
 import { calculateHosStatus } from '@/lib/utils/hos';
+
+function hasLogs(meta: unknown): meta is { logs: HosEntry[] } {
+  return (
+    typeof meta === 'object' &&
+    meta !== null &&
+    Array.isArray((meta as { logs?: unknown }).logs)
+  );
+}
 
 /**
  * Get compliance dashboard overview data
@@ -186,18 +196,7 @@ export async function getComplianceDashboard(organizationId: string) {
   }
 }
 
-export interface DriverComplianceRow {
-  id: string;
-  name: string;
-  cdlStatus: string;
-  cdlExpiration: Date | null;
-  medicalStatus: string;
-  medicalExpiration: Date | null;
-  hosStatus: string;
-  violationStatus: string;
-  lastViolation: Date | null;
-  lastInspection: Date | null;
-}
+export interface DriverComplianceRow extends ComplianceRecord {}
 
 export async function getDriverComplianceStatuses(organizationId: string): Promise<DriverComplianceRow[]> {
   try {
@@ -239,7 +238,7 @@ export async function getDriverComplianceStatuses(organizationId: string): Promi
         : medExp < soon
         ? 'Expiring Soon'
         : 'Valid';
-      const hos = await getDriverHOSStatus(d.id).catch(() => null) as any;
+      const hos = (await getDriverHOSStatus(d.id).catch(() => null)) as ApiResponse<DriverHOSStatus> | null;
       const violationStatus = hos?.data?.complianceStatus ?? 'unknown';
       const lastViolation = hos?.data?.lastLoggedAt ?? null;
       const lastInspection = d.loads?.[0]?.vehicle?.lastInspectionDate ?? null;
@@ -255,7 +254,7 @@ export async function getDriverComplianceStatuses(organizationId: string): Promi
         violationStatus,
         lastViolation,
         lastInspection,
-      } as DriverComplianceRow;
+      } satisfies DriverComplianceRow;
     }));
   } catch (error) {
     console.error('Error fetching driver compliance status:', error);
@@ -590,13 +589,13 @@ export async function getHOSLogs(
     const logs = hosDocs.map(doc => {
       let totalDriveTime = 0;
       let totalOnDutyTime = 0;
-      let violations: any[] = [];
+      let violations: HosViolation[] = [];
       let meta = doc.metadata;
       if (typeof meta === 'string') {
         try { meta = JSON.parse(meta); } catch { meta = {}; }
       }
-      if (meta && typeof meta === 'object' && !Array.isArray(meta) && Array.isArray((meta as any).logs)) {
-        for (const entry of (meta as any).logs) {
+      if (hasLogs(meta)) {
+        for (const entry of meta.logs) {
           if (entry.status === 'driving') totalDriveTime += entry.endTime - entry.startTime;
           if (['driving', 'on_duty'].includes(entry.status)) totalOnDutyTime += entry.endTime - entry.startTime;
         }
@@ -679,17 +678,17 @@ export async function getDriverHOSStatus(driverId: string) {
     });
     // Convert metadata to HosLog objects
     const hosLogs: HosLog[] = recentLogs.map((doc) => {
-      let meta: any = doc.metadata;
+      let meta: unknown = doc.metadata;
       if (typeof meta === 'string') {
         try { meta = JSON.parse(meta); } catch { meta = {}; }
       }
       return {
-        ...(meta as any),
+        ...(typeof meta === 'object' && meta !== null ? (meta as Record<string, unknown>) : {}),
         id: doc.id,
         tenantId: orgId,
         driverId,
         date: doc.createdAt,
-        status: doc.status as any,
+        status: doc.status as HosLog['status'],
       } as HosLog;
     });
 

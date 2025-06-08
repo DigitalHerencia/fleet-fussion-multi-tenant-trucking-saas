@@ -6,8 +6,8 @@ import type { PaginatedResponse, ApiResponse } from "./index"
 import type { Load } from "./dispatch"
 import type { Driver } from "./drivers"
 import type { Vehicle } from "./dispatch"
-import type { ComplianceDocument, HosLog } from "./compliance"
-import type { FuelPurchase, IftaReport } from "./ifta"
+import type { ComplianceDocument, HosLog, ComplianceRecord } from "./compliance"
+import type { FuelPurchase, IftaReport, IftaData } from "./ifta"
 
 // Auth API
 export interface SignInRequest {
@@ -214,3 +214,6 @@ export interface GetIftaReportsRequest {
 }
 
 export type GetIftaReportsResponse = ApiResponse<IftaReport[]>
+
+export type GetIftaDataResponse = ApiResponse<IftaData>
+export type GetDriverComplianceResponse = ApiResponse<ComplianceRecord[]>

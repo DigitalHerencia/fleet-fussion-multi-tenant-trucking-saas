@@ -416,3 +416,16 @@ export const DOCUMENT_STATUS_LABELS = {
   expiring: "Expiring Soon",
   expired: "Expired",
 }
+
+export interface ComplianceRecord {
+  id: string
+  name: string
+  cdlStatus: string
+  cdlExpiration: Date | null
+  medicalStatus: string
+  medicalExpiration: Date | null
+  hosStatus: string
+  violationStatus: string
+  lastViolation: Date | null
+  lastInspection: Date | null
+}

@@ -406,9 +406,9 @@ export interface DriverBulkActionResult {
 export function isDriver(obj: unknown): obj is Driver {
   return (
     typeof obj === 'object' && obj !== null &&
-    'id' in obj && typeof (obj as any).id === 'string' &&
-    'tenantId' in obj && typeof (obj as any).tenantId === 'string' &&
-    'cdlNumber' in obj && typeof (obj as any).cdlNumber === 'string' &&
-    'status' in obj && typeof (obj as any).status === 'string'
+    typeof (obj as Record<string, unknown>).id === 'string' &&
+    typeof (obj as Record<string, unknown>).tenantId === 'string' &&
+    typeof (obj as Record<string, unknown>).cdlNumber === 'string' &&
+    typeof (obj as Record<string, unknown>).status === 'string'
   );
 }
