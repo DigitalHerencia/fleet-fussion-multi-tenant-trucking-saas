@@ -5,6 +5,8 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
 import db from '@/lib/database/db';
+import { getIftaDataForPeriod, getIftaTripData } from '@/lib/fetchers/iftaFetchers';
+import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 
 const tripDataSchema = z.object({
   date: z.string(),
@@ -144,6 +146,145 @@ export async function generateIftaReportAction(
         error instanceof Error
           ? error.message
           : 'Failed to generate IFTA report',
+    };
+  }
+}
+
+// -------------------- PDF Generation Actions --------------------
+
+async function createBasicPdf(title: string, content: Record<string, any>) {
+  const pdfDoc = await PDFDocument.create();
+  const page = pdfDoc.addPage();
+  const { width, height } = page.getSize();
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+  page.drawText(title, { x: 50, y: height - 50, size: 18, font });
+
+  let yPos = height - 80;
+  Object.entries(content).forEach(([key, value]) => {
+    page.drawText(`${key}: ${String(value)}`, { x: 50, y: yPos, size: 12, font });
+    yPos -= 16;
+  });
+
+  // simple watermark
+  page.drawText('FleetFusion', {
+    x: width / 2 - 40,
+    y: 20,
+    size: 12,
+    font,
+    color: rgb(0.75, 0.75, 0.75),
+    opacity: 0.3,
+  });
+
+  return pdfDoc.save();
+}
+
+export async function generateIFTAReportPDF(
+  orgId: string,
+  quarter: string,
+  year: string
+) {
+  try {
+    await checkIftaPermissions(orgId);
+    const data = await getIftaDataForPeriod(orgId, `Q${quarter}`, year);
+    const pdf = await createBasicPdf('IFTA Quarterly Report', {
+      quarter: `Q${quarter}`,
+      year,
+      totalMiles: data.summary?.totalMiles ?? 0,
+      totalGallons: data.summary?.totalGallons ?? 0,
+      averageMpg: data.summary?.averageMpg ?? 0,
+    });
+    return { success: true, data: Buffer.from(pdf) };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to generate PDF',
+    };
+  }
+}
+
+export async function generateTripLogPDF(
+  orgId: string,
+  tripId: string
+) {
+  try {
+    await checkIftaPermissions(orgId);
+    const result = await getIftaTripData(orgId, { vehicleId: undefined });
+    const trip = Array.isArray(result.data)
+      ? result.data.find(t => t.id === tripId)
+      : null;
+    if (!trip) throw new Error('Trip not found');
+    const pdf = await createBasicPdf('IFTA Trip Log', {
+      date: trip.date.toISOString().split('T')[0],
+      vehicle: trip.vehicle?.unitNumber ?? trip.vehicleId,
+      jurisdiction: trip.jurisdiction,
+      distance: trip.distance,
+      fuelUsed: trip.fuelUsed ?? 'N/A',
+    });
+    return { success: true, data: Buffer.from(pdf) };
+  } catch (error) {
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : 'Failed to generate Trip PDF',
+    };
+  }
+}
+
+export async function generateFuelSummaryPDF(
+  orgId: string,
+  quarter: string,
+  year: string
+) {
+  try {
+    await checkIftaPermissions(orgId);
+    const data = await getIftaDataForPeriod(orgId, `Q${quarter}`, year);
+    const pdf = await createBasicPdf('Fuel Purchase Summary', {
+      quarter: `Q${quarter}`,
+      year,
+      purchases: Array.isArray(data.fuelPurchases)
+        ? data.fuelPurchases.length
+        : 0,
+      totalGallons: data.summary?.totalGallons ?? 0,
+      totalFuelCost: data.summary?.totalFuelCost ?? 0,
+    });
+    return { success: true, data: Buffer.from(pdf) };
+  } catch (error) {
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Failed to generate fuel PDF',
+    };
+  }
+}
+
+export async function generateCustomIFTAReport(
+  orgId: string,
+  startDate: string,
+  endDate: string
+) {
+  try {
+    await checkIftaPermissions(orgId);
+    const result = await getIftaTripData(orgId, {
+      startDate,
+      endDate,
+    });
+    const trips = Array.isArray(result.data) ? result.data.length : 0;
+    const pdf = await createBasicPdf('Custom IFTA Report', {
+      startDate,
+      endDate,
+      trips,
+    });
+    return { success: true, data: Buffer.from(pdf) };
+  } catch (error) {
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Failed to generate custom PDF',
     };
   }
 }
