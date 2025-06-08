@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useOptimistic } from "react"
+import { useFormStatus } from "react-dom"
 import { useUser } from "@clerk/nextjs"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -24,6 +25,7 @@ import { MoreHorizontal, Plus, Search, Mail, Users, UserCheck, Loader2 } from "l
 import { toast } from "@/hooks/use-toast"
 import { SystemRoles, type SystemRole } from "@/types/abac"
 import { createOrganizationInvitation, getOrganizationInvitations, type InvitationData } from "@/lib/actions/invitationActions"
+import { revokeInvitation } from "@/lib/actions/users"
 
 interface OrganizationInvitation {
   id: string
@@ -40,6 +42,7 @@ export function UserSettings() {
   const [isInviteUserOpen, setIsInviteUserOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [invitations, setInvitations] = useState<OrganizationInvitation[]>([])
+  const [optimisticInvitations, setOptimisticInvitations] = useOptimistic(invitations)
   const [loadingInvitations, setLoadingInvitations] = useState(true)
   const [newInvitation, setNewInvitation] = useState({
     email: "",
@@ -82,6 +85,11 @@ export function UserSettings() {
     loadInvitations()
   }, [])
 
+  // Keep optimistic state in sync with actual invitations
+  useEffect(() => {
+    setOptimisticInvitations(invitations)
+  }, [invitations])
+
   const loadInvitations = async () => {
     if (!user?.publicMetadata?.organizationId) return
 
@@ -107,32 +115,33 @@ export function UserSettings() {
   }
 
   const handleRevokeInvitation = async (invitationId: string) => {
-    try {
-      // TODO: Implement actual revoke logic here, e.g. call an API or action
-      // Example:
-      // const result = await revokeOrganizationInvitation(invitationId)
-      const result = { success: false, error: "Revoke not implemented" } // Placeholder
+    // Optimistically mark as revoked
+    setOptimisticInvitations((prev) =>
+      prev.map((inv) =>
+        inv.id === invitationId ? { ...inv, status: "revoked" } : inv
+      )
+    )
 
-      if (result.success) {
-        toast({
-          title: "Invitation Revoked",
-          description: "The invitation has been successfully revoked.",
-        })
-        await loadInvitations() // Refresh the list
-      } else {
-        toast({
-          title: "Failed to Revoke Invitation",
-          description: result.error || "An error occurred while revoking the invitation.",
-          variant: "destructive",
-        })
-      }
-    } catch (error) {
-      console.error("Error revoking invitation:", error)
+    const result = await revokeInvitation(invitationId)
+
+    if (result.success) {
       toast({
-        title: "Error",
-        description: "Failed to revoke invitation. Please try again.",
+        title: "Invitation Revoked",
+        description: "The invitation has been successfully revoked.",
+      })
+      setInvitations((prev) =>
+        prev.map((inv) =>
+          inv.id === invitationId ? { ...inv, status: "revoked" } : inv
+        )
+      )
+    } else {
+      toast({
+        title: "Failed to Revoke Invitation",
+        description: result.error || "An error occurred while revoking the invitation.",
         variant: "destructive",
       })
+      // revert list from server
+      await loadInvitations()
     }
   }
 
@@ -387,12 +396,7 @@ export function UserSettings() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             {invitation.status.toLowerCase() === "pending" && (
-                              <DropdownMenuItem 
-                                onClick={() => handleRevokeInvitation(invitation.id)}
-                                className="text-red-600"
-                              >
-                                Revoke Invitation
-                              </DropdownMenuItem>
+                              <RevokeMenuItem id={invitation.id} onSubmit={() => handleRevokeInvitation(invitation.id)} />
                             )}
                             <DropdownMenuItem>View Details</DropdownMenuItem>
                           </DropdownMenuContent>
@@ -425,5 +429,22 @@ export function UserSettings() {
 
 function success(result: { success: boolean; error: string } | undefined) {
   return !!result && result.success === true;
+}
+
+function RevokeMenuItem({ id, onSubmit }: { id: string; onSubmit: () => void }) {
+  const { pending } = useFormStatus();
+  return (
+    <form
+      action={async () => {
+        await onSubmit();
+      }}
+      className="w-full"
+    >
+      <DropdownMenuItem type="submit" disabled={pending} className="text-red-600">
+        {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+        Revoke Invitation
+      </DropdownMenuItem>
+    </form>
+  );
 }
 

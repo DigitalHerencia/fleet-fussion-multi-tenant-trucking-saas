@@ -203,3 +203,20 @@ export interface SetClerkMetadataResult {
   userId?: string
   error?: string
 }
+
+// Organization invitation representation from Clerk
+export interface OrganizationInvitation {
+  id: string
+  emailAddress: string
+  role: UserRole
+  status: 'pending' | 'accepted' | 'revoked'
+  publicMetadata?: Record<string, any>
+  createdAt: string
+}
+
+// Generic action result used by server actions
+export interface ActionResult<T = any> {
+  success: boolean
+  data?: T
+  error?: string
+}
