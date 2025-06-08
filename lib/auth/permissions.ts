@@ -324,16 +324,16 @@ export class RouteProtection {  // Define PROTECTED_ROUTES using SystemRole and 
 
     // Helper function to match dynamic routes
     const matchesRoute = (pattern: string, actualPath: string): boolean => {
-      // Convert pattern like "/:orgId/drivers/:userId" to regex
+      // Convert pattern like "/:orgId/drivers/:userId" to regex and allow an optional trailing slash
       const regexPattern = pattern
-        .replace(/:[^\/]+/g, '[^/]+') // Replace :param with [^/]+ (non-slash characters)
-        .replace(/\//g, '\\/'); // Escape forward slashes
-      
-      const regex = new RegExp(`^${regexPattern}$`);
+        .replace(/:[^\/]+/g, '[^/]+') // Replace :param with wildcard
+        .replace(/\//g, '\\/'); // Escape forward slashes for RegExp construction
+
+      const regex = new RegExp(`^${regexPattern}\/?$`);
       return regex.test(actualPath);
     };
 
-    const matchedRoute = Object.keys(RouteProtection.PROTECTED_ROUTES).find(routePattern => {
+    const matchedRoute = Object.keys(RouteProtection.PROTECTED_ROUTES).find((routePattern) => {
       return matchesRoute(routePattern, path);
     });
 
