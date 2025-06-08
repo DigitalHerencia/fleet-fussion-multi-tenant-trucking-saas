@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Phone, Mail, Calendar, FileText, Truck, MapPin, AlertTriangle } from "lucide-react"
-import { formatDate } from "@/lib/utils"
+import { formatDate } from "@/lib/utils/utils"
 import Link from "next/link"
 import { DocumentUpload, DocumentListEmpty } from "@/components/shared/DocumentUpload"
 

@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { MapPin, Calendar, DollarSign, Package, FileText, Truck, User, Weight, Route } from "lucide-react"
-import { formatDate, formatCurrency } from "@/lib/utils"
+import { formatDate, formatCurrency } from "@/lib/utils/utils"
 import Link from "next/link"
 import { DocumentUpload, DocumentListEmpty } from "@/components/shared/DocumentUpload"
 import type { Customer, LoadAssignedDriver, LoadAssignedVehicle, LoadAssignedTrailer, EquipmentRequirement, CargoDetails, Rate, LoadDocument, TrackingUpdate, BrokerInfo, FactoringInfo, LoadAlert } from "@/types/dispatch"

@@ -4,7 +4,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { MapPin, Calendar, User, Truck } from "lucide-react"
-import { formatDate } from "@/lib/utils"
+import { formatDate } from "@/lib/utils/utils"
 import type { Customer, LoadAssignedDriver, LoadAssignedVehicle, LoadAssignedTrailer, EquipmentRequirement, CargoDetails, Rate, LoadDocument, TrackingUpdate, BrokerInfo, FactoringInfo, LoadAlert } from "@/types/dispatch"
 import type { LoadStatus, LoadPriority, LoadStatusEvent } from "@prisma/client"
 

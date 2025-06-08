@@ -2,7 +2,7 @@
 id: qqto63lp7sx4yjuf4d0nvc3
 title: CodeFuture
 desc: ''
-updated: 1748596163066
+updated: 1749380425359
 created: 1748594592832
 ---
 # System Context Refactored Codebase (after refactor)
@@ -3543,7 +3543,7 @@ graph TD
 
 ```tsx
  1 | import Link from "next/link"
- 2 | import { cn } from "@/lib/utils"
+ 2 | import { cn } from "@/lib/utils/utils"
  3 | import { Home, Truck, Users, ClipboardList, FileText, BarChart2, Settings, ChevronLeft, ChevronRight, Activity } from "lucide-react"
  4 | import { Button } from "@/components/ui/button"
  5 | import { SignOutButton } from "@/components/shared/sign-out-button"

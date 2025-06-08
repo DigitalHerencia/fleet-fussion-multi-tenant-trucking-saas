@@ -3,7 +3,7 @@
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Truck, Calendar, Gauge, AlertTriangle } from "lucide-react"
-import { formatDate } from "@/lib/utils"
+import { formatDate } from "@/lib/utils/utils"
 
 interface Vehicle {
   id: string

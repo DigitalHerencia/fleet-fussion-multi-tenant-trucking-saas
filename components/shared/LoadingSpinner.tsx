@@ -4,7 +4,7 @@
  * Reusable loading spinner for async operations
  */
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils/utils"
 
 interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg'

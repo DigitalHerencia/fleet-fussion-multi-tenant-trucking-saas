@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Truck, Gauge, FileText, PenToolIcon as Tool, AlertTriangle, MapPin } from "lucide-react"
-import { formatDate, formatCurrency } from "@/lib/utils"
+import { formatDate, formatCurrency } from "@/lib/utils/utils"
 import Link from "next/link"
 
 interface Vehicle {

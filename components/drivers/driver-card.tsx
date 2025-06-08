@@ -4,7 +4,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Phone, Mail, Calendar, FileText } from "lucide-react"
-import { formatDate } from "@/lib/utils"
+import { formatDate } from "@/lib/utils/utils"
 
 interface Driver {
   id: string

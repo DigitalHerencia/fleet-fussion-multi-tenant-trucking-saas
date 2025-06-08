@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { formatDate, formatCurrency } from '../lib/utils'
+import { formatDate, formatCurrency } from '../lib/utils/utils'
 
 describe('utils', () => {
   it('formats date to YYYY-MM-DD', () => {
