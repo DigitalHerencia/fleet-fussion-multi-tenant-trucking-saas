@@ -1,6 +1,7 @@
 'use server';
 
 import { auth } from '@clerk/nextjs/server';
+import { unstable_cache } from 'next/cache';
 
 import prisma from '@/lib/database/db';
 import { loadFilterSchema, type LoadFilterInput } from '@/schemas/dispatch';
@@ -853,3 +854,57 @@ export async function getRecentDispatchActivity(orgId: string, limit = 10) {
     throw new Error('Failed to fetch dispatch activity');
   }
 }
+
+// Format load object for dispatch board view
+function formatLoadForBoard(load: Load): Load {
+  return load;
+}
+
+// Fetch dispatch board data with caching
+export const getDispatchBoardData = unstable_cache(
+  async (orgId: string, filters?: LoadFilterInput) => {
+    const [loadsResult, driversResult, vehiclesResult, statsResult] =
+      await Promise.all([
+        listLoadsByOrg(orgId, filters),
+        getAvailableDriversForLoad(orgId),
+        getAvailableVehiclesForLoad(orgId, {}),
+        getLoadStatistics(orgId, filters),
+      ]);
+
+    const loads = (loadsResult?.data?.loads || []) as Load[];
+
+    return {
+      loads: loads.map(formatLoadForBoard),
+      drivers: driversResult?.data || [],
+      vehicles: vehiclesResult?.data || [],
+      statistics: statsResult?.data,
+    };
+  },
+  ['dispatch-board'],
+  {
+    revalidate: 300,
+    tags: ['dispatch-board'],
+  }
+);
+
+// Fetch a single load with relations and cache result
+export const getLoadDetails = unstable_cache(
+  async (orgId: string, loadId: string) => {
+    await checkUserAccess(orgId);
+    return prisma.load.findFirst({
+      where: { id: loadId, organizationId: orgId },
+      include: {
+        driver: true,
+        vehicle: true,
+        trailer: true,
+        statusEvents: { orderBy: { timestamp: 'desc' } },
+        organization: { select: { name: true, settings: true } },
+      },
+    });
+  },
+  ['load-details'],
+  {
+    revalidate: 60,
+    tags: ['load-details'],
+  }
+);

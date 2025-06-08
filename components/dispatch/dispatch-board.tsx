@@ -264,7 +264,7 @@ export function DispatchBoard({
               onClick={handleNewLoadClick}
             >
               <PlusCircle className="mr-2 h-4 w-4" />
-              New Load
+              Add New Load
             </Button>
             <Button
               variant="outline"
