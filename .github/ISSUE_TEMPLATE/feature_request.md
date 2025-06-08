@@ -1,0 +1,97 @@
+---
+name: Feature request
+about: Suggest a new feature or enhancement for FleetFusion
+title: "[Feature]"
+labels: Codex, Feature
+assignees: DigitalHerencia
+
+---
+
+labels: ["Feature"]
+assignees: [DigitalHerencia]
+body:
+  - type: input
+    id: summary
+    attributes:
+      label: "Feature Summary"
+      description: "Concise description of the feature."
+      placeholder: "Add real-time GPS tracking for vehicles"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "Detailed Description"
+      description: "What problem does this solve for FleetFusion users?"
+      placeholder: |
+        Fleet managers need to see where their vehicles are in real-time to:
+        - Optimize routes
+        - Respond to emergencies
+        - Track delivery progress
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: "Acceptance Criteria"
+      description: "List conditions that must be true to consider this complete."
+      placeholder: |
+        - [ ] Vehicle locations update every 30 seconds
+        - [ ] Map displays current position of all active vehicles
+        - [ ] Location history is stored for 30 days
+        - [ ] Geofencing alerts are triggered when vehicles enter/exit zones
+    validations:
+      required: true
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: "Dependencies / Blockers"
+      description: "Linked issues, external integrations, or other requirements."
+      placeholder: |
+        - Depends on #123 (vehicle management API)
+        - Requires GPS tracking service integration
+        - May need mobile app updates
+    validations:
+      required: false
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: "Priority"
+      description: "How important is this feature?"
+      options:
+        - "Priority-Low"
+        - "Priority-Medium"
+        - "Priority-High"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: milestone
+    attributes:
+      label: "Target Milestone"
+      description: "Which release should include this feature?"
+      options:
+        - "MVP Launch"
+        - "Q3 2025 Release"
+        - "Testing & Automation Hardening"
+        - "Post-Launch Enhancements"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: user_type
+    attributes:
+      label: "Primary User"
+      description: "Who will primarily use this feature?"
+      options:
+        - "Fleet Manager"
+        - "Driver"
+        - "Admin"
+        - "Dispatcher"
+        - "All Users"
+    validations:
+      required: false
