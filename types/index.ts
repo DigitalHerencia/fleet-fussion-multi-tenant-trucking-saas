@@ -89,3 +89,6 @@ export interface ApiResponse<T> {
   data?: T;
   error?: string;
 }
+
+export type { GlobalSearchResultItem } from './search';
+export type { Notification } from './notifications';

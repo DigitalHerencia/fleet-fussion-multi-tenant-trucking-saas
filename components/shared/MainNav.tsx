@@ -15,6 +15,7 @@ import {
 import { useClerk } from '@clerk/nextjs';
 
 import { cn } from '@/lib/utils/utils';
+import { useUserContext } from '@/components/auth/context';
 
 // MainNavProps interface: defines props for MainNav component
 interface MainNavProps {
@@ -34,6 +35,8 @@ export function MainNav({
   userId,
 }: MainNavProps) {
   const { signOut } = useClerk();
+  const user = useUserContext();
+  const userRole = user?.role || 'viewer';
 
   // navLinks: array of navigation link objects for the sidebar
   const navLinks = [
@@ -42,48 +45,56 @@ export function MainNav({
       href: `/${orgId}/dashboard/${userId}`,
       label: 'Dashboard',
       icon: <Home className="h-5 w-5" />,
+      roles: ['admin', 'dispatcher', 'driver', 'compliance_officer', 'accountant', 'viewer'],
     },
     {
       key: 'dispatch',
       href: `/${orgId}/dispatch/${userId}`,
       label: 'Dispatch',
       icon: <ClipboardList className="h-5 w-5" />,
+      roles: ['admin', 'dispatcher'],
     },
     {
       key: 'drivers',
       href: `/${orgId}/drivers/${userId}`,
       label: 'Drivers',
       icon: <Users className="h-5 w-5" />,
+      roles: ['admin', 'dispatcher', 'compliance_officer', 'accountant'],
     },
     {
       key: 'vehicles',
       href: `/${orgId}/vehicles`,
       label: 'Vehicles',
       icon: <Truck className="h-5 w-5" />,
+      roles: ['admin', 'dispatcher', 'compliance_officer', 'accountant'],
     },
     {
       key: 'compliance',
       href: `/${orgId}/compliance/${userId}`,
       label: 'Compliance',
       icon: <FileText className="h-5 w-5" />,
+      roles: ['admin', 'compliance_officer'],
     },
     {
       key: 'ifta',
       href: `/${orgId}/ifta`,
       label: 'IFTA',
       icon: <Activity className="h-5 w-5" />,
+      roles: ['admin', 'accountant'],
     },
     {
       key: 'analytics',
       href: `/${orgId}/analytics`,
       label: 'Analytics',
       icon: <BarChart2 className="h-5 w-5" />,
+      roles: ['admin', 'accountant'],
     },
     {
       key: 'settings',
       href: `/${orgId}/settings`,
       label: 'Settings',
       icon: <Settings className="h-5 w-5" />,
+      roles: ['admin'],
     },
     {
       key: 'signout',
@@ -98,6 +109,8 @@ export function MainNav({
     },
   ];
 
+  const visibleLinks = navLinks.filter(link => !link.roles || link.roles.includes(userRole));
+
   return (
     // Sidebar container
     <aside
@@ -111,7 +124,7 @@ export function MainNav({
       <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
         {/* Navigation Links Section */}
         <nav className="mt-6 flex-1 space-y-4 px-8 py-4">
-          {navLinks.map(link => (
+          {visibleLinks.map(link => (
             <SidebarLink
               key={link.key}
               href={link.href}
