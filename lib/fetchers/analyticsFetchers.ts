@@ -9,19 +9,26 @@ import {
   CACHE_TTL,
 } from '@/lib/cache/auth-cache';
 
+export interface AnalyticsFilters {
+  driverId?: string;
+  vehicleId?: string;
+  customerName?: string;
+}
+
 /**
  * Get analytics data for performance metrics
  */
 export async function getPerformanceAnalytics(
   organizationId: string,
-  timeRange: string = '30d'
+  timeRange: string = '30d',
+  filters: AnalyticsFilters = {}
 ) {
   const { userId } = await auth();
   if (!userId) {
     throw new Error('Unauthorized');
   }
 
-  const cacheKey = `analytics:performance:${organizationId}:${timeRange}`;
+  const cacheKey = `analytics:performance:${organizationId}:${timeRange}:${JSON.stringify(filters)}`;
   const cached = getCachedData(cacheKey);
   if (cached) {
     return cached;
@@ -35,6 +42,11 @@ export async function getPerformanceAnalytics(
       where: {
         organizationId,
         status: 'delivered',
+        ...(filters.driverId && { driverId: filters.driverId }),
+        ...(filters.vehicleId && { vehicleId: filters.vehicleId }),
+        ...(filters.customerName && {
+          customerName: { contains: filters.customerName, mode: 'insensitive' },
+        }),
         actualDeliveryDate: {
           gte: startDate,
           lte: endDate,
@@ -66,14 +78,15 @@ export async function getPerformanceAnalytics(
  */
 export async function getFinancialAnalytics(
   organizationId: string,
-  timeRange: string = '30d'
+  timeRange: string = '30d',
+  filters: AnalyticsFilters = {}
 ) {
   const { userId } = await auth();
   if (!userId) {
     throw new Error('Unauthorized');
   }
 
-  const cacheKey = `analytics:financial:${organizationId}:${timeRange}`;
+  const cacheKey = `analytics:financial:${organizationId}:${timeRange}:${JSON.stringify(filters)}`;
   const cached = getCachedData(cacheKey);
   if (cached) {
     return cached;
@@ -87,6 +100,11 @@ export async function getFinancialAnalytics(
       where: {
         organizationId,
         status: 'delivered',
+        ...(filters.driverId && { driverId: filters.driverId }),
+        ...(filters.vehicleId && { vehicleId: filters.vehicleId }),
+        ...(filters.customerName && {
+          customerName: { contains: filters.customerName, mode: 'insensitive' },
+        }),
         actualDeliveryDate: {
           gte: startDate,
           lte: endDate,
@@ -143,14 +161,15 @@ export async function getFinancialAnalytics(
  */
 export async function getDriverAnalytics(
   organizationId: string,
-  timeRange: string = '30d'
+  timeRange: string = '30d',
+  filters: AnalyticsFilters = {}
 ) {
   const { userId } = await auth();
   if (!userId) {
     throw new Error('Unauthorized');
   }
 
-  const cacheKey = `analytics:drivers:${organizationId}:${timeRange}`;
+  const cacheKey = `analytics:drivers:${organizationId}:${timeRange}:${JSON.stringify(filters)}`;
   const cached = getCachedData(cacheKey);
   if (cached) {
     return cached;
@@ -164,6 +183,7 @@ export async function getDriverAnalytics(
       where: {
         organizationId,
         status: 'active',
+        ...(filters.driverId && { id: filters.driverId }),
       },
       include: {
         loads: {
@@ -235,14 +255,15 @@ export async function getDriverAnalytics(
  */
 export async function getVehicleAnalytics(
   organizationId: string,
-  timeRange: string = '30d'
+  timeRange: string = '30d',
+  filters: AnalyticsFilters = {}
 ) {
   const { userId } = await auth();
   if (!userId) {
     throw new Error('Unauthorized');
   }
 
-  const cacheKey = `analytics:vehicles:${organizationId}:${timeRange}`;
+  const cacheKey = `analytics:vehicles:${organizationId}:${timeRange}:${JSON.stringify(filters)}`;
   const cached = getCachedData(cacheKey);
   if (cached) {
     return cached;
@@ -256,6 +277,7 @@ export async function getVehicleAnalytics(
       where: {
         organizationId,
         status: 'active',
+        ...(filters.vehicleId && { id: filters.vehicleId }),
       },
       include: {
         loads: {
@@ -331,14 +353,15 @@ export interface DashboardSummary {
  */
 export async function getDashboardSummary(
   organizationId: string,
-  timeRange: string = '30d'
+  timeRange: string = '30d',
+  filters: AnalyticsFilters = {}
 ): Promise<DashboardSummary> {
   const { userId } = await auth();
   if (!userId) {
     throw new Error('Unauthorized');
   }
 
-  const cacheKey = `analytics:summary:${organizationId}:${timeRange}`;
+  const cacheKey = `analytics:summary:${organizationId}:${timeRange}:${JSON.stringify(filters)}`;
   const cached: any = getCachedData(cacheKey);
   if (cached && typeof cached.totalRevenue === 'number') {
     return cached as DashboardSummary;
@@ -354,6 +377,11 @@ export async function getDashboardSummary(
           where: {
             organizationId,
             status: 'delivered',
+            ...(filters.driverId && { driverId: filters.driverId }),
+            ...(filters.vehicleId && { vehicleId: filters.vehicleId }),
+            ...(filters.customerName && {
+              customerName: { contains: filters.customerName, mode: 'insensitive' },
+            }),
             actualDeliveryDate: {
               gte: startDate,
               lte: endDate,
@@ -371,6 +399,11 @@ export async function getDashboardSummary(
         prisma.load.count({
           where: {
             organizationId,
+            ...(filters.driverId && { driverId: filters.driverId }),
+            ...(filters.vehicleId && { vehicleId: filters.vehicleId }),
+            ...(filters.customerName && {
+              customerName: { contains: filters.customerName, mode: 'insensitive' },
+            }),
             createdAt: {
               gte: startDate,
               lte: endDate,
@@ -419,6 +452,16 @@ export async function getDashboardSummary(
 function getDateRange(timeRange: string) {
   const endDate = new Date();
   let startDate: Date;
+
+  if (timeRange.startsWith('custom:')) {
+    const [, range] = timeRange.split('custom:');
+    const [start, end] = range.split('_to_');
+    const customStart = new Date(start);
+    const customEnd = new Date(end);
+    if (!isNaN(customStart.getTime()) && !isNaN(customEnd.getTime())) {
+      return { startDate: customStart, endDate: customEnd };
+    }
+  }
 
   switch (timeRange) {
     case '7d':
