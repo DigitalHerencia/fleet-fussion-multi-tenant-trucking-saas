@@ -148,13 +148,16 @@ export function DriverFormFeature({
           onSubmit: handleSubmit,
         }}
         onUploadDocument={handleUploadDocument}
-      />
-      <Dialog open={showUpload} onOpenChange={setShowUpload}>
+      />      <Dialog open={showUpload} onOpenChange={setShowUpload}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Upload Document</DialogTitle>
           </DialogHeader>
-          <DocumentUploadForm onUpload={() => setShowUpload(false)} />
+          <DocumentUploadForm 
+            entityType="driver"
+            entityId={driverId || "new"}
+            onUpload={() => setShowUpload(false)} 
+          />
         </DialogContent>
       </Dialog>
     </>
