@@ -1,28 +1,65 @@
-name: Documentation Request
-description: Request new or updated documentation
-title: "[Docs]: "
-labels: ["Docs"]
+name: "📚 Documentation Task"
+description: "Request docs updates or additions for FleetFusion"
+labels: ["Documentation"]
+assignees: [DigitalHerencia]
 body:
-  - type: textarea
-    id: description
+  - type: input
+    id: summary
     attributes:
-      label: Documentation Needed
-      description: What needs documenting or updating?
-      placeholder: Clearly describe the documentation need...
+      label: "Documentation Summary"
+      description: "What documentation needs to be created or updated?"
+      placeholder: "Add API documentation for vehicle endpoints"
     validations:
       required: true
+      
   - type: textarea
     id: context
     attributes:
-      label: Context
-      description: What feature, module, or process does this relate to?
-      placeholder: e.g. "API authentication", "Driver onboarding flow", etc.
+      label: "Context & Location"
+      description: "Where should this documentation live? What's the current state?"
+      placeholder: |
+        - Location: /docs/api/vehicles.md
+        - Current state: Missing endpoint documentation
+        - Related to: Vehicle management feature #123
+    validations:
+      required: true
+      
+  - type: dropdown
+    id: doc_type
+    attributes:
+      label: "Documentation Type"
+      description: "What kind of documentation is this?"
+      options:
+        - "API Documentation"
+        - "User Guide"
+        - "Developer Setup"
+        - "Architecture"
+        - "Deployment"
+        - "Troubleshooting"
+    validations:
+      required: true
+      
   - type: dropdown
     id: priority
     attributes:
-      label: Priority
+      label: "Priority"
+      description: "How urgent is this documentation?"
       options:
-        - Low
-        - Medium
-        - High
-      default: 1
+        - "Priority-Low"
+        - "Priority-Medium"
+        - "Priority-High"
+    validations:
+      required: true
+      
+  - type: dropdown
+    id: milestone
+    attributes:
+      label: "Target Milestone"
+      description: "When should this documentation be completed?"
+      options:
+        - "MVP Launch"
+        - "Q3 2025 Release"
+        - "Testing & Automation Hardening"
+        - "Post-Launch Enhancements"
+    validations:
+      required: false

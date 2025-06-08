@@ -1,45 +1,90 @@
-name: Feature Request
-description: Suggest a new feature or enhancement
-title: "[Feature]: "
+name: "🚀 Feature Request"
+description: "Suggest a new feature or enhancement for FleetFusion"
 labels: ["Feature"]
+assignees: [DigitalHerencia]
 body:
-  - type: markdown
+  - type: input
+    id: summary
     attributes:
-      value: |
-        Thanks for taking the time to fill out this feature request!
+      label: "Feature Summary"
+      description: "Concise description of the feature."
+      placeholder: "Add real-time GPS tracking for vehicles"
+    validations:
+      required: true
+      
   - type: textarea
     id: description
     attributes:
-      label: Feature Description
-      description: What functionality would you like to add?
-      placeholder: A clear and concise description of the feature...
+      label: "Detailed Description"
+      description: "What problem does this solve for FleetFusion users?"
+      placeholder: |
+        Fleet managers need to see where their vehicles are in real-time to:
+        - Optimize routes
+        - Respond to emergencies
+        - Track delivery progress
     validations:
       required: true
+      
   - type: textarea
     id: acceptance
     attributes:
-      label: Acceptance Criteria
-      description: What conditions must be met for this feature to be complete?
+      label: "Acceptance Criteria"
+      description: "List conditions that must be true to consider this complete."
       placeholder: |
-        - [ ] Criteria 1
-        - [ ] Criteria 2
+        - [ ] Vehicle locations update every 30 seconds
+        - [ ] Map displays current position of all active vehicles
+        - [ ] Location history is stored for 30 days
+        - [ ] Geofencing alerts are triggered when vehicles enter/exit zones
     validations:
       required: true
+      
   - type: textarea
     id: dependencies
     attributes:
-      label: Dependencies
-      description: List any related issues or PRs that this feature depends on
+      label: "Dependencies / Blockers"
+      description: "Linked issues, external integrations, or other requirements."
       placeholder: |
-        - Depends on #123
-        - Blocked by #456
+        - Depends on #123 (vehicle management API)
+        - Requires GPS tracking service integration
+        - May need mobile app updates
+    validations:
+      required: false
+      
   - type: dropdown
     id: priority
     attributes:
-      label: Priority
+      label: "Priority"
+      description: "How important is this feature?"
       options:
-        - Low
-        - Medium
-        - High
+        - "Priority-Low"
+        - "Priority-Medium"
+        - "Priority-High"
     validations:
       required: true
+      
+  - type: dropdown
+    id: milestone
+    attributes:
+      label: "Target Milestone"
+      description: "Which release should include this feature?"
+      options:
+        - "MVP Launch"
+        - "Q3 2025 Release"
+        - "Testing & Automation Hardening"
+        - "Post-Launch Enhancements"
+    validations:
+      required: false
+      
+  - type: dropdown
+    id: user_type
+    attributes:
+      label: "Primary User"
+      description: "Who will primarily use this feature?"
+      options:
+        - "Fleet Manager"
+        - "Driver"
+        - "Admin"
+        - "Dispatcher"
+        - "All Users"
+    validations:
+      required: false

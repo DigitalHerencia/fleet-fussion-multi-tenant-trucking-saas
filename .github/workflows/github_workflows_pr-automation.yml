@@ -1,71 +1,139 @@
-name: PR Automation
+name: "FleetFusion PR Automation"
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened, edited]
   pull_request_target:
-    types: [opened, synchronize, reopened, edited]
+    types: [opened, edited, reopened, synchronize, ready_for_review]
+
+permissions:
+  pull-requests: write
+  contents: read
+  issues: write
 
 jobs:
-  pr-automation:
+  pr-checks:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - name: Validate PR Title
+    steps:
+      - name: Ensure semantic PR title
         uses: amannn/action-semantic-pull-request@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          requireScope: false
           types: |
             feat
             fix
             docs
-            style
-            refactor
-            perf
-            test
             chore
-          requireScope: false
-          
-      - name: Label Based on Branch
+            refactor
+            test
+            config
+
+      - name: Auto-label by branch prefix
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const branch = context.payload.pull_request.head.ref;
-            let label = '';
+            const prNumber = context.payload.pull_request.number;
             
-            if (branch.startsWith('feature/')) {
-              label = 'Feature';
-            } else if (branch.startsWith('fix/')) {
-              label = 'Bug';
-            } else if (branch.startsWith('docs/')) {
-              label = 'Docs';
-            }
+            const branchLabelMap = {
+              'feature/': 'Feature',
+              'fix/': 'Bug', 
+              'docs/': 'Documentation',
+              'test/': 'Testing',
+              'refactor/': 'Code-Quality',
+              'config/': 'Configuration'
+            };
             
-            if (label) {
-              await github.rest.issues.addLabels({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.payload.pull_request.number,
-                labels: [label]
-              });
+            for (const [prefix, label] of Object.entries(branchLabelMap)) {
+              if (branch.startsWith(prefix)) {
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: prNumber,
+                  labels: [label]
+                });
+                console.log(`Added label "${label}" to PR #${prNumber}`);
+                break;
+              }
             }
 
-      - name: Auto-link Issues
+      - name: Link PR to referenced issues & mark Has-PR
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const body = context.payload.pull_request.body;
-            const issuePattern = /(closes|fixes|resolves)\s+#(\d+)/gi;
-            const matches = [...body.matchAll(issuePattern)];
+            const pr = context.payload.pull_request;
+            const body = pr.body || '';
+            const prNumber = pr.number;
             
-            for (const match of matches) {
-              const issueNumber = match[2];
+            // Find issue references (Closes #123, Fixes #456, Resolves #789)
+            const issueRefs = [...body.matchAll(/(?:closes|fixes|resolves)\s+#(\d+)/gi)]
+              .map(match => parseInt(match[1]));
+            
+            for (const issueNumber of issueRefs) {
+              try {
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issueNumber,
+                  labels: ['Has-PR']
+                });
+                console.log(`Added "Has-PR" label to issue #${issueNumber}`);
+              } catch (error) {
+                console.log(`Could not label issue #${issueNumber}: ${error.message}`);
+              }
+            }
+
+      - name: Auto-assign priority based on milestone
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request;
+            const body = pr.body || '';
+            
+            // Extract milestone from PR body
+            const milestoneMatch = body.match(/MVP Launch|Q3 2025 Release|Testing & Automation Hardening|Post-Launch Enhancements/i);
+            if (!milestoneMatch) return;
+            
+            const milestone = milestoneMatch[0];
+            let priority = null;
+            
+            switch (milestone) {
+              case 'MVP Launch':
+                priority = 'Priority-High';
+                break;
+              case 'Q3 2025 Release':
+                priority = 'Priority-Medium';
+                break;
+              default:
+                priority = 'Priority-Low';
+            }
+            
+            if (priority) {
               await github.rest.issues.addLabels({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                issue_number: parseInt(issueNumber),
-                labels: ['Has-PR']
+                issue_number: pr.number,
+                labels: [priority]
               });
+              console.log(`Added "${priority}" label based on milestone "${milestone}"`);
             }
+
+      - name: Request review from @DigitalHerencia automatically
+        if: |
+          github.actor != 'DigitalHerencia' &&
+          github.event.pull_request.draft == false
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.pulls.requestReviewers({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              reviewers: ['DigitalHerencia']
+            });
+            console.log(`Requested review from @DigitalHerencia for PR #${context.payload.pull_request.number}`);

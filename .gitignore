@@ -31,13 +31,13 @@ next-env.d.ts
 .DS_Store
 .vscode/
 .hintrc*
-/.notes
+/.notes`
 
-/generated/prisma
+/generated/prisma`
 !/tests
 /playwright-report
 /test-results
-playwright.config.ts
+
 
 # clerk configuration (can include secrets)
 /.clerk/

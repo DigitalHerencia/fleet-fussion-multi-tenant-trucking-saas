@@ -14,6 +14,28 @@ Welcome to FleetFusion! We're excited that you want to contribute to this multi-
 8. [Architecture Guidelines](#architecture-guidelines)
 9. [Security Considerations](#security-considerations)
 
+## GitHub Flow & Branching Best Practices
+
+FleetFusion uses **GitHub Flow** for all development:
+- The `main` branch is always deployable and protected by required reviews and CI.
+- All work is done in short-lived feature branches (e.g., `feature/xyz`, `fix/bug`, `docs/update`).
+- Open a pull request from your branch to `main` for review and merge. Use squash merge to keep history linear.
+- After merging, delete your feature branch (auto-deletion is enabled).
+- Avoid long-lived branches like `develop` or `release` unless specifically required.
+
+### Branch Naming
+- Use prefixes: `feature/`, `fix/`, `docs/`, `codex/` (for AI-generated changes).
+- Only use `codex/` for branches created by the Codex AI agent.
+
+## AI Agent Contribution Rules
+- **Codex and Copilot must never commit directly to `main`.**
+- All AI-generated changes must be made in a new branch (preferably `codex/` prefix) and submitted via pull request.
+- All AI PRs must pass CI and receive human review before merge.
+- AI-generated PRs should be labeled (e.g., `AI-Generated`) for traceability.
+- Codex should prefer calling well-typed, documented functions and must not bypass branch protection or CI.
+
+See `agents.md` for full agent delegation and automation rules.
+
 ## Code of Conduct
 
 By participating in this project, you agree to abide by our Code of Conduct:

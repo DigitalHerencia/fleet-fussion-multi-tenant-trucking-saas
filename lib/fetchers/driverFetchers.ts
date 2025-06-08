@@ -358,4 +358,11 @@ export const getDriverStats = async (orgId: string): Promise<DriverStatsResponse
 
 // ================== Performance Fetchers ==================
 
+export async function getVehiclesByOrg(orgId: string): Promise<any[]> {
+  if (!orgId) throw new Error("orgId is required");
+  const { userId } = await auth();
+  if (!userId) throw new Error("Authentication required");
+  return prisma.vehicle.findMany({ where: { organizationId: orgId } });
+}
+
 

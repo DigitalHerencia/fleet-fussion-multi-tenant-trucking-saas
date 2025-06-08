@@ -400,3 +400,15 @@ export interface DriverBulkActionResult {
     error: string
   }>
 }
+
+// ================== Type Guards ==================
+
+export function isDriver(obj: unknown): obj is Driver {
+  return (
+    typeof obj === 'object' && obj !== null &&
+    'id' in obj && typeof (obj as any).id === 'string' &&
+    'tenantId' in obj && typeof (obj as any).tenantId === 'string' &&
+    'cdlNumber' in obj && typeof (obj as any).cdlNumber === 'string' &&
+    'status' in obj && typeof (obj as any).status === 'string'
+  );
+}

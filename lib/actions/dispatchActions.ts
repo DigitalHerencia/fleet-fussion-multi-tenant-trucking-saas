@@ -315,3 +315,70 @@ export async function deleteLoadAction(loadId: string) {
 
 // Update load status action
 
+/**
+ * Assign a driver to a load.
+ * @param input - LoadAssignmentInput (expects loadId and driverId)
+ * @returns {Promise<{ success: boolean; error?: string }>}
+ */
+export async function assignDriverAction(input: LoadAssignmentInput) {
+  try {
+    // Validate input
+    const validated = loadAssignmentSchema.safeParse(input);
+    if (!validated.success) {
+      return { success: false, error: validated.error.message };
+    }
+    const { loadId, driverId } = validated.data;
+
+    // Fetch load and check permissions
+    const load = await prisma.load.findUnique({
+      where: { id: loadId },
+      select: { organizationId: true, status: true }
+    });
+    if (!load) {
+      return { success: false, error: "Load not found" };
+    }
+    const user = await checkUserPermissions(load.organizationId, ["dispatch:manage", "loads:update"]);
+
+    // Update load with driver assignment
+    await prisma.load.update({
+      where: { id: loadId },
+      data: {
+        driverId,
+        updatedAt: new Date(),
+        lastModifiedBy: user.id
+      }
+    });
+
+    // Create status event for assignment
+    await prisma.loadStatusEvent.create({
+      data: {
+        loadId,
+        status: "assigned",
+        timestamp: new Date(),
+        notes: `Driver assigned`,
+        automaticUpdate: false,
+        source: "dispatcher"
+      }
+    });
+
+    // Audit log
+    await createAuditLog(
+      "ASSIGN_DRIVER",
+      "Load",
+      loadId,
+      { driverId },
+      user.id,
+      load.organizationId
+    );
+
+    // Revalidate relevant paths
+    revalidatePath(`/dashboard/${load.organizationId}/dispatch`);
+    revalidatePath(`/dashboard/${load.organizationId}/dispatch/${loadId}`);
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error assigning driver:", error);
+    return { success: false, error: error instanceof Error ? error.message : "Failed to assign driver" };
+  }
+}
+
