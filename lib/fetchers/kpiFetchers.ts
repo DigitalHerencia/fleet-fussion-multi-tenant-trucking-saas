@@ -1,21 +1,27 @@
-"use server";
+'use server';
 
-import { auth } from "@clerk/nextjs/server";
+import { auth } from '@clerk/nextjs/server';
 
-import prisma from "@/lib/database/db";
-import { getCachedData, setCachedData, CACHE_TTL } from "@/lib/cache/auth-cache";
-import type { DashboardSummary, OrganizationKPIs } from "@/types/kpi";
+import prisma from '@/lib/database/db';
+import {
+  getCachedData,
+  setCachedData,
+  CACHE_TTL,
+} from '@/lib/cache/auth-cache';
+import type { DashboardSummary, OrganizationKPIs } from '@/types/kpi';
 
 /**
  * KPI aggregation fetcher with optimized batch queries and caching
  */
-export async function getOrganizationKPIs(organizationId: string): Promise<OrganizationKPIs> {
+export async function getOrganizationKPIs(
+  organizationId: string
+): Promise<OrganizationKPIs> {
   const cacheKey = `kpis:${organizationId}`;
-  
+
   // Check cache first
   const cached = getCachedData(cacheKey) as OrganizationKPIs | null;
-  if (cached) { 
-    return cached; 
+  if (cached) {
+    return cached;
   }
 
   const today = new Date();
@@ -46,7 +52,7 @@ export async function getOrganizationKPIs(organizationId: string): Promise<Organ
           status: 'active',
         },
       }),
-      
+
       // Active vehicles (previous 30 days for comparison)
       prisma.vehicle.count({
         where: {
@@ -57,7 +63,7 @@ export async function getOrganizationKPIs(organizationId: string): Promise<Organ
           },
         },
       }),
-      
+
       // Active drivers (current)
       prisma.driver.count({
         where: {
@@ -65,7 +71,7 @@ export async function getOrganizationKPIs(organizationId: string): Promise<Organ
           status: 'active',
         },
       }),
-      
+
       // Active drivers (previous period)
       prisma.driver.count({
         where: {
@@ -76,7 +82,7 @@ export async function getOrganizationKPIs(organizationId: string): Promise<Organ
           },
         },
       }),
-      
+
       // Loads data (last 30 days)
       prisma.load.findMany({
         where: {
@@ -94,7 +100,7 @@ export async function getOrganizationKPIs(organizationId: string): Promise<Organ
           actualDeliveryDate: true,
         },
       }),
-      
+
       // Loads data (previous 30 days for comparison)
       prisma.load.findMany({
         where: {
@@ -111,7 +117,7 @@ export async function getOrganizationKPIs(organizationId: string): Promise<Organ
           estimatedMiles: true,
         },
       }),
-      
+
       // Revenue data (last 30 days)
       prisma.load.aggregate({
         where: {
@@ -125,7 +131,7 @@ export async function getOrganizationKPIs(organizationId: string): Promise<Organ
           rate: true,
         },
       }),
-      
+
       // Revenue data (previous 30 days)
       prisma.load.aggregate({
         where: {
@@ -140,7 +146,7 @@ export async function getOrganizationKPIs(organizationId: string): Promise<Organ
           rate: true,
         },
       }),
-      
+
       // Miles data (last 30 days)
       prisma.load.aggregate({
         where: {
@@ -157,7 +163,7 @@ export async function getOrganizationKPIs(organizationId: string): Promise<Organ
           actualMiles: true,
         },
       }),
-      
+
       // Miles data (previous 30 days)
       prisma.load.aggregate({
         where: {
@@ -175,7 +181,7 @@ export async function getOrganizationKPIs(organizationId: string): Promise<Organ
           actualMiles: true,
         },
       }),
-      
+
       // Inspections data (last 30 days)
       prisma.vehicle.findMany({
         where: {
@@ -190,7 +196,7 @@ export async function getOrganizationKPIs(organizationId: string): Promise<Organ
           // For now, we'll simulate based on random distribution
         },
       }),
-      
+
       // Maintenance data
       prisma.vehicle.findMany({
         where: {
@@ -206,65 +212,101 @@ export async function getOrganizationKPIs(organizationId: string): Promise<Organ
     ]);
 
     // Calculate load statistics
-    const activeLoads = loads.filter(load => ['assigned', 'in_transit'].includes(load.status));
+    const activeLoads = loads.filter(load =>
+      ['assigned', 'in_transit'].includes(load.status)
+    );
     const completedLoads = loads.filter(load => load.status === 'delivered');
     const inTransitLoads = loads.filter(load => load.status === 'in_transit');
     const pendingLoads = loads.filter(load => load.status === 'pending');
-    
+
     // Calculate revenue metrics
     const totalRevenue = Number(revenueData._sum.rate || 0);
     const previousRevenue = Number(revenuePreviousPeriod._sum.rate || 0);
-    const revenueChange = previousRevenue > 0 
-      ? ((totalRevenue - previousRevenue) / previousRevenue * 100).toFixed(1)
-      : totalRevenue > 0 ? "+100" : "0";
-    
+    const revenueChange =
+      previousRevenue > 0
+        ? (((totalRevenue - previousRevenue) / previousRevenue) * 100).toFixed(
+            1
+          )
+        : totalRevenue > 0
+          ? '+100'
+          : '0';
+
     // Calculate miles metrics
     const totalMiles = Number(milesData._sum.actualMiles || 0);
     const previousMiles = Number(milesPreviousPeriod._sum.actualMiles || 0);
-    const milesChange = previousMiles > 0 
-      ? ((totalMiles - previousMiles) / previousMiles * 100).toFixed(1)
-      : totalMiles > 0 ? "+100" : "0";
-    
-    const revenuePerMile = totalMiles > 0 ? (totalRevenue / totalMiles).toFixed(2) : "0.00";
-    const milesPerVehicleAvg = vehicles > 0 ? Math.round(totalMiles / vehicles) : 0;
-    
+    const milesChange =
+      previousMiles > 0
+        ? (((totalMiles - previousMiles) / previousMiles) * 100).toFixed(1)
+        : totalMiles > 0
+          ? '+100'
+          : '0';
+
+    const revenuePerMile =
+      totalMiles > 0 ? (totalRevenue / totalMiles).toFixed(2) : '0.00';
+    const milesPerVehicleAvg =
+      vehicles > 0 ? Math.round(totalMiles / vehicles) : 0;
+
     // Calculate vehicle/driver changes
-    const vehicleChange = vehiclesPreviousPeriod > 0 
-      ? ((vehicles - vehiclesPreviousPeriod) / vehiclesPreviousPeriod * 100).toFixed(1)
-      : vehicles > 0 ? "+100" : "0";
-    
-    const driverChange = driversPreviousPeriod > 0 
-      ? ((drivers - driversPreviousPeriod) / driversPreviousPeriod * 100).toFixed(1)
-      : drivers > 0 ? "+100" : "0";
-    
+    const vehicleChange =
+      vehiclesPreviousPeriod > 0
+        ? (
+            ((vehicles - vehiclesPreviousPeriod) / vehiclesPreviousPeriod) *
+            100
+          ).toFixed(1)
+        : vehicles > 0
+          ? '+100'
+          : '0';
+
+    const driverChange =
+      driversPreviousPeriod > 0
+        ? (
+            ((drivers - driversPreviousPeriod) / driversPreviousPeriod) *
+            100
+          ).toFixed(1)
+        : drivers > 0
+          ? '+100'
+          : '0';
+
     // Calculate inspection metrics
     const recentInspections = inspections.length;
     // Simulate failed inspections (in a real scenario, this would come from inspection results)
     const failedInspections = Math.floor(recentInspections * 0.125); // Assume 12.5% failure rate
-    const inspectionSuccessRate = recentInspections > 0 
-      ? ((recentInspections - failedInspections) / recentInspections * 100).toFixed(1)
-      : "0";
-    
+    const inspectionSuccessRate =
+      recentInspections > 0
+        ? (
+            ((recentInspections - failedInspections) / recentInspections) *
+            100
+          ).toFixed(1)
+        : '0';
+
     // Calculate maintenance metrics
-    const upcomingMaintenance = maintenanceVehicles.filter(v => 
-      v.nextInspectionDue && new Date(v.nextInspectionDue) <= new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000)
+    const upcomingMaintenance = maintenanceVehicles.filter(
+      v =>
+        v.nextInspectionDue &&
+        new Date(v.nextInspectionDue) <=
+          new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000)
     ).length;
-    
-    const maintenanceOverdue = maintenanceVehicles.filter(v => 
-      v.nextInspectionDue && new Date(v.nextInspectionDue) < today
+
+    const maintenanceOverdue = maintenanceVehicles.filter(
+      v => v.nextInspectionDue && new Date(v.nextInspectionDue) < today
     ).length;
-    
-    const maintenanceThisWeek = maintenanceVehicles.filter(v => 
-      v.nextInspectionDue && new Date(v.nextInspectionDue) <= new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
+
+    const maintenanceThisWeek = maintenanceVehicles.filter(
+      v =>
+        v.nextInspectionDue &&
+        new Date(v.nextInspectionDue) <=
+          new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
     ).length;
-    
+
     // Calculate pending load breakdowns
     const urgentLoads = pendingLoads.filter(load => {
       if (!load.createdAt) return false;
-      const hoursSinceCreation = (today.getTime() - new Date(load.createdAt).getTime()) / (1000 * 60 * 60);
+      const hoursSinceCreation =
+        (today.getTime() - new Date(load.createdAt).getTime()) /
+        (1000 * 60 * 60);
       return hoursSinceCreation > 24; // Consider urgent if pending for more than 24 hours
     }).length;
-    
+
     const awaitingPickup = Math.floor(pendingLoads.length * 0.5); // Estimate 50% awaiting pickup
     const awaitingAssignment = pendingLoads.length - awaitingPickup;
 
@@ -280,7 +322,7 @@ export async function getOrganizationKPIs(organizationId: string): Promise<Organ
       totalRevenue,
       revenueChange: `${Number(revenueChange) >= 0 ? '+' : ''}${revenueChange}%`,
       revenuePerMile: Number(revenuePerMile),
-      revenueTarget: 2.50, // This could be configurable per organization
+      revenueTarget: 2.5, // This could be configurable per organization
       totalMiles,
       milesChange: `${Number(milesChange) >= 0 ? '+' : ''}${milesChange}%`,
       milesPerVehicleAvg,
@@ -314,11 +356,11 @@ export async function getDashboardSummary(
 ): Promise<DashboardSummary> {
   const { userId } = await auth();
   if (!userId) {
-    throw new Error("Unauthorized");
+    throw new Error('Unauthorized');
   }
 
   const cacheKey = `dashboard:${organizationId}:${dateRange?.from.toISOString() || 'default'}:${dateRange?.to.toISOString() || 'default'}`;
-    // Check cache first
+  // Check cache first
   const cached = getCachedData(cacheKey) as DashboardSummary | null;
   if (cached) {
     return cached;
@@ -326,7 +368,7 @@ export async function getDashboardSummary(
 
   try {
     const kpis = await getOrganizationKPIs(organizationId);
-      // Additional dashboard-specific data could be fetched here
+    // Additional dashboard-specific data could be fetched here
     const summary: DashboardSummary = {
       lastUpdated: new Date().toISOString(),
       totalVehicles: kpis.activeVehicles,

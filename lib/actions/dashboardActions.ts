@@ -1,12 +1,12 @@
-"use server";
+'use server';
 
-import { auth } from "@clerk/nextjs/server";
-import { revalidatePath } from "next/cache";
+import { auth } from '@clerk/nextjs/server';
+import { revalidatePath } from 'next/cache';
 
-import prisma from "@/lib/database/db";
-import { hasPermission } from "@/lib/auth/permissions";
-import { getOrganizationKPIs } from "@/lib/fetchers/kpiFetchers";
-import type { OrganizationKPIs } from "@/types/kpi";
+import prisma from '@/lib/database/db';
+import { hasPermission } from '@/lib/auth/permissions';
+import { getOrganizationKPIs } from '@/lib/fetchers/kpiFetchers';
+import type { OrganizationKPIs } from '@/types/kpi';
 
 export interface DashboardActionResult<T = unknown> {
   success: boolean;
@@ -17,34 +17,39 @@ export interface DashboardActionResult<T = unknown> {
 /**
  * Get dashboard overview statistics
  */
-export async function getDashboardOverviewAction(): Promise<DashboardActionResult<OrganizationKPIs>> {
+export async function getDashboardOverviewAction(): Promise<
+  DashboardActionResult<OrganizationKPIs>
+> {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return { success: false, error: "Unauthorized" };
+      return { success: false, error: 'Unauthorized' };
     }
 
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
-      select: { organizationId: true, role: true }
+      select: { organizationId: true, role: true },
     });
 
     if (!user?.organizationId) {
-      return { success: false, error: "User organization not found" };
+      return { success: false, error: 'User organization not found' };
     }
 
     const overview = await getOrganizationKPIs(user.organizationId);
 
     // Revalidate to keep dashboard data fresh
-    revalidatePath("/dashboard");
-    revalidatePath("/");
+    revalidatePath('/dashboard');
+    revalidatePath('/');
 
     return { success: true, data: overview };
   } catch (error) {
-    console.error("Get dashboard overview error:", error);
+    console.error('Get dashboard overview error:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to get dashboard overview"
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Failed to get dashboard overview',
     };
   }
 }
@@ -52,7 +57,6 @@ export async function getDashboardOverviewAction(): Promise<DashboardActionResul
 /**
  * Get recent activities for dashboard
  */
-
 
 /**
  * Get dashboard alerts and notifications
@@ -65,14 +69,16 @@ export type DashboardAlert = {
   type: string;
 };
 
-export async function getDashboardAlertsAction(organizationId: string): Promise<DashboardActionResult<DashboardAlert[]>> {
+export async function getDashboardAlertsAction(
+  organizationId: string
+): Promise<DashboardActionResult<DashboardAlert[]>> {
   if (!organizationId) {
-    return { success: false, error: "Organization ID is required." };
+    return { success: false, error: 'Organization ID is required.' };
   }
   try {
     const { userId } = await auth();
     if (!userId) {
-      return { success: false, error: "Unauthorized" };
+      return { success: false, error: 'Unauthorized' };
     }
 
     const alerts: Array<{
@@ -118,25 +124,37 @@ export async function getDashboardAlertsAction(organizationId: string): Promise<
     });
 
     vehicleMaintenanceAlerts.forEach(vehicle => {
-      if (vehicle.nextInspectionDue && vehicle.nextInspectionDue <= thirtyDaysFromNow) {
-        const daysUntilDue = Math.ceil((vehicle.nextInspectionDue.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      if (
+        vehicle.nextInspectionDue &&
+        vehicle.nextInspectionDue <= thirtyDaysFromNow
+      ) {
+        const daysUntilDue = Math.ceil(
+          (vehicle.nextInspectionDue.getTime() - today.getTime()) /
+            (1000 * 60 * 60 * 24)
+        );
         alerts.push({
           id: `vehicle-inspection-${vehicle.id}`,
           message: `Vehicle ${vehicle.unitNumber} inspection ${daysUntilDue <= 0 ? 'overdue' : `due in ${daysUntilDue} days`}`,
-          severity: daysUntilDue <= 7 ? "high" : "medium",
+          severity: daysUntilDue <= 7 ? 'high' : 'medium',
           timestamp: new Date().toISOString(),
-          type: "vehicle_maintenance",
+          type: 'vehicle_maintenance',
         });
       }
-      
-      if (vehicle.insuranceExpiration && vehicle.insuranceExpiration <= thirtyDaysFromNow) {
-        const daysUntilDue = Math.ceil((vehicle.insuranceExpiration.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+      if (
+        vehicle.insuranceExpiration &&
+        vehicle.insuranceExpiration <= thirtyDaysFromNow
+      ) {
+        const daysUntilDue = Math.ceil(
+          (vehicle.insuranceExpiration.getTime() - today.getTime()) /
+            (1000 * 60 * 60 * 24)
+        );
         alerts.push({
           id: `vehicle-insurance-${vehicle.id}`,
           message: `Vehicle ${vehicle.unitNumber} insurance ${daysUntilDue <= 0 ? 'expired' : `expires in ${daysUntilDue} days`}`,
-          severity: daysUntilDue <= 7 ? "high" : "medium",
+          severity: daysUntilDue <= 7 ? 'high' : 'medium',
           timestamp: new Date().toISOString(),
-          type: "vehicle_insurance",
+          type: 'vehicle_insurance',
         });
       }
     });
@@ -169,25 +187,37 @@ export async function getDashboardAlertsAction(organizationId: string): Promise<
     });
 
     driverAlerts.forEach(driver => {
-      if (driver.licenseExpiration && driver.licenseExpiration <= thirtyDaysFromNow) {
-        const daysUntilDue = Math.ceil((driver.licenseExpiration.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      if (
+        driver.licenseExpiration &&
+        driver.licenseExpiration <= thirtyDaysFromNow
+      ) {
+        const daysUntilDue = Math.ceil(
+          (driver.licenseExpiration.getTime() - today.getTime()) /
+            (1000 * 60 * 60 * 24)
+        );
         alerts.push({
           id: `driver-license-${driver.id}`,
           message: `Driver ${driver.firstName} ${driver.lastName} license ${daysUntilDue <= 0 ? 'expired' : `expires in ${daysUntilDue} days`}`,
-          severity: daysUntilDue <= 7 ? "high" : "medium",
+          severity: daysUntilDue <= 7 ? 'high' : 'medium',
           timestamp: new Date().toISOString(),
-          type: "driver_license",
+          type: 'driver_license',
         });
       }
-      
-      if (driver.medicalCardExpiration && driver.medicalCardExpiration <= thirtyDaysFromNow) {
-        const daysUntilDue = Math.ceil((driver.medicalCardExpiration.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+      if (
+        driver.medicalCardExpiration &&
+        driver.medicalCardExpiration <= thirtyDaysFromNow
+      ) {
+        const daysUntilDue = Math.ceil(
+          (driver.medicalCardExpiration.getTime() - today.getTime()) /
+            (1000 * 60 * 60 * 24)
+        );
         alerts.push({
           id: `driver-medical-${driver.id}`,
           message: `Driver ${driver.firstName} ${driver.lastName} medical card ${daysUntilDue <= 0 ? 'expired' : `expires in ${daysUntilDue} days`}`,
-          severity: daysUntilDue <= 7 ? "high" : "medium",
+          severity: daysUntilDue <= 7 ? 'high' : 'medium',
           timestamp: new Date().toISOString(),
-          type: "driver_medical",
+          type: 'driver_medical',
         });
       }
     });
@@ -213,14 +243,18 @@ export async function getDashboardAlertsAction(organizationId: string): Promise<
       alerts.push({
         id: `load-overdue-${load.id}`,
         message: `Load ${load.loadNumber} pickup is overdue (Customer: ${load.customerName})`,
-        severity: "high",
+        severity: 'high',
         timestamp: new Date().toISOString(),
-        type: "load_overdue",
+        type: 'load_overdue',
       });
     });
 
     // Sort alerts by severity and timestamp
-    const severityOrder: { [key: string]: number } = { high: 3, medium: 2, low: 1 };
+    const severityOrder: { [key: string]: number } = {
+      high: 3,
+      medium: 2,
+      low: 1,
+    };
     const sortedAlerts = alerts.sort((a, b) => {
       if (severityOrder[a.severity] !== severityOrder[b.severity]) {
         return severityOrder[b.severity] - severityOrder[a.severity];
@@ -231,13 +265,16 @@ export async function getDashboardAlertsAction(organizationId: string): Promise<
     // Ensure type safety for severity
     const typedAlerts: DashboardAlert[] = sortedAlerts.slice(0, 10).map(a => ({
       ...a,
-      severity: (a.severity === 'high' || a.severity === 'medium' || a.severity === 'low') ? a.severity : 'low',
+      severity:
+        a.severity === 'high' || a.severity === 'medium' || a.severity === 'low'
+          ? a.severity
+          : 'low',
     }));
 
     return { success: true, data: typedAlerts }; // Return top 10 alerts
   } catch (error) {
-    console.error("Error fetching dashboard alerts:", error);
-    return { success: false, error: "Failed to fetch alerts." };
+    console.error('Error fetching dashboard alerts:', error);
+    return { success: false, error: 'Failed to fetch alerts.' };
   }
 }
 
@@ -252,19 +289,32 @@ export type DashboardScheduleItem = {
   type: string;
 };
 
-export async function getTodaysScheduleAction(organizationId: string): Promise<DashboardActionResult<DashboardScheduleItem[]>> {
+export async function getTodaysScheduleAction(
+  organizationId: string
+): Promise<DashboardActionResult<DashboardScheduleItem[]>> {
   if (!organizationId) {
-    return { success: false, error: "Organization ID is required." };
+    return { success: false, error: 'Organization ID is required.' };
   }
   try {
     const { userId } = await auth();
     if (!userId) {
-      return { success: false, error: "Unauthorized" };
+      return { success: false, error: 'Unauthorized' };
     }
 
     const today = new Date();
-    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
+    const startOfDay = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    );
+    const endOfDay = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate(),
+      23,
+      59,
+      59
+    );
 
     // Get today's scheduled pickups
     const scheduledPickups = await prisma.load.count({
@@ -317,59 +367,59 @@ export async function getTodaysScheduleAction(organizationId: string): Promise<D
 
     if (scheduledPickups > 0) {
       scheduleItems.push({
-        id: "pickups",
+        id: 'pickups',
         description: `${scheduledPickups} load${scheduledPickups !== 1 ? 's' : ''} scheduled for pickup`,
-        timePeriod: "Today",
+        timePeriod: 'Today',
         count: scheduledPickups,
-        type: "pickup",
+        type: 'pickup',
       });
     }
 
     if (scheduledDeliveries > 0) {
       scheduleItems.push({
-        id: "deliveries",
+        id: 'deliveries',
         description: `${scheduledDeliveries} load${scheduledDeliveries !== 1 ? 's' : ''} scheduled for delivery`,
-        timePeriod: "Today",
+        timePeriod: 'Today',
         count: scheduledDeliveries,
-        type: "delivery",
+        type: 'delivery',
       });
     }
 
     if (maintenanceScheduled > 0) {
       scheduleItems.push({
-        id: "maintenance",
+        id: 'maintenance',
         description: `${maintenanceScheduled} vehicle${maintenanceScheduled !== 1 ? 's' : ''} scheduled for maintenance`,
-        timePeriod: "Today",
+        timePeriod: 'Today',
         count: maintenanceScheduled,
-        type: "maintenance",
+        type: 'maintenance',
       });
     }
 
     if (loadsInTransit > 0) {
       scheduleItems.push({
-        id: "in-transit",
+        id: 'in-transit',
         description: `${loadsInTransit} load${loadsInTransit !== 1 ? 's' : ''} currently in transit`,
-        timePeriod: "Active",
+        timePeriod: 'Active',
         count: loadsInTransit,
-        type: "in_transit",
+        type: 'in_transit',
       });
     }
 
     // If no scheduled items, provide a default message
     if (scheduleItems.length === 0) {
       scheduleItems.push({
-        id: "no-schedule",
-        description: "No scheduled activities for today",
-        timePeriod: "Today",
+        id: 'no-schedule',
+        description: 'No scheduled activities for today',
+        timePeriod: 'Today',
         count: 0,
-        type: "none",
+        type: 'none',
       });
     }
 
     return { success: true, data: scheduleItems };
   } catch (error) {
     console.error("Error fetching today's schedule:", error);
-    return { success: false, error: "Failed to fetch schedule." };
+    return { success: false, error: 'Failed to fetch schedule.' };
   }
 }
 
@@ -380,23 +430,26 @@ export async function getTodaysScheduleAction(organizationId: string): Promise<D
 /**
  * Refresh dashboard data
  */
-export async function refreshDashboardAction(): Promise<DashboardActionResult<{ message: string }>> {
+export async function refreshDashboardAction(): Promise<
+  DashboardActionResult<{ message: string }>
+> {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return { success: false, error: "Unauthorized" };
+      return { success: false, error: 'Unauthorized' };
     }
 
     // Revalidate dashboard-related paths
-    revalidatePath("/dashboard");
-    revalidatePath("/");
+    revalidatePath('/dashboard');
+    revalidatePath('/');
 
-    return { success: true, data: { message: "Dashboard data refreshed" } };
+    return { success: true, data: { message: 'Dashboard data refreshed' } };
   } catch (error) {
-    console.error("Refresh dashboard error:", error);
+    console.error('Refresh dashboard error:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to refresh dashboard"
+      error:
+        error instanceof Error ? error.message : 'Failed to refresh dashboard',
     };
   }
 }

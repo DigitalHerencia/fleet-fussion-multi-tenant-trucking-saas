@@ -1,22 +1,28 @@
 # Dashboard Guide
 
-This guide covers the implementation, architecture, and best practices for FleetFusion's dashboard components and data visualization.
+This guide covers the implementation, architecture, and best practices for FleetFusion's dashboard
+components and data visualization.
 
 ## Overview
 
-FleetFusion's dashboard system provides real-time insights into fleet operations, performance metrics, and business analytics. Built with Next.js 15 Server Components and React 19, the dashboard prioritizes server-side rendering for optimal performance and SEO.
+FleetFusion's dashboard system provides real-time insights into fleet operations, performance
+metrics, and business analytics. Built with Next.js 15 Server Components and React 19, the dashboard
+prioritizes server-side rendering for optimal performance and SEO.
 
 ## Dashboard Architecture
 
 ### Fleet Management Dashboard
 
-**Location**: `app/(tenant)/[orgId]/dashboard/[userId]/page.tsx`
-**Layout**: `app/(tenant)/[orgId]/dashboard/layout.tsx`
+**Location**: `app/(tenant)/[orgId]/dashboard/[userId]/page.tsx` **Layout**:
+`app/(tenant)/[orgId]/dashboard/layout.tsx`
 
-The Fleet Management Dashboard serves as the primary operational interface for fleet managers and organizational management.
+The Fleet Management Dashboard serves as the primary operational interface for fleet managers and
+organizational management.
 
 #### Purpose & Audience
-- **Purpose**: Real-time overview of fleet operations, key metrics, quick actions, alerts, and schedules
+
+- **Purpose**: Real-time overview of fleet operations, key metrics, quick actions, alerts, and
+  schedules
 - **Audience**: Organization Management and users with dashboard access permissions
 
 #### Navigation Structure
@@ -28,7 +34,7 @@ graph TD
     C --> D[User Profile]
     C --> E[Organization Switcher]
     C --> F[Theme Toggle]
-    
+
     G[Sidebar - MainNav] --> H[Dashboard]
     G --> I[Dispatch]
     G --> J[Drivers]
@@ -38,7 +44,7 @@ graph TD
     G --> N[Analytics]
     G --> O[Settings]
     G --> P[Sign Out Button]
-    
+
     Q[Mobile - MobileNav] --> R[Sheet/Drawer UI]
     R --> S[Same Navigation Items]
 ```
@@ -46,6 +52,7 @@ graph TD
 ### Key Components
 
 #### A. Page Header
+
 ```typescript
 // components/dashboard/page-header.tsx
 interface PageHeaderProps {
@@ -70,6 +77,7 @@ export function PageHeader({ title, subtitle, actions }: PageHeaderProps) {
 ```
 
 #### B. Quick Actions Component
+
 ```typescript
 // components/dashboard/quick-actions.tsx
 'use client';
@@ -77,13 +85,13 @@ export function PageHeader({ title, subtitle, actions }: PageHeaderProps) {
 import { Button } from '@/components/ui/button';
 import { hasPermission } from '@/lib/auth/permissions';
 import { useRouter } from 'next/navigation';
-import { 
-  Truck, 
-  UserPlus, 
-  Package, 
-  MapPin, 
-  FileText, 
-  Calculator 
+import {
+  Truck,
+  UserPlus,
+  Package,
+  MapPin,
+  FileText,
+  Calculator
 } from 'lucide-react';
 
 interface QuickAction {
@@ -196,6 +204,7 @@ export function QuickActions({ userPermissions, organizationId }: QuickActionsPr
 ```
 
 #### C. Dashboard Metrics Component
+
 ```typescript
 // components/dashboard/dashboard-metrics.tsx
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -309,6 +318,7 @@ export function DashboardMetrics({ metrics, changes }: DashboardMetricsProps) {
 ```
 
 #### D. Dashboard Grid Components
+
 ```typescript
 // components/dashboard/recent-activity.tsx
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -372,6 +382,7 @@ export function RecentActivity({ activities }: RecentActivityProps) {
 ## Data Fetching Strategy
 
 ### Dashboard Data Fetchers
+
 ```typescript
 // lib/fetchers/dashboardFetchers.ts
 import { prisma } from '@/lib/database/prisma';
@@ -432,7 +443,7 @@ export const getDashboardSummary = unstable_cache(
           status: 'active',
         },
       }),
-      
+
       // Active drivers count
       prisma.driver.count({
         where: {
@@ -440,7 +451,7 @@ export const getDashboardSummary = unstable_cache(
           status: 'active',
         },
       }),
-      
+
       // Active loads count
       prisma.load.count({
         where: {
@@ -450,7 +461,7 @@ export const getDashboardSummary = unstable_cache(
           },
         },
       }),
-      
+
       // Recent loads for activity
       prisma.load.findMany({
         where: { organizationId },
@@ -461,7 +472,7 @@ export const getDashboardSummary = unstable_cache(
           vehicle: { select: { unit_number: true } },
         },
       }),
-      
+
       // Compliance documents expiring soon
       prisma.complianceDocument.findMany({
         where: {
@@ -476,7 +487,7 @@ export const getDashboardSummary = unstable_cache(
           vehicle: { select: { unit_number: true } },
         },
       }),
-      
+
       // Upcoming maintenance
       prisma.maintenanceSchedule.findMany({
         where: {
@@ -578,11 +589,13 @@ async function calculateOnTimeDeliveryRate(organizationId: string): Promise<numb
 ## Performance Optimization
 
 ### Caching Strategy
+
 - **Dashboard Summary**: 5-minute cache with tag-based revalidation
 - **Metrics**: Optimistic updates with background refresh
 - **Real-time Data**: WebSocket connections for critical updates
 
 ### Loading States
+
 ```typescript
 // components/dashboard/dashboard-skeleton.tsx
 export function DashboardSkeleton() {
@@ -593,14 +606,14 @@ export function DashboardSkeleton() {
         <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
         <div className="h-4 w-96 bg-gray-200 rounded animate-pulse" />
       </div>
-      
+
       {/* Quick actions skeleton */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className="h-24 bg-gray-200 rounded animate-pulse" />
         ))}
       </div>
-      
+
       {/* Metrics skeleton */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {Array.from({ length: 8 }).map((_, i) => (
@@ -615,6 +628,7 @@ export function DashboardSkeleton() {
 ## Security & Permissions
 
 ### Permission-Based Rendering
+
 All dashboard components implement permission-based rendering using the RBAC system:
 
 ```typescript
@@ -625,28 +639,28 @@ export default async function DashboardPage({
   params: { orgId: string; userId: string };
 }) {
   const { user, permissions } = await getCurrentUser();
-  
+
   // Verify user has dashboard access
   if (!hasPermission(permissions, 'dashboard:read')) {
     redirect('/unauthorized');
   }
-  
+
   const dashboardData = await getDashboardSummary(orgId);
-  
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Dashboard"
         subtitle="Welcome back! Here's what's happening with your fleet."
       />
-      
+
       <QuickActions
         userPermissions={permissions}
         organizationId={orgId}
       />
-      
+
       <DashboardMetrics metrics={dashboardData.metrics} />
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <RecentActivity activities={dashboardData.recentActivity} />
@@ -664,21 +678,25 @@ export default async function DashboardPage({
 ## Best Practices
 
 ### Component Design
+
 1. **Server Components First**: Use Server Components for data fetching by default
 2. **Client Interactivity**: Only use 'use client' for interactive components
 3. **Suspense Boundaries**: Implement proper loading states for all async components
 4. **Error Boundaries**: Handle errors gracefully with fallback UIs
 
 ### Data Management
+
 1. **Parallel Fetching**: Use Promise.all for independent data fetching
 2. **Caching**: Implement appropriate caching strategies for different data types
 3. **Revalidation**: Use tag-based revalidation for real-time updates
 4. **Pagination**: Implement pagination for large datasets
 
 ### User Experience
+
 1. **Progressive Enhancement**: Ensure basic functionality works without JavaScript
 2. **Responsive Design**: Mobile-first approach with proper breakpoints
 3. **Accessibility**: Implement proper ARIA labels and keyboard navigation
 4. **Performance**: Optimize for Core Web Vitals and user experience metrics
 
-This dashboard system provides a scalable, secure, and performant foundation for FleetFusion's operational interface while maintaining the flexibility to adapt to changing business requirements.
+This dashboard system provides a scalable, secure, and performant foundation for FleetFusion's
+operational interface while maintaining the flexibility to adapt to changing business requirements.

@@ -1,6 +1,6 @@
-import React from "react";
+import React from 'react';
 
-import { UserRole } from "@/types/auth";
+import { UserRole } from '@/types/auth';
 
 // Accepts UserWithRole[] instead of UserRole[]
 export interface UserWithRole {

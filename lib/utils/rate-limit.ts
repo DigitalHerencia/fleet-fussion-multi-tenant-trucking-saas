@@ -1,44 +1,51 @@
 /**
  * Rate Limiting Utility for FleetFusion
- * 
+ *
  * Provides in-memory rate limiting functionality using a sliding window approach.
  * For production use, consider using Redis for distributed rate limiting.
  */
 
 interface RateLimitConfig {
-  interval: string // e.g., '1h', '1m', '1s'
-  limit: number // Maximum requests allowed in the interval
+  interval: string; // e.g., '1h', '1m', '1s'
+  limit: number; // Maximum requests allowed in the interval
 }
 
 interface RateLimitResult {
-  success: boolean
-  limit: number
-  remaining: number
-  reset: number // Unix timestamp when the window resets
+  success: boolean;
+  limit: number;
+  remaining: number;
+  reset: number; // Unix timestamp when the window resets
 }
 
 // In-memory storage for rate limit data
 // Note: In production, use Redis or a database for distributed systems
-const rateLimitStore = new Map<string, { count: number; resetTime: number }>()
+const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 
 /**
  * Parse interval string to milliseconds
  */
 function parseInterval(interval: string): number {
-  const match = interval.match(/^(\d+)([smhd])$/)
+  const match = interval.match(/^(\d+)([smhd])$/);
   if (!match) {
-    throw new Error(`Invalid interval format: ${interval}. Use format like '1h', '30m', '60s'`)
+    throw new Error(
+      `Invalid interval format: ${interval}. Use format like '1h', '30m', '60s'`
+    );
   }
 
-  const [, value, unit] = match
-  const num = parseInt(value, 10)
+  const [, value, unit] = match;
+  const num = parseInt(value, 10);
 
   switch (unit) {
-    case 's': return num * 1000
-    case 'm': return num * 60 * 1000
-    case 'h': return num * 60 * 60 * 1000
-    case 'd': return num * 24 * 60 * 60 * 1000
-    default: throw new Error(`Unsupported time unit: ${unit}`)
+    case 's':
+      return num * 1000;
+    case 'm':
+      return num * 60 * 1000;
+    case 'h':
+      return num * 60 * 60 * 1000;
+    case 'd':
+      return num * 24 * 60 * 60 * 1000;
+    default:
+      throw new Error(`Unsupported time unit: ${unit}`);
   }
 }
 
@@ -46,10 +53,10 @@ function parseInterval(interval: string): number {
  * Clean up expired entries from the store
  */
 function cleanupExpiredEntries(): void {
-  const now = Date.now()
+  const now = Date.now();
   for (const [key, entry] of rateLimitStore.entries()) {
     if (entry.resetTime <= now) {
-      rateLimitStore.delete(key)
+      rateLimitStore.delete(key);
     }
   }
 }
@@ -58,29 +65,30 @@ function cleanupExpiredEntries(): void {
  * Create a rate limiter function
  */
 export function ratelimit(config: RateLimitConfig) {
-  const intervalMs = parseInterval(config.interval)
+  const intervalMs = parseInterval(config.interval);
 
-  return async function(identifier: string): Promise<RateLimitResult> {
+  return async function (identifier: string): Promise<RateLimitResult> {
     // Clean up expired entries periodically
-    if (Math.random() < 0.1) { // 10% chance to clean up on each call
-      cleanupExpiredEntries()
+    if (Math.random() < 0.1) {
+      // 10% chance to clean up on each call
+      cleanupExpiredEntries();
     }
 
-    const now = Date.now()
-    const key = `${identifier}:${config.interval}`
-    const existing = rateLimitStore.get(key)
+    const now = Date.now();
+    const key = `${identifier}:${config.interval}`;
+    const existing = rateLimitStore.get(key);
 
     // If no existing entry or the window has reset, create a new entry
     if (!existing || existing.resetTime <= now) {
-      const resetTime = now + intervalMs
-      rateLimitStore.set(key, { count: 1, resetTime })
-      
+      const resetTime = now + intervalMs;
+      rateLimitStore.set(key, { count: 1, resetTime });
+
       return {
         success: true,
         limit: config.limit,
         remaining: config.limit - 1,
-        reset: resetTime
-      }
+        reset: resetTime,
+      };
     }
 
     // Check if limit is exceeded
@@ -89,49 +97,52 @@ export function ratelimit(config: RateLimitConfig) {
         success: false,
         limit: config.limit,
         remaining: 0,
-        reset: existing.resetTime
-      }
+        reset: existing.resetTime,
+      };
     }
 
     // Increment the count
-    existing.count += 1
-    rateLimitStore.set(key, existing)
+    existing.count += 1;
+    rateLimitStore.set(key, existing);
 
     return {
       success: true,
       limit: config.limit,
       remaining: config.limit - existing.count,
-      reset: existing.resetTime
-    }
-  }
+      reset: existing.resetTime,
+    };
+  };
 }
 
 /**
  * Get the current status of a rate limit without incrementing
  */
-export function getRateLimitStatus(identifier: string, interval: string): RateLimitResult | null {
-  const key = `${identifier}:${interval}`
-  const existing = rateLimitStore.get(key)
-  
+export function getRateLimitStatus(
+  identifier: string,
+  interval: string
+): RateLimitResult | null {
+  const key = `${identifier}:${interval}`;
+  const existing = rateLimitStore.get(key);
+
   if (!existing) {
-    return null
+    return null;
   }
 
-  const now = Date.now()
+  const now = Date.now();
   if (existing.resetTime <= now) {
-    rateLimitStore.delete(key)
-    return null
+    rateLimitStore.delete(key);
+    return null;
   }
 
   // Determine limit based on common intervals (this is a simplified approach)
-  const limit = interval === '1h' ? 5 : interval === '1m' ? 60 : 100
+  const limit = interval === '1h' ? 5 : interval === '1m' ? 60 : 100;
 
   return {
     success: existing.count < limit,
     limit,
     remaining: Math.max(0, limit - existing.count),
-    reset: existing.resetTime
-  }
+    reset: existing.resetTime,
+  };
 }
 
 /**
@@ -140,13 +151,13 @@ export function getRateLimitStatus(identifier: string, interval: string): RateLi
  */
 export function resetRateLimit(identifier: string, interval?: string): void {
   if (interval) {
-    const key = `${identifier}:${interval}`
-    rateLimitStore.delete(key)
+    const key = `${identifier}:${interval}`;
+    rateLimitStore.delete(key);
   } else {
     // Reset all rate limits for this identifier
     for (const key of rateLimitStore.keys()) {
       if (key.startsWith(`${identifier}:`)) {
-        rateLimitStore.delete(key)
+        rateLimitStore.delete(key);
       }
     }
   }
@@ -157,27 +168,27 @@ export function resetRateLimit(identifier: string, interval?: string): void {
  * Useful for monitoring and debugging
  */
 export function getRateLimitStats(): {
-  totalEntries: number
-  activeEntries: number
-  expiredEntries: number
+  totalEntries: number;
+  activeEntries: number;
+  expiredEntries: number;
 } {
-  const now = Date.now()
-  let activeEntries = 0
-  let expiredEntries = 0
+  const now = Date.now();
+  let activeEntries = 0;
+  let expiredEntries = 0;
 
   for (const entry of rateLimitStore.values()) {
     if (entry.resetTime > now) {
-      activeEntries++
+      activeEntries++;
     } else {
-      expiredEntries++
+      expiredEntries++;
     }
   }
 
   return {
     totalEntries: rateLimitStore.size,
     activeEntries,
-    expiredEntries
-  }
+    expiredEntries,
+  };
 }
 
 /**
@@ -185,13 +196,13 @@ export function getRateLimitStats(): {
  * Returns a function that can be used in API routes to apply rate limiting
  */
 export function withRateLimit(config: RateLimitConfig) {
-  const limiter = ratelimit(config)
+  const limiter = ratelimit(config);
 
-  return async function(
+  return async function (
     identifier: string,
     handler: () => Promise<Response> | Response
   ): Promise<Response> {
-    const result = await limiter(identifier)
+    const result = await limiter(identifier);
 
     if (!result.success) {
       return new Response(
@@ -200,7 +211,7 @@ export function withRateLimit(config: RateLimitConfig) {
           error: 'Rate limit exceeded',
           code: 'RATE_LIMIT_EXCEEDED',
           resetTime: result.reset,
-          remaining: result.remaining
+          remaining: result.remaining,
         }),
         {
           status: 429,
@@ -208,21 +219,24 @@ export function withRateLimit(config: RateLimitConfig) {
             'Content-Type': 'application/json',
             'X-RateLimit-Limit': result.limit.toString(),
             'X-RateLimit-Remaining': result.remaining.toString(),
-            'X-RateLimit-Reset': result.reset.toString()
-          }
+            'X-RateLimit-Reset': result.reset.toString(),
+          },
         }
-      )
+      );
     }
 
-    const response = await handler()
+    const response = await handler();
 
     // Add rate limit headers to successful responses
     if (response instanceof Response) {
-      response.headers.set('X-RateLimit-Limit', result.limit.toString())
-      response.headers.set('X-RateLimit-Remaining', result.remaining.toString())
-      response.headers.set('X-RateLimit-Reset', result.reset.toString())
+      response.headers.set('X-RateLimit-Limit', result.limit.toString());
+      response.headers.set(
+        'X-RateLimit-Remaining',
+        result.remaining.toString()
+      );
+      response.headers.set('X-RateLimit-Reset', result.reset.toString());
     }
 
-    return response
-  }
+    return response;
+  };
 }

@@ -1,11 +1,14 @@
 # 🧠 Clerk + Multi-Tenant RBAC Prompts
-Automate and maintain tenant-aware access control, DB sync, and auth session enforcement for a production-grade Next.js 15 SaaS app.
+
+Automate and maintain tenant-aware access control, DB sync, and auth session enforcement for a
+production-grade Next.js 15 SaaS app.
 
 ---
 
 ## 🔐 Clerk Auth + RBAC Setup
 
 ### `Create Clerk RBAC scaffolding with custom org roles`
+
 ```prompt
 @workspace generate TypeScript models and utility functions to support multi-tenant role-based access control using Clerk organizations. Include:
 
@@ -118,19 +121,22 @@ Use them in respective server actions and surface errors to the UI via typed res
 
 # 🧰 Appendix
 
-* Clerk Docs: [https://clerk.com/docs](https://clerk.com/docs)
-* Prisma Docs: [https://www.prisma.io/docs](https://www.prisma.io/docs)
-* Neon Docs: [https://neon.tech/docs](https://neon.tech/docs)
-* Zod Docs: [https://zod.dev](https://zod.dev)
-* RBAC Pattern (FGA-style): [https://github.com/openfga](https://github.com/openfga)
+- Clerk Docs: [https://clerk.com/docs](https://clerk.com/docs)
+- Prisma Docs: [https://www.prisma.io/docs](https://www.prisma.io/docs)
+- Neon Docs: [https://neon.tech/docs](https://neon.tech/docs)
+- Zod Docs: [https://zod.dev](https://zod.dev)
+- RBAC Pattern (FGA-style): [https://github.com/openfga](https://github.com/openfga)
 
 ---
 
 ### 💡 Tip:
+
 To use these prompts in VS Code:
+
 1. Create `.vscode/copilot.prompts.md`
 2. Paste the above into the file
 3. Use Ask Mode + `@workspace` and paste individual prompts
 4. Optional: Convert into snippets or tasks for automation
 
-Would you like me to generate a companion `README.md` or UI for browsing and triggering these prompts in your local devtools?
+Would you like me to generate a companion `README.md` or UI for browsing and triggering these
+prompts in your local devtools?

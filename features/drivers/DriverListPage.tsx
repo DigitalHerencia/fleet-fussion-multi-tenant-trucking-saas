@@ -1,9 +1,9 @@
-import Link from "next/link";
+import Link from 'next/link';
 
-import { listDriversByOrg } from "@/lib/fetchers/driverFetchers";
-import { DriverCard } from "@/components/drivers/driver-card";
-import { DriverFormFeature } from "@/features/drivers/DriverFormFeature";
-import type { DriverFilters } from "@/types/drivers";
+import { listDriversByOrg } from '@/lib/fetchers/driverFetchers';
+import { DriverCard } from '@/components/drivers/driver-card';
+import { DriverFormFeature } from '@/features/drivers/DriverFormFeature';
+import type { DriverFilters } from '@/types/drivers';
 
 interface DriverListPageProps {
   orgId: string;
@@ -18,7 +18,7 @@ export default async function DriverListPage({
     page: searchParams?.page ? Number(searchParams.page) : 1,
     limit: searchParams?.limit ? Number(searchParams.limit) : 20,
   };
-  if (typeof searchParams?.q === "string") {
+  if (typeof searchParams?.q === 'string') {
     filters.search = searchParams.q;
   }
 
@@ -27,7 +27,7 @@ export default async function DriverListPage({
   return (
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {drivers.map((driver) => (
+        {drivers.map(driver => (
           <Link
             key={driver.id}
             href={`/${orgId}/drivers/${driver.id}`}
@@ -35,13 +35,13 @@ export default async function DriverListPage({
           >
             <DriverCard
               driver={{
-                id: driver.id ?? "",
-                firstName: driver.firstName ?? "",
-                lastName: driver.lastName ?? "",
-                email: driver.email ?? "",
-                phone: driver.phone ?? "",
-                status: driver.status ?? "",
-                licenseState: driver.cdlState ?? "",
+                id: driver.id ?? '',
+                firstName: driver.firstName ?? '',
+                lastName: driver.lastName ?? '',
+                email: driver.email ?? '',
+                phone: driver.phone ?? '',
+                status: driver.status ?? '',
+                licenseState: driver.cdlState ?? '',
                 licenseExpiration:
                   driver.cdlExpiration != null
                     ? new Date(driver.cdlExpiration)

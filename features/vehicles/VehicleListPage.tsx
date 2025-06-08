@@ -1,17 +1,20 @@
-import Link from "next/link";
+import Link from 'next/link';
 
-import { listVehiclesByOrg } from "@/lib/fetchers/vehicleFetchers";
-import { VehicleTable } from "@/components/vehicles/vehicle-table";
+import { listVehiclesByOrg } from '@/lib/fetchers/vehicleFetchers';
+import { VehicleTable } from '@/components/vehicles/vehicle-table';
 
 interface VehicleListPageProps {
   orgId: string;
   page?: number;
 }
 
-export default async function VehicleListPage({ orgId, page = 1 }: VehicleListPageProps) {
+export default async function VehicleListPage({
+  orgId,
+  page = 1,
+}: VehicleListPageProps) {
   const { vehicles, totalPages } = await listVehiclesByOrg(orgId, {
     page,
-    limit: 0
+    limit: 0,
   });
 
   return (
@@ -20,14 +23,16 @@ export default async function VehicleListPage({ orgId, page = 1 }: VehicleListPa
       <div className="flex items-center justify-between">
         <Link
           href={`?page=${page - 1}`}
-          className={`btn btn-outline ${page <= 1 ? "pointer-events-none opacity-50" : ""}`}
+          className={`btn btn-outline ${page <= 1 ? 'pointer-events-none opacity-50' : ''}`}
         >
           Previous
         </Link>
-        <span className="text-sm">Page {page} of {totalPages}</span>
+        <span className="text-sm">
+          Page {page} of {totalPages}
+        </span>
         <Link
           href={`?page=${page + 1}`}
-          className={`btn btn-outline ${page >= totalPages ? "pointer-events-none opacity-50" : ""}`}
+          className={`btn btn-outline ${page >= totalPages ? 'pointer-events-none opacity-50' : ''}`}
         >
           Next
         </Link>

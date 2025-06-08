@@ -1,7 +1,9 @@
 ---
 mode: 'ask'
 ---
+
 @workspace create Zod schemas for:
+
 - `createDriver`
 - `updateVehicle`
 - `submitComplianceReport`

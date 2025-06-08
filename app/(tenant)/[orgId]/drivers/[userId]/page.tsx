@@ -4,10 +4,9 @@
  * Individual driver dashboard for viewing assigned loads, HOS status, and compliance info
  */
 
-import { Suspense, type JSX } from "react";
-import { Clock } from "lucide-react";
-import { notFound } from "next/navigation";
-import { use } from "react";
+import { Suspense, type JSX } from 'react';
+import { Clock } from 'lucide-react';
+import { notFound } from 'next/navigation';
 
 import {
   Card,
@@ -15,26 +14,26 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { getDriverById } from "@/lib/fetchers/driverFetchers";
-import { DriverFormFeature } from "@/features/drivers/DriverFormFeature";
-import { DriverPerformance } from "@/components/analytics/driver-performance";
-import { getDriverAnalytics } from "@/lib/fetchers/analyticsFetchers";
-import { DocumentUploadForm } from "@/components/compliance/DocumentUploadForm";
-import { getDriverHOSStatus } from "@/lib/fetchers/complianceFetchers";
-import { AssignmentDialogButton } from "@/features/drivers/AssignmentDialogButton"; // new client component
+} from '@/components/ui/card';
+import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { getDriverById } from '@/lib/fetchers/driverFetchers';
+import { DriverFormFeature } from '@/features/drivers/DriverFormFeature';
+import { DriverPerformance } from '@/components/analytics/driver-performance';
+import { getDriverAnalytics } from '@/lib/fetchers/analyticsFetchers';
+import { DocumentUploadForm } from '@/components/compliance/DocumentUploadForm';
+import { getDriverHOSStatus } from '@/lib/fetchers/complianceFetchers';
+import { AssignmentDialogButton } from '@/features/drivers/AssignmentDialogButton'; // new client component
 
 // Helper to safely extract assignment info
 function getAssignmentLabel(assignment: any) {
-  if (assignment && typeof assignment === "object") {
+  if (assignment && typeof assignment === 'object') {
     return (
-      assignment.loadId || assignment.vehicleId || assignment.trailerId || "N/A"
+      assignment.loadId || assignment.vehicleId || assignment.trailerId || 'N/A'
     );
   }
-  return "N/A";
+  return 'N/A';
 }
 
 export default async function DriverDashboardPage({
@@ -48,26 +47,24 @@ export default async function DriverDashboardPage({
   if (!driverData) return notFound();
 
   // Real-time status: poll HOS status and assignment every 10s
-  // (React 19: use() with revalidation)
-  const hosStatusPromise = getDriverHOSStatus(userId);
-  // @ts-expect-error: use() is React 19 experimental
-  const hosStatus = use(hosStatusPromise, { revalidate: 10 });
+  // Pass revalidate option to fetcher if supported
+  const hosStatus = await getDriverHOSStatus(userId, { revalidate: 10 });
   let currentStatus: string = driverData.status;
-  if (hosStatus && typeof hosStatus === "object") {
+  if (hosStatus && typeof hosStatus === 'object') {
     const hs = hosStatus as any;
-    if (hs.data && typeof hs.data.currentStatus === "string") {
+    if (hs.data && typeof hs.data.currentStatus === 'string') {
       currentStatus = hs.data.currentStatus;
     }
   }
   // Fetch analytics for this driver
-  const analytics = await getDriverAnalytics(orgId, "30d");
+  const analytics = await getDriverAnalytics(orgId, '30d');
   const driverAnalytics = Array.isArray(analytics)
-    ? analytics.find((a) => a.id === driverData.id)
+    ? analytics.find(a => a.id === driverData.id)
     : null;
 
   return (
     <>
-      <div className="pt-8 space-y-6 p-6">
+      <div className="space-y-6 p-6 pt-8">
         {/* Page Header with real-time status */}
         <div className="flex items-center justify-between">
           <div>
@@ -77,7 +74,7 @@ export default async function DriverDashboardPage({
             <p className="text-muted-foreground">
               Status: <span className="font-semibold">{currentStatus}</span>
               <span className="ml-4">
-                Assigned to:{" "}
+                Assigned to:{' '}
                 <span className="font-semibold">
                   {getAssignmentLabel(driverData.currentAssignment)}
                 </span>
@@ -87,13 +84,13 @@ export default async function DriverDashboardPage({
           <div className="flex items-center gap-2">
             <Badge
               variant="outline"
-              className="bg-green-50 text-green-700 border-green-200"
+              className="border-green-200 bg-green-50 text-green-700"
             >
               On Duty
             </Badge>
             <Button
               variant="default"
-              className="bg-black border border-gray-200 hover:bg-neutral-800"
+              className="border border-gray-200 bg-black hover:bg-neutral-800"
             >
               <Clock className="mr-2 h-4 w-4" />
               Log Hours
@@ -140,7 +137,7 @@ export default async function DriverDashboardPage({
         </Card>
 
         {/* Assignment Button (client only) */}
-        <div className="flex justify-end mb-4">
+        <div className="mb-4 flex justify-end">
           <AssignmentDialogButton
             driverId={driverData.id}
             currentAssignment={driverData.currentAssignment}

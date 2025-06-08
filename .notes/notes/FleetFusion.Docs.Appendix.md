@@ -5,6 +5,7 @@ desc: ''
 updated: 1748305117535
 created: 1748296914280
 ---
+
 # FleetFusion Appendix
 
 ## A. Database Schema Reference
@@ -365,7 +366,10 @@ CREATE INDEX CONCURRENTLY idx_webhook_events_created_at ON webhook_events(create
 
 ### Clerk Webhook Handler
 
-This is the primary API endpoint for the application, designed to handle incoming webhook events from Clerk. Its main responsibility is to synchronize data between Clerk and the Neon serverless PostgreSQL database. This synchronization is achieved through idempotent upsert database operations, ensuring data consistency and resilience against duplicate events.
+This is the primary API endpoint for the application, designed to handle incoming webhook events
+from Clerk. Its main responsibility is to synchronize data between Clerk and the Neon serverless
+PostgreSQL database. This synchronization is achieved through idempotent upsert database operations,
+ensuring data consistency and resilience against duplicate events.
 
 ```typescript
 // POST /api/clerk/webhook-handler
@@ -377,8 +381,8 @@ This is the primary API endpoint for the application, designed to handle incomin
 // Refer to Clerk documentation for specific payload structures for each subscribed event.
 interface ClerkWebhookPayload {
   type: string; // e.g., "user.created", "organizationMembership.updated", "organization.created"
-  data: any;    // The actual event data, specific to the event type
-  object: "event";
+  data: any; // The actual event data, specific to the event type
+  object: 'event';
   // ... other common Clerk webhook fields like "event_id", "created_at"
 }
 
@@ -716,18 +720,12 @@ describe('RouteProtection', () => {
   };
 
   it('should allow access to dispatcher routes', () => {
-    const canAccess = RouteProtection.canAccessRoute(
-      mockUserContext, 
-      '/dispatch/loads'
-    );
+    const canAccess = RouteProtection.canAccessRoute(mockUserContext, '/dispatch/loads');
     expect(canAccess).toBe(true);
   });
 
   it('should deny access to admin routes', () => {
-    const canAccess = RouteProtection.canAccessRoute(
-      mockUserContext, 
-      '/admin/users'
-    );
+    const canAccess = RouteProtection.canAccessRoute(mockUserContext, '/admin/users');
     expect(canAccess).toBe(false);
   });
 });
@@ -799,15 +797,15 @@ test.describe('Driver Management', () => {
   test('should create a new driver', async ({ page }) => {
     await page.goto('/drivers');
     await page.click('[data-testid=add-driver]');
-    
+
     await page.fill('[data-testid=license-number]', 'D123456789');
     await page.fill('[data-testid=first-name]', 'John');
     await page.fill('[data-testid=last-name]', 'Doe');
     await page.selectOption('[data-testid=license-state]', 'CA');
     await page.fill('[data-testid=license-expiry]', '2025-12-31');
-    
+
     await page.click('[data-testid=submit]');
-    
+
     await expect(page.locator('[data-testid=success-message]')).toBeVisible();
     await expect(page.locator('text=John Doe')).toBeVisible();
   });
@@ -818,34 +816,34 @@ test.describe('Driver Management', () => {
 
 ### Target Metrics
 
-| Metric | Target | Measurement |
-|--------|--------|-------------|
-| **First Contentful Paint** | < 1.5s | Core Web Vitals |
-| **Largest Contentful Paint** | < 2.5s | Core Web Vitals |
-| **Cumulative Layout Shift** | < 0.1 | Core Web Vitals |
-| **Time to Interactive** | < 3.0s | Lighthouse |
-| **API Response Time** | < 200ms | P95 percentile |
-| **Database Query Time** | < 50ms | P95 percentile |
-| **Page Load Time** | < 2.0s | Google Analytics |
+| Metric                       | Target  | Measurement      |
+| ---------------------------- | ------- | ---------------- |
+| **First Contentful Paint**   | < 1.5s  | Core Web Vitals  |
+| **Largest Contentful Paint** | < 2.5s  | Core Web Vitals  |
+| **Cumulative Layout Shift**  | < 0.1   | Core Web Vitals  |
+| **Time to Interactive**      | < 3.0s  | Lighthouse       |
+| **API Response Time**        | < 200ms | P95 percentile   |
+| **Database Query Time**      | < 50ms  | P95 percentile   |
+| **Page Load Time**           | < 2.0s  | Google Analytics |
 
 ### Database Performance
 
 ```sql
 -- Query performance monitoring
-SELECT 
+SELECT
   query,
   calls,
   total_time,
   mean_time,
   max_time,
   stddev_time
-FROM pg_stat_statements 
+FROM pg_stat_statements
 WHERE calls > 100
 ORDER BY mean_time DESC
 LIMIT 10;
 
 -- Index usage analysis
-SELECT 
+SELECT
   schemaname,
   tablename,
   indexname,
@@ -869,6 +867,7 @@ npm run analyze
 # Third-party libraries: < 200KB gzipped
 ```
 
-This appendix provides comprehensive reference materials for implementing and maintaining FleetFusion.
+This appendix provides comprehensive reference materials for implementing and maintaining
+FleetFusion.
 
 ![db](<assets/FleetFusion - DB Diagram.png>)

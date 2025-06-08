@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 export const CompanyProfileSchema = z.object({
   id: z.string(),
@@ -6,5 +6,5 @@ export const CompanyProfileSchema = z.object({
   logoUrl: z.string().url().optional(),
   primaryColor: z.string().optional(),
   address: z.string().optional(),
-  contactEmail: z.string().email()
+  contactEmail: z.string().email(),
 });

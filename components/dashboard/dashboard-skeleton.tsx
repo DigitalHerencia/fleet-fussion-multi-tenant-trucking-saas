@@ -1,5 +1,5 @@
-import { Skeleton } from "@/components/ui/skeleton"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 /**
  * DashboardSkeleton
@@ -11,14 +11,14 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
  */
 export function DashboardSkeleton() {
   return (
-    <div className="min-h-screen bg-neutral-900 p-4 md:p-6 lg:p-8 flex flex-col gap-8">
+    <div className="flex min-h-screen flex-col gap-8 bg-neutral-900 p-4 md:p-6 lg:p-8">
       {/* Fleet Overview Header */}
       <div>
-        <Skeleton className="h-12 w-full mb-2" />
+        <Skeleton className="mb-2 h-12 w-full" />
       </div>
 
       {/* KPI Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         {[...Array(4)].map((_, i) => (
           <Card key={i}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -26,7 +26,7 @@ export function DashboardSkeleton() {
               <Skeleton className="h-4 w-4" />
             </CardHeader>
             <CardContent>
-              <Skeleton className="h-8 w-[60px] mb-2" />
+              <Skeleton className="mb-2 h-8 w-[60px]" />
               <Skeleton className="h-4 w-[140px]" />
             </CardContent>
           </Card>
@@ -34,21 +34,21 @@ export function DashboardSkeleton() {
       </div>
 
       {/* Bottom Widgets Grid */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 mt-2">
+      <div className="mt-2 grid grid-cols-1 gap-6 lg:grid-cols-3">
         {[...Array(3)].map((_, i) => (
           <Card key={i}>
             <CardHeader>
-              <Skeleton className="h-6 w-1/2 mb-2" />
+              <Skeleton className="mb-2 h-6 w-1/2" />
             </CardHeader>
             <CardContent>
-              <Skeleton className="h-40 w-full mb-2" />
-              <Skeleton className="h-4 w-3/4 mb-1" />
-              <Skeleton className="h-4 w-2/3 mb-1" />
+              <Skeleton className="mb-2 h-40 w-full" />
+              <Skeleton className="mb-1 h-4 w-3/4" />
+              <Skeleton className="mb-1 h-4 w-2/3" />
               <Skeleton className="h-4 w-1/2" />
             </CardContent>
           </Card>
         ))}
       </div>
     </div>
-  )
+  );
 }

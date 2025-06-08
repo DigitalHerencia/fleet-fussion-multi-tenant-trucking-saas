@@ -1,10 +1,16 @@
-"use client";
-import { useState } from "react";
+'use client';
+import { useState } from 'react';
 
-import { Button } from "@/components/ui/button";
-import { DriverAssignmentDialog } from "@/features/drivers/DriverAssignmentDialog";
+import { Button } from '@/components/ui/button';
+import { DriverAssignmentDialog } from '@/features/drivers/DriverAssignmentDialog';
 
-export function AssignmentDialogButton({ driverId, currentAssignment }: { driverId: string, currentAssignment?: any }) {
+export function AssignmentDialogButton({
+  driverId,
+  currentAssignment,
+}: {
+  driverId: string;
+  currentAssignment?: any;
+}) {
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -15,7 +21,9 @@ export function AssignmentDialogButton({ driverId, currentAssignment }: { driver
         driverId={driverId}
         open={open}
         onClose={() => setOpen(false)}
-        currentAssignment={typeof currentAssignment === 'object' ? currentAssignment : undefined}
+        currentAssignment={
+          typeof currentAssignment === 'object' ? currentAssignment : undefined
+        }
         onAssigned={() => setOpen(false)}
       />
     </>

@@ -28,8 +28,8 @@ export interface OrganizationKPIs {
 }
 
 export interface DashboardSummary {
-  lastUpdated: string
-  totalVehicles: number
-  activeDrivers: number
+  lastUpdated: string;
+  totalVehicles: number;
+  activeDrivers: number;
   // additional fields can be added as needed
 }

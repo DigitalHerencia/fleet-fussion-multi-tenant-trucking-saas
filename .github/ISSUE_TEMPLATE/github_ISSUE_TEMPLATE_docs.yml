@@ -11,7 +11,7 @@ body:
       placeholder: "Add API documentation for vehicle endpoints"
     validations:
       required: true
-      
+
   - type: textarea
     id: context
     attributes:
@@ -23,7 +23,7 @@ body:
         - Related to: Vehicle management feature #123
     validations:
       required: true
-      
+
   - type: dropdown
     id: doc_type
     attributes:
@@ -38,7 +38,7 @@ body:
         - "Troubleshooting"
     validations:
       required: true
-      
+
   - type: dropdown
     id: priority
     attributes:
@@ -50,7 +50,7 @@ body:
         - "Priority-High"
     validations:
       required: true
-      
+
   - type: dropdown
     id: milestone
     attributes:

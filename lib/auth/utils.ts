@@ -1,5 +1,5 @@
 // lib/auth/utils.ts
-import { auth } from "@clerk/nextjs/server"; // Assuming Clerk is used for auth
+import { auth } from '@clerk/nextjs/server'; // Assuming Clerk is used for auth
 
 /**
  * Utility to get the current organization ID from the session.

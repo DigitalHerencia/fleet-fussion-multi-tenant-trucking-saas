@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { useClerk } from "@clerk/nextjs";
-import { Loader2 } from "lucide-react";
+import { useEffect } from 'react';
+import { useClerk } from '@clerk/nextjs';
+import { Loader2 } from 'lucide-react';
 
 export default function SignOutPage() {
   const { signOut } = useClerk();
 
   useEffect(() => {
-    signOut({ redirectUrl: "/" });
+    signOut({ redirectUrl: '/' });
   }, [signOut]);
 
   return (
@@ -16,10 +16,7 @@ export default function SignOutPage() {
       <div className="flex flex-col items-center space-y-4">
         <Loader2 className="h-8 w-8 animate-spin" />
         <p className="text-muted-foreground">Signing you out...</p>
-        <a
-          href="/"
-          className="text-xs text-blue-400 hover:underline"
-        >
+        <a href="/" className="text-xs text-blue-400 hover:underline">
           Return to home
         </a>
       </div>

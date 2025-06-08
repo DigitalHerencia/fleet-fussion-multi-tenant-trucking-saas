@@ -1,7 +1,7 @@
-import React from "react"
+import React from 'react';
 
-import { RedirectingMessage } from "@/components/shared/RedirectMessage"
+import { RedirectingMessage } from '@/components/shared/RedirectMessage';
 
 export default function Loading() {
-  return <RedirectingMessage />
+  return <RedirectingMessage />;
 }

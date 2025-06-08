@@ -1,6 +1,6 @@
 /**
  * Enhanced Authentication Cache Layer
- * 
+ *
  * Implements sophisticated in-memory caching for auth data with:
  * - Multi-level caching (L1 hot cache + L2 warm cache)
  * - LRU eviction strategy
@@ -9,7 +9,11 @@
  * - Smart cache warming
  */
 
-import { UserContext, ClerkUserMetadata, ClerkOrganizationMetadata } from '@/types/auth';
+import {
+  UserContext,
+  ClerkUserMetadata,
+  ClerkOrganizationMetadata,
+} from '@/types/auth';
 
 interface CacheItem<T> {
   data: T;
@@ -34,23 +38,27 @@ interface CircuitBreakerState {
   nextAttempt: number;
 }
 
-class AuthCache {  // L1 Cache - Hot data (frequently accessed)
+class AuthCache {
+  // L1 Cache - Hot data (frequently accessed)
   private userHotCache = new Map<string, CacheItem<UserContext>>();
   private permissionHotCache = new Map<string, CacheItem<string[]>>();
   private orgCache = new Map<string, CacheItem<ClerkOrganizationMetadata>>();
-  
+
   private readonly USER_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
   private readonly ORG_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
   private readonly PERMISSION_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-  
+
   // Cache cleanup interval
   private cleanupInterval: NodeJS.Timeout;
 
   constructor() {
     // Clean up expired items every 2 minutes
-    this.cleanupInterval = setInterval(() => {
-      this.cleanup();
-    }, 2 * 60 * 1000);
+    this.cleanupInterval = setInterval(
+      () => {
+        this.cleanup();
+      },
+      2 * 60 * 1000
+    );
   }
 
   /**
@@ -79,11 +87,11 @@ class AuthCache {  // L1 Cache - Hot data (frequently accessed)
    */
   setUser(clerkId: string, user: UserContext): void {
     this.userHotCache.set(clerkId, {
-        data: user,
-        timestamp: Date.now(),
-        ttl: this.USER_CACHE_TTL,
-        accessCount: 0,
-        lastAccessed: 0
+      data: user,
+      timestamp: Date.now(),
+      ttl: this.USER_CACHE_TTL,
+      accessCount: 0,
+      lastAccessed: 0,
     });
   }
 
@@ -109,7 +117,7 @@ class AuthCache {  // L1 Cache - Hot data (frequently accessed)
       timestamp: Date.now(),
       ttl: this.ORG_CACHE_TTL,
       accessCount: 0,
-      lastAccessed: Date.now()
+      lastAccessed: Date.now(),
     });
   }
 
@@ -132,11 +140,11 @@ class AuthCache {  // L1 Cache - Hot data (frequently accessed)
    */
   setPermissions(userId: string, permissions: string[]): void {
     this.permissionHotCache.set(userId, {
-        data: permissions,
-        timestamp: Date.now(),
-        ttl: this.PERMISSION_CACHE_TTL,
-        accessCount: 0,
-        lastAccessed: 0
+      data: permissions,
+      timestamp: Date.now(),
+      ttl: this.PERMISSION_CACHE_TTL,
+      accessCount: 0,
+      lastAccessed: 0,
     });
   }
 
@@ -176,21 +184,21 @@ class AuthCache {  // L1 Cache - Hot data (frequently accessed)
    */
   private cleanup(): void {
     const now = Date.now();
-    
+
     // Clean user cache
     for (const [key, item] of this.userHotCache.entries()) {
       if (now - item.timestamp >= item.ttl) {
         this.userHotCache.delete(key);
       }
     }
-    
+
     // Clean organization cache
     for (const [key, item] of this.orgCache.entries()) {
       if (now - item.timestamp >= item.ttl) {
         this.orgCache.delete(key);
       }
     }
-    
+
     // Clean permission cache
     for (const [key, item] of this.permissionHotCache.entries()) {
       if (now - item.timestamp >= item.ttl) {
@@ -232,17 +240,19 @@ if (typeof process !== 'undefined') {
   });
 }
 
-
 // Cache for data fetchers with TTL-based expiration
-const dataCache = new Map<string, {
-  data: any;
-  timestamp: number;
-  ttl: number;
-}>();
+const dataCache = new Map<
+  string,
+  {
+    data: any;
+    timestamp: number;
+    ttl: number;
+  }
+>();
 
 export const CACHE_TTL = {
   DATA: 5 * 60 * 1000, // 5 minutes cache for general data queries
-  KPI: 2 * 60 * 1000,  // 2 minutes cache for KPIs (more frequent updates)
+  KPI: 2 * 60 * 1000, // 2 minutes cache for KPIs (more frequent updates)
   SHORT: 1 * 60 * 1000, // 1 minute cache for rapidly changing data
 } as const;
 
@@ -263,7 +273,11 @@ export function getCachedData<T>(key: string): T | null {
 /**
  * Set cached data with specified TTL
  */
-export function setCachedData<T>(key: string, data: T, ttl: number = CACHE_TTL.DATA): void {
+export function setCachedData<T>(
+  key: string,
+  data: T,
+  ttl: number = CACHE_TTL.DATA
+): void {
   dataCache.set(key, {
     data,
     timestamp: Date.now(),
@@ -274,14 +288,14 @@ export function setCachedData<T>(key: string, data: T, ttl: number = CACHE_TTL.D
 /**
  * Invalidate cache entries for a specific organization or type
  */
-export function invalidateCache(organizationId: string, type?: 'kpis' | 'loads' | 'vehicles' | 'drivers'): void {
+export function invalidateCache(
+  organizationId: string,
+  type?: 'kpis' | 'loads' | 'vehicles' | 'drivers'
+): void {
   if (type) {
     // Invalidate specific cache type
-    const patterns = [
-      `${type}:${organizationId}:`,
-      `batch:${organizationId}:`
-    ];
-    
+    const patterns = [`${type}:${organizationId}:`, `batch:${organizationId}:`];
+
     for (const [key] of dataCache) {
       if (patterns.some(pattern => key.startsWith(pattern))) {
         dataCache.delete(key);
@@ -336,7 +350,7 @@ if (typeof process !== 'undefined') {
   const cleanup = () => {
     dataCache.clear();
   };
-  
+
   process.on('SIGTERM', cleanup);
   process.on('SIGINT', cleanup);
 }

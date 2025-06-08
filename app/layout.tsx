@@ -1,35 +1,48 @@
-import type React from "react"
+import type React from 'react';
 
-import "@/app/globals.css"
-import { ClerkProvider } from "@clerk/nextjs"
-import type { Metadata } from "next"
+import '@/app/globals.css';
+import { ClerkProvider } from '@clerk/nextjs';
+import type { Metadata } from 'next';
 // Import Next.js font utilities
-import { Inter, Playfair_Display } from "next/font/google"
+import { Inter, Playfair_Display } from 'next/font/google';
 
-import { ThemeProvider } from "@/components/shared/ThemeProvider"
-import { AuthProvider } from "@/components/auth/context"
+import { ThemeProvider } from '@/components/shared/ThemeProvider';
+import { AuthProvider } from '@/components/auth/context';
 
 // Choose Inter for body (clean, modern, highly readable)
 // Choose Playfair Display for headers (elegant, strong contrast)
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" })
-const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair", display: "swap" })
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  variable: '--font-playfair',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
-  title: "FleetFusion - Enterprise-Grade Fleet Management",
-  description: "Modern transportation management system for small-to-mid-size trucking fleets",
-  icons:  "/map-pinned_icon.png"
-}
+  title: 'FleetFusion - Enterprise-Grade Fleet Management',
+  description:
+    'Modern transportation management system for small-to-mid-size trucking fleets',
+  icons: '/map-pinned_icon.png',
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <ClerkProvider>
-      <html lang="en" className={`dark ${inter.variable} ${playfair.variable}`} suppressHydrationWarning>
+      <html
+        lang="en"
+        className={`dark ${inter.variable} ${playfair.variable}`}
+        suppressHydrationWarning
+      >
         <head />
-        <body className="font-sans bg-black text-white">
+        <body className="bg-black font-sans text-white">
           <ThemeProvider
             attribute="class"
             defaultTheme="dark"
@@ -47,5 +60,5 @@ export default function RootLayout({
         </body>
       </html>
     </ClerkProvider>
-  )
+  );
 }

@@ -1,9 +1,9 @@
-"use server";
+'use server';
 
-import { auth } from "@clerk/nextjs/server";
+import { auth } from '@clerk/nextjs/server';
 
-import prisma from "@/lib/database/db";
-import { type UserRole } from "@/types/auth";
+import prisma from '@/lib/database/db';
+import { type UserRole } from '@/types/auth';
 
 export type UserWithRole = {
   id: string;
@@ -14,10 +14,12 @@ export type UserWithRole = {
 /**
  * Retrieve all users for an organization along with their assigned roles.
  */
-export async function listOrganizationUsers(orgId: string): Promise<UserWithRole[]> {
+export async function listOrganizationUsers(
+  orgId: string
+): Promise<UserWithRole[]> {
   const { userId } = await auth();
   if (!userId) {
-    throw new Error("Unauthorized");
+    throw new Error('Unauthorized');
   }
 
   const requestingUser = await prisma.user.findUnique({
@@ -26,7 +28,7 @@ export async function listOrganizationUsers(orgId: string): Promise<UserWithRole
   });
 
   if (!requestingUser || requestingUser.organizationId !== orgId) {
-    throw new Error("Access denied");
+    throw new Error('Access denied');
   }
 
   const memberships = await prisma.organizationMembership.findMany({
@@ -36,13 +38,12 @@ export async function listOrganizationUsers(orgId: string): Promise<UserWithRole
         select: { id: true, firstName: true, lastName: true },
       },
     },
-    orderBy: { createdAt: "asc" },
+    orderBy: { createdAt: 'asc' },
   });
 
-  return memberships.map((m) => ({
+  return memberships.map(m => ({
     id: m.user.id,
-    name: `${m.user.firstName ?? ""} ${m.user.lastName ?? ""}`.trim(),
+    name: `${m.user.firstName ?? ''} ${m.user.lastName ?? ''}`.trim(),
     role: m.role as UserRole,
   }));
 }
-

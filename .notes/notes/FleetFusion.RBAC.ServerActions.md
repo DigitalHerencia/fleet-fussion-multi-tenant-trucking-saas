@@ -8,7 +8,8 @@ created: 1748722115385
 
 # FleetFusion Server Actions Review
 
-Here is a review of all server actions in your workspace, with recommendations for security and maintainability:
+Here is a review of all server actions in your workspace, with recommendations for security and
+maintainability:
 
 ---
 
@@ -16,28 +17,30 @@ Here is a review of all server actions in your workspace, with recommendations f
 
 **Location:**  
 Per your project conventions, all server actions should be in `lib/actions/*.ts`.  
-Typical usage:  
+Typical usage:
+
 - `'use server'` at the top of each action file.
 - Exported as `export async function actionName(data: FormData | object) { ... }`.
 
 **Common Actions Found:**  
-(If you want a file-by-file list, please run a search for `use server` and `export async function` in actions.)
+(If you want a file-by-file list, please run a search for `use server` and `export async function`
+in actions.)
 
-- **User/Account:**  
+- **User/Account:**
   - `createUser`
   - `updateUser`
   - `deleteUser`
-- **Organization:**  
+- **Organization:**
   - `createOrganization`
   - `inviteMember`
   - `removeMember`
-- **Vehicle/Asset:**  
+- **Vehicle/Asset:**
   - `addVehicle`
   - `updateVehicle`
   - `deleteVehicle`
-- **Onboarding:**  
+- **Onboarding:**
   - `completeOnboarding`
-- **Other Domains:**  
+- **Other Domains:**
   - Actions for tasks, settings, etc.
 
 ---
@@ -58,20 +61,21 @@ Typical usage:
 - **Validation errors should be handled and returned to the UI.**
 
 **Example (Best Practice):**
-````typescript
-'use server'
-import { z } from 'zod'
-import { db } from '../db'
-import { CreateUserSchema } from '../schemas/user'
+
+```typescript
+'use server';
+import { z } from 'zod';
+import { db } from '../db';
+import { CreateUserSchema } from '../schemas/user';
 
 export async function createUser(data: unknown) {
-  const parsed = CreateUserSchema.safeParse(data)
+  const parsed = CreateUserSchema.safeParse(data);
   if (!parsed.success) {
-    return { error: parsed.error.format() }
+    return { error: parsed.error.format() };
   }
   // ...business logic...
 }
-````
+```
 
 ---
 
@@ -85,12 +89,13 @@ export async function createUser(data: unknown) {
 
 ## 5. **Security Recommendations**
 
-- **Authorization:**  
+- **Authorization:**
   - Always check user/org permissions before mutating data.
   - Never trust client-provided IDs or roles.
-- **Session Claims:**  
-  - Use Clerk session claims (see `FleetFusion.Clerk.SessionClaimsandJWT.md`) to verify identity and org context.
-- **No Sensitive Data Exposure:**  
+- **Session Claims:**
+  - Use Clerk session claims (see `FleetFusion.Clerk.SessionClaimsandJWT.md`) to verify identity and
+    org context.
+- **No Sensitive Data Exposure:**
   - Never return sensitive fields (e.g., passwords, tokens) in action responses.
 
 ---
@@ -117,4 +122,7 @@ export async function createUser(data: unknown) {
 ---
 
 **Summary:**  
-Your server actions should be secure, validated, and maintainable. Review each action for input validation, error handling, and authorization. Refactor any legacy or untyped actions to follow these patterns. For more details, see `FleetFusion.Docs.Types&Validations.md` and `FleetFusion.Clerk.SessionClaimsandJWT.md`.
+Your server actions should be secure, validated, and maintainable. Review each action for input
+validation, error handling, and authorization. Refactor any legacy or untyped actions to follow
+these patterns. For more details, see `FleetFusion.Docs.Types&Validations.md` and
+`FleetFusion.Clerk.SessionClaimsandJWT.md`.

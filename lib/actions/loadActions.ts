@@ -1,17 +1,16 @@
-"use server";
+'use server';
 
-import { auth } from "@clerk/nextjs/server";
-import { revalidatePath } from "next/cache";
+import { auth } from '@clerk/nextjs/server';
+import { revalidatePath } from 'next/cache';
 import { LoadStatus as PrismaLoadStatus } from '@prisma/client';
 
-import { db } from "@/lib/database/db";
+import { db } from '@/lib/database/db';
 import {
   updateLoadSchema,
   loadAssignmentSchema,
   type UpdateLoadInput,
   type LoadAssignmentInput,
-} from "@/schemas/dispatch";
-
+} from '@/schemas/dispatch';
 
 /**
  * Update an existing load with the provided fields.
@@ -24,10 +23,19 @@ export async function updateLoadAction(id: string, data: UpdateLoadInput) {
   try {
     const { userId, orgId } = await auth();
     if (!userId || !orgId) {
-      return { success: false, error: "Unauthorized" };
+      return { success: false, error: 'Unauthorized' };
     }
     const validated = updateLoadSchema.parse({ ...data, id });
-    const { rate, customer, origin, destination, driver, vehicle, trailer, ...rest } = validated;
+    const {
+      rate,
+      customer,
+      origin,
+      destination,
+      driver,
+      vehicle,
+      trailer,
+      ...rest
+    } = validated;
     const updateData: any = {
       ...rest,
       updatedAt: new Date(),
@@ -55,9 +63,12 @@ export async function updateLoadAction(id: string, data: UpdateLoadInput) {
       updateData.destinationLat = destination.latitude ?? null;
       updateData.destinationLng = destination.longitude ?? null;
     }
-    if (driver && typeof driver === 'object' && driver.id) updateData.driverId = driver.id;
-    if (vehicle && typeof vehicle === 'object' && vehicle.id) updateData.vehicleId = vehicle.id;
-    if (trailer && typeof trailer === 'object' && trailer.id) updateData.trailerId = trailer.id;
+    if (driver && typeof driver === 'object' && driver.id)
+      updateData.driverId = driver.id;
+    if (vehicle && typeof vehicle === 'object' && vehicle.id)
+      updateData.vehicleId = vehicle.id;
+    if (trailer && typeof trailer === 'object' && trailer.id)
+      updateData.trailerId = trailer.id;
     const load = await db.load.update({
       where: {
         id,
@@ -69,8 +80,8 @@ export async function updateLoadAction(id: string, data: UpdateLoadInput) {
     revalidatePath(`/[orgId]/dispatch/${id}`, 'page');
     return { success: true, data: load };
   } catch (error) {
-    console.error("Error updating load:", error);
-    return { success: false, error: "Failed to update load" };
+    console.error('Error updating load:', error);
+    return { success: false, error: 'Failed to update load' };
   }
 }
 
@@ -78,7 +89,7 @@ export async function updateLoadStatus(id: string, status: string) {
   try {
     const { userId, orgId } = await auth();
     if (!userId || !orgId) {
-      return { success: false, error: "Unauthorized" };
+      return { success: false, error: 'Unauthorized' };
     }
     const load = await db.load.update({
       where: {
@@ -90,11 +101,11 @@ export async function updateLoadStatus(id: string, status: string) {
         updatedAt: new Date(),
       },
     });
-    revalidatePath("/[orgId]/dispatch", "page");
+    revalidatePath('/[orgId]/dispatch', 'page');
     return { success: true, data: load };
   } catch (error) {
-    console.error("Error updating load status:", error);
-    return { success: false, error: "Failed to update load status" };
+    console.error('Error updating load status:', error);
+    return { success: false, error: 'Failed to update load status' };
   }
 }
 
@@ -102,7 +113,7 @@ export async function deleteLoadAction(id: string) {
   try {
     const { userId, orgId } = await auth();
     if (!userId || !orgId) {
-      return { success: false, error: "Unauthorized" };
+      return { success: false, error: 'Unauthorized' };
     }
     await db.load.delete({
       where: {
@@ -110,11 +121,11 @@ export async function deleteLoadAction(id: string) {
         organizationId: orgId,
       },
     });
-    revalidatePath("/[orgId]/dispatch", "page");
+    revalidatePath('/[orgId]/dispatch', 'page');
     return { success: true };
   } catch (error) {
-    console.error("Error deleting load:", error);
-    return { success: false, error: "Failed to delete load" };
+    console.error('Error deleting load:', error);
+    return { success: false, error: 'Failed to delete load' };
   }
 }
 

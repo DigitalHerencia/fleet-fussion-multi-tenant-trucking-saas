@@ -1,21 +1,21 @@
 // filepath: lib/actions/auditActions.ts
-'use server'
+'use server';
 
-import { auth } from '@clerk/nextjs/server'
+import { auth } from '@clerk/nextjs/server';
 
-import { db } from '@/lib/database/db'
+import { db } from '@/lib/database/db';
 
 export interface AuditLogEntry {
-  id: string
-  userId: string
-  organizationId: string
-  action: string
-  resource: string
-  resourceId?: string
-  metadata: Record<string, any>
-  ipAddress?: string
-  userAgent?: string
-  timestamp: Date
+  id: string;
+  userId: string;
+  organizationId: string;
+  action: string;
+  resource: string;
+  resourceId?: string;
+  metadata: Record<string, any>;
+  ipAddress?: string;
+  userAgent?: string;
+  timestamp: Date;
 }
 
 /**
@@ -30,19 +30,18 @@ export async function logAuditEvent(
   userAgent?: string
 ) {
   try {
-    const { userId, orgId } = await auth()
-    
+    const { userId, orgId } = await auth();
+
     if (!userId || !orgId) {
-      throw new Error('User must be authenticated')
+      throw new Error('User must be authenticated');
     }
-
-
   } catch (error) {
-    console.error('Failed to log audit event:', error)
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Failed to log audit event' 
-    }
+    console.error('Failed to log audit event:', error);
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : 'Failed to log audit event',
+    };
   }
 }
 
@@ -51,39 +50,40 @@ export async function logAuditEvent(
  */
 export async function getAuditLogs(
   filters: {
-    userId?: string
-    resource?: string
-    action?: string
-    startDate?: Date
-    endDate?: Date
+    userId?: string;
+    resource?: string;
+    action?: string;
+    startDate?: Date;
+    endDate?: Date;
   } = {},
   pagination: {
-    page?: number
-    limit?: number
+    page?: number;
+    limit?: number;
   } = {}
 ) {
   try {
-    const { userId, orgId } = await auth()
-    
+    const { userId, orgId } = await auth();
+
     if (!userId || !orgId) {
-      throw new Error('User must be authenticated')
+      throw new Error('User must be authenticated');
     }
 
-    const { page = 1, limit = 50 } = pagination
-    const offset = (page - 1) * limit
+    const { page = 1, limit = 50 } = pagination;
+    const offset = (page - 1) * limit;
 
     const where = {
       organizationId: orgId,
       ...(filters.userId && { userId: filters.userId }),
       ...(filters.resource && { resource: filters.resource }),
       ...(filters.action && { action: filters.action }),
-      ...(filters.startDate && filters.endDate && {
-        timestamp: {
-          gte: filters.startDate,
-          lte: filters.endDate,
-        },
-      }),
-    }
+      ...(filters.startDate &&
+        filters.endDate && {
+          timestamp: {
+            gte: filters.startDate,
+            lte: filters.endDate,
+          },
+        }),
+    };
 
     const [logs, total] = await Promise.all([
       db.auditLog.findMany({
@@ -103,7 +103,7 @@ export async function getAuditLogs(
         },
       }),
       db.auditLog.count({ where }),
-    ])
+    ]);
 
     return {
       success: true,
@@ -116,13 +116,14 @@ export async function getAuditLogs(
           totalPages: Math.ceil(total / limit),
         },
       },
-    }
+    };
   } catch (error) {
-    console.error('Failed to get audit logs:', error)
+    console.error('Failed to get audit logs:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to get audit logs',
-    }
+      error:
+        error instanceof Error ? error.message : 'Failed to get audit logs',
+    };
   }
 }
 
@@ -130,8 +131,18 @@ export async function getAuditLogs(
  * Log a driver action audit event
  */
 export async function logDriverAction(
-action: string, driverId: string, metadata: Record<string, any> = {}, p0: string, entityType: any, p1: string, entityId: any, id: string, details: any, p2: { driverName: string; cdlNumber: string | null; email: string | null }) {
-  return logAuditEvent(action, 'driver', driverId, metadata)
+  action: string,
+  driverId: string,
+  metadata: Record<string, any> = {},
+  p0: string,
+  entityType: any,
+  p1: string,
+  entityId: any,
+  id: string,
+  details: any,
+  p2: { driverName: string; cdlNumber: string | null; email: string | null }
+) {
+  return logAuditEvent(action, 'driver', driverId, metadata);
 }
 
 /**
@@ -142,7 +153,7 @@ export async function logVehicleAction(
   vehicleId: string,
   metadata: Record<string, any> = {}
 ) {
-  return logAuditEvent(action, 'vehicle', vehicleId, metadata)
+  return logAuditEvent(action, 'vehicle', vehicleId, metadata);
 }
 
 /**
@@ -153,7 +164,7 @@ export async function logDispatchAction(
   loadId: string,
   metadata: Record<string, any> = {}
 ) {
-  return logAuditEvent(action, 'dispatch', loadId, metadata)
+  return logAuditEvent(action, 'dispatch', loadId, metadata);
 }
 
 /**
@@ -164,7 +175,7 @@ export async function logComplianceAction(
   resourceId: string,
   metadata: Record<string, any> = {}
 ) {
-  return logAuditEvent(action, 'compliance', resourceId, metadata)
+  return logAuditEvent(action, 'compliance', resourceId, metadata);
 }
 
 /**
@@ -175,7 +186,7 @@ export async function logIftaAction(
   reportId: string,
   metadata: Record<string, any> = {}
 ) {
-  return logAuditEvent(action, 'ifta', reportId, metadata)
+  return logAuditEvent(action, 'ifta', reportId, metadata);
 }
 
 /**
@@ -183,14 +194,14 @@ export async function logIftaAction(
  */
 export async function cleanupAuditLogs(daysToKeep: number = 365) {
   try {
-    const { userId, orgId } = await auth()
-    
+    const { userId, orgId } = await auth();
+
     if (!userId || !orgId) {
-      throw new Error('User must be authenticated')
+      throw new Error('User must be authenticated');
     }
 
-    const cutoffDate = new Date()
-    cutoffDate.setDate(cutoffDate.getDate() - daysToKeep)
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
 
     const deletedCount = await db.auditLog.deleteMany({
       where: {
@@ -199,18 +210,19 @@ export async function cleanupAuditLogs(daysToKeep: number = 365) {
           lt: cutoffDate,
         },
       },
-    })
+    });
 
     return {
       success: true,
       deletedCount: deletedCount.count,
-    }
+    };
   } catch (error) {
-    console.error('Failed to cleanup audit logs:', error)
+    console.error('Failed to cleanup audit logs:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to cleanup audit logs',
-    }
+      error:
+        error instanceof Error ? error.message : 'Failed to cleanup audit logs',
+    };
   }
 }
 
@@ -219,18 +231,18 @@ export async function cleanupAuditLogs(daysToKeep: number = 365) {
  */
 export async function exportAuditLogs(
   filters: {
-    userId?: string
-    resource?: string
-    action?: string
-    startDate?: Date
-    endDate?: Date
+    userId?: string;
+    resource?: string;
+    action?: string;
+    startDate?: Date;
+    endDate?: Date;
   } = {}
 ) {
   try {
-    const { userId, orgId } = await auth()
-    
+    const { userId, orgId } = await auth();
+
     if (!userId || !orgId) {
-      throw new Error('User must be authenticated')
+      throw new Error('User must be authenticated');
     }
 
     const where = {
@@ -238,13 +250,14 @@ export async function exportAuditLogs(
       ...(filters.userId && { userId: filters.userId }),
       ...(filters.resource && { resource: filters.resource }),
       ...(filters.action && { action: filters.action }),
-      ...(filters.startDate && filters.endDate && {
-        timestamp: {
-          gte: filters.startDate,
-          lte: filters.endDate,
-        },
-      }),
-    }
+      ...(filters.startDate &&
+        filters.endDate && {
+          timestamp: {
+            gte: filters.startDate,
+            lte: filters.endDate,
+          },
+        }),
+    };
 
     const logs = await db.auditLog.findMany({
       where,
@@ -259,7 +272,7 @@ export async function exportAuditLogs(
           },
         },
       },
-    })
+    });
 
     // Convert to CSV format
     const headers = [
@@ -271,18 +284,18 @@ export async function exportAuditLogs(
       'IP Address',
       'User Agent',
       'Metadata',
-    ]
-
+    ];
 
     return {
       success: true,
       filename: `audit-logs-${new Date().toISOString().split('T')[0]}.csv`,
-    }
+    };
   } catch (error) {
-    console.error('Failed to export audit logs:', error)
+    console.error('Failed to export audit logs:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to export audit logs',
-    }
+      error:
+        error instanceof Error ? error.message : 'Failed to export audit logs',
+    };
   }
 }

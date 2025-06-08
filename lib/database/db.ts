@@ -6,16 +6,16 @@
  * - Handles error logging and type-safe queries
  */
 
-import { PrismaClient } from '@prisma/client'
-import { PrismaNeon } from '@prisma/adapter-neon'
-import dotenv from 'dotenv'
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
+import { PrismaClient } from '@prisma/client';
+import { PrismaNeon } from '@prisma/adapter-neon';
+import dotenv from 'dotenv';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
-dotenv.config()
-const connectionString = `${process.env.DATABASE_URL}`
+dotenv.config();
+const connectionString = `${process.env.DATABASE_URL}`;
 
-const adapter = new PrismaNeon({ connectionString })
-const prisma = new PrismaClient({ adapter })
+const adapter = new PrismaNeon({ connectionString });
+const prisma = new PrismaClient({ adapter });
 export const db = prisma;
 
 // Utility function to handle database errors
@@ -27,9 +27,16 @@ export function handleDatabaseError(error: unknown): never {
       case 'P2003':
       case 'P2025':
       default:
-        throw new Error(`Database error (Prisma): ${error.message} (Code: ${error.code})`);
+        throw new Error(
+          `Database error (Prisma): ${error.message} (Code: ${error.code})`
+        );
     }
-  } else if (typeof error === 'object' && error !== null && 'code' in error && 'message' in error) {
+  } else if (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    'message' in error
+  ) {
     // Fallback for generic SQL errors
     const sqlError = error as { code: string; message: string };
     switch (sqlError.code) {
@@ -38,7 +45,9 @@ export function handleDatabaseError(error: unknown): never {
       case '23502':
       case '42P01':
       default:
-        throw new Error(`Database error: ${sqlError.message} (SQL Code: ${sqlError.code})`);
+        throw new Error(
+          `Database error: ${sqlError.message} (SQL Code: ${sqlError.code})`
+        );
     }
   }
   throw new Error('Unknown database error occurred');
@@ -51,14 +60,16 @@ async function generateUniqueOrgSlug(baseSlug: string): Promise<string> {
   let slug = baseSlug;
   let suffix = 1;
   const maxAttempts = 50; // Prevent infinite loops
-  
+
   while (suffix <= maxAttempts) {
     const existing = await db.organization.findUnique({ where: { slug } });
     if (!existing) return slug;
     slug = `${baseSlug}-${suffix}`;
     suffix++;
   }
-  throw new Error(`Could not generate unique slug after ${maxAttempts} attempts for base slug: ${baseSlug}`);
+  throw new Error(
+    `Could not generate unique slug after ${maxAttempts} attempts for base slug: ${baseSlug}`
+  );
 }
 
 // Type-safe database queries helper (rewritten for Prisma)
@@ -67,7 +78,13 @@ export class DatabaseQueries {
    * Upsert (create or update) an organization membership from Clerk webhook
    * Looks up internal org/user IDs by Clerk IDs, upserts membership, sets role and timestamps
    */
-  static async upsertOrganizationMembership({ organizationClerkId, userClerkId, role, createdAt, updatedAt }: {
+  static async upsertOrganizationMembership({
+    organizationClerkId,
+    userClerkId,
+    role,
+    createdAt,
+    updatedAt,
+  }: {
     organizationClerkId: string;
     userClerkId: string;
     role: string;
@@ -76,9 +93,16 @@ export class DatabaseQueries {
   }) {
     try {
       // Look up internal IDs
-      const organization = await db.organization.findUnique({ where: { clerkId: organizationClerkId } });
-      if (!organization) throw new Error(`Organization not found for clerkId: ${organizationClerkId}`);
-      const user = await db.user.findUnique({ where: { clerkId: userClerkId } });
+      const organization = await db.organization.findUnique({
+        where: { clerkId: organizationClerkId },
+      });
+      if (!organization)
+        throw new Error(
+          `Organization not found for clerkId: ${organizationClerkId}`
+        );
+      const user = await db.user.findUnique({
+        where: { clerkId: userClerkId },
+      });
       if (!user) throw new Error(`User not found for clerkId: ${userClerkId}`);
       // Upsert membership (unique on orgId+userId)
       const membership = await db.organizationMembership.upsert({
@@ -111,20 +135,37 @@ export class DatabaseQueries {
   /**
    * Delete an organization membership (by orgClerkId and userClerkId)
    */
-  static async deleteOrganizationMembership({ organizationClerkId, userClerkId }: {
+  static async deleteOrganizationMembership({
+    organizationClerkId,
+    userClerkId,
+  }: {
     organizationClerkId: string;
     userClerkId: string;
   }) {
     try {
-      const organization = await db.organization.findUnique({ where: { clerkId: organizationClerkId } });
+      const organization = await db.organization.findUnique({
+        where: { clerkId: organizationClerkId },
+      });
       if (!organization) {
-        console.warn(`[DB] Organization not found for clerkId: ${organizationClerkId}, skipping membership delete.`);
-        return { success: true, message: 'Organization not found, skipping membership delete.' };
+        console.warn(
+          `[DB] Organization not found for clerkId: ${organizationClerkId}, skipping membership delete.`
+        );
+        return {
+          success: true,
+          message: 'Organization not found, skipping membership delete.',
+        };
       }
-      const user = await db.user.findUnique({ where: { clerkId: userClerkId } });
+      const user = await db.user.findUnique({
+        where: { clerkId: userClerkId },
+      });
       if (!user) {
-        console.warn(`[DB] User not found for clerkId: ${userClerkId}, skipping membership delete.`);
-        return { success: true, message: 'User not found, skipping membership delete.' };
+        console.warn(
+          `[DB] User not found for clerkId: ${userClerkId}, skipping membership delete.`
+        );
+        return {
+          success: true,
+          message: 'User not found, skipping membership delete.',
+        };
       }
       await db.organizationMembership.delete({
         where: {
@@ -137,7 +178,10 @@ export class DatabaseQueries {
       return { success: true };
     } catch (error) {
       // If not found, treat as idempotent
-      if (error instanceof PrismaClientKnownRequestError && error.code === 'P2025') {
+      if (
+        error instanceof PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
         return { success: true };
       }
       console.error('Error in deleteOrganizationMembership:', error);
@@ -198,11 +242,16 @@ export class DatabaseQueries {
     isActive?: boolean;
   }) {
     try {
-      if (!data.clerkId) throw new Error('clerkId is required for organization upsert');
-      if (!data.name) throw new Error('name is required for organization upsert');
-      if (!data.slug) throw new Error('slug is required for organization upsert');
+      if (!data.clerkId)
+        throw new Error('clerkId is required for organization upsert');
+      if (!data.name)
+        throw new Error('name is required for organization upsert');
+      if (!data.slug)
+        throw new Error('slug is required for organization upsert');
       const { clerkId } = data;
-      const existingOrg = await db.organization.findUnique({ where: { clerkId } });
+      const existingOrg = await db.organization.findUnique({
+        where: { clerkId },
+      });
       if (existingOrg) {
         const updateData = {
           name: data.name,
@@ -271,7 +320,7 @@ export class DatabaseQueries {
                 (Array.isArray(target) && target.includes('clerkId'))
               ) {
                 const existingOrg = await db.organization.findUnique({
-                  where: { clerkId }
+                  where: { clerkId },
                 });
                 if (existingOrg) {
                   return existingOrg;
@@ -281,10 +330,18 @@ export class DatabaseQueries {
             throw error;
           }
         }
-        throw lastError || new Error('Failed to create organization due to conflicts after multiple attempts');
+        throw (
+          lastError ||
+          new Error(
+            'Failed to create organization due to conflicts after multiple attempts'
+          )
+        );
       }
     } catch (error) {
-      console.error(`Error in upsertOrganization for clerkId: ${data.clerkId}`, error);
+      console.error(
+        `Error in upsertOrganization for clerkId: ${data.clerkId}`,
+        error
+      );
       handleDatabaseError(error);
     }
   }
@@ -311,7 +368,9 @@ export class DatabaseQueries {
       // Validate organizationId if provided
       let validOrganizationId: string | null = null;
       if (data.organizationId) {
-        const org = await db.organization.findUnique({ where: { id: data.organizationId } });
+        const org = await db.organization.findUnique({
+          where: { id: data.organizationId },
+        });
         if (org) {
           validOrganizationId = data.organizationId;
         } else {
@@ -330,7 +389,10 @@ export class DatabaseQueries {
         lastName: data.lastName,
         profileImage: data.profileImage,
         isActive: data.isActive === undefined ? true : data.isActive,
-        onboardingComplete: data.onboardingComplete === undefined ? false : data.onboardingComplete,
+        onboardingComplete:
+          data.onboardingComplete === undefined
+            ? false
+            : data.onboardingComplete,
         lastLogin: data.lastLogin,
         organizationId: validOrganizationId,
       };
@@ -357,8 +419,13 @@ export class DatabaseQueries {
         where: { clerkId },
       });
       if (!organization) {
-        console.warn(`[DB] Organization with clerkId ${clerkId} does not exist, skipping delete.`);
-        return { success: true, message: 'Organization already deleted or does not exist' };
+        console.warn(
+          `[DB] Organization with clerkId ${clerkId} does not exist, skipping delete.`
+        );
+        return {
+          success: true,
+          message: 'Organization already deleted or does not exist',
+        };
       }
       await db.organization.delete({
         where: { clerkId },
@@ -366,11 +433,20 @@ export class DatabaseQueries {
       console.log(`[DB] Organization deleted successfully: ${clerkId}`);
       return { success: true, message: 'Organization deleted successfully' };
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError && error.code === 'P2025') {
-        return { success: true, message: 'Organization already deleted or does not exist' };
+      if (
+        error instanceof PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
+        return {
+          success: true,
+          message: 'Organization already deleted or does not exist',
+        };
       }
       console.error(`[DB] Error deleting organization ${clerkId}:`, error);
-      return { success: false, message: `Failed to delete organization: ${error instanceof Error ? error.message : 'Unknown error'}` };
+      return {
+        success: false,
+        message: `Failed to delete organization: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      };
     }
   }
 
@@ -384,8 +460,13 @@ export class DatabaseQueries {
         where: { clerkId },
       });
       if (!user) {
-        console.warn(`[DB] User with clerkId ${clerkId} does not exist, skipping delete.`);
-        return { success: true, message: 'User already deleted or does not exist' };
+        console.warn(
+          `[DB] User with clerkId ${clerkId} does not exist, skipping delete.`
+        );
+        return {
+          success: true,
+          message: 'User already deleted or does not exist',
+        };
       }
       await db.user.delete({
         where: { clerkId },
@@ -393,11 +474,20 @@ export class DatabaseQueries {
       console.log(`[DB] User deleted successfully: ${clerkId}`);
       return { success: true, message: 'User deleted successfully' };
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError && error.code === 'P2025') {
-        return { success: true, message: 'User already deleted or does not exist' };
+      if (
+        error instanceof PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
+        return {
+          success: true,
+          message: 'User already deleted or does not exist',
+        };
       }
       console.error(`[DB] Error deleting user ${clerkId}:`, error);
-      return { success: false, message: `Failed to delete user: ${error instanceof Error ? error.message : 'Unknown error'}` };
+      return {
+        success: false,
+        message: `Failed to delete user: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      };
     }
   }
 }

@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "license": "MIT",
-  "scripts": {
+  "engines": {
+    "node": ">=18.0.0"
+  },  "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -12,22 +14,12 @@
     "test:e2e": "playwright test",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest --coverage",
-    "lint": "eslint",
-    "lint:check": "eslint . --cache",
-    "lint:strict": "eslint . --max-warnings 0 --cache",
-    "format": "prettier --write . --cache",
-    "format:check": "prettier --check . --cache",
     "type-check": "tsc --noEmit",
-    "quality": "npm run type-check && npm run lint:check && npm run format:check",
-    "quality:fix": "npm run type-check && npm run lint && npm run format",
-    "quality:strict": "npm run type-check && npm run lint:strict && npm run format:check",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
     "db:reset": "prisma migrate reset --force",
     "db:generate": "prisma generate",
-    "db:studio": "prisma studio",
-    "precommit": "npm run quality:strict && npm run test",
-    "ci": "npm run quality:strict && npm run test && npm run build"
+    "db:studio": "prisma studio"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.20.0",
@@ -92,10 +84,8 @@
     "uuid": "^11.1.0",
     "vaul": "^1.1.2",
     "zod": "3.25.28"
-  },
-  "devDependencies": {
+  },  "devDependencies": {
     "@faker-js/faker": "^9.8.0",
-    "@next/eslint-plugin-next": "^15.3.3",
     "@playwright/test": "^1.52.0",
     "@testing-library/jest-dom": "^6.1.5",
     "@testing-library/react": "^14.1.2",
@@ -104,25 +94,11 @@
     "@types/node": "^22.15.21",
     "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.5",
-    "@typescript-eslint/eslint-plugin": "^8.33.1",
-    "@typescript-eslint/parser": "^8.33.1",
-    "eslint": "^9.28.0",
-    "eslint-config-prettier": "^10.1.5",
-    "eslint-import-resolver-typescript": "^4.4.3",
-    "eslint-plugin-import": "^2.31.0",
-    "eslint-plugin-jsx-a11y": "^6.10.2",
-    "eslint-plugin-prettier": "^5.4.1",
-    "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-tailwindcss": "^3.18.0",
     "jsdom": "^24.0.0",
     "playwright": "^1.52.0",
     "postcss": "^8.5.4",
-    "prettier": "^3.5.3",
-    "prettier-plugin-tailwindcss": "^0.6.12",
     "tailwindcss": "^4.1.8",
     "typescript": "5.8.3",
-    "typescript-eslint": "^8.33.1",
     "vitest": "^3.2.2"
   }
 }

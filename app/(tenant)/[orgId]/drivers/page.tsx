@@ -1,8 +1,8 @@
-import { Suspense } from "react";
-import { notFound } from "next/navigation";
+import { Suspense } from 'react';
+import { notFound } from 'next/navigation';
 
-import { listDriversByOrg } from "@/lib/fetchers/driverFetchers";
-import DriverListPage from "@/features/drivers/DriverListPage";
+import { listDriversByOrg } from '@/lib/fetchers/driverFetchers';
+import DriverListPage from '@/features/drivers/DriverListPage';
 
 export default async function DriversPage({
   params,
@@ -15,7 +15,7 @@ export default async function DriversPage({
 
   return (
     <main className="p-6">
-      <h1 className="text-3xl font-bold mb-6">Drivers</h1>
+      <h1 className="mb-6 text-3xl font-bold">Drivers</h1>
       <Suspense fallback={<div>Loading drivers...</div>}>
         <DriverListPage orgId={orgId} />
       </Suspense>

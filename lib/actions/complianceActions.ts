@@ -12,10 +12,10 @@ import {
   createMaintenanceSchema,
   updateMaintenanceSchema,
   createSafetyEventSchema,
-  bulkComplianceOperationSchema
+  bulkComplianceOperationSchema,
 } from '@/schemas/compliance';
 import { getCurrentUser } from '@/lib/auth/auth';
-import { handleError } from "@/lib/errors/handleError";
+import { handleError } from '@/lib/errors/handleError';
 
 import { getComplianceDocuments } from '../fetchers/complianceFetchers';
 import { ComplianceDocument } from '../../types/compliance';
@@ -23,7 +23,9 @@ import { db } from '../database/db';
 import { createAuditLog } from './auditLogActions';
 
 // Document Management Actions
-export async function createComplianceDocument(data: z.infer<typeof createComplianceDocumentSchema>) {
+export async function createComplianceDocument(
+  data: z.infer<typeof createComplianceDocumentSchema>
+) {
   try {
     const user = await getCurrentUser();
     const userId = user?.userId;
@@ -53,8 +55,8 @@ export async function createComplianceDocument(data: z.infer<typeof createCompli
           type: validatedData.type,
           driverId: driverId || undefined,
           vehicleId: vehicleId || undefined,
-          expirationDate: { gte: new Date() }
-        }
+          expirationDate: { gte: new Date() },
+        },
       });
       if (existingDoc) {
         throw new Error('A valid document of this type already exists');
@@ -74,8 +76,12 @@ export async function createComplianceDocument(data: z.infer<typeof createCompli
         fileName: undefined,
         fileSize: undefined,
         mimeType: undefined,
-        issueDate: validatedData.issuedDate ? new Date(validatedData.issuedDate) : undefined,
-        expirationDate: validatedData.expirationDate ? new Date(validatedData.expirationDate) : undefined,
+        issueDate: validatedData.issuedDate
+          ? new Date(validatedData.issuedDate)
+          : undefined,
+        expirationDate: validatedData.expirationDate
+          ? new Date(validatedData.expirationDate)
+          : undefined,
         status: 'active',
         isVerified: false,
         notes: validatedData.notes,
@@ -85,8 +91,10 @@ export async function createComplianceDocument(data: z.infer<typeof createCompli
       },
       include: {
         driver: { select: { id: true, firstName: true, lastName: true } },
-        vehicle: { select: { id: true, unitNumber: true, make: true, model: true } }
-      }
+        vehicle: {
+          select: { id: true, unitNumber: true, make: true, model: true },
+        },
+      },
     });
 
     // Audit log
@@ -100,7 +108,10 @@ export async function createComplianceDocument(data: z.infer<typeof createCompli
     });
 
     // Create alert if document is expiring or expired
-    if (document.expirationDate && new Date(document.expirationDate) < new Date()) {
+    if (
+      document.expirationDate &&
+      new Date(document.expirationDate) < new Date()
+    ) {
       await db.complianceAlert.create({
         data: {
           organizationId: orgId,
@@ -116,14 +127,14 @@ export async function createComplianceDocument(data: z.infer<typeof createCompli
           dueDate: document.expirationDate,
           createdAt: new Date(),
           updatedAt: new Date(),
-        }
+        },
       });
     }
 
     return { success: true, data: document };
   } catch (error) {
     console.error('Error creating compliance document:', error);
-    return handleError(error, "Compliance Action")
+    return handleError(error, 'Compliance Action');
   }
 }
 
@@ -143,7 +154,7 @@ export async function updateComplianceDocument(
     const validatedData = updateComplianceDocumentSchema.parse(data);
 
     const existingDocument = await db.complianceDocument.findFirst({
-      where: { id, organizationId: orgId }
+      where: { id, organizationId: orgId },
     });
     if (!existingDocument) {
       throw new Error('Document not found');
@@ -164,8 +175,10 @@ export async function updateComplianceDocument(
       data: updateData,
       include: {
         driver: { select: { id: true, firstName: true, lastName: true } },
-        vehicle: { select: { id: true, unitNumber: true, make: true, model: true } }
-      }
+        vehicle: {
+          select: { id: true, unitNumber: true, make: true, model: true },
+        },
+      },
     });
 
     // Audit log
@@ -179,7 +192,10 @@ export async function updateComplianceDocument(
     });
 
     // Create alert if document is expiring or expired
-    if (updatedDocument.expirationDate && new Date(updatedDocument.expirationDate) < new Date()) {
+    if (
+      updatedDocument.expirationDate &&
+      new Date(updatedDocument.expirationDate) < new Date()
+    ) {
       await db.complianceAlert.create({
         data: {
           organizationId: orgId,
@@ -190,19 +206,24 @@ export async function updateComplianceDocument(
           severity: 'high',
           title: 'Document Expired',
           message: `Document ${updatedDocument.title} has expired.`,
-          entityType: existingDocument.driverId ? 'driver' : existingDocument.vehicleId ? 'vehicle' : 'company',
-          entityId: existingDocument.driverId || existingDocument.vehicleId || orgId,
+          entityType: existingDocument.driverId
+            ? 'driver'
+            : existingDocument.vehicleId
+              ? 'vehicle'
+              : 'company',
+          entityId:
+            existingDocument.driverId || existingDocument.vehicleId || orgId,
           dueDate: updatedDocument.expirationDate,
           createdAt: new Date(),
           updatedAt: new Date(),
-        }
+        },
       });
     }
 
     return { success: true, data: updatedDocument };
   } catch (error) {
     console.error('Error updating compliance document:', error);
-    return handleError(error, "Compliance Action")
+    return handleError(error, 'Compliance Action');
   }
 }
 
@@ -218,14 +239,14 @@ export async function deleteComplianceDocument(id: string) {
 
     // Get document for audit log
     const document = await db.complianceDocument.findFirst({
-      where: { id, organizationId: orgId }
+      where: { id, organizationId: orgId },
     });
     if (!document) {
       throw new Error('Document not found');
     }
 
     await db.complianceDocument.delete({
-      where: { id }
+      where: { id },
     });
 
     // Audit log
@@ -241,11 +262,9 @@ export async function deleteComplianceDocument(id: string) {
     return { success: true };
   } catch (error) {
     console.error('Error deleting compliance document:', error);
-    return handleError(error, "Compliance Action")
+    return handleError(error, 'Compliance Action');
   }
 }
-
-
 
 // DVIR Management Actions
 export async function createDVIRReport(data: z.infer<typeof createDvirSchema>) {
@@ -258,8 +277,6 @@ export async function createDVIRReport(data: z.infer<typeof createDvirSchema>) {
     }
 
     // Validate input
-
-
 
     // Create audit log
     // await createAuditLog({
@@ -279,51 +296,46 @@ export async function createDVIRReport(data: z.infer<typeof createDvirSchema>) {
     // revalidatePath('/[orgId]/compliance/dvir');
   } catch (error) {
     console.error('Error creating DVIR report:', error);
-    return handleError(error, "Compliance Action")
+    return handleError(error, 'Compliance Action');
   }
 }
 
 // Maintenance Management Actions
-    
 
+// Create audit log
+// await createAuditLog({
+//   action: 'CREATE',
+//   resource: 'maintenance_record',
+//   resourceId: maintenanceRecord.id,
+//   details: {
+//     vehicleId: maintenanceRecord.vehicleId,
+//     type: maintenanceRecord.type,
+//     cost: maintenanceRecord.cost
+//   },
+//   userId,
+//   organizationId: orgId
+// });
 
-    // Create audit log
-    // await createAuditLog({
-    //   action: 'CREATE',
-    //   resource: 'maintenance_record',
-    //   resourceId: maintenanceRecord.id,
-    //   details: {
-    //     vehicleId: maintenanceRecord.vehicleId,
-    //     type: maintenanceRecord.type,
-    //     cost: maintenanceRecord.cost
-    //   },
-    //   userId,
-    //   organizationId: orgId
-    // });
+// revalidatePath('/[orgId]/compliance/maintenance');
 
-    // revalidatePath('/[orgId]/compliance/maintenance');
-  
 // Safety Event Management Actions
 
-  
+// Create audit log
+// await createAuditLog({
+//   action: 'CREATE',
+//   resource: 'safety_event',
+//   resourceId: safetyEvent.id,
+//   details: {
+//     type: safetyEvent.type,
+//     severity: safetyEvent.severity,
+//     driverId: safetyEvent.driverId,
+//     vehicleId: safetyEvent.vehicleId
+//   },
+//   userId,
+//   organizationId: orgId
+// });
 
-
-    // Create audit log
-    // await createAuditLog({
-    //   action: 'CREATE',
-    //   resource: 'safety_event',
-    //   resourceId: safetyEvent.id,
-    //   details: {
-    //     type: safetyEvent.type,
-    //     severity: safetyEvent.severity,
-    //     driverId: safetyEvent.driverId,
-    //     vehicleId: safetyEvent.vehicleId
-    //   },
-    //   userId,
-    //   organizationId: orgId
-    // });
-
-    // revalidatePath('/[orgId]/compliance/safety');
+// revalidatePath('/[orgId]/compliance/safety');
 
 // Bulk Operations
 export async function bulkUpdateComplianceDocuments(
@@ -345,12 +357,12 @@ export async function bulkUpdateComplianceDocuments(
         const updated = await db.complianceDocument.update({
           where: {
             id: documentId,
-            organizationId: orgId
+            organizationId: orgId,
           },
           data: {
             ...validatedData.data,
-            updatedAt: new Date()
-          }
+            updatedAt: new Date(),
+          },
         });
         // Audit log for each bulk update
         await createAuditLog({
@@ -365,21 +377,22 @@ export async function bulkUpdateComplianceDocuments(
       })
     );
 
-    const successful = results.filter((r: any) => r.status === 'fulfilled').length;
+    const successful = results.filter(
+      (r: any) => r.status === 'fulfilled'
+    ).length;
     const failed = results.filter((r: any) => r.status === 'rejected').length;
 
     return {
       success: true,
-      data: { successful, failed, total: validatedData.ids.length }
+      data: { successful, failed, total: validatedData.ids.length },
     };
   } catch (error) {
     console.error('Error bulk updating compliance documents:', error);
-    return handleError(error, "Compliance Action")
+    return handleError(error, 'Compliance Action');
   }
 }
 
 // Alert Management
-
 
 // Helper Functions
 // async function checkHOSViolations(driverId: string, orgId: string, userId: string) {

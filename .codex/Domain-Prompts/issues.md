@@ -1,10 +1,12 @@
 # FleetFusion Domain Audit - GitHub Issues Creation Commands
 
-This file contains GitHub CLI commands to create issues for all critical tasks identified in the FleetFusion domain architecture audit.
+This file contains GitHub CLI commands to create issues for all critical tasks identified in the
+FleetFusion domain architecture audit.
 
 ## Prerequisites
 
 Ensure you have GitHub CLI installed and authenticated:
+
 ```bash
 gh auth status
 ```
@@ -842,6 +844,7 @@ gh project item-add PROJECT_ID --url "https://github.com/DigitalHerencia/FleetFu
 ## Milestone and Label Management
 
 Ensure these labels exist:
+
 - Priority-High, Priority-Medium, Priority-Low
 - Feature, Bug, Technical-Debt, Security
 - Codex, Copilot
@@ -851,6 +854,6 @@ Ensure "MVP Launch" milestone exists with due date: June 16, 2025
 
 ---
 
-**Total Issues to Create:** 8 critical issues covering all domain audit findings
-**Estimated Effort:** 6-8 weeks for complete implementation
-**Team Assignment:** Mix of Codex (complex domains) and Copilot (enhancements)
+**Total Issues to Create:** 8 critical issues covering all domain audit findings **Estimated
+Effort:** 6-8 weeks for complete implementation **Team Assignment:** Mix of Codex (complex domains)
+and Copilot (enhancements)

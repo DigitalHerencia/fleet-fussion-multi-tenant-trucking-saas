@@ -1,23 +1,41 @@
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal } from 'lucide-react';
 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { getDriverComplianceStatuses, type DriverComplianceRow } from "@/lib/fetchers/complianceFetchers";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import {
+  getDriverComplianceStatuses,
+  type DriverComplianceRow,
+} from '@/lib/fetchers/complianceFetchers';
 
 interface DriverComplianceTableProps {
   orgId: string;
 }
 
-export async function DriverComplianceTable({ orgId }: DriverComplianceTableProps) {
+export async function DriverComplianceTable({
+  orgId,
+}: DriverComplianceTableProps) {
   if (!orgId) {
     return <p className="text-red-500">Organization not found.</p>;
   }
-  const drivers: DriverComplianceRow[] = await getDriverComplianceStatuses(orgId);
+  const drivers: DriverComplianceRow[] =
+    await getDriverComplianceStatuses(orgId);
 
   return (
-    <div className="rounded-md border overflow-x-auto">
+    <div className="overflow-x-auto rounded-md border">
       <Table>
         <TableHeader className="bg-neutral-900">
           <TableRow>
@@ -33,7 +51,10 @@ export async function DriverComplianceTable({ orgId }: DriverComplianceTableProp
         <TableBody>
           {drivers.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+              <TableCell
+                colSpan={6}
+                className="text-muted-foreground py-8 text-center"
+              >
                 No drivers found
               </TableCell>
             </TableRow>
@@ -48,8 +69,16 @@ export async function DriverComplianceTable({ orgId }: DriverComplianceTableProp
                   <Badge variant="outline">{d.medicalStatus}</Badge>
                 </TableCell>
                 <TableCell>{d.violationStatus}</TableCell>
-                <TableCell>{d.lastViolation ? new Date(d.lastViolation).toLocaleDateString() : 'None'}</TableCell>
-                <TableCell>{d.lastInspection ? new Date(d.lastInspection).toLocaleDateString() : 'N/A'}</TableCell>
+                <TableCell>
+                  {d.lastViolation
+                    ? new Date(d.lastViolation).toLocaleDateString()
+                    : 'None'}
+                </TableCell>
+                <TableCell>
+                  {d.lastInspection
+                    ? new Date(d.lastInspection).toLocaleDateString()
+                    : 'N/A'}
+                </TableCell>
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

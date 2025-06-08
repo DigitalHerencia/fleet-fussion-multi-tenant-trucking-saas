@@ -1,14 +1,19 @@
 import type { UserRole } from './auth';
 
 export type VehicleType = 'tractor' | 'trailer' | 'straight_truck' | 'other';
-export type VehicleStatus = 'available' | 'assigned' | 'in_maintenance' | 'out_of_service' | 'retired';
+export type VehicleStatus =
+  | 'available'
+  | 'assigned'
+  | 'in_maintenance'
+  | 'out_of_service'
+  | 'retired';
 
 export interface Vehicle {
   id: string;
   organizationId: string;
   type: VehicleType;
   status: VehicleStatus;
-  
+
   // Basic Information
   make: string;
   model: string;
@@ -17,37 +22,37 @@ export interface Vehicle {
   licensePlate?: string;
   licensePlateState?: string;
   unitNumber?: string;
-  
+
   // Specifications
   grossVehicleWeight?: number;
   maxPayload?: number;
   fuelType?: string;
   engineType?: string;
-  
+
   // Registration & Insurance
   registrationNumber?: string;
   registrationExpiry?: Date;
   insuranceProvider?: string;
   insurancePolicyNumber?: string;
   insuranceExpiry?: Date;
-  
+
   // Current Assignment
   currentDriverId?: string;
   currentLoadId?: string;
-  
+
   // Location & Mileage
   currentLocation?: string;
   totalMileage?: number;
   lastMaintenanceMileage?: number;
-  
+
   // Maintenance
   nextMaintenanceDate?: Date;
   nextMaintenanceMileage?: number;
-  
+
   // Timestamps
   createdAt: Date;
   updatedAt: Date;
-  
+
   // Relations
   driver?: {
     id: string;

@@ -1,4 +1,4 @@
-import { Vehicle } from "@/types/vehicles";
+import { Vehicle } from '@/types/vehicles';
 import {
   Table,
   TableBody,
@@ -6,7 +6,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 
 interface VehicleTableProps {
   vehicles: Vehicle[];
@@ -17,7 +17,7 @@ export function VehicleTable({ vehicles }: VehicleTableProps) {
     <div className="rounded-md border">
       <Table>
         <TableHeader>
-          <TableRow className="border-b bg-muted/50">
+          <TableRow className="bg-muted/50 border-b">
             <TableHead>Unit #</TableHead>
             <TableHead>Type</TableHead>
             <TableHead>Make</TableHead>
@@ -27,7 +27,7 @@ export function VehicleTable({ vehicles }: VehicleTableProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {vehicles.map((v) => (
+          {vehicles.map(v => (
             <TableRow key={v.id} className="border-b">
               <TableCell className="font-medium">{v.unitNumber}</TableCell>
               <TableCell>{v.type}</TableCell>

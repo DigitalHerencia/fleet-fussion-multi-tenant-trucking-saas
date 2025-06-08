@@ -6,21 +6,21 @@ updated: 1748390411202
 created: 1748389432277
 ---
 
-# Comprehensive Code Mapping: ABAC, Multi-Tenant Architecture, Clerk Integration, and Neon Integration 
+# Comprehensive Code Mapping: ABAC, Multi-Tenant Architecture, Clerk Integration, and Neon Integration
 
 ---
 
-Here is all the code in your workspace relevant to the Clerk webhook handler, event types, onboarding, ABAC, JWT claims, and database sync:
+Here is all the code in your workspace relevant to the Clerk webhook handler, event types,
+onboarding, ABAC, JWT claims, and database sync:
 
 ---
 
 ## Key Concepts
 
-user.id for role-based access control
-org.id for tenant-based access control
+user.id for role-based access control org.id for tenant-based access control
 
-sign-up => onboarding => app / (tenant) / [orgId] / dashboard / [userId] / page.tsx
-sign-in => app / (tenant) / [orgId] / dashboard / [userId] / page.tsx
+sign-up => onboarding => app / (tenant) / [orgId] / dashboard / [userId] / page.tsx sign-in => app /
+(tenant) / [orgId] / dashboard / [userId] / page.tsx
 
 ## Directory Structure
 
@@ -298,9 +298,12 @@ fleetfusion-architecture
 
 **1. Webhook Handler Implementation**
 
-- `app/api/clerk/webhook-handler/route.ts`  
-  - Contains the main webhook handler, event switch, verification with Svix, rate limiting, and all event processing logic.
-  - Handles: `user.created`, `user.updated`, `user.deleted`, `organization.created`, `organization.updated`, `organization.deleted`, `organizationMembership.created`, `organizationMembership.updated`, `organizationMembership.deleted`, and more.
+- `app/api/clerk/webhook-handler/route.ts`
+  - Contains the main webhook handler, event switch, verification with Svix, rate limiting, and all
+    event processing logic.
+  - Handles: `user.created`, `user.updated`, `user.deleted`, `organization.created`,
+    `organization.updated`, `organization.deleted`, `organizationMembership.created`,
+    `organizationMembership.updated`, `organizationMembership.deleted`, and more.
   - Uses `DatabaseQueries` for upsert/delete operations.
   - Verifies webhooks using Svix and `CLERK_WEBHOOK_SECRET`.
   - Handles onboarding metadata sync and ABAC fields.
@@ -308,16 +311,21 @@ fleetfusion-architecture
 **2. Webhook Event Types and Payloads**
 
 - `types/webhooks.ts`
-  - Defines all webhook event types, payload structures for user/org/membership, and verification result types.
-  - Types: `WebhookEventType`, `UserWebhookData`, `OrganizationWebhookData`, `OrganizationMembershipWebhookData`, etc.
+
+  - Defines all webhook event types, payload structures for user/org/membership, and verification
+    result types.
+  - Types: `WebhookEventType`, `UserWebhookData`, `OrganizationWebhookData`,
+    `OrganizationMembershipWebhookData`, etc.
 
 - `types/auth.ts`
-  - Defines `ClerkUserMetadata`, `ClerkOrganizationMetadata`, `UserRole`, `ROLE_PERMISSIONS`, and JWT claim structure.
+  - Defines `ClerkUserMetadata`, `ClerkOrganizationMetadata`, `UserRole`, `ROLE_PERMISSIONS`, and
+    JWT claim structure.
   - Includes onboarding and ABAC-related fields.
 
 **3. Database Synchronization Logic**
 
 - `lib/database/index.ts`
+
   - `DatabaseQueries` class with:
     - `upsertUser`
     - `upsertOrganization`
@@ -332,7 +340,9 @@ fleetfusion-architecture
 **4. Onboarding and Metadata Sync**
 
 - `lib/actions/onboarding.ts`
-  - `setClerkMetadata` server action: updates Clerk metadata and creates org/user records for instant UX, webhooks ensure DB consistency.
+
+  - `setClerkMetadata` server action: updates Clerk metadata and creates org/user records for
+    instant UX, webhooks ensure DB consistency.
   - Handles onboarding flow, sets `onboardingComplete`, and triggers Clerk org creation.
 
 - `app/(auth)/onboarding/page.tsx`
@@ -372,7 +382,6 @@ fleetfusion-architecture
   `types/auth.ts`, `doc/Developer-Documentation.md`
 
 ---
-
 
 ## Mermaid Diagram
 
@@ -441,341 +450,339 @@ graph TD
 
 ### loads
 
-| Column                | Type                | Nullable | Notes         |
-|-----------------------|---------------------|----------|---------------|
-| id                    | uuid                | not null |               |
-| organization_id       | uuid                | not null |               |
-| driver_id             | uuid                | null     |               |
-| vehicle_id            | uuid                | null     |               |
-| trailer_id            | uuid                | null     |               |
-| reference_number      | varchar(100)        | null     |               |
-| status                | varchar(20)         | not null |               |
-| customer_name         | varchar(255)        | not null |               |
-| customer_contact      | varchar(100)        | null     |               |
-| customer_phone        | varchar(20)         | null     |               |
-| customer_email        | varchar(255)        | null     |               |
-| customer_address      | text                | null     |               |
-| origin_name           | varchar(255)        | null     |               |
-| origin_address        | text                | not null |               |
-| origin_city           | varchar(100)        | not null |               |
-| origin_state          | varchar(50)         | not null |               |
-| origin_zip            | varchar(20)         | not null |               |
-| origin_lat            | numeric(10,8)       | null     |               |
-| origin_lng            | numeric(11,8)       | null     |               |
-| origin_contact_name   | varchar(100)        | null     |               |
-| origin_contact_phone  | varchar(20)         | null     |               |
-| origin_notes          | text                | null     |               |
-| destination_name      | varchar(255)        | null     |               |
-| destination_address   | text                | not null |               |
-| destination_city      | varchar(100)        | not null |               |
-| destination_state     | varchar(50)         | not null |               |
-| destination_zip       | varchar(20)         | not null |               |
-| destination_lat       | numeric(10,8)       | null     |               |
-| destination_lng       | numeric(11,8)       | null     |               |
-| destination_contact_name | varchar(100)     | null     |               |
-| destination_contact_phone| varchar(20)      | null     |               |
-| destination_notes     | text                | null     |               |
-| scheduled_pickup_date | timestamptz         | null     |               |
-| scheduled_delivery_date | timestamptz       | null     |               |
-| actual_pickup_date    | timestamptz         | null     |               |
-| actual_delivery_date  | timestamptz         | null     |               |
-| commodity             | varchar(255)        | null     |               |
-| weight                | numeric(10,2)       | null     |               |
-| pieces                | int4                | null     |               |
-| temperature_controlled| bool                | null     |               |
-| hazmat                | bool                | null     |               |
-| rate_amount           | numeric(10,2)       | null     |               |
-| rate_currency         | varchar(3)          | not null |               |
-| rate_type             | varchar(20)         | not null |               |
-| rate_per_mile         | numeric(6,3)        | null     |               |
-| detention_rate        | numeric(6,2)        | null     |               |
-| fuel_surcharge        | numeric(6,2)        | null     |               |
-| accessorial_charges   | numeric(10,2)       | null     |               |
-| estimated_miles       | int4                | null     |               |
-| actual_miles          | int4                | null     |               |
-| instructions          | text                | null     |               |
-| notes                 | text                | null     |               |
-| created_at            | timestamptz         | not null |               |
-| updated_at            | timestamptz         | not null |               |
+| Column                    | Type          | Nullable | Notes |
+| ------------------------- | ------------- | -------- | ----- |
+| id                        | uuid          | not null |       |
+| organization_id           | uuid          | not null |       |
+| driver_id                 | uuid          | null     |       |
+| vehicle_id                | uuid          | null     |       |
+| trailer_id                | uuid          | null     |       |
+| reference_number          | varchar(100)  | null     |       |
+| status                    | varchar(20)   | not null |       |
+| customer_name             | varchar(255)  | not null |       |
+| customer_contact          | varchar(100)  | null     |       |
+| customer_phone            | varchar(20)   | null     |       |
+| customer_email            | varchar(255)  | null     |       |
+| customer_address          | text          | null     |       |
+| origin_name               | varchar(255)  | null     |       |
+| origin_address            | text          | not null |       |
+| origin_city               | varchar(100)  | not null |       |
+| origin_state              | varchar(50)   | not null |       |
+| origin_zip                | varchar(20)   | not null |       |
+| origin_lat                | numeric(10,8) | null     |       |
+| origin_lng                | numeric(11,8) | null     |       |
+| origin_contact_name       | varchar(100)  | null     |       |
+| origin_contact_phone      | varchar(20)   | null     |       |
+| origin_notes              | text          | null     |       |
+| destination_name          | varchar(255)  | null     |       |
+| destination_address       | text          | not null |       |
+| destination_city          | varchar(100)  | not null |       |
+| destination_state         | varchar(50)   | not null |       |
+| destination_zip           | varchar(20)   | not null |       |
+| destination_lat           | numeric(10,8) | null     |       |
+| destination_lng           | numeric(11,8) | null     |       |
+| destination_contact_name  | varchar(100)  | null     |       |
+| destination_contact_phone | varchar(20)   | null     |       |
+| destination_notes         | text          | null     |       |
+| scheduled_pickup_date     | timestamptz   | null     |       |
+| scheduled_delivery_date   | timestamptz   | null     |       |
+| actual_pickup_date        | timestamptz   | null     |       |
+| actual_delivery_date      | timestamptz   | null     |       |
+| commodity                 | varchar(255)  | null     |       |
+| weight                    | numeric(10,2) | null     |       |
+| pieces                    | int4          | null     |       |
+| temperature_controlled    | bool          | null     |       |
+| hazmat                    | bool          | null     |       |
+| rate_amount               | numeric(10,2) | null     |       |
+| rate_currency             | varchar(3)    | not null |       |
+| rate_type                 | varchar(20)   | not null |       |
+| rate_per_mile             | numeric(6,3)  | null     |       |
+| detention_rate            | numeric(6,2)  | null     |       |
+| fuel_surcharge            | numeric(6,2)  | null     |       |
+| accessorial_charges       | numeric(10,2) | null     |       |
+| estimated_miles           | int4          | null     |       |
+| actual_miles              | int4          | null     |       |
+| instructions              | text          | null     |       |
+| notes                     | text          | null     |       |
+| created_at                | timestamptz   | not null |       |
+| updated_at                | timestamptz   | not null |       |
 
 ### fuel_purchases
 
-| Column           | Type             | Nullable | Notes         |
-|------------------|------------------|----------|---------------|
-| id               | uuid             | not null |               |
-| organization_id  | uuid             | not null |               |
-| vehicle_id       | uuid             | not null |               |
-| driver_id        | uuid             | null     |               |
-| purchase_date    | timestamptz      | not null |               |
-| location         | varchar(255)     | not null |               |
-| fuel_type        | varchar(20)      | not null |               |
-| gallons          | numeric(8,3)     | not null |               |
-| price_per_gallon | numeric(6,3)     | not null |               |
-| total_amount     | numeric(10,2)    | not null |               |
-| odometer_reading | int4             | null     |               |
-| receipt_number   | varchar(100)     | null     |               |
-| vendor           | varchar(255)     | null     |               |
-| payment_method   | varchar(20)      | null     |               |
-| notes            | text             | null     |               |
-| created_at       | timestamptz      | not null |               |
+| Column           | Type          | Nullable | Notes |
+| ---------------- | ------------- | -------- | ----- |
+| id               | uuid          | not null |       |
+| organization_id  | uuid          | not null |       |
+| vehicle_id       | uuid          | not null |       |
+| driver_id        | uuid          | null     |       |
+| purchase_date    | timestamptz   | not null |       |
+| location         | varchar(255)  | not null |       |
+| fuel_type        | varchar(20)   | not null |       |
+| gallons          | numeric(8,3)  | not null |       |
+| price_per_gallon | numeric(6,3)  | not null |       |
+| total_amount     | numeric(10,2) | not null |       |
+| odometer_reading | int4          | null     |       |
+| receipt_number   | varchar(100)  | null     |       |
+| vendor           | varchar(255)  | null     |       |
+| payment_method   | varchar(20)   | null     |       |
+| notes            | text          | null     |       |
+| created_at       | timestamptz   | not null |       |
 
 ### dvir_reports
 
-| Column           | Type             | Nullable | Notes         |
-|------------------|------------------|----------|---------------|
-| id               | uuid             | not null |               |
-| vehicle_id       | uuid             | not null |               |
-| driver_id        | uuid             | not null |               |
-| date             | date             | not null |               |
-| pre_trip         | bool             | not null |               |
-| post_trip        | bool             | not null |               |
-| safe_to_operate  | bool             | not null |               |
-| notes            | text             | null     |               |
-| signature        | varchar(255)     | not null |               |
-| created_at       | timestamptz      | not null |               |
+| Column          | Type         | Nullable | Notes |
+| --------------- | ------------ | -------- | ----- |
+| id              | uuid         | not null |       |
+| vehicle_id      | uuid         | not null |       |
+| driver_id       | uuid         | not null |       |
+| date            | date         | not null |       |
+| pre_trip        | bool         | not null |       |
+| post_trip       | bool         | not null |       |
+| safe_to_operate | bool         | not null |       |
+| notes           | text         | null     |       |
+| signature       | varchar(255) | not null |       |
+| created_at      | timestamptz  | not null |       |
 
 ### compliance_documents
 
-| Column           | Type             | Nullable | Notes         |
-|------------------|------------------|----------|---------------|
-| id               | uuid             | not null |               |
-| organization_id  | uuid             | not null |               |
-| type             | varchar(30)      | not null |               |
-| name             | varchar(255)     | not null |               |
-| description      | text             | null     |               |
-| status           | varchar(20)      | not null |               |
-| issued_date      | date             | not null |               |
-| expiration_date  | date             | null     |               |
-| document_number  | varchar(100)     | null     |               |
-| issuing_authority| varchar(255)     | null     |               |
-| file_url         | text             | null     |               |
-| notes            | text             | null     |               |
-| created_at       | timestamptz      | not null |               |
-| updated_at       | timestamptz      | not null |               |
+| Column            | Type         | Nullable | Notes |
+| ----------------- | ------------ | -------- | ----- |
+| id                | uuid         | not null |       |
+| organization_id   | uuid         | not null |       |
+| type              | varchar(30)  | not null |       |
+| name              | varchar(255) | not null |       |
+| description       | text         | null     |       |
+| status            | varchar(20)  | not null |       |
+| issued_date       | date         | not null |       |
+| expiration_date   | date         | null     |       |
+| document_number   | varchar(100) | null     |       |
+| issuing_authority | varchar(255) | null     |       |
+| file_url          | text         | null     |       |
+| notes             | text         | null     |       |
+| created_at        | timestamptz  | not null |       |
+| updated_at        | timestamptz  | not null |       |
 
 ### driver_documents
 
-| Column           | Type             | Nullable | Notes         |
-|------------------|------------------|----------|---------------|
-| id               | uuid             | not null |               |
-| driver_id        | uuid             | not null |               |
-| type             | varchar(20)      | not null |               |
-| name             | varchar(255)     | not null |               |
-| file_url         | text             | not null |               |
-| file_size        | int4             | null     |               |
-| mime_type        | varchar(100)     | null     |               |
-| expiration_date  | date             | null     |               |
-| uploaded_at      | timestamptz      | not null |               |
-| uploaded_by      | varchar(255)     | not null |               |
+| Column          | Type         | Nullable | Notes |
+| --------------- | ------------ | -------- | ----- |
+| id              | uuid         | not null |       |
+| driver_id       | uuid         | not null |       |
+| type            | varchar(20)  | not null |       |
+| name            | varchar(255) | not null |       |
+| file_url        | text         | not null |       |
+| file_size       | int4         | null     |       |
+| mime_type       | varchar(100) | null     |       |
+| expiration_date | date         | null     |       |
+| uploaded_at     | timestamptz  | not null |       |
+| uploaded_by     | varchar(255) | not null |       |
 
 ### drivers
 
-| Column                | Type             | Nullable | Notes         |
-|-----------------------|------------------|----------|---------------|
-| id                    | uuid             | not null |               |
-| organization_id       | uuid             | not null |               |
-| employee_id           | varchar(50)      | null     |               |
-| first_name            | varchar(100)     | not null |               |
-| last_name             | varchar(100)     | not null |               |
-| email                 | varchar(255)     | null     |               |
-| phone                 | varchar(20)      | null     |               |
-| address               | text             | null     |               |
-| city                  | varchar(100)     | null     |               |
-| state                 | varchar(50)      | null     |               |
-| zip                   | varchar(20)      | null     |               |
-| license_number        | varchar(50)      | null     |               |
-| license_state         | varchar(50)      | null     |               |
-| license_class         | varchar(10)      | null     |               |
-| license_expiration    | date             | null     |               |
-| medical_card_exp      | date             | null     |               |
-| drug_test_date        | date             | null     |               |
-| background_check_date | date             | null     |               |
-| hire_date             | date             | null     |               |
-| termination_date      | date             | null     |               |
-| status                | varchar(20)      | not null |               |
-| home_terminal         | varchar(100)     | null     |               |
-| emergency_contact_1   | varchar(100)     | null     |               |
-| emergency_contact_2   | varchar(20)      | null     |               |
-| emergency_contact_3   | varchar(50)      | null     |               |
-| emergency_contact_4   | varchar(100)     | null     |               |
-| emergency_contact_5   | varchar(20)      | null     |               |
-| emergency_contact_6   | varchar(50)      | null     |               |
-| current_location_lat  | numeric(10,8)    | null     |               |
-| current_location_lng  | numeric(11,8)    | null     |               |
-| current_location_time | timestamptz      | null     |               |
-| notes                 | text             | null     |               |
-| created_at            | timestamptz      | not null |               |
-| updated_at            | timestamptz      | not null |               |
+| Column                | Type          | Nullable | Notes |
+| --------------------- | ------------- | -------- | ----- |
+| id                    | uuid          | not null |       |
+| organization_id       | uuid          | not null |       |
+| employee_id           | varchar(50)   | null     |       |
+| first_name            | varchar(100)  | not null |       |
+| last_name             | varchar(100)  | not null |       |
+| email                 | varchar(255)  | null     |       |
+| phone                 | varchar(20)   | null     |       |
+| address               | text          | null     |       |
+| city                  | varchar(100)  | null     |       |
+| state                 | varchar(50)   | null     |       |
+| zip                   | varchar(20)   | null     |       |
+| license_number        | varchar(50)   | null     |       |
+| license_state         | varchar(50)   | null     |       |
+| license_class         | varchar(10)   | null     |       |
+| license_expiration    | date          | null     |       |
+| medical_card_exp      | date          | null     |       |
+| drug_test_date        | date          | null     |       |
+| background_check_date | date          | null     |       |
+| hire_date             | date          | null     |       |
+| termination_date      | date          | null     |       |
+| status                | varchar(20)   | not null |       |
+| home_terminal         | varchar(100)  | null     |       |
+| emergency_contact_1   | varchar(100)  | null     |       |
+| emergency_contact_2   | varchar(20)   | null     |       |
+| emergency_contact_3   | varchar(50)   | null     |       |
+| emergency_contact_4   | varchar(100)  | null     |       |
+| emergency_contact_5   | varchar(20)   | null     |       |
+| emergency_contact_6   | varchar(50)   | null     |       |
+| current_location_lat  | numeric(10,8) | null     |       |
+| current_location_lng  | numeric(11,8) | null     |       |
+| current_location_time | timestamptz   | null     |       |
+| notes                 | text          | null     |       |
+| created_at            | timestamptz   | not null |       |
+| updated_at            | timestamptz   | not null |       |
 
 ### dvir_defects
 
-| Column           | Type             | Nullable | Notes         |
-|------------------|------------------|----------|---------------|
-| id               | uuid             | not null |               |
-| dvir_report_id   | uuid             | not null |               |
-| category         | varchar(20)      | not null |               |
-| description      | text             | not null |               |
-| severity         | varchar(10)      | not null |               |
-| repaired         | bool             | not null |               |
-| repaired_by      | varchar(255)     | null     |               |
-| repaired_date    | date             | null     |               |
-| repair_notes     | text             | null     |               |
+| Column         | Type         | Nullable | Notes |
+| -------------- | ------------ | -------- | ----- |
+| id             | uuid         | not null |       |
+| dvir_report_id | uuid         | not null |       |
+| category       | varchar(20)  | not null |       |
+| description    | text         | not null |       |
+| severity       | varchar(10)  | not null |       |
+| repaired       | bool         | not null |       |
+| repaired_by    | varchar(255) | null     |       |
+| repaired_date  | date         | null     |       |
+| repair_notes   | text         | null     |       |
 
 ### hos_entries
 
-| Column           | Type             | Nullable | Notes         |
-|------------------|------------------|----------|---------------|
-| id               | uuid             | not null |               |
-| hos_log_id       | uuid             | not null |               |
-| start_time       | timestamptz      | not null |               |
-| end_time         | timestamptz      | not null |               |
-| status           | varchar(20)      | not null |               |
-| location         | varchar(255)     | not null |               |
-| notes            | text             | null     |               |
-| created_at       | timestamptz      | not null |               |
+| Column     | Type         | Nullable | Notes |
+| ---------- | ------------ | -------- | ----- |
+| id         | uuid         | not null |       |
+| hos_log_id | uuid         | not null |       |
+| start_time | timestamptz  | not null |       |
+| end_time   | timestamptz  | not null |       |
+| status     | varchar(20)  | not null |       |
+| location   | varchar(255) | not null |       |
+| notes      | text         | null     |       |
+| created_at | timestamptz  | not null |       |
 
 ### hos_logs
 
-| Column             | Type             | Nullable | Notes         |
-|--------------------|------------------|----------|---------------|
-| id                 | uuid             | not null |               |
-| driver_id          | uuid             | not null |               |
-| date               | date             | not null |               |
-| status             | varchar(20)      | not null |               |
-| total_drive_time   | int4             | not null |               |
-| total_on_duty_time | int4             | not null |               |
-| total_off_duty_time| int4             | not null |               |
-| created_at         | timestamptz      | not null |               |
-| updated_at         | timestamptz      | not null |               |
+| Column              | Type        | Nullable | Notes |
+| ------------------- | ----------- | -------- | ----- |
+| id                  | uuid        | not null |       |
+| driver_id           | uuid        | not null |       |
+| date                | date        | not null |       |
+| status              | varchar(20) | not null |       |
+| total_drive_time    | int4        | not null |       |
+| total_on_duty_time  | int4        | not null |       |
+| total_off_duty_time | int4        | not null |       |
+| created_at          | timestamptz | not null |       |
+| updated_at          | timestamptz | not null |       |
 
 ### hos_violations
 
-| Column           | Type             | Nullable | Notes         |
-|------------------|------------------|----------|---------------|
-| id               | uuid             | not null |               |
-| hos_log_id       | uuid             | not null |               |
-| type             | varchar(20)      | not null |               |
-| description      | text             | not null |               |
-| severity         | varchar(10)      | not null |               |
-| timestamp        | timestamptz      | not null |               |
-| resolved         | bool             | not null |               |
-| resolved_at      | timestamptz      | null     |               |
-| resolved_by      | varchar(255)     | null     |               |
+| Column      | Type         | Nullable | Notes |
+| ----------- | ------------ | -------- | ----- |
+| id          | uuid         | not null |       |
+| hos_log_id  | uuid         | not null |       |
+| type        | varchar(20)  | not null |       |
+| description | text         | not null |       |
+| severity    | varchar(10)  | not null |       |
+| timestamp   | timestamptz  | not null |       |
+| resolved    | bool         | not null |       |
+| resolved_at | timestamptz  | null     |       |
+| resolved_by | varchar(255) | null     |       |
 
 ### load_documents
 
-| Column           | Type             | Nullable | Notes         |
-|------------------|------------------|----------|---------------|
-| id               | uuid             | not null |               |
-| load_id          | uuid             | not null |               |
-| type             | varchar(20)      | not null |               |
-| name             | varchar(255)     | not null |               |
-| file_url         | text             | not null |               |
-| file_size        | int4             | null     |               |
-| mime_type        | varchar(100)     | null     |               |
-| uploaded_by      | varchar(255)     | not null |               |
-| uploaded_at      | timestamptz      | not null |               |
+| Column      | Type         | Nullable | Notes |
+| ----------- | ------------ | -------- | ----- |
+| id          | uuid         | not null |       |
+| load_id     | uuid         | not null |       |
+| type        | varchar(20)  | not null |       |
+| name        | varchar(255) | not null |       |
+| file_url    | text         | not null |       |
+| file_size   | int4         | null     |       |
+| mime_type   | varchar(100) | null     |       |
+| uploaded_by | varchar(255) | not null |       |
+| uploaded_at | timestamptz  | not null |       |
 
 ### trailers
 
-| Column                | Type             | Nullable | Notes         |
-|-----------------------|------------------|----------|---------------|
-| id                    | uuid             | not null |               |
-| organization_id       | uuid             | not null |               |
-| type                  | varchar(20)      | not null |               |
-| status                | varchar(20)      | not null |               |
-| unit_number           | varchar(50)      | not null |               |
-| make                  | varchar(50)      | null     |               |
-| model                 | varchar(50)      | null     |               |
-| year                  | int4             | null     |               |
-| vin                   | varchar(17)      | null     |               |
-| license_plate         | varchar(20)      | null     |               |
-| license_plate_state   | varchar(50)      | null     |               |
-| length                | int4             | null     |               |
-| width                 | int4             | null     |               |
-| height                | int4             | null     |               |
-| capacity              | int4             | null     |               |
-| last_inspection_date  | date             | null     |               |
-| next_inspection_date  | date             | null     |               |
-| insurance_expiration  | date             | null     |               |
-| registration_expiration| date            | null     |               |
-| notes                 | text             | null     |               |
-| created_at            | timestamptz      | not null |               |
-| updated_at            | timestamptz      | not null |               |
+| Column                  | Type        | Nullable | Notes |
+| ----------------------- | ----------- | -------- | ----- |
+| id                      | uuid        | not null |       |
+| organization_id         | uuid        | not null |       |
+| type                    | varchar(20) | not null |       |
+| status                  | varchar(20) | not null |       |
+| unit_number             | varchar(50) | not null |       |
+| make                    | varchar(50) | null     |       |
+| model                   | varchar(50) | null     |       |
+| year                    | int4        | null     |       |
+| vin                     | varchar(17) | null     |       |
+| license_plate           | varchar(20) | null     |       |
+| license_plate_state     | varchar(50) | null     |       |
+| length                  | int4        | null     |       |
+| width                   | int4        | null     |       |
+| height                  | int4        | null     |       |
+| capacity                | int4        | null     |       |
+| last_inspection_date    | date        | null     |       |
+| next_inspection_date    | date        | null     |       |
+| insurance_expiration    | date        | null     |       |
+| registration_expiration | date        | null     |       |
+| notes                   | text        | null     |       |
+| created_at              | timestamptz | not null |       |
+| updated_at              | timestamptz | not null |       |
 
 ### users
 
-| Column             | Type             | Nullable | Notes         |
-|--------------------|------------------|----------|---------------|
-| id                 | uuid             | not null |               |
-| clerk_id           | varchar(255)     | not null |               |
-| organization_id    | uuid             | not null |               |
-| email              | varchar(255)     | not null |               |
-| first_name         | varchar(100)     | null     |               |
-| last_name          | varchar(100)     | null     |               |
-| profile_image_url  | text             | null     |               |
-| role               | varchar(20)      | not null |               |
-| permissions        | jsonb            | null     |               |
-| is_active          | bool             | not null |               |
-| onboarding_complete| bool             | not null |               |
-| last_login         | timestamptz      | null     |               |
-| created_at         | timestamptz      | not null |               |
-| updated_at         | timestamptz      | not null |               |
+| Column              | Type         | Nullable | Notes |
+| ------------------- | ------------ | -------- | ----- |
+| id                  | uuid         | not null |       |
+| clerk_id            | varchar(255) | not null |       |
+| organization_id     | uuid         | not null |       |
+| email               | varchar(255) | not null |       |
+| first_name          | varchar(100) | null     |       |
+| last_name           | varchar(100) | null     |       |
+| profile_image_url   | text         | null     |       |
+| role                | varchar(20)  | not null |       |
+| permissions         | jsonb        | null     |       |
+| is_active           | bool         | not null |       |
+| onboarding_complete | bool         | not null |       |
+| last_login          | timestamptz  | null     |       |
+| created_at          | timestamptz  | not null |       |
+| updated_at          | timestamptz  | not null |       |
 
 ### vehicles
 
-| Column                | Type             | Nullable | Notes         |
-|-----------------------|------------------|----------|---------------|
-| id                    | uuid             | not null |               |
-| organization_id       | uuid             | not null |               |
-| type                  | varchar(20)      | not null |               |
-| status                | varchar(20)      | not null |               |
-| unit_number           | varchar(50)      | not null |               |
-| make                  | varchar(50)      | null     |               |
-| model                 | varchar(50)      | null     |               |
-| year                  | int4             | null     |               |
-| vin                   | varchar(17)      | null     |               |
-| license_plate         | varchar(20)      | null     |               |
-| license_plate_state   | varchar(50)      | null     |               |
-| current_odometer      | int4             | null     |               |
-| fuel_type             | varchar(20)      | null     |               |
-| last_inspection_date  | date             | null     |               |
-| next_inspection_date  | date             | null     |               |
-| insurance_expiration  | date             | null     |               |
-| registration_expiration| date            | null     |               |
-| gross_weight          | int4             | null     |               |
-| tare_weight           | int4             | null     |               |
-| notes                 | text             | null     |               |
-| created_at            | timestamptz      | not null |               |
-| updated_at            | timestamptz      | not null |               |
+| Column                  | Type        | Nullable | Notes |
+| ----------------------- | ----------- | -------- | ----- |
+| id                      | uuid        | not null |       |
+| organization_id         | uuid        | not null |       |
+| type                    | varchar(20) | not null |       |
+| status                  | varchar(20) | not null |       |
+| unit_number             | varchar(50) | not null |       |
+| make                    | varchar(50) | null     |       |
+| model                   | varchar(50) | null     |       |
+| year                    | int4        | null     |       |
+| vin                     | varchar(17) | null     |       |
+| license_plate           | varchar(20) | null     |       |
+| license_plate_state     | varchar(50) | null     |       |
+| current_odometer        | int4        | null     |       |
+| fuel_type               | varchar(20) | null     |       |
+| last_inspection_date    | date        | null     |       |
+| next_inspection_date    | date        | null     |       |
+| insurance_expiration    | date        | null     |       |
+| registration_expiration | date        | null     |       |
+| gross_weight            | int4        | null     |       |
+| tare_weight             | int4        | null     |       |
+| notes                   | text        | null     |       |
+| created_at              | timestamptz | not null |       |
+| updated_at              | timestamptz | not null |       |
 
 ### organizations
 
-| Column             | Type             | Nullable | Notes         |
-|--------------------|------------------|----------|---------------|
-| id                 | uuid             | not null |               |
-| clerk_id           | varchar(255)     | not null |               |
-| name               | varchar(255)     | not null |               |
-| slug               | varchar(255)     | not null |               |
-| dot_number         | varchar(50)      | null     |               |
-| mc_number          | varchar(50)      | null     |               |
-| address            | text             | null     |               |
-| city               | varchar(100)     | null     |               |
-| state              | varchar(50)      | null     |               |
-| zip                | varchar(20)      | null     |               |
-| phone              | varchar(20)      | null     |               |
-| email              | varchar(255)     | null     |               |
-| logo_url           | text             | null     |               |
-| subscription_tier  | varchar(20)      | not null |               |
-| subscription_status| varchar(20)      | not null |               |
-| max_users          | int4             | not null |               |
-| billing_email      | varchar(255)     | null     |               |
-| settings           | jsonb            | null     |               |
-| is_active          | bool             | not null |               |
-| created_at         | timestamptz      | not null |               |
-| updated_at         | timestamptz      | not null |               |
-
-
+| Column              | Type         | Nullable | Notes |
+| ------------------- | ------------ | -------- | ----- |
+| id                  | uuid         | not null |       |
+| clerk_id            | varchar(255) | not null |       |
+| name                | varchar(255) | not null |       |
+| slug                | varchar(255) | not null |       |
+| dot_number          | varchar(50)  | null     |       |
+| mc_number           | varchar(50)  | null     |       |
+| address             | text         | null     |       |
+| city                | varchar(100) | null     |       |
+| state               | varchar(50)  | null     |       |
+| zip                 | varchar(20)  | null     |       |
+| phone               | varchar(20)  | null     |       |
+| email               | varchar(255) | null     |       |
+| logo_url            | text         | null     |       |
+| subscription_tier   | varchar(20)  | not null |       |
+| subscription_status | varchar(20)  | not null |       |
+| max_users           | int4         | not null |       |
+| billing_email       | varchar(255) | null     |       |
+| settings            | jsonb        | null     |       |
+| is_active           | bool         | not null |       |
+| created_at          | timestamptz  | not null |       |
+| updated_at          | timestamptz  | not null |       |
 
 ## Clerk Information
 
@@ -787,10 +794,10 @@ graph TD
 - First and last name: Enabled. Users can set their first and last name.
 - Require first and last name: Disabled. Not required at sign-up.
 
-
 ### Roles and Permissions
 
 **Admin** (`org:admin`)
+
 - org:sys_domains:read
 - org:sys_domains:manage
 - org:sys_profile:manage
@@ -806,6 +813,7 @@ graph TD
 - org:sys_billing:read
 
 **Compliance** (`org:compliance`)
+
 - org:sys_memberships:read
 - org:compliance:view_compliance_dashboard
 - org:compliance:access_audit_logs
@@ -813,6 +821,7 @@ graph TD
 - org:compliance:upload_review_compliance
 
 **Dispatcher** (`org:dispatcher`)
+
 - org:sys_memberships:read
 - org:dispatcher:create_edit_loads
 - org:dispatcher:assign_drivers
@@ -820,72 +829,40 @@ graph TD
 - org:dispatcher:access_dispatch_dashboard
 
 **Driver** (`org:driver`)
+
 - org:sys_memberships:read
 - org:driver:view_assigned_loads
 - org:driver:update_load_status
 - org:driver:upload_documents
 - org:driver:log_hos
 
-**Member** (`org:member`) *(Default role)*
+**Member** (`org:member`) _(Default role)_
+
 - org:sys_memberships:read
 
 ### Session Claims
 
-{
-	"org.id": "{{org.id}}",
-	"user.id": "{{user.id}}",
-	"org.name": "{{org.name}}",
-	"org.role": "{{org.role}}",
-	"publicMetadata": {
-		"onboardingComplete": "{{user.public_metadata.onboardingComplete}}"
-	},
-	"user.organizations": "{{user.organizations}}",
-	"org_membership.permissions": "{{org_membership.permissions}}"
-}
+{ "org.id": "{{org.id}}", "user.id": "{{user.id}}", "org.name": "{{org.name}}", "org.role":
+"{{org.role}}", "publicMetadata": { "onboardingComplete":
+"{{user.public_metadata.onboardingComplete}}" }, "user.organizations": "{{user.organizations}}",
+"org_membership.permissions": "{{org_membership.permissions}}" }
 
 ### Custom JWT - Neon:
 
-{
-	"org.id": "{{org.id}}",
-	"user.id": "{{user.id}}",
-	"org.name": "{{org.name}}",
-	"org.role": "{{org.role}}",
-	"publicMetadata": {
-		"onboardingComplete": "{{user.public_metadata.onboardingComplete}}"
-	},
-	"user.organizations": "{{user.organizations}}",
-	"org_membership.permissions": "{{org_membership.permissions}}"
-}
+{ "org.id": "{{org.id}}", "user.id": "{{user.id}}", "org.name": "{{org.name}}", "org.role":
+"{{org.role}}", "publicMetadata": { "onboardingComplete":
+"{{user.public_metadata.onboardingComplete}}" }, "user.organizations": "{{user.organizations}}",
+"org_membership.permissions": "{{org_membership.permissions}}" }
 
 ### Webhook Subcribed Events:
 
-email.created
-organization.created
-organization.deleted
-organization.updated
-organizationDomain.created
-organizationDomain.deleted
-organizationDomain.updated
-organizationInvitation.accepted
-organizationInvitation.created
-organizationInvitation.revoked
-organizationMembership.created
-organizationMembership.deleted
-organizationMembership.updated
-permission.created
-permission.deleted
-permission.updated
-role.created
-role.deleted
-role.updated
-session.created
-session.ended
-session.pending
-session.removed
-session.revoked
-user.created
-user.deleted
-user.updated
+email.created organization.created organization.deleted organization.updated
+organizationDomain.created organizationDomain.deleted organizationDomain.updated
+organizationInvitation.accepted organizationInvitation.created organizationInvitation.revoked
+organizationMembership.created organizationMembership.deleted organizationMembership.updated
+permission.created permission.deleted permission.updated role.created role.deleted role.updated
+session.created session.ended session.pending session.removed session.revoked user.created
+user.deleted user.updated
 
 ### Clerk Webhook URL
 
@@ -904,5 +881,3 @@ NEXT_PUBLIC_APP_URL=http://fleet-fusion.vercel.app
 NEXT_PUBLIC_CLERK_FRONTEND_API=driving-gelding-14.clerk.accounts.dev
 
 NEXT_PUBLIC_CLERK_WEBHOOK_ENDPOINT=https://fleet-fusion.vercel.app/api/clerk/webhook-handler
-
-

@@ -1,9 +1,9 @@
-"use server";
+'use server';
 
-import { auth } from "@clerk/nextjs/server";
-import { revalidatePath } from "next/cache";
+import { auth } from '@clerk/nextjs/server';
+import { revalidatePath } from 'next/cache';
 
-import prisma from "@/lib/database/db";
+import prisma from '@/lib/database/db';
 import {
   createLoadSchema,
   updateLoadSchema,
@@ -15,14 +15,23 @@ import {
   type LoadAssignmentInput,
   type LoadStatusUpdateInput,
   type BulkLoadOperationInput,
-} from "@/schemas/dispatch";
-import type { Load, LoadStatus, LoadStatusEvent, TrackingUpdate, LoadAlert } from "@/types/dispatch";
+} from '@/schemas/dispatch';
+import type {
+  Load,
+  LoadStatus,
+  LoadStatusEvent,
+  TrackingUpdate,
+  LoadAlert,
+} from '@/types/dispatch';
 
 // Helper function to check user permissions
-async function checkUserPermissions(orgId: string, requiredPermissions: string[]) {
+async function checkUserPermissions(
+  orgId: string,
+  requiredPermissions: string[]
+) {
   const { userId } = await auth();
   if (!userId) {
-    throw new Error("Unauthorized");
+    throw new Error('Unauthorized');
   }
   // Check if user belongs to the organization and has required permissions
   const user = await prisma.user.findFirst({
@@ -32,19 +41,24 @@ async function checkUserPermissions(orgId: string, requiredPermissions: string[]
     },
   });
   if (!user) {
-    throw new Error("User not found or not member of organization");
+    throw new Error('User not found or not member of organization');
   }
   let userPermissions: string[] = [];
   if (Array.isArray(user.permissions)) {
     userPermissions = user.permissions
-      .map((p: any) => typeof p === "object" && p !== null && "name" in p ? p.name : null)
-      .filter((name: any) => typeof name === "string");
+      .map((p: any) =>
+        typeof p === 'object' && p !== null && 'name' in p ? p.name : null
+      )
+      .filter((name: any) => typeof name === 'string');
   }
-  const hasPermission = requiredPermissions.some(permission => 
-    userPermissions.includes(permission) || userPermissions.includes("*")
+  const hasPermission = requiredPermissions.some(
+    permission =>
+      userPermissions.includes(permission) || userPermissions.includes('*')
   );
   if (!hasPermission) {
-    throw new Error(`Insufficient permissions. Required: ${requiredPermissions.join(" or ")}`);
+    throw new Error(
+      `Insufficient permissions. Required: ${requiredPermissions.join(' or ')}`
+    );
   }
   return user;
 }
@@ -80,14 +94,17 @@ function generateReferenceNumber(): string {
 // Create load action
 export async function createLoadAction(orgId: string, data: CreateLoadInput) {
   try {
-    const user = await checkUserPermissions(orgId, ["loads:create", "dispatch:manage"]);
+    const user = await checkUserPermissions(orgId, [
+      'loads:create',
+      'dispatch:manage',
+    ]);
     const validatedData = createLoadSchema.parse(data);
     let referenceNumber = validatedData.referenceNumber;
     if (!referenceNumber) {
       referenceNumber = generateReferenceNumber();
     }
-    if (typeof referenceNumber !== "string") {
-      referenceNumber = String(referenceNumber ?? "");
+    if (typeof referenceNumber !== 'string') {
+      referenceNumber = String(referenceNumber ?? '');
     }
     const existingLoad = await prisma.load.findFirst({
       where: {
@@ -98,30 +115,44 @@ export async function createLoadAction(orgId: string, data: CreateLoadInput) {
     if (existingLoad) {
       return {
         success: false,
-        error: "Reference number already exists",
+        error: 'Reference number already exists',
       };
     }
-    const { rate, customer, origin, destination, driver, vehicle, trailer, tags, createdBy, lastModifiedBy, priority, statusEvents, ...rest } = validatedData;
+    const {
+      rate,
+      customer,
+      origin,
+      destination,
+      driver,
+      vehicle,
+      trailer,
+      tags,
+      createdBy,
+      lastModifiedBy,
+      priority,
+      statusEvents,
+      ...rest
+    } = validatedData;
     const dbData: any = {
       ...rest,
       referenceNumber,
       rate,
       organizationId: orgId,
-      status: "pending",
+      status: 'pending',
       createdAt: new Date(),
       updatedAt: new Date(),
-      priority: priority || "medium",
+      priority: priority || 'medium',
       tags: tags || [],
       createdBy: createdBy || user.id,
       lastModifiedBy: lastModifiedBy || user.id,
     };
-    if (customer && typeof customer === "object") {
+    if (customer && typeof customer === 'object') {
       dbData.customerName = customer.name ?? null;
       dbData.customerContact = customer.contactName ?? null;
       dbData.customerPhone = customer.phone ?? null;
       dbData.customerEmail = customer.email ?? null;
     }
-    if (origin && typeof origin === "object") {
+    if (origin && typeof origin === 'object') {
       dbData.originAddress = origin.address ?? null;
       dbData.originCity = origin.city ?? null;
       dbData.originState = origin.state ?? null;
@@ -129,7 +160,7 @@ export async function createLoadAction(orgId: string, data: CreateLoadInput) {
       dbData.originLat = origin.latitude ?? null;
       dbData.originLng = origin.longitude ?? null;
     }
-    if (destination && typeof destination === "object") {
+    if (destination && typeof destination === 'object') {
       dbData.destinationAddress = destination.address ?? null;
       dbData.destinationCity = destination.city ?? null;
       dbData.destinationState = destination.state ?? null;
@@ -137,9 +168,12 @@ export async function createLoadAction(orgId: string, data: CreateLoadInput) {
       dbData.destinationLat = destination.latitude ?? null;
       dbData.destinationLng = destination.longitude ?? null;
     }
-    if (driver && typeof driver === "object" && driver.id) dbData.driverId = driver.id;
-    if (vehicle && typeof vehicle === "object" && vehicle.id) dbData.vehicleId = vehicle.id;
-    if (trailer && typeof trailer === "object" && trailer.id) dbData.trailerId = trailer.id;
+    if (driver && typeof driver === 'object' && driver.id)
+      dbData.driverId = driver.id;
+    if (vehicle && typeof vehicle === 'object' && vehicle.id)
+      dbData.vehicleId = vehicle.id;
+    if (trailer && typeof trailer === 'object' && trailer.id)
+      dbData.trailerId = trailer.id;
     const createdLoad = await prisma.load.create({ data: dbData });
     // Create status events if provided
     if (Array.isArray(statusEvents) && statusEvents.length > 0) {
@@ -153,8 +187,8 @@ export async function createLoadAction(orgId: string, data: CreateLoadInput) {
       }
     }
     await createAuditLog(
-      "CREATE",
-      "Load",
+      'CREATE',
+      'Load',
       createdLoad.id,
       dbData,
       user.id,
@@ -166,10 +200,10 @@ export async function createLoadAction(orgId: string, data: CreateLoadInput) {
       data: createdLoad,
     };
   } catch (error) {
-    console.error("Error creating load:", error);
+    console.error('Error creating load:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to create load",
+      error: error instanceof Error ? error.message : 'Failed to create load',
     };
   }
 }
@@ -179,7 +213,7 @@ export async function updateLoadAction(loadId: string, data: UpdateLoadInput) {
   try {
     const { userId } = await auth();
     if (!userId) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
     const existingLoad = await prisma.load.findUnique({
       where: { id: loadId },
@@ -188,12 +222,29 @@ export async function updateLoadAction(loadId: string, data: UpdateLoadInput) {
     if (!existingLoad) {
       return {
         success: false,
-        error: "Load not found",
+        error: 'Load not found',
       };
     }
-    const user = await checkUserPermissions(existingLoad.organizationId, ["loads:update", "dispatch:manage"]);
+    const user = await checkUserPermissions(existingLoad.organizationId, [
+      'loads:update',
+      'dispatch:manage',
+    ]);
     const validatedData = updateLoadSchema.parse(data);
-    const { id, rate, customer, origin, destination, driver, vehicle, trailer, tags, lastModifiedBy, priority, statusEvents, ...updateData } = validatedData;
+    const {
+      id,
+      rate,
+      customer,
+      origin,
+      destination,
+      driver,
+      vehicle,
+      trailer,
+      tags,
+      lastModifiedBy,
+      priority,
+      statusEvents,
+      ...updateData
+    } = validatedData;
     const dbData: any = {
       ...updateData,
       updatedAt: new Date(),
@@ -201,14 +252,14 @@ export async function updateLoadAction(loadId: string, data: UpdateLoadInput) {
       tags: tags || undefined,
       lastModifiedBy: lastModifiedBy || user.id,
     };
-    if (typeof rate !== "undefined") dbData.rate = rate;
-    if (customer && typeof customer === "object") {
+    if (typeof rate !== 'undefined') dbData.rate = rate;
+    if (customer && typeof customer === 'object') {
       dbData.customerName = customer.name ?? null;
       dbData.customerContact = customer.contactName ?? null;
       dbData.customerPhone = customer.phone ?? null;
       dbData.customerEmail = customer.email ?? null;
     }
-    if (origin && typeof origin === "object") {
+    if (origin && typeof origin === 'object') {
       dbData.originAddress = origin.address ?? null;
       dbData.originCity = origin.city ?? null;
       dbData.originState = origin.state ?? null;
@@ -216,7 +267,7 @@ export async function updateLoadAction(loadId: string, data: UpdateLoadInput) {
       dbData.originLat = origin.latitude ?? null;
       dbData.originLng = origin.longitude ?? null;
     }
-    if (destination && typeof destination === "object") {
+    if (destination && typeof destination === 'object') {
       dbData.destinationAddress = destination.address ?? null;
       dbData.destinationCity = destination.city ?? null;
       dbData.destinationState = destination.state ?? null;
@@ -224,9 +275,12 @@ export async function updateLoadAction(loadId: string, data: UpdateLoadInput) {
       dbData.destinationLat = destination.latitude ?? null;
       dbData.destinationLng = destination.longitude ?? null;
     }
-    if (driver && typeof driver === "object" && driver.id) dbData.driverId = driver.id;
-    if (vehicle && typeof vehicle === "object" && vehicle.id) dbData.vehicleId = vehicle.id;
-    if (trailer && typeof trailer === "object" && trailer.id) dbData.trailerId = trailer.id;
+    if (driver && typeof driver === 'object' && driver.id)
+      dbData.driverId = driver.id;
+    if (vehicle && typeof vehicle === 'object' && vehicle.id)
+      dbData.vehicleId = vehicle.id;
+    if (trailer && typeof trailer === 'object' && trailer.id)
+      dbData.trailerId = trailer.id;
     const updatedLoad = await prisma.load.update({
       where: { id: loadId },
       data: dbData,
@@ -243,24 +297,26 @@ export async function updateLoadAction(loadId: string, data: UpdateLoadInput) {
       }
     }
     await createAuditLog(
-      "UPDATE",
-      "Load",
+      'UPDATE',
+      'Load',
       loadId,
       updateData,
       user.id,
       existingLoad.organizationId
     );
     revalidatePath(`/dashboard/${existingLoad.organizationId}/dispatch`);
-    revalidatePath(`/dashboard/${existingLoad.organizationId}/dispatch/${loadId}`);
+    revalidatePath(
+      `/dashboard/${existingLoad.organizationId}/dispatch/${loadId}`
+    );
     return {
       success: true,
       data: updatedLoad,
     };
   } catch (error) {
-    console.error("Error updating load:", error);
+    console.error('Error updating load:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to update load",
+      error: error instanceof Error ? error.message : 'Failed to update load',
     };
   }
 }
@@ -270,7 +326,7 @@ export async function deleteLoadAction(loadId: string) {
   try {
     const { userId } = await auth();
     if (!userId) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
     const existingLoad = await prisma.load.findUnique({
       where: { id: loadId },
@@ -279,23 +335,26 @@ export async function deleteLoadAction(loadId: string) {
     if (!existingLoad) {
       return {
         success: false,
-        error: "Load not found",
+        error: 'Load not found',
       };
     }
-    const user = await checkUserPermissions(existingLoad.organizationId, ["loads:delete", "dispatch:manage"]);
+    const user = await checkUserPermissions(existingLoad.organizationId, [
+      'loads:delete',
+      'dispatch:manage',
+    ]);
     if (
-      existingLoad.status !== "pending" &&
-      existingLoad.status !== "cancelled"
+      existingLoad.status !== 'pending' &&
+      existingLoad.status !== 'cancelled'
     ) {
       return {
         success: false,
-        error: "Cannot delete load in current status",
+        error: 'Cannot delete load in current status',
       };
     }
     await prisma.load.delete({ where: { id: loadId } });
     await createAuditLog(
-      "DELETE",
-      "Load",
+      'DELETE',
+      'Load',
       loadId,
       { referenceNumber: existingLoad.referenceNumber },
       user.id,
@@ -306,10 +365,10 @@ export async function deleteLoadAction(loadId: string) {
       success: true,
     };
   } catch (error) {
-    console.error("Error deleting load:", error);
+    console.error('Error deleting load:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to delete load",
+      error: error instanceof Error ? error.message : 'Failed to delete load',
     };
   }
 }
@@ -333,12 +392,15 @@ export async function assignDriverAction(input: LoadAssignmentInput) {
     // Fetch load and check permissions
     const load = await prisma.load.findUnique({
       where: { id: loadId },
-      select: { organizationId: true, status: true }
+      select: { organizationId: true, status: true },
     });
     if (!load) {
-      return { success: false, error: "Load not found" };
+      return { success: false, error: 'Load not found' };
     }
-    const user = await checkUserPermissions(load.organizationId, ["dispatch:manage", "loads:update"]);
+    const user = await checkUserPermissions(load.organizationId, [
+      'dispatch:manage',
+      'loads:update',
+    ]);
 
     // Update load with driver assignment
     await prisma.load.update({
@@ -346,26 +408,26 @@ export async function assignDriverAction(input: LoadAssignmentInput) {
       data: {
         driverId,
         updatedAt: new Date(),
-        lastModifiedBy: user.id
-      }
+        lastModifiedBy: user.id,
+      },
     });
 
     // Create status event for assignment
     await prisma.loadStatusEvent.create({
       data: {
         loadId,
-        status: "assigned",
+        status: 'assigned',
         timestamp: new Date(),
         notes: `Driver assigned`,
         automaticUpdate: false,
-        source: "dispatcher"
-      }
+        source: 'dispatcher',
+      },
     });
 
     // Audit log
     await createAuditLog(
-      "ASSIGN_DRIVER",
-      "Load",
+      'ASSIGN_DRIVER',
+      'Load',
       loadId,
       { driverId },
       user.id,
@@ -378,8 +440,10 @@ export async function assignDriverAction(input: LoadAssignmentInput) {
 
     return { success: true };
   } catch (error) {
-    console.error("Error assigning driver:", error);
-    return { success: false, error: error instanceof Error ? error.message : "Failed to assign driver" };
+    console.error('Error assigning driver:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to assign driver',
+    };
   }
 }
-

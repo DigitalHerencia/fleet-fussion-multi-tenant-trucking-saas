@@ -1,11 +1,13 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getDashboardSummary } from "@/lib/fetchers/analyticsFetchers";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { getDashboardSummary } from '@/lib/fetchers/analyticsFetchers';
 
 interface MainDashboardFeatureProps {
   orgId: string;
 }
 
-export async function MainDashboardFeature({ orgId }: MainDashboardFeatureProps) {
+export async function MainDashboardFeature({
+  orgId,
+}: MainDashboardFeatureProps) {
   if (!orgId) {
     return <p className="text-red-500">Organization not found.</p>;
   }
@@ -25,7 +27,7 @@ export async function MainDashboardFeature({ orgId }: MainDashboardFeatureProps)
         </CardHeader>
         <CardContent>
           <span className="text-3xl font-bold">
-            {"$" + summary.totalRevenue.toLocaleString()}
+            {'$' + summary.totalRevenue.toLocaleString()}
           </span>
         </CardContent>
       </Card>
@@ -67,7 +69,7 @@ export async function MainDashboardFeature({ orgId }: MainDashboardFeatureProps)
         </CardHeader>
         <CardContent>
           <span className="text-3xl font-bold">
-            {"$" + summary.averageRevenuePerMile.toFixed(2)}
+            {'$' + summary.averageRevenuePerMile.toFixed(2)}
           </span>
         </CardContent>
       </Card>

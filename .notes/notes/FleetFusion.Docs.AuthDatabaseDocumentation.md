@@ -8,7 +8,8 @@ created: 1748418652771
 
 # FleetFusion Authentication & Database Integration Documentation
 
-This documentation describes a Next.js 15, React 19, Neon, and Clerk org-based multi-tenant architecture with robust, webhook-driven data consistency and ABAC security.
+This documentation describes a Next.js 15, React 19, Neon, and Clerk org-based multi-tenant
+architecture with robust, webhook-driven data consistency and ABAC security.
 
 ## Component Interaction Table (Optimized)
 
@@ -30,6 +31,7 @@ This documentation describes a Next.js 15, React 19, Neon, and Clerk org-based m
 ## Data Flow Diagrams (Optimized)
 
 ### User Registration Flow
+
 ```
 User Form → sign-up/page.tsx → Clerk.signUp.create() → Clerk Session → middleware.ts → /onboarding
     ↓
@@ -41,6 +43,7 @@ middleware.ts → /{orgId}/dashboard/{userId}
 ```
 
 ### Authentication Flow
+
 ```
 User Credentials → sign-in/page.tsx → Clerk.signIn.create() → Active Session
     ↓
@@ -52,6 +55,7 @@ If no auth: /sign-in
 ```
 
 ### Organization Creation Flow
+
 ```
 Business Data → setClerkMetadata() [Server Action] → Clerk.createOrganization() → Organization ID
     ↓                                        ↓
@@ -65,6 +69,7 @@ Webhook Validation → DB Consistency Check
 ```
 
 ### Webhook Synchronization Flow
+
 ```
 Clerk Event → webhook-handler/route.ts (App Router API) → Signature Validation → Event Processing
     ↓
@@ -78,21 +83,25 @@ Database State = Clerk State (Eventually Consistent)
 ## Key Patterns for Next.js 15, React 19, Neon, Clerk
 
 1. **App Router & Server Actions**
+
    - Use `app/api/webhook-handler/route.ts` for Clerk webhooks (edge-ready)
    - Use React 19 server actions for onboarding and org creation (async/await, direct Neon calls)
    - Route protection via `middleware.ts` (App Router matcher)
 
 2. **Neon Serverless PostgreSQL**
+
    - Use connection pooling (Neon driver)
    - All DB writes via idempotent upserts (webhook-driven)
    - Minimize DB calls in hot paths (prefer Clerk session metadata)
 
 3. **Clerk Org-based ABAC Multi-Tenancy**
+
    - All session claims include `orgId`, `role`, and ABAC permissions
    - Middleware enforces org context isolation
    - All DB records reference Clerk org/user IDs
 
 4. **Webhook-driven Sync**
+
    - All user/org/membership changes flow from Clerk → webhook → Neon
    - Webhook handler validates signature, processes events, upserts data
    - Server actions may optimistically update DB, but webhook is source of truth
@@ -109,4 +118,3 @@ Database State = Clerk State (Eventually Consistent)
 - **Health Checks:** Neon connectivity, Clerk API, webhook endpoint, session validation
 
 ---
-

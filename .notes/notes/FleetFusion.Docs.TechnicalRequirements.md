@@ -5,11 +5,14 @@ desc: ''
 updated: 1748447031209
 created: 1748296758279
 ---
+
 # FleetFusion Technical Specification
 
 ## Architecture Overview
 
-FleetFusion is a modern, multi-tenant fleet management platform built with Next.js 15, leveraging Server Components and the App Router architecture. The platform provides comprehensive fleet operations management including dispatch, compliance, IFTA reporting, and analytics.
+FleetFusion is a modern, multi-tenant fleet management platform built with Next.js 15, leveraging
+Server Components and the App Router architecture. The platform provides comprehensive fleet
+operations management including dispatch, compliance, IFTA reporting, and analytics.
 
 ### Technology Stack
 
@@ -43,8 +46,9 @@ FleetFusion is a modern, multi-tenant fleet management platform built with Next.
 
 ### Core Schema Structure
 
-The database schema is designed to support multi-tenancy, ensuring data isolation between organizations while allowing shared code and infrastructure. The primary entities include users, organizations, drivers, vehicles, loads, and webhook events.
-
+The database schema is designed to support multi-tenancy, ensuring data isolation between
+organizations while allowing shared code and infrastructure. The primary entities include users,
+organizations, drivers, vehicles, loads, and webhook events.
 
 **Table: `users`**
 
@@ -121,15 +125,13 @@ The database schema is designed to support multi-tenancy, ensuring data isolatio
 | `created_at`       | `timestamp` | `not null`        |
 | `retry_count`      | `int4`      | `not null`        |
 
-
-
 ### Enums and Types
 
 ```sql
 CREATE TYPE user_role AS ENUM (
   'admin',
   'dispatcher',
-  'driver', 
+  'driver',
   'compliance_officer',
   'accountant',
   'manager',
@@ -145,7 +147,7 @@ CREATE TYPE driver_status AS ENUM (
 
 CREATE TYPE vehicle_status AS ENUM (
   'active',
-  'inactive', 
+  'inactive',
   'maintenance',
   'out_of_service'
 );
@@ -171,11 +173,11 @@ CREATE INDEX idx_loads_status ON loads(status);
 CREATE INDEX idx_loads_driver_id ON loads(driver_id);
 
 -- Multi-tenancy constraints
-ALTER TABLE drivers ADD CONSTRAINT drivers_org_isolation 
+ALTER TABLE drivers ADD CONSTRAINT drivers_org_isolation
   CHECK (organization_id IS NOT NULL);
-ALTER TABLE vehicles ADD CONSTRAINT vehicles_org_isolation 
+ALTER TABLE vehicles ADD CONSTRAINT vehicles_org_isolation
   CHECK (organization_id IS NOT NULL);
-ALTER TABLE loads ADD CONSTRAINT loads_org_isolation 
+ALTER TABLE loads ADD CONSTRAINT loads_org_isolation
   CHECK (organization_id IS NOT NULL);
 ```
 
@@ -184,16 +186,19 @@ ALTER TABLE loads ADD CONSTRAINT loads_org_isolation
 ### Multi-Tenant Authentication Flow
 
 1. **User Registration/Login**
+
    ```
    User → Clerk Auth → Session Claims → Next.js Middleware → Tenant Isolation
    ```
 
 2. **Organization Context**
+
    ```
    Onboarding → Organization Creation → Clerk Organization → Tenant Context
    ```
 
 3. **Neon Data Sync**
+
    ```
     Clerk Webhook → Neon Database → User/Organization Sync → Data Consistency
    ```
@@ -217,7 +222,7 @@ ALTER TABLE loads ADD CONSTRAINT loads_org_isolation
 | **Manager**    | R     | R       | R        | R     | R          | R    | RW        | R        |
 | **User**       | R     | R       | R        | R     | R          | R    | R         | R        |
 
-*Legend: R=Read, W=Write, D=Delete*
+_Legend: R=Read, W=Write, D=Delete_
 
 ### Middleware Implementation
 
@@ -231,15 +236,13 @@ const protectedRoutes = {
   '/compliance/**': ['admin', 'compliance_officer'],
   '/ifta/**': ['admin', 'accountant'],
   '/analytics/**': ['admin', 'manager', 'accountant'],
-  '/driver/**': ['admin', 'dispatcher', 'driver']
+  '/driver/**': ['admin', 'dispatcher', 'driver'],
 };
 
 // Permission validation
 function hasPermission(userRole: string, requiredPermissions: string[]): boolean {
   const userPermissions = ROLE_PERMISSIONS[userRole] || [];
-  return requiredPermissions.every(permission => 
-    userPermissions.includes(permission)
-  );
+  return requiredPermissions.every(permission => userPermissions.includes(permission));
 }
 ```
 
@@ -281,11 +284,14 @@ export async function createDriver(
 
   // Database operation
   try {
-    const driver = await db.insert(drivers).values({
-      ...validated.data,
-      organizationId,
-    }).returning();
-    
+    const driver = await db
+      .insert(drivers)
+      .values({
+        ...validated.data,
+        organizationId,
+      })
+      .returning();
+
     return { success: true, data: driver[0] };
   } catch (error) {
     return { success: false, error: 'Database error' };
@@ -397,11 +403,13 @@ app/
 ### Server-First Architecture
 
 1. **Initial Page Load**
+
    ```
    Route → Server Component → Database → Render → Hydrate
    ```
 
 2. **Form Submissions**
+
    ```
    Form → Server Action → Validation → Database → Revalidate → Update UI
    ```
@@ -457,17 +465,17 @@ FOR VALUES FROM ('2024-01-01') TO ('2025-01-01');
 
 -- Materialized views for analytics
 CREATE MATERIALIZED VIEW driver_performance AS
-SELECT 
+SELECT
   driver_id,
   COUNT(*) as total_loads,
   AVG(delivery_time) as avg_delivery_time,
   SUM(miles_driven) as total_miles
-FROM loads 
+FROM loads
 WHERE status = 'delivered'
 GROUP BY driver_id;
 
 -- Indexes for common queries
-CREATE INDEX CONCURRENTLY idx_loads_org_status_date 
+CREATE INDEX CONCURRENTLY idx_loads_org_status_date
 ON loads(organization_id, status, created_at);
 ```
 
@@ -477,9 +485,9 @@ ON loads(organization_id, status, created_at);
 // Dynamic imports for large components
 const AnalyticsDashboard = dynamic(
   () => import('@/components/analytics/analytics-dashboard'),
-  { 
+  {
     loading: () => <AnalyticsLoader />,
-    ssr: false 
+    ssr: false
   }
 );
 
@@ -519,14 +527,11 @@ export const config = {
 export async function POST(request: Request) {
   const body = await request.json();
   const validated = apiSchema.safeParse(body);
-  
+
   if (!validated.success) {
-    return NextResponse.json(
-      { error: 'Invalid request' }, 
-      { status: 400 }
-    );
+    return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   }
-  
+
   // Process validated request
 }
 ```
@@ -545,7 +550,7 @@ export async function createLoad(data: CreateLoadInput) {
     driverId: data.driverId,
     userId: getCurrentUser().id,
   });
-  
+
   try {
     const result = await db.insert(loads).values(data);
     logger.info('Load created successfully', { loadId: result.id });
@@ -576,12 +581,12 @@ build:
     - CLERK_SECRET_KEY
     - DATABASE_URL
     - BLOB_READ_WRITE_TOKEN
-  
+
 functions:
-    'app/api/**': 
-      runtime: 'nodejs18.x'
-      maxDuration: 30
-    
+  'app/api/**':
+    runtime: 'nodejs18.x'
+    maxDuration: 30
+
 edge:
   'middleware.ts':
     runtime: 'edge'
@@ -602,4 +607,5 @@ const envSchema = z.object({
 export const env = envSchema.parse(process.env);
 ```
 
-This technical specification provides a comprehensive overview of FleetFusion's architecture, from database design through deployment considerations.
+This technical specification provides a comprehensive overview of FleetFusion's architecture, from
+database design through deployment considerations.

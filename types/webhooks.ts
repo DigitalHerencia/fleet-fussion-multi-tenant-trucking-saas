@@ -3,10 +3,14 @@
  * Separated from core auth types for better organization
  */
 
-import type { ClerkUserMetadata, ClerkOrganizationMetadata, UserRole } from './auth'
+import type {
+  ClerkUserMetadata,
+  ClerkOrganizationMetadata,
+  UserRole,
+} from './auth';
 
 // Webhook event types
-export type WebhookEventType = 
+export type WebhookEventType =
   | 'email.created'
   | 'organization.created'
   | 'organization.deleted'
@@ -33,98 +37,103 @@ export type WebhookEventType =
   | 'session.revoked'
   | 'user.created'
   | 'user.deleted'
-  | 'user.updated'
+  | 'user.updated';
 
 // Generic webhook payload structure
 export interface WebhookPayload<T = any> {
-  [ x: string ]: any
-  data: T
-  type: WebhookEventType
-  object: string
+  [x: string]: any;
+  data: T;
+  type: WebhookEventType;
+  object: string;
 }
 
 // User webhook event data structure
 export interface UserWebhookData {
-  id: string
+  id: string;
   email_addresses: Array<{
-    email_address: string
-    id: string
+    email_address: string;
+    id: string;
     verification?: {
-      status: string
-    }
-  }>
-  first_name?: string
-  last_name?: string
-  profile_image_url?: string
-  public_metadata: Partial<ClerkUserMetadata>
-  private_metadata?: Record<string, any>
+      status: string;
+    };
+  }>;
+  first_name?: string;
+  last_name?: string;
+  profile_image_url?: string;
+  public_metadata: Partial<ClerkUserMetadata>;
+  private_metadata?: Record<string, any>;
   organization_memberships?: Array<{
-    id: string
+    id: string;
     organization: {
-      id: string
-      name: string
-      slug: string
-      public_metadata: Partial<ClerkOrganizationMetadata>
-    }
-    role: string
-    public_metadata: Partial<ClerkUserMetadata>
-  }>
-  created_at: number
-  updated_at: number
+      id: string;
+      name: string;
+      slug: string;
+      public_metadata: Partial<ClerkOrganizationMetadata>;
+    };
+    role: string;
+    public_metadata: Partial<ClerkUserMetadata>;
+  }>;
+  created_at: number;
+  updated_at: number;
 }
 
 // Organization webhook event data structure
 export interface OrganizationWebhookData {
-  id: string
-  name: string
-  slug: string
-  public_metadata: Partial<ClerkOrganizationMetadata>
-  private_metadata?: Record<string, any>
-  members_count?: number
-  created_at: number
-  updated_at: number
+  id: string;
+  name: string;
+  slug: string;
+  public_metadata: Partial<ClerkOrganizationMetadata>;
+  private_metadata?: Record<string, any>;
+  members_count?: number;
+  created_at: number;
+  updated_at: number;
 }
 
 // Organization membership webhook event data structure
 export interface OrganizationMembershipWebhookData {
-  id: string
+  id: string;
   organization: {
-    id: string
-    name: string
-    slug: string
-    public_metadata: Partial<ClerkOrganizationMetadata>
-  }
-  user_id?: string
+    id: string;
+    name: string;
+    slug: string;
+    public_metadata: Partial<ClerkOrganizationMetadata>;
+  };
+  user_id?: string;
   public_user_data?: {
-    user_id: string
-    first_name?: string
-    last_name?: string
-    profile_image_url?: string
-  }
-  role: string
-  public_metadata: Partial<ClerkUserMetadata>
-  private_metadata?: Record<string, any>
-  created_at: number
-  updated_at: number
+    user_id: string;
+    first_name?: string;
+    last_name?: string;
+    profile_image_url?: string;
+  };
+  role: string;
+  public_metadata: Partial<ClerkUserMetadata>;
+  private_metadata?: Record<string, any>;
+  created_at: number;
+  updated_at: number;
 }
 
 // Typed webhook payloads
-export type UserWebhookPayload = WebhookPayload<UserWebhookData>
-export type OrganizationWebhookPayload = WebhookPayload<OrganizationWebhookData>
-export type OrganizationMembershipWebhookPayload = WebhookPayload<OrganizationMembershipWebhookData>
+export type UserWebhookPayload = WebhookPayload<UserWebhookData>;
+export type OrganizationWebhookPayload =
+  WebhookPayload<OrganizationWebhookData>;
+export type OrganizationMembershipWebhookPayload =
+  WebhookPayload<OrganizationMembershipWebhookData>;
 
 // Webhook verification result
 export interface WebhookVerificationResult {
-  eventType: WebhookEventType
-  payload: UserWebhookData | OrganizationWebhookData | OrganizationMembershipWebhookData
+  eventType: WebhookEventType;
+  payload:
+    | UserWebhookData
+    | OrganizationWebhookData
+    | OrganizationMembershipWebhookData;
 }
 
 // Database operation result types
 export interface WebhookProcessingResult {
-  success: boolean
-  operation: 'create' | 'update' | 'delete' | 'validate'
-  entityId: string
-  entityType: 'user' | 'organization' | 'membership'
-  message?: string
-  error?: string
+  success: boolean;
+  operation: 'create' | 'update' | 'delete' | 'validate';
+  entityId: string;
+  entityType: 'user' | 'organization' | 'membership';
+  message?: string;
+  error?: string;
 }

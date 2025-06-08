@@ -50,11 +50,16 @@ async function handleClerkEvent(eventType: string, data: any) {
         lastName: user.last_name ?? null,
         profileImage: user.image_url ?? null,
         isActive: true,
-        onboardingComplete: getBooleanField(user.public_metadata, 'onboardingComplete'),
+        onboardingComplete: getBooleanField(
+          user.public_metadata,
+          'onboardingComplete'
+        ),
         lastLogin: user.last_sign_in_at ? new Date(user.last_sign_in_at) : null,
-        organizationId: Array.isArray(user.organization_memberships) && user.organization_memberships[0]?.organization?.id
-          ? user.organization_memberships[0].organization.id
-          : null,
+        organizationId:
+          Array.isArray(user.organization_memberships) &&
+          user.organization_memberships[0]?.organization?.id
+            ? user.organization_memberships[0].organization.id
+            : null,
       });
       break;
     }
@@ -142,7 +147,11 @@ export async function POST(req: NextRequest) {
     const svixId = req.headers.get('svix-id') ?? '';
     const svixTimestamp = req.headers.get('svix-timestamp') ?? '';
     const svixSignature = req.headers.get('svix-signature') ?? '';
-    console.log('[Clerk Webhook] Headers:', { svixId, svixTimestamp, svixSignature });
+    console.log('[Clerk Webhook] Headers:', {
+      svixId,
+      svixTimestamp,
+      svixSignature,
+    });
     // Verify signature
     const wh = new Webhook(CLERK_WEBHOOK_SECRET);
     let evt: any;
@@ -164,7 +173,12 @@ export async function POST(req: NextRequest) {
     if (typeof id === 'string') {
       await db.webhookEvent.upsert({
         where: { eventId: id },
-        update: { eventType, status: 'processed', processedAt: new Date(), payload: JSON.stringify(evt.data) },
+        update: {
+          eventType,
+          status: 'processed',
+          processedAt: new Date(),
+          payload: JSON.stringify(evt.data),
+        },
         create: {
           eventId: id,
           eventType,
@@ -174,9 +188,15 @@ export async function POST(req: NextRequest) {
         },
       });
     }
-    return NextResponse.json({ message: 'Webhook processed successfully' }, { status: 200 });
+    return NextResponse.json(
+      { message: 'Webhook processed successfully' },
+      { status: 200 }
+    );
   } catch (error) {
     console.error('[Clerk Webhook] Handler error:', error);
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'Webhook error' }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Webhook error' },
+      { status: 500 }
+    );
   }
 }

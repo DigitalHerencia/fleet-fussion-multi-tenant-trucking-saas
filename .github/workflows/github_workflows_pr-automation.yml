@@ -36,7 +36,7 @@ jobs:
           script: |
             const branch = context.payload.pull_request.head.ref;
             const prNumber = context.payload.pull_request.number;
-            
+
             const branchLabelMap = {
               'feature/': 'Feature',
               'fix/': 'Bug', 
@@ -45,7 +45,7 @@ jobs:
               'refactor/': 'Code-Quality',
               'config/': 'Configuration'
             };
-            
+
             for (const [prefix, label] of Object.entries(branchLabelMap)) {
               if (branch.startsWith(prefix)) {
                 await github.rest.issues.addLabels({
@@ -67,11 +67,11 @@ jobs:
             const pr = context.payload.pull_request;
             const body = pr.body || '';
             const prNumber = pr.number;
-            
+
             // Find issue references (Closes #123, Fixes #456, Resolves #789)
             const issueRefs = [...body.matchAll(/(?:closes|fixes|resolves)\s+#(\d+)/gi)]
               .map(match => parseInt(match[1]));
-            
+
             for (const issueNumber of issueRefs) {
               try {
                 await github.rest.issues.addLabels({
@@ -93,14 +93,14 @@ jobs:
           script: |
             const pr = context.payload.pull_request;
             const body = pr.body || '';
-            
+
             // Extract milestone from PR body
             const milestoneMatch = body.match(/MVP Launch|Q3 2025 Release|Testing & Automation Hardening|Post-Launch Enhancements/i);
             if (!milestoneMatch) return;
-            
+
             const milestone = milestoneMatch[0];
             let priority = null;
-            
+
             switch (milestone) {
               case 'MVP Launch':
                 priority = 'Priority-High';
@@ -111,7 +111,7 @@ jobs:
               default:
                 priority = 'Priority-Low';
             }
-            
+
             if (priority) {
               await github.rest.issues.addLabels({
                 owner: context.repo.owner,

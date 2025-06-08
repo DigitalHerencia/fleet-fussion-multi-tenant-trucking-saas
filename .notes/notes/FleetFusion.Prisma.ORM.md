@@ -10,11 +10,15 @@ created: 1748450012923
 
 ## Overview
 
-This architecture uses [Prisma ORM](https://www.prisma.io/) with a [Neon](https://neon.tech/) serverless PostgreSQL database, integrated into a [Next.js 15](https://nextjs.org/blog/next-15) App Router project using [React 19](https://react.dev/), [TypeScript 5](https://www.typescriptlang.org/), and deployed on [Vercel](https://vercel.com/).
+This architecture uses [Prisma ORM](https://www.prisma.io/) with a [Neon](https://neon.tech/)
+serverless PostgreSQL database, integrated into a [Next.js 15](https://nextjs.org/blog/next-15) App
+Router project using [React 19](https://react.dev/),
+[TypeScript 5](https://www.typescriptlang.org/), and deployed on [Vercel](https://vercel.com/).
 
 ## Key Features
 
-- **Serverless PostgreSQL**: Neon provides scalable, serverless Postgres with branching and instant provisioning.
+- **Serverless PostgreSQL**: Neon provides scalable, serverless Postgres with branching and instant
+  provisioning.
 - **Prisma ORM**: Type-safe database access, migrations, and schema management.
 - **Next.js 15 App Router**: Modern routing and server components.
 - **React 19**: Latest React features.
@@ -88,7 +92,8 @@ export async function POST(req: NextRequest) {
 ## Server Actions: Fetches & Mutations
 
 - **Server Actions**: Use Next.js server actions for all DB mutations and fetches.
-- **Domain Separation**: Organize actions by domain (e.g., `/app/actions/user.ts`, `/app/actions/org.ts`).
+- **Domain Separation**: Organize actions by domain (e.g., `/app/actions/user.ts`,
+  `/app/actions/org.ts`).
 - **Type Safety**: All actions are typed with TypeScript.
 
 ```ts
@@ -115,7 +120,8 @@ export async function updateUser(id: string, data: any, tenantId: string) {
 ## Deployment Notes
 
 - Set `DATABASE_URL` in Vercel project settings.
-- Use [Prisma Data Proxy](https://www.prisma.io/docs/data-platform/data-proxy) or Neon connection pooling for serverless environments.
+- Use [Prisma Data Proxy](https://www.prisma.io/docs/data-platform/data-proxy) or Neon connection
+  pooling for serverless environments.
 - Use [Prisma Migrate](https://www.prisma.io/docs/orm/prisma-migrate) for schema changes.
 
 ---

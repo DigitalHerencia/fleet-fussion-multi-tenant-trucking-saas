@@ -1,20 +1,26 @@
 # Monitoring & Observability
 
-This guide covers monitoring, logging, analytics, and observability practices for FleetFusion in production environments.
+This guide covers monitoring, logging, analytics, and observability practices for FleetFusion in
+production environments.
 
 ## Overview
 
-FleetFusion implements comprehensive monitoring across multiple layers to ensure system reliability, performance, and user experience. Our monitoring strategy covers application performance, infrastructure health, business metrics, and security events.
+FleetFusion implements comprehensive monitoring across multiple layers to ensure system reliability,
+performance, and user experience. Our monitoring strategy covers application performance,
+infrastructure health, business metrics, and security events.
 
 ## Application Performance Monitoring
 
 ### Vercel Analytics
-- **Real User Monitoring (RUM)**: Automatic collection of Core Web Vitals and user experience metrics
+
+- **Real User Monitoring (RUM)**: Automatic collection of Core Web Vitals and user experience
+  metrics
 - **Performance Insights**: Page load times, TTFB, FCP, LCP, CLS tracking
 - **Geographic Performance**: Performance breakdown by user location
 - **Device & Browser Analytics**: Performance across different platforms
 
 ### Next.js Built-in Monitoring
+
 ```typescript
 // next.config.ts - Performance monitoring configuration
 const nextConfig: NextConfig = {
@@ -25,19 +31,20 @@ const nextConfig: NextConfig = {
   analytics: {
     provider: 'vercel',
   },
-}
+};
 ```
 
 ### Custom Performance Tracking
+
 ```typescript
 // lib/monitoring/performance.ts
 export function trackPerformance(name: string, fn: () => Promise<any>) {
-  return async function(...args: any[]) {
+  return async function (...args: any[]) {
     const start = performance.now();
     try {
       const result = await fn.apply(this, args);
       const duration = performance.now() - start;
-      
+
       // Track to analytics
       if (typeof window !== 'undefined') {
         window.gtag?.('event', 'performance', {
@@ -45,7 +52,7 @@ export function trackPerformance(name: string, fn: () => Promise<any>) {
           value: Math.round(duration),
         });
       }
-      
+
       return result;
     } catch (error) {
       const duration = performance.now() - start;
@@ -59,6 +66,7 @@ export function trackPerformance(name: string, fn: () => Promise<any>) {
 ## Error Monitoring & Logging
 
 ### Error Boundaries
+
 ```typescript
 // components/shared/error-boundary.tsx
 'use client';
@@ -86,7 +94,7 @@ export class ErrorBoundary extends React.Component<
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     // Log error to monitoring service
     console.error('Error boundary caught an error:', error, errorInfo);
-    
+
     // Send to external monitoring (implement based on your service)
     this.logErrorToService(error, errorInfo);
   }
@@ -124,6 +132,7 @@ export class ErrorBoundary extends React.Component<
 ```
 
 ### Server-Side Error Logging
+
 ```typescript
 // lib/monitoring/logger.ts
 export interface LogContext {
@@ -138,11 +147,13 @@ export class Logger {
     const logEntry = {
       level: 'error',
       message,
-      error: error ? {
-        name: error.name,
-        message: error.message,
-        stack: error.stack,
-      } : undefined,
+      error: error
+        ? {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+          }
+        : undefined,
       context,
       timestamp: new Date().toISOString(),
     };
@@ -190,6 +201,7 @@ export class Logger {
 ## Database Monitoring
 
 ### Query Performance Tracking
+
 ```typescript
 // lib/database/monitoring.ts
 import { PrismaClient } from '@prisma/client';
@@ -209,7 +221,8 @@ export function createMonitoredPrismaClient(): PrismaClient {
     const query = e.query;
 
     // Log slow queries
-    if (duration > 1000) { // 1 second threshold
+    if (duration > 1000) {
+      // 1 second threshold
       Logger.warn('Slow query detected', {
         duration,
         query: query.substring(0, 200) + '...', // Truncate for logging
@@ -236,7 +249,9 @@ export function createMonitoredPrismaClient(): PrismaClient {
 ```
 
 ### Neon Database Metrics
+
 Monitor key database metrics in Neon dashboard:
+
 - Connection count and connection pooling
 - Query execution time and slow queries
 - Database size and storage usage
@@ -246,6 +261,7 @@ Monitor key database metrics in Neon dashboard:
 ## Business Metrics & Analytics
 
 ### Key Performance Indicators (KPIs)
+
 ```typescript
 // lib/analytics/kpis.ts
 export interface BusinessMetrics {
@@ -253,18 +269,18 @@ export interface BusinessMetrics {
   activeUsers: number;
   sessionDuration: number;
   pageViews: number;
-  
+
   // Fleet operations
   totalVehicles: number;
   activeDrivers: number;
   completedLoads: number;
   onTimeDeliveryRate: number;
-  
+
   // Financial
   revenue: number;
   averageLoadValue: number;
   fuelCosts: number;
-  
+
   // System performance
   errorRate: number;
   averageResponseTime: number;
@@ -279,6 +295,7 @@ export async function collectBusinessMetrics(organizationId: string): Promise<Bu
 ```
 
 ### Custom Event Tracking
+
 ```typescript
 // lib/analytics/events.ts
 export interface AnalyticsEvent {
@@ -326,6 +343,7 @@ export class Analytics {
 ## Security Monitoring
 
 ### Audit Logging
+
 ```typescript
 // lib/monitoring/audit.ts
 export interface AuditEvent {
@@ -364,6 +382,7 @@ export async function logAuditEvent(event: AuditEvent) {
 ```
 
 ### Failed Authentication Monitoring
+
 ```typescript
 // lib/monitoring/auth-monitoring.ts
 export async function monitorAuthenticationFailures(
@@ -394,13 +413,16 @@ async function checkForSuspiciousActivity(email: string, ipAddress: string) {
 ## Infrastructure Monitoring
 
 ### Vercel Function Monitoring
+
 Monitor serverless function performance:
+
 - Execution duration and cold starts
 - Memory usage and optimization
 - Error rates and timeout monitoring
 - Geographic distribution and edge performance
 
 ### Health Checks
+
 ```typescript
 // app/api/health/route.ts
 export async function GET() {
@@ -421,13 +443,16 @@ export async function GET() {
 
   const overallHealth = results.every(r => r.status === 'healthy') ? 'healthy' : 'unhealthy';
 
-  return Response.json({
-    status: overallHealth,
-    timestamp: new Date().toISOString(),
-    services: results,
-  }, {
-    status: overallHealth === 'healthy' ? 200 : 503,
-  });
+  return Response.json(
+    {
+      status: overallHealth,
+      timestamp: new Date().toISOString(),
+      services: results,
+    },
+    {
+      status: overallHealth === 'healthy' ? 200 : 503,
+    }
+  );
 }
 
 async function checkDatabase() {
@@ -447,7 +472,9 @@ async function checkCacheService() {
 ## Alerting & Notifications
 
 ### Error Rate Thresholds
+
 Set up alerts for:
+
 - Error rate > 5% over 5-minute window
 - Response time > 2 seconds for 95th percentile
 - Database connection failures
@@ -455,9 +482,14 @@ Set up alerts for:
 - Compliance document expiration warnings
 
 ### Integration Examples
+
 ```typescript
 // lib/monitoring/alerts.ts
-export async function sendAlert(severity: 'low' | 'medium' | 'high', message: string, context?: any) {
+export async function sendAlert(
+  severity: 'low' | 'medium' | 'high',
+  message: string,
+  context?: any
+) {
   const alert = {
     severity,
     message,
@@ -485,21 +517,25 @@ async function sendHighPriorityAlert(alert: any) {
 ## Dashboard & Visualization
 
 ### Key Metrics Dashboard
+
 Create monitoring dashboards that track:
 
 **System Health**
+
 - Application uptime and availability
 - Response time trends
 - Error rate trends
 - Database performance metrics
 
 **Business Metrics**
+
 - Active users and session analytics
 - Fleet utilization metrics
 - Revenue and billing metrics
 - Compliance status overview
 
 **Security Metrics**
+
 - Authentication success/failure rates
 - Suspicious activity detection
 - Audit log summaries
@@ -508,18 +544,21 @@ Create monitoring dashboards that track:
 ## Best Practices
 
 ### Monitoring Strategy
+
 1. **Layer Monitoring**: Monitor at application, infrastructure, and business levels
 2. **Proactive Alerting**: Set up alerts before issues impact users
 3. **Data Retention**: Keep monitoring data for trend analysis and capacity planning
 4. **Privacy Compliance**: Ensure monitoring respects user privacy and GDPR requirements
 
 ### Performance Optimization
+
 1. **Efficient Logging**: Use structured logging and avoid excessive log volume
 2. **Sampling**: Implement sampling for high-volume events to manage costs
 3. **Async Processing**: Process monitoring data asynchronously to avoid performance impact
 4. **Resource Monitoring**: Monitor CPU, memory, and bandwidth usage
 
 ### Security Considerations
+
 1. **Sensitive Data**: Never log sensitive information like passwords or PII
 2. **Access Control**: Restrict access to monitoring data and dashboards
 3. **Audit Trail**: Maintain audit trails for monitoring system access
@@ -530,10 +569,13 @@ Create monitoring dashboards that track:
 ## Integration with External Services
 
 ### Recommended Monitoring Stack
+
 - **APM**: Vercel Analytics + custom performance tracking
 - **Error Tracking**: Sentry or LogRocket for detailed error analysis
 - **Logging**: Winston or Pino for structured server-side logging
 - **Alerting**: PagerDuty or Slack for incident management
 - **Business Intelligence**: Custom dashboards with Chart.js or similar
 
-This monitoring setup provides comprehensive visibility into FleetFusion's performance, security, and business metrics while maintaining the scalability and reliability expected from a production SaaS platform.
+This monitoring setup provides comprehensive visibility into FleetFusion's performance, security,
+and business metrics while maintaining the scalability and reliability expected from a production
+SaaS platform.

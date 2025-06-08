@@ -1,6 +1,6 @@
 // features/dashboard/kpi-grid.tsx
-import { DashboardCards } from "@/components/dashboard/dashboard-cards";
-import { getOrganizationKPIs } from "@/lib/fetchers/kpiFetchers";
+import { DashboardCards } from '@/components/dashboard/dashboard-cards';
+import { getOrganizationKPIs } from '@/lib/fetchers/kpiFetchers';
 
 interface KpiGridProps {
   orgId: string;

@@ -1,45 +1,48 @@
 // Shared DocumentUpload component for document upload UI/logic reuse
-import { FileText } from "lucide-react"
-import React from "react"
+import { FileText } from 'lucide-react';
+import React from 'react';
 
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button';
 
 interface DocumentUploadProps {
-  label?: string
-  description?: string
-  onUpload?: () => void
-  buttonText?: string
+  label?: string;
+  description?: string;
+  onUpload?: () => void;
+  buttonText?: string;
 }
 
 export function DocumentUpload({
-  label = "Upload Document",
-  description = "Add documents to keep track of important paperwork",
+  label = 'Upload Document',
+  description = 'Add documents to keep track of important paperwork',
   onUpload,
-  buttonText = "Upload",
+  buttonText = 'Upload',
 }: DocumentUploadProps) {
   return (
-    <div className="flex justify-between items-center">
+    <div className="flex items-center justify-between">
       <div className="space-y-1">
         <h4 className="font-medium">{label}</h4>
-        <p className="text-sm text-muted-foreground">{description}</p>
+        <p className="text-muted-foreground text-sm">{description}</p>
       </div>
       <Button variant="outline" onClick={onUpload} type="button">
-        <FileText className="h-4 w-4 mr-2" />
+        <FileText className="mr-2 h-4 w-4" />
         {buttonText}
       </Button>
     </div>
-  )
+  );
 }
 
 // Shared DocumentList placeholder for empty state
-export function DocumentListEmpty({ message = "No documents uploaded yet", subtext = "Upload documents to keep track of important paperwork" }) {
+export function DocumentListEmpty({
+  message = 'No documents uploaded yet',
+  subtext = 'Upload documents to keep track of important paperwork',
+}) {
   return (
-    <div className="border rounded-md p-4">
-      <div className="text-center text-muted-foreground">
-        <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
+    <div className="rounded-md border p-4">
+      <div className="text-muted-foreground text-center">
+        <FileText className="mx-auto mb-2 h-12 w-12 opacity-50" />
         <p>{message}</p>
         <p className="text-sm">{subtext}</p>
       </div>
     </div>
-  )
+  );
 }

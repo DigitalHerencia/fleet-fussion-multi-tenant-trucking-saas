@@ -1,4 +1,3 @@
-
 ---
 
 ### 3. `agents-topology.md`
@@ -43,26 +42,27 @@ graph TD
   copilot --> codex
 
   ghAI --> githubSrv
-  
+
   %% Automation flows
   githubSrv --> workflows
   workflows --> project
   workflows --> milestones
-  
+
   %% Platform connections
   webapp --> api
   api --> db
   webapp --> clerk
-  
+
   %% Deployment
   git --> githubSrv
   githubSrv --> webapp
-  
+
   %% Labels and styling
   classDef agent fill:#e1f5fe
   classDef automation fill:#f3e5f5
   classDef fleet fill:#e8f5e8
-  
+
   class codex,copilot,ghAI agent
   class workflows,project,milestones automation
   class webapp,api,db fleet
+```

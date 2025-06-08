@@ -5,11 +5,13 @@ desc: ''
 updated: 1749380425359
 created: 1748594592832
 ---
+
 # System Context Refactored Codebase (after refactor)
 
 ## I am working on refactoring a software system into the following directory structure, architecture, and analyzed files:
 
 ## Directory Structure
+
 ```
 fleet-fussion-feature-fleetfusion-mvp-implementation
 ├── app
@@ -350,6 +352,7 @@ fleet-fussion-feature-fleetfusion-mvp-implementation
 ```
 
 ## Mermaid Diagram
+
 ```mermaid
 graph TD
 
@@ -411,21 +414,24 @@ graph TD
 ## Analyzed Files
 
 # Project Information
-- Workspace root: `c:\Development\sandbox\fleet-fussion-feature-fleetfusion-mvp-implementation\fleet-fussion-feature-fleetfusion-mvp-implementation`
+
+- Workspace root:
+  `c:\Development\sandbox\fleet-fussion-feature-fleetfusion-mvp-implementation\fleet-fussion-feature-fleetfusion-mvp-implementation`
 
 ## High Value Files
 
 ### lib/auth/auth.ts
+
 - Reason: Core authentication implementation with Clerk integration and role-based access control
 - File size: 1695 bytes
 
 ```ts
  1 | "use server"
- 2 | 
+ 2 |
  3 | import { currentUser } from "@clerk/nextjs/server"
  4 | import { redirect } from "next/navigation"
  5 | import type { ClerkUserMetadata, ClerkOrganizationMetadata, UserContext } from "@/types/auth"
- 6 | 
+ 6 |
  7 | // Get the current authenticated user and their role (RBAC only)
  8 | export async function getCurrentUser(): Promise<UserContext | null> {
  9 |   const user = await currentUser();
@@ -446,13 +452,13 @@ graph TD
 24 |     organizationMetadata: {} as ClerkOrganizationMetadata, // No org metadata in RBAC-only model
 25 |   };
 26 | }
-27 | 
+27 |
 28 | // Require authentication and redirect to login if not authenticated
 29 | export async function requireAuth() {
 30 |   const user = await getCurrentUser();
 31 |   if (!user) redirect('/sign-in');
 32 | }
-33 | 
+33 |
 34 | // Require a specific role (or any of a set of roles)
 35 | export async function requireRole(roles: string | string[]) {
 36 |   const user = await getCurrentUser();
@@ -464,27 +470,28 @@ graph TD
 ```
 
 ### lib/auth/permissions.ts
+
 - Reason: RBAC permission definitions and role management utilities
 - File size: 718 bytes
 
 ```ts
  1 | /**
  2 |  * RBAC (Role-Based Access Control) Utilities
- 3 |  * 
+ 3 |  *
  4 |  * Provides role management utilities
  5 |  * for the FleetFusion multi-tenant system with aligned type structure
  6 |  */
- 7 | 
+ 7 |
  8 | export type SystemRole = 'admin' | 'manager' | 'driver' | 'viewer';
  9 | export const ROLES: SystemRole[] = ['admin', 'manager', 'driver', 'viewer'];
-10 | 
+10 |
 11 | /**
 12 |  * Check if a user has a specific role
 13 |  */
 14 | export function hasRole(user: { role: string } | null, role: SystemRole): boolean {
 15 |   return !!user && user.role === role;
 16 | }
-17 | 
+17 |
 18 | /**
 19 |  * Check if a user has any of the specified roles
 20 |  */
@@ -495,6 +502,7 @@ graph TD
 ```
 
 ### middleware.ts
+
 - Reason: Global authentication, security headers, and route protection implementation
 - File size: 1290 bytes
 
@@ -502,7 +510,7 @@ graph TD
  1 | // RBAC-only middleware: global auth, security headers, rate limiting
  2 | import { NextResponse } from 'next/server';
  3 | import type { NextRequest } from 'next/server';
- 4 | 
+ 4 |
  5 | const publicRoutes = [
  6 |   '/',
  7 |   '/sign-in',
@@ -518,7 +526,7 @@ graph TD
 17 |   '/refund',
 18 |   '/api/clerk/',
 19 | ];
-20 | 
+20 |
 21 | export async function middleware(req: NextRequest) {
 22 |   const { pathname } = req.nextUrl;
 23 |   // Allow public routes
@@ -539,36 +547,36 @@ graph TD
 38 |   // TODO: Add rate limiting logic here if needed
 39 |   return res;
 40 | }
-41 | 
+41 |
 42 | export const config = {
 43 |   matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
 44 | };</file_source>
 
 ```
 
-
 ### prisma/schema.prisma
+
 - Reason: Complete data model definition including all entity relationships and access patterns
 - File size: 20400 bytes
 
 ```ts
   1 | // This is your Prisma schema file,
   2 | // learn more about it in the docs: https://pris.ly/d/prisma-schema
-  3 | 
+  3 |
   4 | // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
   5 | // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-  6 | 
+  6 |
   7 | generator client {
   8 |   provider        = "prisma-client-js"
   9 |   previewFeatures = ["driverAdapters"]
  10 | }
- 11 | 
+ 11 |
  12 | datasource db {
  13 |   provider  = "postgresql"
  14 |   url       = env("DATABASE_URL")
  15 |   directUrl = env("DIRECT_URL")
  16 | }
- 17 | 
+ 17 |
  18 | enum UserRole {
  19 |   admin
  20 |   manager
@@ -579,27 +587,27 @@ graph TD
  25 |   accountant
  26 |   viewer
  27 | }
- 28 | 
+ 28 |
  29 | enum SubscriptionTier {
  30 |   free
  31 |   pro
  32 |   enterprise
  33 | }
- 34 | 
+ 34 |
  35 | enum SubscriptionStatus {
  36 |   active
  37 |   inactive
  38 |   trial
  39 |   cancelled
  40 | }
- 41 | 
+ 41 |
  42 | enum VehicleStatus {
  43 |   active
  44 |   inactive
  45 |   maintenance
  46 |   decommissioned
  47 | }
- 48 | 
+ 48 |
  49 | enum DriverStatus {
  50 |   available
  51 |   assigned
@@ -612,7 +620,7 @@ graph TD
  58 |   inactive
  59 |   terminated
  60 | }
- 61 | 
+ 61 |
  62 | enum LoadStatus {
  63 |   pending
  64 |   assigned
@@ -620,7 +628,7 @@ graph TD
  66 |   delivered
  67 |   cancelled
  68 | }
- 69 | 
+ 69 |
  70 | model Organization {
  71 |   id                 String             @id @default(uuid())
  72 |   clerkId            String             @unique @map("clerk_id")
@@ -643,7 +651,7 @@ graph TD
  89 |   isActive           Boolean            @default(true) @map("is_active")
  90 |   createdAt          DateTime           @default(now()) @map("created_at")
  91 |   updatedAt          DateTime           @updatedAt @map("updated_at")
- 92 | 
+ 92 |
  93 |   users    User[]
  94 |   vehicles Vehicle[]
  95 |   drivers  Driver[]
@@ -651,12 +659,12 @@ graph TD
  97 |   auditLogs AuditLog[]
  98 |   // complianceDocuments ComplianceDocument[]
  99 |   // iftaReports         IftaReport[]
-100 | 
+100 |
 101 |   @@index([clerkId], name: "organizations_clerk_id_idx")
 102 |   @@index([slug], name: "organizations_slug_idx")
 103 |   @@map("organizations")
 104 | }
-105 | 
+105 |
 106 | model User {
 107 |   id                 String    @id @default(uuid())
 108 |   clerkId            String    @unique @map("clerk_id")
@@ -673,20 +681,20 @@ graph TD
 119 |   lastLogin          DateTime? @map("last_login")
 120 |   createdAt          DateTime  @default(now()) @map("created_at")
 121 |   updatedAt          DateTime  @updatedAt @map("updated_at")
-122 | 
+122 |
 123 |   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 124 |   driver       Driver?
 125 |   auditLogs    AuditLog[]   @relation("UserAuditLogs")
 126 |   // ComplianceDocument  ComplianceDocument[] @relation("VerifiedByUser")
 127 |   // IftaReport          IftaReport[]       @relation("SubmittedByUser")
-128 | 
+128 |
 129 |   @@index([clerkId], name: "users_clerk_id_idx")
 130 |   @@index([organizationId], name: "users_organization_id_idx")
 131 |   @@index([email], name: "users_email_idx")
 132 |   @@index([role], name: "users_role_idx")
 133 |   @@map("users")
 134 | }
-135 | 
+135 |
 136 | model Vehicle {
 137 |   id                     String        @id @default(uuid())
 138 |   organizationId         String        @map("organization_id")
@@ -710,12 +718,12 @@ graph TD
 156 |   customFields           Json?         @default("{}") @map("custom_fields")
 157 |   createdAt              DateTime      @default(now()) @map("created_at")
 158 |   updatedAt              DateTime      @updatedAt @map("updated_at")
-159 | 
+159 |
 160 |   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 161 |   loads        Load[]       @relation("VehicleLoads")
 162 |   trailerLoads Load[]       @relation("TrailerLoads")
 163 |   // complianceDocuments ComplianceDocument[]
-164 | 
+164 |
 165 |   @@unique([organizationId, unitNumber], name: "vehicles_org_unit_unique")
 166 |   @@index([organizationId], name: "vehicles_organization_id_idx")
 167 |   @@index([unitNumber], name: "vehicles_unit_number_idx")
@@ -723,7 +731,7 @@ graph TD
 169 |   @@index([type], name: "vehicles_type_idx")
 170 |   @@map("vehicles")
 171 | }
-172 | 
+172 |
 173 | model Driver {
 174 |   id                    String       @id @default(uuid())
 175 |   organizationId        String       @map("organization_id")
@@ -766,13 +774,13 @@ graph TD
 212 |   customFields          Json?        @default("{}") @map("custom_fields")
 213 |   createdAt             DateTime     @default(now()) @map("created_at")
 214 |   updatedAt             DateTime     @updatedAt @map("updated_at")
-215 | 
+215 |
 216 |   organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 217 |   user           User?            @relation(fields: [userId], references: [id])
 218 |   loads          Load[]
 219 |   hoursOfService HoursOfService[]
 220 |   // complianceDocuments ComplianceDocument[]
-221 | 
+221 |
 222 |   @@unique([organizationId, employeeId], name: "drivers_org_employee_unique")
 223 |   @@index([organizationId], name: "drivers_organization_id_idx")
 224 |   @@index([tenantId], name: "drivers_tenant_id_idx")
@@ -783,7 +791,7 @@ graph TD
 229 |   @@index([isActive], name: "drivers_is_active_idx")
 230 |   @@map("drivers")
 231 | }
-232 | 
+232 |
 233 | model HoursOfService {
 234 |   id             String   @id @default(uuid())
 235 |   driverId       String   @map("driver_id")
@@ -806,15 +814,15 @@ graph TD
 252 |   source         String   @default("manual") // 'manual', 'eld', 'automatic'
 253 |   createdAt      DateTime @default(now()) @map("created_at")
 254 |   updatedAt      DateTime @updatedAt @map("updated_at")
-255 | 
+255 |
 256 |   driver Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
-257 | 
+257 |
 258 |   @@index([driverId], name: "hours_of_service_driver_id_idx")
 259 |   @@index([date], name: "hours_of_service_date_idx")
 260 |   @@index([status], name: "hours_of_service_status_idx")
 261 |   @@map("hours_of_service")
 262 | }
-263 | 
+263 |
 264 | model Load {
 265 |   id                    String     @id @default(uuid())
 266 |   organizationId        String     @map("organization_id")
@@ -857,12 +865,12 @@ graph TD
 303 |   customFields          Json?      @default("{}") @map("custom_fields")
 304 |   createdAt             DateTime   @default(now()) @map("created_at")
 305 |   updatedAt             DateTime   @updatedAt @map("updated_at")
-306 | 
+306 |
 307 |   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 308 |   driver       Driver?      @relation(fields: [driverId], references: [id])
 309 |   vehicle      Vehicle?     @relation("VehicleLoads", fields: [vehicleId], references: [id])
 310 |   trailer      Vehicle?     @relation("TrailerLoads", fields: [trailerId], references: [id])
-311 | 
+311 |
 312 |   @@unique([organizationId, loadNumber], name: "loads_org_load_unique")
 313 |   @@index([organizationId], name: "loads_organization_id_idx")
 314 |   @@index([driverId], name: "loads_driver_id_idx")
@@ -873,7 +881,7 @@ graph TD
 319 |   @@index([scheduledPickupDate], name: "loads_scheduled_pickup_idx")
 320 |   @@map("loads")
 321 | }
-322 | 
+322 |
 323 | // model ComplianceDocument {
 324 | //   id                 String    @id @default(uuid())
 325 | //   organizationId     String    @map("organization_id")
@@ -891,18 +899,18 @@ graph TD
 337 | //   expirationDate     DateTime? @db.Date @map("expiration_date")
 338 | //   status             String    @default("active") // 'active', 'expired', 'pending'
 339 | //   isVerified         Boolean?  @default(false) @map("is_verified")
-340 | //   verifiedBy         String?   @map("verified_by") 
+340 | //   verifiedBy         String?   @map("verified_by")
 341 | //   verifiedAt         DateTime? @map("verified_at")
 342 | //   notes              String?
 343 | //   tags               Json?     @default("[]")
 344 | //   createdAt          DateTime  @default(now()) @map("created_at")
 345 | //   updatedAt          DateTime  @updatedAt @map("updated_at")
-346 | 
+346 |
 347 | //   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 348 | //   driver         Driver?      @relation(fields: [driverId], references: [id])
 349 | //   vehicle        Vehicle?     @relation(fields: [vehicleId], references: [id])
 350 | //   verifiedByUser User?        @relation("VerifiedByUser", fields: [verifiedBy], references: [id])
-351 | 
+351 |
 352 | //   @@map("compliance_documents")
 353 | //   @@index([organizationId], name: "compliance_documents_organization_id_idx")
 354 | //   @@index([driverId], name: "compliance_documents_driver_id_idx")
@@ -912,7 +920,7 @@ graph TD
 358 | //   @@index([status], name: "compliance_documents_status_idx")
 359 | //   @@index([expirationDate], name: "compliance_documents_expiration_idx")
 360 | // }
-361 | 
+361 |
 362 | // model IftaReport {
 363 | //   id                String    @id @default(uuid())
 364 | //   organizationId    String    @map("organization_id")
@@ -924,7 +932,7 @@ graph TD
 370 | //   totalTaxOwed      Decimal?  @db.Decimal(10, 2) @map("total_tax_owed")
 371 | //   totalTaxPaid      Decimal?  @db.Decimal(10, 2) @map("total_tax_paid")
 372 | //   submittedAt       DateTime? @map("submitted_at")
-373 | //   submittedBy       String?   @map("submitted_by") 
+373 | //   submittedBy       String?   @map("submitted_by")
 374 | //   dueDate           DateTime? @db.Date @map("due_date")
 375 | //   filedDate         DateTime? @db.Date @map("filed_date")
 376 | //   reportFileUrl     String?   @map("report_file_url")
@@ -933,10 +941,10 @@ graph TD
 379 | //   calculationData   Json?     @default("{}") @map("calculation_data")
 380 | //   createdAt         DateTime  @default(now()) @map("created_at")
 381 | //   updatedAt         DateTime  @updatedAt @map("updated_at")
-382 | 
+382 |
 383 | //   organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 384 | //   submittedByUser User?        @relation("SubmittedByUser", fields: [submittedBy], references: [id])
-385 | 
+385 |
 386 | //   @@map("ifta_reports")
 387 | //   @@index([organizationId], name: "ifta_reports_organization_id_idx")
 388 | //   @@index([submittedBy], name: "ifta_reports_submitted_by_idx")
@@ -944,7 +952,7 @@ graph TD
 390 | //   @@index([status], name: "ifta_reports_status_idx")
 391 | //   @@index([dueDate], name: "ifta_reports_due_date_idx")
 392 | // }
-393 | 
+393 |
 394 | model AuditLog {
 395 |   id           String    @id @default(uuid())
 396 |   organizationId String  @map("organization_id")
@@ -955,10 +963,10 @@ graph TD
 401 |   changes      Json?     // Store what changed (before/after values)
 402 |   metadata     Json?     // Additional context (IP address, user agent, etc.)
 403 |   timestamp    DateTime  @default(now())
-404 | 
+404 |
 405 |   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 406 |   user         User?        @relation("UserAuditLogs", fields: [userId], references: [id])
-407 | 
+407 |
 408 |   @@map("audit_logs")
 409 |   @@index([organizationId], name: "audit_logs_organization_id_idx")
 410 |   @@index([userId], name: "audit_logs_user_id_idx")
@@ -967,7 +975,7 @@ graph TD
 413 |   @@index([action], name: "audit_logs_action_idx")
 414 |   @@index([timestamp], name: "audit_logs_timestamp_idx")
 415 | }
-416 | 
+416 |
 417 | model WebhookEvent {
 418 |   id              String    @id @default(uuid())
 419 |   eventType       String    @map("event_type") // Clerk event type
@@ -980,7 +988,7 @@ graph TD
 426 |   processedAt     DateTime? @map("processed_at")
 427 |   createdAt       DateTime  @default(now()) @map("created_at")
 428 |   retryCount      Int       @default(0) @map("retry_count")
-429 | 
+429 |
 430 |   @@map("webhook_events")
 431 |   @@index([eventType], name: "webhook_events_event_type_idx")
 432 |   @@index([organizationId], name: "webhook_events_organization_id_idx")
@@ -988,17 +996,18 @@ graph TD
 434 |   @@index([status], name: "webhook_events_status_idx")
 435 |   @@index([createdAt], name: "webhook_events_created_at_idx")
 436 | }
-437 | 
+437 |
 
 ```
 
 ### lib/actions/dispatchActions.ts
+
 - Reason: Core dispatch management system implementation and business logic
 - File size: 25289 bytes
 
 ```ts
   1 | "use server";
-  2 | 
+  2 |
   3 | import { auth } from "@clerk/nextjs/server";
   4 | import { revalidatePath } from "next/cache";
   5 | import { redirect } from "next/navigation";
@@ -1020,19 +1029,19 @@ graph TD
  21 |   type UpdateLoadInput,
  22 | } from "@/validations/dispatch";
  23 | import { LoadStatus, DriverStatus, VehicleStatus } from "@prisma/client";
- 24 | 
+ 24 |
  25 | // Only use LoadStatus: pending, assigned, in_transit, delivered, cancelled
  26 | // Only use VehicleStatus: active, inactive, maintenance, decommissioned
  27 | // Only use DriverStatus: active, inactive, suspended, terminated
  28 | // Update all status assignments and comparisons accordingly
- 29 | 
+ 29 |
  30 | // Helper function to check user permissions
  31 | async function checkUserPermissions(orgId: string, requiredPermissions: string[]) {
  32 |   const { userId } = await auth();
  33 |   if (!userId) {
  34 |     throw new Error("Unauthorized");
  35 |   }
- 36 | 
+ 36 |
  37 |   // Check if user belongs to the organization and has required permissions
  38 |   const user = await prisma.user.findFirst({
  39 |     where: {
@@ -1040,11 +1049,11 @@ graph TD
  41 |       organizationId: orgId,
  42 |     },
  43 |   });
- 44 | 
+ 44 |
  45 |   if (!user) {
  46 |     throw new Error("User not found or not member of organization");
  47 |   }
- 48 | 
+ 48 |
  49 |   // Access permissions directly if they're a relation on the user model
  50 |   let userPermissions: string[] = [];
  51 |   if (Array.isArray(user.permissions)) {
@@ -1052,18 +1061,18 @@ graph TD
  53 |       .map((p: any) => typeof p === "object" && p !== null && "name" in p ? p.name : null)
  54 |       .filter((name: any) => typeof name === "string");
  55 |   }
- 56 |   
- 57 |   const hasPermission = requiredPermissions.some(permission => 
+ 56 |
+ 57 |   const hasPermission = requiredPermissions.some(permission =>
  58 |     userPermissions.includes(permission) || userPermissions.includes("*")
  59 |   );
- 60 | 
+ 60 |
  61 |   if (!hasPermission) {
  62 |     throw new Error(`Insufficient permissions. Required: ${requiredPermissions.join(" or ")}`);
  63 |   }
- 64 | 
+ 64 |
  65 |   return user;
  66 | }
- 67 | 
+ 67 |
  68 | // Helper function to create audit log entry
  69 | async function createAuditLog(
  70 |   action: string,
@@ -1085,20 +1094,20 @@ graph TD
  86 |     },
  87 |   });
  88 | }
- 89 | 
+ 89 |
  90 | // Helper function to generate reference number
  91 | function generateReferenceNumber(): string {
  92 |   const timestamp = Date.now().toString();
  93 |   const random = Math.random().toString(36).substring(2, 5).toUpperCase();
  94 |   return `FL${timestamp.slice(-6)}${random}`;
  95 | }
- 96 | 
+ 96 |
  97 | // Infer types from Zod schemas
  98 | import type { Customer as CustomerInput, Location as LocationInput } from "@/types/dispatch";
- 99 | 
+ 99 |
 100 | // Minimal types for driver, vehicle, trailer
 101 | interface IdObj { id?: string }
-102 | 
+102 |
 103 | // Create load action
 104 | export async function createLoadAction(orgId: string, data: CreateLoadInput) {
 105 |   try {
@@ -1188,7 +1197,7 @@ graph TD
 189 |     };
 190 |   }
 191 | }
-192 | 
+192 |
 193 | // Update load action
 194 | export async function updateLoadAction(loadId: string, data: UpdateLoadInput) {
 195 |   try {
@@ -1283,7 +1292,7 @@ graph TD
 284 |     };
 285 |   }
 286 | }
-287 | 
+287 |
 288 | // Delete load action
 289 | export async function deleteLoadAction(loadId: string) {
 290 |   try {
@@ -1291,22 +1300,22 @@ graph TD
 292 |     if (!userId) {
 293 |       throw new Error("Unauthorized");
 294 |     }
-295 | 
+295 |
 296 |     // Get load to verify tenant and permissions
 297 |     const existingLoad = await prisma.load.findUnique({
 298 |       where: { id: loadId },
 299 |       select: { organizationId: true, status: true, referenceNumber: true },
 300 |     });
-301 | 
+301 |
 302 |     if (!existingLoad) {
 303 |       return {
 304 |         success: false,
 305 |         error: "Load not found",
 306 |       };
 307 |     }
-308 | 
+308 |
 309 |     const user = await checkUserPermissions(existingLoad.organizationId, ["loads:delete", "dispatch:manage"]);
-310 | 
+310 |
 311 |     // Check if load can be deleted (only pending or cancelled loads)
 312 |     if (
 313 |       existingLoad.status !== LoadStatus.pending &&
@@ -1317,10 +1326,10 @@ graph TD
 318 |         error: "Cannot delete load in current status",
 319 |       };
 320 |     }
-321 | 
+321 |
 322 |     // Delete the load directly
 323 |     await prisma.load.delete({ where: { id: loadId } });
-324 | 
+324 |
 325 |     // Create audit log
 326 |     await createAuditLog(
 327 |       "DELETE",
@@ -1330,9 +1339,9 @@ graph TD
 331 |       user.id,
 332 |       existingLoad.organizationId
 333 |     );
-334 | 
+334 |
 335 |     revalidatePath(`/dashboard/${existingLoad.organizationId}/dispatch`);
-336 |     
+336 |
 337 |     return {
 338 |       success: true,
 339 |     };
@@ -1344,7 +1353,7 @@ graph TD
 345 |     };
 346 |   }
 347 | }
-348 | 
+348 |
 349 | // Assign load action
 350 | export async function assignLoadAction(data: LoadAssignmentInput) {
 351 |   try {
@@ -1352,24 +1361,24 @@ graph TD
 353 |     if (!userId) {
 354 |       throw new Error("Unauthorized");
 355 |     }
-356 | 
+356 |
 357 |     const validatedData = loadAssignmentSchema.parse(data);
-358 | 
+358 |
 359 |     // Get load to verify tenant and permissions
 360 |     const existingLoad = await prisma.load.findUnique({
 361 |       where: { id: validatedData.loadId },
 362 |       select: { organizationId: true, status: true, driverId: true, vehicleId: true },
 363 |     });
-364 | 
+364 |
 365 |     if (!existingLoad) {
 366 |       return {
 367 |         success: false,
 368 |         error: "Load not found",
 369 |       };
 370 |     }
-371 | 
+371 |
 372 |     const user = await checkUserPermissions(existingLoad.organizationId, ["loads:assign", "dispatch:manage"]);
-373 | 
+373 |
 374 |     // Verify driver and vehicle belong to the same tenant
 375 |     const [driver, vehicle, trailer] = await Promise.all([
 376 |       prisma.driver.findFirst({
@@ -1381,36 +1390,36 @@ graph TD
 382 |         select: { id: true, status: true, make: true, model: true, year: true, vin: true, licensePlate: true },
 383 |       }),
 384 |       validatedData.trailerId ? prisma.vehicle.findFirst({ // Use vehicle if trailer is not a separate model
-385 |         where: { 
-386 |           id: validatedData.trailerId, 
+385 |         where: {
+386 |           id: validatedData.trailerId,
 387 |           organizationId: existingLoad.organizationId,
 388 |           type: "trailer" // Assuming you differentiate by type
 389 |         },
 390 |         select: { id: true, status: true, make: true, model: true, year: true, vin: true, licensePlate: true },
 391 |       }) : null,
 392 |     ]);
-393 | 
+393 |
 394 |     if (!driver) {
 395 |       return {
 396 |         success: false,
 397 |         error: "Driver not found or not available",
 398 |       };
 399 |     }
-400 | 
+400 |
 401 |     if (!vehicle) {
 402 |       return {
 403 |         success: false,
 404 |         error: "Vehicle not found or not available",
 405 |       };
 406 |     }
-407 | 
+407 |
 408 |     if (validatedData.trailerId && !trailer) {
 409 |       return {
 410 |         success: false,
 411 |         error: "Trailer not found or not available",
 412 |       };
 413 |     }
-414 | 
+414 |
 415 |     // Check if driver and vehicle are available
 416 |     if (driver.status !== DriverStatus.available) {
 417 |       return {
@@ -1418,23 +1427,23 @@ graph TD
 419 |         error: "Driver is not available for assignment",
 420 |       };
 421 |     }
-422 | 
+422 |
 423 |     if (vehicle.status !== VehicleStatus.active) {
 424 |       return {
 425 |         success: false,
 426 |         error: "Vehicle is not available for assignment",
 427 |       };
 428 |     }
-429 | 
+429 |
 430 |     if (trailer && trailer.status !== VehicleStatus.active) {
 431 |       return {
 432 |         success: false,
 433 |         error: "Trailer is not available for assignment",
 434 |       };
 435 |     }
-436 | 
+436 |
 437 |     const assignedAt = new Date();
-438 | 
+438 |
 439 |     // Update load with assignment details - use transaction for data consistency
 440 |     const updatedLoad = await prisma.$transaction(async (tx) => {
 441 |       // Update load
@@ -1448,7 +1457,7 @@ graph TD
 449 |           updatedAt: new Date(),
 450 |         },
 451 |       });
-452 | 
+452 |
 453 |       // Update driver status
 454 |       await tx.driver.update({
 455 |         where: { id: validatedData.driverId },
@@ -1456,7 +1465,7 @@ graph TD
 457 |           status: "active" as any, // Use type assertion for enum
 458 |         },
 459 |       });
-460 | 
+460 |
 461 |       // Update vehicle status
 462 |       await tx.vehicle.update({
 463 |         where: { id: validatedData.vehicleId },
@@ -1464,7 +1473,7 @@ graph TD
 465 |           status: "active" as any, // Use type assertion for enum
 466 |         },
 467 |       });
-468 | 
+468 |
 469 |       // If trailers are stored as vehicles with type=trailer
 470 |       if (validatedData.trailerId) {
 471 |         await tx.vehicle.update({
@@ -1474,16 +1483,16 @@ graph TD
 475 |           },
 476 |         });
 477 |       }
-478 | 
+478 |
 479 |       // Use raw SQL if loadStatusEvent isn't in the Prisma schema
 480 |       await tx.$executeRaw`
 481 |         INSERT INTO "LoadStatusEvent" ("loadId", "status", "timestamp", "notes", "automaticUpdate", "source", "createdBy")
 482 |         VALUES (${validatedData.loadId}, 'assigned', ${assignedAt}, ${validatedData.notes || `Assigned to driver with vehicle `}, false, 'dispatcher', ${user.id})
 483 |       `;
-484 | 
+484 |
 485 |       return load;
 486 |     });
-487 | 
+487 |
 488 |     // Create audit log
 489 |     await createAuditLog(
 490 |       "ASSIGN",
@@ -1493,11 +1502,11 @@ graph TD
 494 |       user.id,
 495 |       existingLoad.organizationId
 496 |     );
-497 | 
+497 |
 498 |     revalidatePath(`/dashboard/${existingLoad.organizationId}/dispatch`);
 499 |     revalidatePath(`/dashboard/${existingLoad.organizationId}/drivers`);
 500 |     revalidatePath(`/dashboard/${existingLoad.organizationId}/vehicles`);
-501 |     
+501 |
 502 |     return {
 503 |       success: true,
 504 |       data: updatedLoad,
@@ -1510,7 +1519,7 @@ graph TD
 511 |     };
 512 |   }
 513 | }
-514 | 
+514 |
 515 | // Update load status action
 516 | export async function updateLoadStatusAction(data: LoadStatusUpdateInput) {
 517 |   try {
@@ -1518,26 +1527,26 @@ graph TD
 519 |     if (!userId) {
 520 |       throw new Error("Unauthorized");
 521 |     }
-522 | 
+522 |
 523 |     const validatedData = loadStatusUpdateSchema.parse(data);
-524 | 
+524 |
 525 |     // Get load to verify tenant and permissions
 526 |     const existingLoad = await prisma.load.findUnique({
 527 |       where: { id: validatedData.loadId },
 528 |       select: { organizationId: true, status: true, driverId: true, vehicleId: true, trailerId: true },
 529 |     });
-530 | 
+530 |
 531 |     if (!existingLoad) {
 532 |       return {
 533 |         success: false,
 534 |         error: "Load not found",
 535 |       };
 536 |     }
-537 | 
+537 |
 538 |     const user = await checkUserPermissions(existingLoad.organizationId, ["loads:update", "dispatch:manage"]);
-539 | 
+539 |
 540 |     const timestamp = new Date();
-541 | 
+541 |
 542 |     // Update load status and related data
 543 |     const updatedLoad = await prisma.$transaction(async (tx) => {
 544 |       // Update load
@@ -1545,18 +1554,18 @@ graph TD
 546 |         status: validatedData.status,
 547 |         updatedAt: timestamp,
 548 |       };
-549 | 
+549 |
 550 |       // Set actual times based on status
 551 |       // Only 'delivered' is valid for actualDeliveryTime now
 552 |       if (validatedData.status === "delivered") {
 553 |         updateData.actualDeliveryTime = timestamp;
 554 |       }
-555 | 
+555 |
 556 |       const load = await tx.load.update({
 557 |         where: { id: validatedData.loadId },
 558 |         data: updateData,
 559 |       });
-560 | 
+560 |
 561 |       // Record status event using raw SQL if model doesn't exist
 562 |       await tx.$executeRaw`
 563 |         INSERT INTO "LoadStatusEvent" ("loadId", "status", "timestamp", "location", "notes", "automaticUpdate", "source", "createdBy")
@@ -1571,7 +1580,7 @@ graph TD
 572 |           ${user.id}
 573 |         )
 574 |       `;
-575 | 
+575 |
 576 |       // Update driver status based on load status
 577 |       if (existingLoad.driverId) {
 578 |         let driverStatus: DriverStatus = DriverStatus.available;
@@ -1580,7 +1589,7 @@ graph TD
 581 |         } else if (["delivered", "cancelled"].includes(validatedData.status)) {
 582 |           driverStatus = DriverStatus.inactive;
 583 |         }
-584 | 
+584 |
 585 |         await tx.driver.update({
 586 |           where: { id: existingLoad.driverId },
 587 |           data: {
@@ -1588,14 +1597,14 @@ graph TD
 589 |           },
 590 |         });
 591 |       }
-592 | 
+592 |
 593 |       // Update vehicle status
 594 |       if (existingLoad.vehicleId) {
 595 |         let vehicleStatus: VehicleStatus = VehicleStatus.active;
 596 |         if (["delivered", "cancelled"].includes(validatedData.status)) {
 597 |           vehicleStatus = VehicleStatus.inactive;
 598 |         }
-599 | 
+599 |
 600 |         await tx.vehicle.update({
 601 |           where: { id: existingLoad.vehicleId },
 602 |           data: {
@@ -1603,14 +1612,14 @@ graph TD
 604 |           },
 605 |         });
 606 |       }
-607 | 
+607 |
 608 |       // Update trailer status if stored as vehicle with type=trailer
 609 |       if (existingLoad.trailerId) {
 610 |         let trailerStatus: VehicleStatus = VehicleStatus.active;
 611 |         if (["delivered", "cancelled"].includes(validatedData.status)) {
 612 |           trailerStatus = VehicleStatus.inactive;
 613 |         }
-614 | 
+614 |
 615 |         await tx.vehicle.update({
 616 |           where: { id: existingLoad.trailerId },
 617 |           data: {
@@ -1618,10 +1627,10 @@ graph TD
 619 |           },
 620 |         });
 621 |       }
-622 | 
+622 |
 623 |       return load;
 624 |     });
-625 | 
+625 |
 626 |     // Create audit log
 627 |     await createAuditLog(
 628 |       "STATUS_UPDATE",
@@ -1631,10 +1640,10 @@ graph TD
 632 |       user.id,
 633 |       existingLoad.organizationId
 634 |     );
-635 | 
+635 |
 636 |     revalidatePath(`/dashboard/${existingLoad.organizationId}/dispatch`);
 637 |     revalidatePath(`/dashboard/${existingLoad.organizationId}/dispatch/${validatedData.loadId}`);
-638 |     
+638 |
 639 |     return {
 640 |       success: true,
 641 |       data: updatedLoad,
@@ -1647,14 +1656,14 @@ graph TD
 648 |     };
 649 |   }
 650 | }
-651 | 
+651 |
 652 | // Bulk operations action
 653 | export async function bulkLoadOperationAction(orgId: string, data: BulkLoadOperationInput) {
 654 |   try {
 655 |     const user = await checkUserPermissions(orgId, ["loads:bulk_edit", "dispatch:manage"]);
-656 |     
+656 |
 657 |     const validatedData = bulkLoadOperationSchema.parse(data);
-658 | 
+658 |
 659 |     // Verify all loads belong to the tenant
 660 |     const loads = await prisma.load.findMany({
 661 |       where: {
@@ -1663,38 +1672,38 @@ graph TD
 664 |       },
 665 |       select: { id: true, status: true, referenceNumber: true },
 666 |     });
-667 | 
+667 |
 668 |     if (loads.length !== validatedData.loadIds.length) {
 669 |       return {
 670 |         success: false,
 671 |         error: "Some loads not found or not accessible",
 672 |       };
 673 |     }
-674 | 
+674 |
 675 |     let results: any[] = [];
-676 | 
+676 |
 677 |     switch (validatedData.operation) {
 678 |       case "delete":
 679 |         // Only allow deletion of pending or cancelled loads
-680 |         const deletableLoads = loads.filter(load => 
+680 |         const deletableLoads = loads.filter(load =>
 681 |           ["pending", "cancelled"].includes(load.status)
 682 |         );
-683 |         
+683 |
 684 |         if (deletableLoads.length === 0) {
 685 |           return {
 686 |             success: false,
 687 |             error: "No loads can be deleted in their current status",
 688 |           };
 689 |         }
-690 | 
+690 |
 691 |         // Delete loads directly
-692 |         await prisma.load.deleteMany({ 
+692 |         await prisma.load.deleteMany({
 693 |           where: { id: { in: deletableLoads.map(l => l.id) } }
 694 |         });
-695 | 
+695 |
 696 |         results = deletableLoads.map(load => ({ id: load.id, success: true }));
 697 |         break;
-698 | 
+698 |
 699 |       case "update_status":
 700 |         if (!validatedData.data?.status) {
 701 |           return {
@@ -1702,7 +1711,7 @@ graph TD
 703 |             error: "Status is required for status update operation",
 704 |           };
 705 |         }
-706 | 
+706 |
 707 |         const statusUpdates = await Promise.all(
 708 |           validatedData.loadIds.map(async (loadId) => {
 709 |             try {
@@ -1719,10 +1728,10 @@ graph TD
 720 |             }
 721 |           })
 722 |         );
-723 | 
+723 |
 724 |         results = statusUpdates;
 725 |         break;
-726 | 
+726 |
 727 |       // Handle other cases that don't involve tags
 728 |       default:
 729 |         return {
@@ -1730,7 +1739,7 @@ graph TD
 731 |           error: "Unsupported bulk operation",
 732 |         };
 733 |     }
-734 | 
+734 |
 735 |     // Create audit log
 736 |     await createAuditLog(
 737 |       `BULK_${validatedData.operation.toUpperCase()}`,
@@ -1740,9 +1749,9 @@ graph TD
 741 |       user.id,
 742 |       orgId
 743 |     );
-744 | 
+744 |
 745 |     revalidatePath(`/dashboard/${orgId}/dispatch`);
-746 |     
+746 |
 747 |     return {
 748 |       success: true,
 749 |       data: results,
@@ -1760,12 +1769,13 @@ graph TD
 ```
 
 ### components/dispatch/dispatch-board.tsx
+
 - Reason: Main dispatch interface and real-time tracking implementation
 - File size: 17153 bytes
 
 ```tsx
   1 | "use client"
-  2 | 
+  2 |
   3 | import { useState } from "react"
   4 | import { useRouter } from "next/navigation"
   5 | import { Badge } from "@/components/ui/badge"
@@ -1783,7 +1793,7 @@ graph TD
  17 | import { updateLoadStatus } from "@/lib/actions/load-actions"
  18 | import { toast } from "@/hooks/use-toast"
  19 | import type { ReactNode } from "react"
- 20 | 
+ 20 |
  21 | interface Driver {
  22 |   id: string
  23 |   firstName: string
@@ -1792,7 +1802,7 @@ graph TD
  26 |   email?: string
  27 |   phone?: string
  28 | }
- 29 | 
+ 29 |
  30 | interface Vehicle {
  31 |   id: string
  32 |   unitNumber: string
@@ -1801,7 +1811,7 @@ graph TD
  35 |   make?: string
  36 |   model?: string
  37 | }
- 38 | 
+ 38 |
  39 | interface Load {
  40 |   id: string
  41 |   referenceNumber: string
@@ -1831,13 +1841,13 @@ graph TD
  65 |   rate?: number
  66 |   miles?: number
  67 | }
- 68 | 
+ 68 |
  69 | interface DispatchBoardProps {
  70 |   loads: Load[]
  71 |   drivers: Driver[]
  72 |   vehicles: Vehicle[]
  73 | }
- 74 | 
+ 74 |
  75 | export function DispatchBoard({ loads, drivers, vehicles }: DispatchBoardProps) {
  76 |   const router = useRouter()
  77 |   const [selectedLoad, setSelectedLoad] = useState<Load | null>(null)
@@ -1845,7 +1855,7 @@ graph TD
  79 |   const [isFormOpen, setIsFormOpen] = useState(false)
  80 |   const [isFilterOpen, setIsFilterOpen] = useState(false)
  81 |   const [activeTab, setActiveTab] = useState("all")
- 82 |   
+ 82 |
  83 |   // Filter states
  84 |   const [filters, setFilters] = useState({
  85 |     status: "",
@@ -1854,41 +1864,41 @@ graph TD
  88 |     destinationState: "",
  89 |     dateRange: ""
  90 |   })
- 91 |   
+ 91 |
  92 |   // Loading states for status updates
  93 |   const [statusUpdating, setStatusUpdating] = useState<string | null>(null)
- 94 | 
+ 94 |
  95 |   const pendingLoads = loads.filter((load) => load.status === "pending")
  96 |   const assignedLoads = loads.filter((load) => load.status === "assigned")
  97 |   const inTransitLoads = loads.filter((load) => load.status === "in_transit")
  98 |   const completedLoads = loads.filter((load) => load.status === "completed")
- 99 | 
+ 99 |
 100 |   const handleLoadClick = (load: Load) => {
 101 |     setSelectedLoad(load)
 102 |     setIsDetailsOpen(true)
 103 |   }
-104 | 
+104 |
 105 |   const handleNewLoadClick = () => {
 106 |     setIsFormOpen(true)
 107 |   }
-108 | 
+108 |
 109 |   const handleFormClose = () => {
 110 |     setIsFormOpen(false)
 111 |     // Refresh the page to show updated data
 112 |     router.refresh()
 113 |   }
-114 | 
+114 |
 115 |   const handleFilterClick = () => {
 116 |     setIsFilterOpen(true)
 117 |   }
-118 | 
+118 |
 119 |   // Filter apply function
 120 |   const applyFilters = () => {
 121 |     setIsFilterOpen(false)
 122 |     // Trigger a re-render by updating the active tab
 123 |     setActiveTab(activeTab)
 124 |   }
-125 | 
+125 |
 126 |   // Reset filters function
 127 |   const resetFilters = () => {
 128 |     setFilters({
@@ -1899,14 +1909,14 @@ graph TD
 133 |       dateRange: ""
 134 |     })
 135 |   }
-136 |   
+136 |
 137 |   // Handle status updates
 138 |   const handleStatusUpdate = async (loadId: string, newStatus: string) => {
 139 |     setStatusUpdating(loadId)
-140 |     
+140 |
 141 |     try {
 142 |       const result = await updateLoadStatus(loadId, newStatus)
-143 |       
+143 |
 144 |       if (result.success) {
 145 |         toast({
 146 |           title: "Status Updated",
@@ -1931,7 +1941,7 @@ graph TD
 165 |       setStatusUpdating(null)
 166 |     }
 167 |   }
-168 | 
+168 |
 169 |   // Apply filters to loads
 170 |   const filterLoads = (loadsToFilter: Load[]) => {
 171 |     return loadsToFilter.filter((load) => {
@@ -1939,32 +1949,32 @@ graph TD
 173 |       if (filters.driverId && load.driver?.id !== filters.driverId) return false
 174 |       if (filters.originState && load.originState !== filters.originState) return false
 175 |       if (filters.destinationState && load.destinationState !== filters.destinationState) return false
-176 |       
+176 |
 177 |       // Date range filtering - simplified to show loads within last 30 days if "recent" is selected
 178 |       if (filters.dateRange === "recent") {
 179 |         const thirtyDaysAgo = new Date()
 180 |         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 181 |         if (new Date(load.pickupDate) < thirtyDaysAgo) return false
 182 |       }
-183 |       
+183 |
 184 |       return true
 185 |     })
 186 |   }
-187 | 
+187 |
 188 |   // Apply filters to each load category
 189 |   const filteredLoads = filterLoads(loads)
 190 |   const filteredPendingLoads = filterLoads(pendingLoads)
 191 |   const filteredAssignedLoads = filterLoads(assignedLoads)
 192 |   const filteredInTransitLoads = filterLoads(inTransitLoads)
 193 |   const filteredCompletedLoads = filterLoads(completedLoads)
-194 | 
+194 |
 195 |   // Map vehicles to match LoadDetailsDialog expected type
 196 |   const mappedVehicles = vehicles.map((v) => ({
 197 |     ...v,
 198 |     make: v.make || "",
 199 |     model: v.model ?? "",
 200 |   }))
-201 | 
+201 |
 202 |   return (
 203 |     <div className="space-y-6 mt-6">
 204 |       {/* Header with actions */}
@@ -1980,14 +1990,14 @@ graph TD
 214 |               Filter
 215 |             </Button>
 216 |           </div>
-217 |           
+217 |
 218 |           {/* Quick stats */}
 219 |           <div className="text-sm text-muted-foreground">
 220 |             {filteredLoads.length} loads total • {filteredPendingLoads.length} pending • {filteredInTransitLoads.length} in transit
 221 |           </div>
 222 |         </div>
 223 |       </div>
-224 | 
+224 |
 225 |       <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="w-full">
 226 |         <div className="overflow-x-auto">
 227 |           <TabsList className="grid grid-cols-5 w-full min-w-[500px] bg-zinc-800 rounded-md p-1">
@@ -2008,14 +2018,14 @@ graph TD
 242 |             </TabsTrigger>
 243 |           </TabsList>
 244 |         </div>
-245 | 
+245 |
 246 |         <TabsContent value="all" className="mt-4">
 247 |           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 248 |             {filteredLoads.length > 0 ? (
 249 |               filteredLoads.map((load) => (
-250 |                 <LoadCard 
-251 |                   key={load.id} 
-252 |                   load={load} 
+250 |                 <LoadCard
+251 |                   key={load.id}
+252 |                   load={load}
 253 |                   onClick={() => handleLoadClick(load)}
 254 |                   onStatusUpdate={handleStatusUpdate}
 255 |                   isUpdating={statusUpdating === load.id}
@@ -2028,14 +2038,14 @@ graph TD
 262 |             )}
 263 |           </div>
 264 |         </TabsContent>
-265 | 
+265 |
 266 |         <TabsContent value="pending" className="mt-4">
 267 |           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 268 |             {filteredPendingLoads.length > 0 ? (
 269 |               filteredPendingLoads.map((load) => (
-270 |                 <LoadCard 
-271 |                   key={load.id} 
-272 |                   load={load} 
+270 |                 <LoadCard
+271 |                   key={load.id}
+272 |                   load={load}
 273 |                   onClick={() => handleLoadClick(load)}
 274 |                   onStatusUpdate={handleStatusUpdate}
 275 |                   isUpdating={statusUpdating === load.id}
@@ -2048,14 +2058,14 @@ graph TD
 282 |             )}
 283 |           </div>
 284 |         </TabsContent>
-285 | 
+285 |
 286 |         <TabsContent value="assigned" className="mt-4">
 287 |           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 288 |             {filteredAssignedLoads.length > 0 ? (
 289 |               filteredAssignedLoads.map((load) => (
-290 |                 <LoadCard 
-291 |                   key={load.id} 
-292 |                   load={load} 
+290 |                 <LoadCard
+291 |                   key={load.id}
+292 |                   load={load}
 293 |                   onClick={() => handleLoadClick(load)}
 294 |                   onStatusUpdate={handleStatusUpdate}
 295 |                   isUpdating={statusUpdating === load.id}
@@ -2068,14 +2078,14 @@ graph TD
 302 |             )}
 303 |           </div>
 304 |         </TabsContent>
-305 | 
+305 |
 306 |         <TabsContent value="in_transit" className="mt-4">
 307 |           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 308 |             {filteredInTransitLoads.length > 0 ? (
 309 |               filteredInTransitLoads.map((load) => (
-310 |                 <LoadCard 
-311 |                   key={load.id} 
-312 |                   load={load} 
+310 |                 <LoadCard
+311 |                   key={load.id}
+312 |                   load={load}
 313 |                   onClick={() => handleLoadClick(load)}
 314 |                   onStatusUpdate={handleStatusUpdate}
 315 |                   isUpdating={statusUpdating === load.id}
@@ -2088,14 +2098,14 @@ graph TD
 322 |             )}
 323 |           </div>
 324 |         </TabsContent>
-325 | 
+325 |
 326 |         <TabsContent value="completed" className="mt-4">
 327 |           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 328 |             {filteredCompletedLoads.length > 0 ? (
 329 |               filteredCompletedLoads.map((load) => (
-330 |                 <LoadCard 
-331 |                   key={load.id} 
-332 |                   load={load} 
+330 |                 <LoadCard
+331 |                   key={load.id}
+332 |                   load={load}
 333 |                   onClick={() => handleLoadClick(load)}
 334 |                   onStatusUpdate={handleStatusUpdate}
 335 |                   isUpdating={statusUpdating === load.id}
@@ -2109,14 +2119,14 @@ graph TD
 343 |           </div>
 344 |         </TabsContent>
 345 |       </Tabs>
-346 | 
+346 |
 347 |       {/* Load Form Dialog for New Load */}
 348 |       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
 349 |         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
 350 |           <LoadForm drivers={drivers} vehicles={vehicles} onClose={handleFormClose} />
 351 |         </DialogContent>
 352 |       </Dialog>
-353 |       
+353 |
 354 |       {/* Load Details Dialog for selected load */}
 355 |       {selectedLoad && (
 356 |         <LoadDetailsDialog
@@ -2130,18 +2140,18 @@ graph TD
 364 |           }}
 365 |         />
 366 |       )}
-367 | 
+367 |
 368 |       {/* Filter Dialog */}
 369 |       <Dialog open={isFilterOpen} onOpenChange={setIsFilterOpen}>
 370 |         <DialogContent className="max-w-md">
 371 |           <div className="space-y-4">
 372 |             <h3 className="text-lg font-semibold">Filter Loads</h3>
-373 |             
+373 |
 374 |             <div className="space-y-4">
 375 |               <div className="space-y-2">
 376 |                 <Label htmlFor="status-filter">Status</Label>
-377 |                 <Select 
-378 |                   value={filters.status} 
+377 |                 <Select
+378 |                   value={filters.status}
 379 |                   onValueChange={(value) => setFilters(prev => ({ ...prev, status: value }))}
 380 |                 >
 381 |                   <SelectTrigger>
@@ -2156,11 +2166,11 @@ graph TD
 390 |                   </SelectContent>
 391 |                 </Select>
 392 |               </div>
-393 | 
+393 |
 394 |               <div className="space-y-2">
 395 |                 <Label htmlFor="driver-filter">Driver</Label>
-396 |                 <Select 
-397 |                   value={filters.driverId} 
+396 |                 <Select
+397 |                   value={filters.driverId}
 398 |                   onValueChange={(value) => setFilters(prev => ({ ...prev, driverId: value }))}
 399 |                 >
 400 |                   <SelectTrigger>
@@ -2176,7 +2186,7 @@ graph TD
 410 |                   </SelectContent>
 411 |                 </Select>
 412 |               </div>
-413 | 
+413 |
 414 |               <div className="space-y-2">
 415 |                 <Label htmlFor="origin-filter">Origin State</Label>
 416 |                 <Input
@@ -2186,7 +2196,7 @@ graph TD
 420 |                   onChange={(e) => setFilters(prev => ({ ...prev, originState: e.target.value }))}
 421 |                 />
 422 |               </div>
-423 | 
+423 |
 424 |               <div className="space-y-2">
 425 |                 <Label htmlFor="destination-filter">Destination State</Label>
 426 |                 <Input
@@ -2196,11 +2206,11 @@ graph TD
 430 |                   onChange={(e) => setFilters(prev => ({ ...prev, destinationState: e.target.value }))}
 431 |                 />
 432 |               </div>
-433 | 
+433 |
 434 |               <div className="space-y-2">
 435 |                 <Label htmlFor="date-filter">Date Range</Label>
-436 |                 <Select 
-437 |                   value={filters.dateRange} 
+436 |                 <Select
+437 |                   value={filters.dateRange}
 438 |                   onValueChange={(value) => setFilters(prev => ({ ...prev, dateRange: value }))}
 439 |                 >
 440 |                   <SelectTrigger>
@@ -2213,7 +2223,7 @@ graph TD
 447 |                 </Select>
 448 |               </div>
 449 |             </div>
-450 | 
+450 |
 451 |             <div className="flex justify-end gap-2 pt-4">
 452 |               <Button variant="outline" onClick={resetFilters}>
 453 |                 Reset
@@ -2228,11 +2238,12 @@ graph TD
 462 |     </div>
 463 |   )
 464 | }
-465 | 
+465 |
 
 ```
 
 ### lib/database/index.ts
+
 - Reason: Database connection configuration and Prisma client setup
 - File size: 14749 bytes
 
@@ -2244,19 +2255,19 @@ graph TD
   5 |  * - Uses Prisma client singleton pattern to avoid connection exhaustion
   6 |  * - Handles error logging and type-safe queries
   7 |  */
-  8 | 
+  8 |
   9 | import { PrismaClient } from '@prisma/client'
  10 | import { PrismaNeon } from '@prisma/adapter-neon'
  11 | import dotenv from 'dotenv'
  12 | import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
- 13 | 
+ 13 |
  14 | dotenv.config()
  15 | const connectionString = `${process.env.DATABASE_URL}`
- 16 | 
+ 16 |
  17 | const adapter = new PrismaNeon({ connectionString })
  18 | const prisma = new PrismaClient({ adapter })
  19 | export const db = prisma;
- 20 | 
+ 20 |
  21 | // Utility function to handle database errors
  22 | export function handleDatabaseError(error: unknown): never {
  23 |   console.error('Database error:', error);
@@ -2282,7 +2293,7 @@ graph TD
  43 |   }
  44 |   throw new Error('Unknown database error occurred');
  45 | }
- 46 | 
+ 46 |
  47 | /**
  48 |  * Utility to generate a unique slug for organizations (DB-level)
  49 |  */
@@ -2290,7 +2301,7 @@ graph TD
  51 |   let slug = baseSlug;
  52 |   let suffix = 1;
  53 |   const maxAttempts = 50; // Prevent infinite loops
- 54 |   
+ 54 |
  55 |   while (suffix <= maxAttempts) {
  56 |     const existing = await db.organization.findUnique({ where: { slug } });
  57 |     if (!existing) return slug;
@@ -2299,7 +2310,7 @@ graph TD
  60 |   }
  61 |   throw new Error(`Could not generate unique slug after ${maxAttempts} attempts for base slug: ${baseSlug}`);
  62 | }
- 63 | 
+ 63 |
  64 | // Type-safe database queries helper (rewritten for Prisma)
  65 | export class DatabaseQueries {
  66 |   static upsertOrganizationMembership ( arg0: { clerkId: any; organizationId: any; userId: any; role: any; createdAt: Date | undefined; updatedAt: Date | undefined; } )
@@ -2323,7 +2334,7 @@ graph TD
  84 |       handleDatabaseError(error);
  85 |     }
  86 |   }
- 87 | 
+ 87 |
  88 |   /**
  89 |    * Get user by Clerk ID
  90 |    */
@@ -2334,7 +2345,7 @@ graph TD
  95 |         console.warn('getUserByClerkId called with undefined/empty clerkId');
  96 |         return null;
  97 |       }
- 98 |       
+ 98 |
  99 |       const user = await db.user.findUnique({
 100 |         where: { clerkId },
 101 |       });
@@ -2343,7 +2354,7 @@ graph TD
 104 |       handleDatabaseError(error);
 105 |     }
 106 |   }
-107 | 
+107 |
 108 |   /**
 109 |    * Create or update organization from Clerk webhook
 110 |    */
@@ -2377,14 +2388,14 @@ graph TD
 138 |       if (!data.slug) {
 139 |         throw new Error('slug is required for organization upsert');
 140 |       }
-141 | 
+141 |
 142 |       const { clerkId } = data;
-143 |       
+143 |
 144 |       // First, check if organization exists by clerkId
 145 |       const existingOrg = await db.organization.findUnique({
 146 |         where: { clerkId }
 147 |       });
-148 | 
+148 |
 149 |       if (existingOrg) {
 150 |         // Organization exists, update it without changing the slug to avoid conflicts
 151 |         const updateData = {
@@ -2402,7 +2413,7 @@ graph TD
 163 |           billingEmail: data.billingEmail,
 164 |           isActive: data.isActive === undefined ? true : data.isActive,
 165 |         };
-166 |         
+166 |
 167 |         const organization = await db.organization.update({
 168 |           where: { clerkId },
 169 |           data: updateData,
@@ -2415,7 +2426,7 @@ graph TD
 176 |         let attempt = 0;
 177 |         const maxAttempts = 5;
 178 |         let lastError;
-179 |         
+179 |
 180 |         while (attempt < maxAttempts) {
 181 |           try {
 182 |             const orgDataForCreate = {
@@ -2435,7 +2446,7 @@ graph TD
 196 |               billingEmail: data.billingEmail,
 197 |               isActive: data.isActive === undefined ? true : data.isActive,
 198 |             };
-199 |             
+199 |
 200 |             const organization = await db.organization.create({
 201 |               data: orgDataForCreate,
 202 |             });
@@ -2481,7 +2492,7 @@ graph TD
 242 |       handleDatabaseError(error);
 243 |     }
 244 |   }
-245 | 
+245 |
 246 |   /**
 247 |    * Create or update user from Clerk webhook
 248 |    */  static async upsertUser(data: {
@@ -2497,7 +2508,7 @@ graph TD
 258 |   }) {
 259 |     try {
 260 |       const { clerkId, organizationId, ...updateData } = data;
-261 | 
+261 |
 262 |       // Validate required fields
 263 |       if (!clerkId) {
 264 |         throw new Error('clerkId is required for user upsert');
@@ -2508,15 +2519,15 @@ graph TD
 269 |       if (!data.email) {
 270 |         throw new Error('email is required for user upsert');
 271 |       }
-272 | 
+272 |
 273 |       // Check if organization exists, if not, create a placeholder organization
 274 |       let organizationExists = await db.organization.findUnique({
 275 |         where: { clerkId: organizationId },
 276 |       });
-277 |       
+277 |
 278 |       if (!organizationExists) {
 279 |         console.log(`📝 Creating placeholder organization for ID: ${organizationId}`);
-280 |         
+280 |
 281 |         // Try to create a placeholder organization with retry logic for race conditions
 282 |         let createAttempts = 0;
 283 |         const maxAttempts = 3;
@@ -2560,11 +2571,11 @@ graph TD
 321 |           throw lastError || new Error(`Could not create or find organization with ID ${organizationId} after ${maxAttempts} attempts`);
 322 |         }
 323 |       }
-324 | 
+324 |
 325 |       const userDataForUpdate = {
 326 |         ...updateData,
 327 |       };
-328 | 
+328 |
 329 |       const userDataForCreate = {
 330 |         clerkId,
 331 |         email: data.email,
@@ -2578,7 +2589,7 @@ graph TD
 339 |           connect: { id: organizationExists.id },
 340 |         },
 341 |       };
-342 | 
+342 |
 343 |       const user = await db.user.upsert({
 344 |         where: { clerkId },
 345 |         update: userDataForUpdate,
@@ -2590,7 +2601,7 @@ graph TD
 351 |       handleDatabaseError(error);
 352 |     }
 353 |   }
-354 | 
+354 |
 355 |   /**
 356 |    * Delete organization
 357 |    */
@@ -2600,12 +2611,12 @@ graph TD
 361 |       const organization = await db.organization.findUnique({
 362 |         where: { clerkId },
 363 |       });
-364 |       
+364 |
 365 |       if (!organization) {
 366 |         console.warn(`Organization with clerkId ${clerkId} does not exist, skipping delete.`);
 367 |         return { success: true, message: 'Organization already deleted or does not exist' };
 368 |       }
-369 |       
+369 |
 370 |       await db.organization.delete({
 371 |         where: { clerkId },
 372 |       });
@@ -2621,7 +2632,7 @@ graph TD
 382 |       return { success: false, message: `Failed to delete organization: ${error instanceof Error ? error.message : 'Unknown error'}` };
 383 |     }
 384 |   }
-385 | 
+385 |
 386 |   /**
 387 |    * Delete user
 388 |    */
@@ -2631,12 +2642,12 @@ graph TD
 392 |       const user = await db.user.findUnique({
 393 |         where: { clerkId },
 394 |       });
-395 |       
+395 |
 396 |       if (!user) {
 397 |         console.warn(`User with clerkId ${clerkId} does not exist, skipping delete.`);
 398 |         return { success: true, message: 'User already deleted or does not exist' };
 399 |       }
-400 |       
+400 |
 401 |       await db.user.delete({
 402 |         where: { clerkId },
 403 |       });
@@ -2653,23 +2664,24 @@ graph TD
 414 |     }
 415 |   }
 416 | }
-417 | 
+417 |
 418 | export default db;</file_source>
 
 ```
 
 ### lib/actions/analytics-actions.ts
+
 - Reason: Analytics and performance metrics generation implementation
 - File size: 0 bytes
 
-
 ### components/analytics/analytics-dashboard.tsx
+
 - Reason: Analytics visualization and metrics display components
 - File size: 6329 bytes
 
 ```tsx
   1 | "use client"
-  2 | 
+  2 |
   3 | import { useState } from "react"
   4 | import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
   5 | import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -2680,10 +2692,10 @@ graph TD
  10 | import { DriverPerformance } from "./driver-performance"
  11 | import { VehicleUtilization } from "./vehicle-utilization"
  12 | import { Download, Filter } from "lucide-react"
- 13 | 
+ 13 |
  14 | export function AnalyticsDashboard() {
  15 |   const [timeRange, setTimeRange] = useState("30d")
- 16 | 
+ 16 |
  17 |   return (
  18 |     <div className="space-y-6">
  19 |       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -2714,7 +2726,7 @@ graph TD
  44 |           </Button>
  45 |         </div>
  46 |       </div>
- 47 | 
+ 47 |
  48 |       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
  49 |         <Card>
  50 |           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -2727,7 +2739,7 @@ graph TD
  57 |             </p>
  58 |           </CardContent>
  59 |         </Card>
- 60 | 
+ 60 |
  61 |         <Card>
  62 |           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
  63 |             <CardTitle className="text-sm font-medium">Total Miles</CardTitle>
@@ -2739,7 +2751,7 @@ graph TD
  69 |             </p>
  70 |           </CardContent>
  71 |         </Card>
- 72 | 
+ 72 |
  73 |         <Card>
  74 |           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
  75 |             <CardTitle className="text-sm font-medium">Fuel Costs</CardTitle>
@@ -2751,7 +2763,7 @@ graph TD
  81 |             </p>
  82 |           </CardContent>
  83 |         </Card>
- 84 | 
+ 84 |
  85 |         <Card>
  86 |           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
  87 |             <CardTitle className="text-sm font-medium">On-Time Delivery</CardTitle>
@@ -2764,7 +2776,7 @@ graph TD
  94 |           </CardContent>
  95 |         </Card>
  96 |       </div>
- 97 | 
+ 97 |
  98 |       <Tabs defaultValue="performance" className="space-y-4">
  99 |         <TabsList>
 100 |           <TabsTrigger value="performance">Performance</TabsTrigger>
@@ -2772,7 +2784,7 @@ graph TD
 102 |           <TabsTrigger value="drivers">Driver Performance</TabsTrigger>
 103 |           <TabsTrigger value="vehicles">Vehicle Utilization</TabsTrigger>
 104 |         </TabsList>
-105 | 
+105 |
 106 |         <TabsContent value="performance">
 107 |           <Card>
 108 |             <CardHeader>
@@ -2784,7 +2796,7 @@ graph TD
 114 |             </CardContent>
 115 |           </Card>
 116 |         </TabsContent>
-117 | 
+117 |
 118 |         <TabsContent value="financial">
 119 |           <Card>
 120 |             <CardHeader>
@@ -2796,7 +2808,7 @@ graph TD
 126 |             </CardContent>
 127 |           </Card>
 128 |         </TabsContent>
-129 | 
+129 |
 130 |         <TabsContent value="drivers">
 131 |           <Card>
 132 |             <CardHeader>
@@ -2808,7 +2820,7 @@ graph TD
 138 |             </CardContent>
 139 |           </Card>
 140 |         </TabsContent>
-141 | 
+141 |
 142 |         <TabsContent value="vehicles">
 143 |           <Card>
 144 |             <CardHeader>
@@ -2828,24 +2840,24 @@ graph TD
 
 ```
 
-
 ### lib/actions/iftaActions.ts
+
 - Reason: IFTA reporting and compliance management implementation
 - File size: 493 bytes
 
 ```ts
  1 | "use server";
- 2 | 
+ 2 |
  3 | export async function logIftaTripDataAction(orgId: string, vehicleId: string, tripData: any) {
  4 |   // ...log trip data...
  5 |   return { success: true };
  6 | }
- 7 | 
+ 7 |
  8 | export async function logFuelPurchaseAction(orgId: string, vehicleId: string, purchaseData: any) {
  9 |   // ...log fuel purchase...
 10 |   return { success: true };
 11 | }
-12 | 
+12 |
 13 | export async function generateIftaReportAction(orgId: string, quarter: string, year: string) {
 14 |   // ...generate report...
 15 |   return { success: true };
@@ -2855,12 +2867,13 @@ graph TD
 ```
 
 ### components/compliance/compliance-dashboard.tsx
+
 - Reason: Compliance monitoring and reporting interface
 - File size: 8828 bytes
 
 ```tsx
   1 | "use client"
-  2 | 
+  2 |
   3 | import { useState } from "react"
   4 | import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
   5 | import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -2871,10 +2884,10 @@ graph TD
  10 | import { DriverComplianceTable } from "./driver-compliance-table"
  11 | import { VehicleComplianceTable } from "./vehicle-compliance-table"
  12 | import { ComplianceDocuments } from "./compliance-documents"
- 13 | 
+ 13 |
  14 | export function ComplianceDashboard() {
  15 |   const [activeTab, setActiveTab] = useState("overview")
- 16 | 
+ 16 |
  17 |   return (
  18 |     <div className="space-y-6">
  19 |       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -2889,7 +2902,7 @@ graph TD
  28 |           <Button>Run Compliance Check</Button>
  29 |         </div>
  30 |       </div>
- 31 | 
+ 31 |
  32 |       <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
  33 |         <TabsList className="grid grid-cols-4 w-full md:w-auto">
  34 |           <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -2897,7 +2910,7 @@ graph TD
  36 |           <TabsTrigger value="vehicles">Vehicles</TabsTrigger>
  37 |           <TabsTrigger value="documents">Documents</TabsTrigger>
  38 |         </TabsList>
- 39 | 
+ 39 |
  40 |         <TabsContent value="overview" className="space-y-4">
  41 |           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
  42 |             <Card>
@@ -2911,7 +2924,7 @@ graph TD
  50 |                 <Progress value={92} className="mt-2" />
  51 |               </CardContent>
  52 |             </Card>
- 53 | 
+ 53 |
  54 |             <Card>
  55 |               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
  56 |                 <CardTitle className="text-sm font-medium">Vehicle Compliance</CardTitle>
@@ -2923,7 +2936,7 @@ graph TD
  62 |                 <Progress value={85} className="mt-2" />
  63 |               </CardContent>
  64 |             </Card>
- 65 | 
+ 65 |
  66 |             <Card>
  67 |               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
  68 |                 <CardTitle className="text-sm font-medium">HOS Violations</CardTitle>
@@ -2935,7 +2948,7 @@ graph TD
  74 |                 <Progress value={30} className="mt-2" />
  75 |               </CardContent>
  76 |             </Card>
- 77 | 
+ 77 |
  78 |             <Card>
  79 |               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
  80 |                 <CardTitle className="text-sm font-medium">Document Status</CardTitle>
@@ -2948,7 +2961,7 @@ graph TD
  87 |               </CardContent>
  88 |             </Card>
  89 |           </div>
- 90 | 
+ 90 |
  91 |           <div className="grid gap-4 md:grid-cols-2">
  92 |             <Card>
  93 |               <CardHeader>
@@ -2996,7 +3009,7 @@ graph TD
 135 |                 </div>
 136 |               </CardContent>
 137 |             </Card>
-138 | 
+138 |
 139 |             <Card>
 140 |               <CardHeader>
 141 |                 <CardTitle>Compliance Trends</CardTitle>
@@ -3014,7 +3027,7 @@ graph TD
 153 |             </Card>
 154 |           </div>
 155 |         </TabsContent>
-156 | 
+156 |
 157 |         <TabsContent value="drivers" className="space-y-4">
 158 |           <Card>
 159 |             <CardHeader>
@@ -3026,7 +3039,7 @@ graph TD
 165 |             </CardContent>
 166 |           </Card>
 167 |         </TabsContent>
-168 | 
+168 |
 169 |         <TabsContent value="vehicles" className="space-y-4">
 170 |           <Card>
 171 |             <CardHeader>
@@ -3038,7 +3051,7 @@ graph TD
 177 |             </CardContent>
 178 |           </Card>
 179 |         </TabsContent>
-180 | 
+180 |
 181 |         <TabsContent value="documents" className="space-y-4">
 182 |           <Card>
 183 |             <CardHeader>
@@ -3059,13 +3072,14 @@ graph TD
 ```
 
 ### lib/cache/auth-cache.ts
+
 - Reason: Authentication caching strategy implementation
 - File size: 5428 bytes
 
 ```ts
   1 | /**
   2 |  * Enhanced Authentication Cache Layer
-  3 |  * 
+  3 |  *
   4 |  * Implements sophisticated in-memory caching for auth data with:
   5 |  * - Multi-level caching (L1 hot cache + L2 warm cache)
   6 |  * - LRU eviction strategy
@@ -3073,9 +3087,9 @@ graph TD
   8 |  * - Performance metrics collection
   9 |  * - Smart cache warming
  10 |  */
- 11 | 
+ 11 |
  12 | import { UserContext, ClerkUserMetadata, ClerkOrganizationMetadata } from '@/types/auth';
- 13 | 
+ 13 |
  14 | interface CacheItem<T> {
  15 |   data: T;
  16 |   timestamp: number;
@@ -3083,7 +3097,7 @@ graph TD
  18 |   accessCount: number;
  19 |   lastAccessed: number;
  20 | }
- 21 | 
+ 21 |
  22 | interface CacheMetrics {
  23 |   hits: number;
  24 |   misses: number;
@@ -3091,40 +3105,40 @@ graph TD
  26 |   errors: number;
  27 |   totalRequests: number;
  28 | }
- 29 | 
+ 29 |
  30 | interface CircuitBreakerState {
  31 |   isOpen: boolean;
  32 |   failures: number;
  33 |   lastFailure: number;
  34 |   nextAttempt: number;
  35 | }
- 36 | 
+ 36 |
  37 | class AuthCache {  // L1 Cache - Hot data (frequently accessed)
  38 |   private userHotCache = new Map<string, CacheItem<UserContext>>();
  39 |   private permissionHotCache = new Map<string, CacheItem<string[]>>();
  40 |   private orgCache = new Map<string, CacheItem<ClerkOrganizationMetadata>>();
- 41 |   
+ 41 |
  42 |   private readonly USER_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
  43 |   private readonly ORG_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
  44 |   private readonly PERMISSION_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
- 45 |   
+ 45 |
  46 |   // Cache cleanup interval
  47 |   private cleanupInterval: NodeJS.Timeout;
- 48 | 
+ 48 |
  49 |   constructor() {
  50 |     // Clean up expired items every 2 minutes
  51 |     this.cleanupInterval = setInterval(() => {
  52 |       this.cleanup();
  53 |     }, 2 * 60 * 1000);
  54 |   }
- 55 | 
+ 55 |
  56 |   /**
  57 |    * Check if cache item is valid
  58 |    */
  59 |   private isValid<T>(item: CacheItem<T>): boolean {
  60 |     return Date.now() - item.timestamp < item.ttl;
  61 |   }
- 62 | 
+ 62 |
  63 |   /**
  64 |    * Get user from cache
  65 |    */
@@ -3138,7 +3152,7 @@ graph TD
  73 |     }
  74 |     return null;
  75 |   }
- 76 | 
+ 76 |
  77 |   /**
  78 |    * Set user in cache
  79 |    */
@@ -3151,7 +3165,7 @@ graph TD
  86 |         lastAccessed: 0
  87 |     });
  88 |   }
- 89 | 
+ 89 |
  90 |   /**
  91 |    * Get organization from cache
  92 |    */
@@ -3177,7 +3191,7 @@ graph TD
 112 |       lastAccessed: Date.now()
 113 |     });
 114 |   }
-115 | 
+115 |
 116 |   /**
 117 |    * Get permissions from cache
 118 |    */
@@ -3191,7 +3205,7 @@ graph TD
 126 |     }
 127 |     return null;
 128 |   }
-129 | 
+129 |
 130 |   /**
 131 |    * Set permissions in cache
 132 |    */
@@ -3204,7 +3218,7 @@ graph TD
 139 |         lastAccessed: 0
 140 |     });
 141 |   }
-142 | 
+142 |
 143 |   /**
 144 |    * Invalidate user cache
 145 |    */
@@ -3212,7 +3226,7 @@ graph TD
 147 |     this.userHotCache.delete(clerkId);
 148 |     this.permissionHotCache.delete(clerkId);
 149 |   }
-150 | 
+150 |
 151 |   /**
 152 |    * Invalidate organization cache
 153 |    */
@@ -3226,7 +3240,7 @@ graph TD
 161 |       }
 162 |     }
 163 |   }
-164 | 
+164 |
 165 |   /**
 166 |    * Clear all cache
 167 |    */
@@ -3235,27 +3249,27 @@ graph TD
 170 |     this.orgCache.clear();
 171 |     this.permissionHotCache.clear();
 172 |   }
-173 | 
+173 |
 174 |   /**
 175 |    * Clean up expired items
 176 |    */
 177 |   private cleanup(): void {
 178 |     const now = Date.now();
-179 |     
+179 |
 180 |     // Clean user cache
 181 |     for (const [key, item] of this.userHotCache.entries()) {
 182 |       if (now - item.timestamp >= item.ttl) {
 183 |         this.userHotCache.delete(key);
 184 |       }
 185 |     }
-186 |     
+186 |
 187 |     // Clean organization cache
 188 |     for (const [key, item] of this.orgCache.entries()) {
 189 |       if (now - item.timestamp >= item.ttl) {
 190 |         this.orgCache.delete(key);
 191 |       }
 192 |     }
-193 |     
+193 |
 194 |     // Clean permission cache
 195 |     for (const [key, item] of this.permissionHotCache.entries()) {
 196 |       if (now - item.timestamp >= item.ttl) {
@@ -3263,7 +3277,7 @@ graph TD
 198 |       }
 199 |     }
 200 |   }
-201 | 
+201 |
 202 |   /**
 203 |    * Get cache statistics
 204 |    */
@@ -3274,7 +3288,7 @@ graph TD
 209 |       permissionCacheSize: this.permissionHotCache.size,
 210 |     };
 211 |   }
-212 | 
+212 |
 213 |   /**
 214 |    * Destroy cache and cleanup interval
 215 |    */
@@ -3283,10 +3297,10 @@ graph TD
 218 |     this.clear();
 219 |   }
 220 | }
-221 | 
+221 |
 222 | // Export singleton instance
 223 | export const authCache = new AuthCache();
-224 | 
+224 |
 225 | // Graceful shutdown
 226 | if (typeof process !== 'undefined') {
 227 |   process.on('SIGTERM', () => {
@@ -3301,33 +3315,34 @@ graph TD
 ```
 
 ### lib/rate-limit.ts
+
 - Reason: Rate limiting implementation for API protection
 - File size: 5926 bytes
 
 ```ts
   1 | /**
   2 |  * Rate Limiting Utility for FleetFusion
-  3 |  * 
+  3 |  *
   4 |  * Provides in-memory rate limiting functionality using a sliding window approach.
   5 |  * For production use, consider using Redis for distributed rate limiting.
   6 |  */
-  7 | 
+  7 |
   8 | interface RateLimitConfig {
   9 |   interval: string // e.g., '1h', '1m', '1s'
  10 |   limit: number // Maximum requests allowed in the interval
  11 | }
- 12 | 
+ 12 |
  13 | interface RateLimitResult {
  14 |   success: boolean
  15 |   limit: number
  16 |   remaining: number
  17 |   reset: number // Unix timestamp when the window resets
  18 | }
- 19 | 
+ 19 |
  20 | // In-memory storage for rate limit data
  21 | // Note: In production, use Redis or a database for distributed systems
  22 | const rateLimitStore = new Map<string, { count: number; resetTime: number }>()
- 23 | 
+ 23 |
  24 | /**
  25 |  * Parse interval string to milliseconds
  26 |  */
@@ -3336,10 +3351,10 @@ graph TD
  29 |   if (!match) {
  30 |     throw new Error(`Invalid interval format: ${interval}. Use format like '1h', '30m', '60s'`)
  31 |   }
- 32 | 
+ 32 |
  33 |   const [, value, unit] = match
  34 |   const num = parseInt(value, 10)
- 35 | 
+ 35 |
  36 |   switch (unit) {
  37 |     case 's': return num * 1000
  38 |     case 'm': return num * 60 * 1000
@@ -3348,7 +3363,7 @@ graph TD
  41 |     default: throw new Error(`Unsupported time unit: ${unit}`)
  42 |   }
  43 | }
- 44 | 
+ 44 |
  45 | /**
  46 |  * Clean up expired entries from the store
  47 |  */
@@ -3360,28 +3375,28 @@ graph TD
  53 |     }
  54 |   }
  55 | }
- 56 | 
+ 56 |
  57 | /**
  58 |  * Create a rate limiter function
  59 |  */
  60 | export function ratelimit(config: RateLimitConfig) {
  61 |   const intervalMs = parseInterval(config.interval)
- 62 | 
+ 62 |
  63 |   return async function(identifier: string): Promise<RateLimitResult> {
  64 |     // Clean up expired entries periodically
  65 |     if (Math.random() < 0.1) { // 10% chance to clean up on each call
  66 |       cleanupExpiredEntries()
  67 |     }
- 68 | 
+ 68 |
  69 |     const now = Date.now()
  70 |     const key = `${identifier}:${config.interval}`
  71 |     const existing = rateLimitStore.get(key)
- 72 | 
+ 72 |
  73 |     // If no existing entry or the window has reset, create a new entry
  74 |     if (!existing || existing.resetTime <= now) {
  75 |       const resetTime = now + intervalMs
  76 |       rateLimitStore.set(key, { count: 1, resetTime })
- 77 |       
+ 77 |
  78 |       return {
  79 |         success: true,
  80 |         limit: config.limit,
@@ -3389,7 +3404,7 @@ graph TD
  82 |         reset: resetTime
  83 |       }
  84 |     }
- 85 | 
+ 85 |
  86 |     // Check if limit is exceeded
  87 |     if (existing.count >= config.limit) {
  88 |       return {
@@ -3399,11 +3414,11 @@ graph TD
  92 |         reset: existing.resetTime
  93 |       }
  94 |     }
- 95 | 
+ 95 |
  96 |     // Increment the count
  97 |     existing.count += 1
  98 |     rateLimitStore.set(key, existing)
- 99 | 
+ 99 |
 100 |     return {
 101 |       success: true,
 102 |       limit: config.limit,
@@ -3412,27 +3427,27 @@ graph TD
 105 |     }
 106 |   }
 107 | }
-108 | 
+108 |
 109 | /**
 110 |  * Get the current status of a rate limit without incrementing
 111 |  */
 112 | export function getRateLimitStatus(identifier: string, interval: string): RateLimitResult | null {
 113 |   const key = `${identifier}:${interval}`
 114 |   const existing = rateLimitStore.get(key)
-115 |   
+115 |
 116 |   if (!existing) {
 117 |     return null
 118 |   }
-119 | 
+119 |
 120 |   const now = Date.now()
 121 |   if (existing.resetTime <= now) {
 122 |     rateLimitStore.delete(key)
 123 |     return null
 124 |   }
-125 | 
+125 |
 126 |   // Determine limit based on common intervals (this is a simplified approach)
 127 |   const limit = interval === '1h' ? 5 : interval === '1m' ? 60 : 100
-128 | 
+128 |
 129 |   return {
 130 |     success: existing.count < limit,
 131 |     limit,
@@ -3440,7 +3455,7 @@ graph TD
 133 |     reset: existing.resetTime
 134 |   }
 135 | }
-136 | 
+136 |
 137 | /**
 138 |  * Reset rate limit for a specific identifier
 139 |  * Useful for testing or administrative purposes
@@ -3458,7 +3473,7 @@ graph TD
 151 |     }
 152 |   }
 153 | }
-154 | 
+154 |
 155 | /**
 156 |  * Get stats about the rate limit store
 157 |  * Useful for monitoring and debugging
@@ -3471,7 +3486,7 @@ graph TD
 164 |   const now = Date.now()
 165 |   let activeEntries = 0
 166 |   let expiredEntries = 0
-167 | 
+167 |
 168 |   for (const entry of rateLimitStore.values()) {
 169 |     if (entry.resetTime > now) {
 170 |       activeEntries++
@@ -3479,27 +3494,27 @@ graph TD
 172 |       expiredEntries++
 173 |     }
 174 |   }
-175 | 
+175 |
 176 |   return {
 177 |     totalEntries: rateLimitStore.size,
 178 |     activeEntries,
 179 |     expiredEntries
 180 |   }
 181 | }
-182 | 
+182 |
 183 | /**
 184 |  * Middleware helper for Next.js API routes
 185 |  * Returns a function that can be used in API routes to apply rate limiting
 186 |  */
 187 | export function withRateLimit(config: RateLimitConfig) {
 188 |   const limiter = ratelimit(config)
-189 | 
+189 |
 190 |   return async function(
 191 |     identifier: string,
 192 |     handler: () => Promise<Response> | Response
 193 |   ): Promise<Response> {
 194 |     const result = await limiter(identifier)
-195 | 
+195 |
 196 |     if (!result.success) {
 197 |       return new Response(
 198 |         JSON.stringify({
@@ -3520,16 +3535,16 @@ graph TD
 213 |         }
 214 |       )
 215 |     }
-216 | 
+216 |
 217 |     const response = await handler()
-218 | 
+218 |
 219 |     // Add rate limit headers to successful responses
 220 |     if (response instanceof Response) {
 221 |       response.headers.set('X-RateLimit-Limit', result.limit.toString())
 222 |       response.headers.set('X-RateLimit-Remaining', result.remaining.toString())
 223 |       response.headers.set('X-RateLimit-Reset', result.reset.toString())
 224 |     }
-225 | 
+225 |
 226 |     return response
 227 |   }
 228 | }
@@ -3538,6 +3553,7 @@ graph TD
 ```
 
 ### components/shared/main-nav.tsx
+
 - Reason: Main navigation implementation showing module relationships
 - File size: 3817 bytes
 
@@ -3547,13 +3563,13 @@ graph TD
  3 | import { Home, Truck, Users, ClipboardList, FileText, BarChart2, Settings, ChevronLeft, ChevronRight, Activity } from "lucide-react"
  4 | import { Button } from "@/components/ui/button"
  5 | import { SignOutButton } from "@/components/shared/sign-out-button"
- 6 | 
+ 6 |
  7 | interface MainNavProps {
  8 |   className?: string
  9 |   collapsed: boolean
 10 |   setCollapsed: (collapsed: boolean) => void
 11 | }
-12 | 
+12 |
 13 | export function MainNav({ className, collapsed, setCollapsed }: MainNavProps) {
 14 |   return (
 15 |     <aside
@@ -3576,7 +3592,7 @@ graph TD
 32 |           <SidebarLink href="/ifta" icon={<Activity />} collapsed={collapsed}>IFTA</SidebarLink>
 33 |           <SidebarLink href="/analytics" icon={<BarChart2 />} collapsed={collapsed}>Analytics</SidebarLink>
 34 |         </nav>
-35 | 
+35 |
 36 |         {/* Bottom Settings Link */}
 37 |         <div className="px-2 py-4 border-t border-[hsl(var(--sidebar-border))]/60">
 38 |           <SidebarLink href="/settings" icon={<Settings />} collapsed={collapsed}>Settings</SidebarLink>
@@ -3585,8 +3601,8 @@ graph TD
 41 |             <SignOutButton />
 42 |           </div>
 43 |         </div>
-44 |         
-45 | 
+44 |
+45 |
 46 |         {/* Collapse Button */}
 47 |         <Button
 48 |           variant="ghost"
@@ -3604,7 +3620,7 @@ graph TD
 60 |     </aside>
 61 |   )
 62 | }
-63 | 
+63 |
 64 | function SidebarLink({ href, children, icon, collapsed }: { href: string; children: React.ReactNode; icon: React.ReactNode; collapsed: boolean }) {
 65 |   // Highlight active link (optional: add logic for active route)
 66 |   return (
@@ -3622,20 +3638,21 @@ graph TD
 78 |     </Link>
 79 |   )
 80 | }
-81 | 
+81 |
 82 | // Add sidebar-link styles via Tailwind in globals.css or as a component if not present:
 83 | // .sidebar-link { @apply text-base font-medium rounded-lg px-3 py-2 transition-colors hover:bg-muted hover:text-primary text-muted-foreground; }
-84 | 
+84 |
 
 ```
 
 ### features/dispatch/DispatchBoard.tsx
+
 - Reason: Core dispatch feature implementation with real-time updates
 - File size: 143 bytes
 
 ```tsx
 1 | import React from "react";
-2 | 
+2 |
 3 | export function DispatchBoard() {
 4 |   // ...dispatch board logic...
 5 |   return <div>{/* ...loads... */}</div>;
@@ -3645,25 +3662,26 @@ graph TD
 ```
 
 ### lib/actions/driverActions.ts
+
 - Reason: Driver management and tracking system implementation
 - File size: 21284 bytes
 
 ```tsx
   1 | "use server"
-  2 | 
+  2 |
   3 | import { auth } from "@clerk/nextjs/server"
   4 | import { revalidatePath } from "next/cache"
   5 | import { z } from "zod"
-  6 | import type { 
-  7 |   Driver, 
-  8 |   DriverFormData, 
-  9 |   DriverUpdateData, 
+  6 | import type {
+  7 |   Driver,
+  8 |   DriverFormData,
+  9 |   DriverUpdateData,
  10 |   DriverActionResult,
  11 |   DriverBulkActionResult
  12 | } from "@/types/drivers"
  13 | import { db } from "../database"
  14 | import { createAuditLog } from "./auditActions"
- 15 | import { 
+ 15 | import {
  16 |   driverFormSchema,
  17 |   driverUpdateSchema,
  18 |   driverStatusUpdateSchema,
@@ -3672,7 +3690,7 @@ graph TD
  21 |   driverAssignmentSchema,
  22 |   driverBulkUpdateSchema
  23 | } from "@/validations/drivers"
- 24 | 
+ 24 |
  25 | // Helper function to convert Prisma Driver to Driver interface
  26 | function convertPrismaDriverToDriver(prismaDriver: any): Driver {
  27 |   return {
@@ -3690,9 +3708,9 @@ graph TD
  39 |     medicalCardExpiration: prismaDriver.medicalCardExpiration?.toISOString() || ''
  40 |   } as Driver
  41 | }
- 42 | 
+ 42 |
  43 | // ================== Core CRUD Operations ==================
- 44 | 
+ 44 |
  45 | /**
  46 |  * Create a new driver
  47 |  */
@@ -3705,10 +3723,10 @@ graph TD
  54 |     if (!userId) {
  55 |       return { success: false, error: "Authentication required", code: "UNAUTHORIZED" }
  56 |     }
- 57 | 
+ 57 |
  58 |     // Validate input data
  59 |     const validatedData = driverFormSchema.parse(data)
- 60 | 
+ 60 |
  61 |     // Create driver record
  62 |     const newDriver = await db.driver.create({
  63 |       data: {
@@ -3738,11 +3756,11 @@ graph TD
  87 |         tags: validatedData.tags ? JSON.stringify(validatedData.tags) : null,
  88 |       }
  89 |     })
- 90 | 
+ 90 |
  91 |     if (!newDriver) {
  92 |       return { success: false, error: "Failed to create driver", code: "CREATE_FAILED" }
  93 |     }
- 94 | 
+ 94 |
  95 |     // Create audit log
  96 |     await createAuditLog({
  97 |       tenantId,
@@ -3750,38 +3768,38 @@ graph TD
  99 |       action: "driver.created",
 100 |       entityType: "driver",
 101 |       entityId: newDriver.id,
-102 |       details: { 
+102 |       details: {
 103 |         driverName: `${validatedData.firstName} ${validatedData.lastName}`,
-104 |         cdlNumber: validatedData.cdlNumber 
+104 |         cdlNumber: validatedData.cdlNumber
 105 |       }
 106 |     })
-107 | 
+107 |
 108 |     revalidatePath(`/dashboard/${tenantId}/driver`)
-109 |     
-110 |     return { 
-111 |       success: true, 
+109 |
+110 |     return {
+111 |       success: true,
 112 |       data: convertPrismaDriverToDriver(newDriver)
 113 |     }
-114 | 
+114 |
 115 |   } catch (error) {
 116 |     console.error("Error creating driver:", error)
-117 |     
+117 |
 118 |     if (error instanceof z.ZodError) {
-119 |       return { 
-120 |         success: false, 
-121 |         error: "Invalid input data", 
-122 |         code: "VALIDATION_ERROR" 
+119 |       return {
+120 |         success: false,
+121 |         error: "Invalid input data",
+122 |         code: "VALIDATION_ERROR"
 123 |       }
 124 |     }
-125 |     
-126 |     return { 
-127 |       success: false, 
-128 |       error: "Failed to create driver", 
-129 |       code: "INTERNAL_ERROR" 
+125 |
+126 |     return {
+127 |       success: false,
+128 |       error: "Failed to create driver",
+129 |       code: "INTERNAL_ERROR"
 130 |     }
 131 |   }
 132 | }
-133 | 
+133 |
 134 | /**
 135 |  * Update an existing driver
 136 |  */
@@ -3794,7 +3812,7 @@ graph TD
 143 |     if (!userId) {
 144 |       return { success: false, error: "Authentication required", code: "UNAUTHORIZED" }
 145 |     }
-146 | 
+146 |
 147 |     // Get existing driver to check permissions
 148 |     const existingDriver = await db.driver.findFirst({
 149 |       where: {
@@ -3802,20 +3820,20 @@ graph TD
 151 |         isActive: true
 152 |       }
 153 |     })
-154 | 
+154 |
 155 |     if (!existingDriver) {
 156 |       return { success: false, error: "Driver not found", code: "NOT_FOUND" }
 157 |     }
-158 | 
+158 |
 159 |     // Validate input data
 160 |     const validatedData = driverUpdateSchema.parse(data)
-161 | 
+161 |
 162 |     // Prepare update object
 163 |     const updateData: any = {
 164 |       updatedAt: new Date(),
 165 |       updatedBy: userId
 166 |     }
-167 | 
+167 |
 168 |     // Update only provided fields
 169 |     if (validatedData.phone !== undefined) updateData.phone = validatedData.phone
 170 |     if (validatedData.address !== undefined) updateData.address = validatedData.address ? JSON.stringify(validatedData.address) : null
@@ -3831,17 +3849,17 @@ graph TD
 180 |     if (validatedData.emergencyContact !== undefined) updateData.emergencyContact = validatedData.emergencyContact ? JSON.stringify(validatedData.emergencyContact) : null
 181 |     if (validatedData.notes !== undefined) updateData.notes = validatedData.notes
 182 |     if (validatedData.tags !== undefined) updateData.tags = validatedData.tags ? JSON.stringify(validatedData.tags) : null
-183 | 
+183 |
 184 |     // Update driver
 185 |     const updatedDriver = await db.driver.update({
 186 |       where: { id: driverId },
 187 |       data: updateData
 188 |     })
-189 | 
+189 |
 190 |     if (!updatedDriver) {
 191 |       return { success: false, error: "Failed to update driver", code: "UPDATE_FAILED" }
 192 |     }
-193 | 
+193 |
 194 |     // Create audit log
 195 |     await createAuditLog({
 196 |       tenantId: existingDriver.tenantId,
@@ -3854,34 +3872,34 @@ graph TD
 203 |         updatedFields: Object.keys(validatedData)
 204 |       }
 205 |     })
-206 | 
+206 |
 207 |     revalidatePath(`/dashboard/${existingDriver.tenantId}/driver`)
 208 |     revalidatePath(`/dashboard/${existingDriver.tenantId}/driver/${driverId}`)
-209 |     
-210 |     return { 
-211 |       success: true, 
+209 |
+210 |     return {
+211 |       success: true,
 212 |       data: convertPrismaDriverToDriver(updatedDriver)
 213 |     }
-214 | 
+214 |
 215 |   } catch (error) {
 216 |     console.error("Error updating driver:", error)
-217 |     
+217 |
 218 |     if (error instanceof z.ZodError) {
-219 |       return { 
-220 |         success: false, 
-221 |         error: "Invalid input data", 
-222 |         code: "VALIDATION_ERROR" 
+219 |       return {
+220 |         success: false,
+221 |         error: "Invalid input data",
+222 |         code: "VALIDATION_ERROR"
 223 |       }
 224 |     }
-225 |     
-226 |     return { 
-227 |       success: false, 
-228 |       error: "Failed to update driver", 
-229 |       code: "INTERNAL_ERROR" 
+225 |
+226 |     return {
+227 |       success: false,
+228 |       error: "Failed to update driver",
+229 |       code: "INTERNAL_ERROR"
 230 |     }
 231 |   }
 232 | }
-233 | 
+233 |
 234 | /**
 235 |  * Delete (deactivate) a driver
 236 |  */
@@ -3891,7 +3909,7 @@ graph TD
 240 |     if (!userId) {
 241 |       return { success: false, error: "Authentication required", code: "UNAUTHORIZED" }
 242 |     }
-243 | 
+243 |
 244 |     // Get existing driver to check permissions
 245 |     const existingDriver = await db.driver.findFirst({
 246 |       where: {
@@ -3899,20 +3917,20 @@ graph TD
 248 |         isActive: true
 249 |       }
 250 |     })
-251 | 
+251 |
 252 |     if (!existingDriver) {
 253 |       return { success: false, error: "Driver not found", code: "NOT_FOUND" }
 254 |     }
-255 | 
+255 |
 256 |     // Check if driver has active assignments
 257 |     if (existingDriver.status === 'assigned' || existingDriver.status === 'driving') {
-258 |       return { 
-259 |         success: false, 
-260 |         error: "Cannot delete driver with active assignments", 
-261 |         code: "HAS_ACTIVE_ASSIGNMENTS" 
+258 |       return {
+259 |         success: false,
+260 |         error: "Cannot delete driver with active assignments",
+261 |         code: "HAS_ACTIVE_ASSIGNMENTS"
 262 |       }
 263 |     }
-264 | 
+264 |
 265 |     // Soft delete (deactivate) driver
 266 |     const deletedDriver = await db.driver.update({
 267 |       where: { id: driverId },
@@ -3924,11 +3942,11 @@ graph TD
 273 |         updatedAt: new Date(),
 274 |       }
 275 |     })
-276 | 
+276 |
 277 |     if (!deletedDriver) {
 278 |       return { success: false, error: "Failed to delete driver", code: "DELETE_FAILED" }
 279 |     }
-280 | 
+280 |
 281 |     // Create audit log
 282 |     await createAuditLog({
 283 |       tenantId: existingDriver.tenantId,
@@ -3941,23 +3959,23 @@ graph TD
 290 |         cdlNumber: existingDriver.cdlNumber
 291 |       }
 292 |     })
-293 | 
+293 |
 294 |     revalidatePath(`/dashboard/${existingDriver.tenantId}/driver`)
-295 |     
+295 |
 296 |     return { success: true }
-297 | 
+297 |
 298 |   } catch (error) {
 299 |     console.error("Error deleting driver:", error)
-300 |     return { 
-301 |       success: false, 
-302 |       error: "Failed to delete driver", 
-303 |       code: "INTERNAL_ERROR" 
+300 |     return {
+301 |       success: false,
+302 |       error: "Failed to delete driver",
+303 |       code: "INTERNAL_ERROR"
 304 |     }
 305 |   }
 306 | }
-307 | 
+307 |
 308 | // ================== Status Management ==================
-309 | 
+309 |
 310 | /**
 311 |  * Update driver status
 312 |  */
@@ -3970,7 +3988,7 @@ graph TD
 319 |     if (!userId) {
 320 |       return { success: false, error: "Authentication required", code: "UNAUTHORIZED" }
 321 |     }
-322 | 
+322 |
 323 |     // Get existing driver
 324 |     const existingDriver = await db.driver.findFirst({
 325 |       where: {
@@ -3978,41 +3996,41 @@ graph TD
 327 |         isActive: true
 328 |       }
 329 |     })
-330 | 
+330 |
 331 |     if (!existingDriver) {
 332 |       return { success: false, error: "Driver not found", code: "NOT_FOUND" }
 333 |     }
-334 | 
+334 |
 335 |     // Validate input
 336 |     const validatedData = driverStatusUpdateSchema.parse(statusUpdate)
-337 | 
+337 |
 338 |     // Update driver status
 339 |     const updateData: any = {
 340 |       status: validatedData.status,
 341 |       updatedAt: new Date(),
 342 |       updatedBy: userId
 343 |     }
-344 | 
+344 |
 345 |     if (validatedData.availabilityStatus) {
 346 |       updateData.availabilityStatus = validatedData.availabilityStatus
 347 |     }
-348 | 
+348 |
 349 |     if (validatedData.location) {
 350 |       updateData.currentLocation = JSON.stringify(validatedData.location)
 351 |     }
-352 | 
+352 |
 353 |     const updatedDriver = await db.driver.update({
 354 |       where: { id: driverId },
 355 |       data: updateData
 356 |     })
-357 | 
+357 |
 358 |     // Create HOS entry if it's a status change
 359 |     if (validatedData.status !== existingDriver.status) {
 360 |       await db.hoursOfService.create({
 361 |         data: {
 362 |           driverId,
 363 |           date: new Date().toISOString().split('T')[0],
-364 |           status: validatedData.status === 'driving' ? 'driving' : 
+364 |           status: validatedData.status === 'driving' ? 'driving' :
 365 |                  validatedData.status === 'on_duty' ? 'on_duty_not_driving' : 'off_duty',
 366 |           location: validatedData.location?.address || 'Unknown',
 367 |           latitude: validatedData.location?.latitude || null,
@@ -4027,7 +4045,7 @@ graph TD
 376 |         }
 377 |       })
 378 |     }
-379 | 
+379 |
 380 |     // Create audit log
 381 |     await createAuditLog({
 382 |       tenantId: existingDriver.tenantId,
@@ -4042,36 +4060,36 @@ graph TD
 391 |         notes: validatedData.notes
 392 |       }
 393 |     })
-394 | 
+394 |
 395 |     revalidatePath(`/dashboard/${existingDriver.tenantId}/driver`)
 396 |     revalidatePath(`/dashboard/${existingDriver.tenantId}/driver/${driverId}`)
-397 |     
-398 |     return { 
-399 |       success: true, 
+397 |
+398 |     return {
+399 |       success: true,
 400 |       data: convertPrismaDriverToDriver(updatedDriver)
 401 |     }
-402 | 
+402 |
 403 |   } catch (error) {
 404 |     console.error("Error updating driver status:", error)
-405 |     
+405 |
 406 |     if (error instanceof z.ZodError) {
-407 |       return { 
-408 |         success: false, 
-409 |         error: "Invalid status data", 
-410 |         code: "VALIDATION_ERROR" 
+407 |       return {
+408 |         success: false,
+409 |         error: "Invalid status data",
+410 |         code: "VALIDATION_ERROR"
 411 |       }
 412 |     }
-413 |     
-414 |     return { 
-415 |       success: false, 
-416 |       error: "Failed to update driver status", 
-417 |       code: "INTERNAL_ERROR" 
+413 |
+414 |     return {
+415 |       success: false,
+416 |       error: "Failed to update driver status",
+417 |       code: "INTERNAL_ERROR"
 418 |     }
 419 |   }
 420 | }
-421 | 
+421 |
 422 | // ================== Bulk Operations ==================
-423 | 
+423 |
 424 | /**
 425 |  * Bulk update drivers
 426 |  */
@@ -4081,18 +4099,18 @@ graph TD
 430 |   try {
 431 |     const { userId } = await auth()
 432 |     if (!userId) {
-433 |       return { 
-434 |         success: false, 
+433 |       return {
+434 |         success: false,
 435 |         processed: 0,
 436 |         succeeded: 0,
 437 |         failed: 0,
 438 |         errors: [{ driverId: "unknown", error: "Authentication required" }]
 439 |       }
 440 |     }
-441 | 
+441 |
 442 |     // Validate input
 443 |     const validatedData = driverBulkUpdateSchema.parse(bulkUpdate)
-444 | 
+444 |
 445 |     // Get existing drivers and validate permissions
 446 |     const existingDrivers = await db.driver.findMany({
 447 |       where: {
@@ -4100,52 +4118,52 @@ graph TD
 449 |         isActive: true
 450 |       }
 451 |     })
-452 | 
+452 |
 453 |     if (existingDrivers.length === 0) {
-454 |       return { 
-455 |         success: false, 
+454 |       return {
+455 |         success: false,
 456 |         processed: 0,
 457 |         succeeded: 0,
 458 |         failed: 0,
 459 |         errors: [{ driverId: "unknown", error: "No drivers found" }]
 460 |       }
 461 |     }
-462 | 
+462 |
 463 |     // Check if all requested drivers exist
 464 |     const missingDriverIds = validatedData.driverIds.filter(
 465 |       id => !existingDrivers.find(d => d.id === id)
 466 |     )
-467 |     
+467 |
 468 |     const errors: Array<{ driverId: string; error: string }> = []
-469 |     
+469 |
 470 |     if (missingDriverIds.length > 0) {
 471 |       missingDriverIds.forEach(id => {
 472 |         errors.push({ driverId: id, error: "Driver not found" })
 473 |       })
 474 |     }
-475 | 
+475 |
 476 |     // Prepare update data
 477 |     const updateData: any = {
 478 |       updatedAt: new Date(),
 479 |       updatedBy: userId
 480 |     }
-481 | 
+481 |
 482 |     if (validatedData.updates.status) {
 483 |       updateData.status = validatedData.updates.status
 484 |     }
-485 | 
+485 |
 486 |     if (validatedData.updates.availabilityStatus) {
 487 |       updateData.availabilityStatus = validatedData.updates.availabilityStatus
 488 |     }
-489 | 
+489 |
 490 |     if (validatedData.updates.homeTerminal) {
 491 |       updateData.homeTerminal = validatedData.updates.homeTerminal
 492 |     }
-493 | 
+493 |
 494 |     if (validatedData.updates.tags) {
 495 |       updateData.tags = JSON.stringify(validatedData.updates.tags)
 496 |     }
-497 | 
+497 |
 498 |     // Update drivers
 499 |     const updatedDrivers = await db.driver.updateMany({
 500 |       where: {
@@ -4153,7 +4171,7 @@ graph TD
 502 |       },
 503 |       data: updateData
 504 |     })
-505 | 
+505 |
 506 |     // Create audit logs for each driver
 507 |     for (const driver of existingDrivers) {
 508 |       await createAuditLog({
@@ -4168,14 +4186,14 @@ graph TD
 517 |         }
 518 |       })
 519 |     }
-520 | 
+520 |
 521 |     // Revalidate paths
 522 |     const tenantIds = [...new Set(existingDrivers.map(d => d.tenantId))]
 523 |     for (const tenantId of tenantIds) {
 524 |       revalidatePath(`/dashboard/${tenantId}/driver`)
 525 |     }
-526 | 
-527 |     return { 
+526 |
+527 |     return {
 528 |       success: true,
 529 |       processed: validatedData.driverIds.length,
 530 |       succeeded: updatedDrivers.count,
@@ -4183,12 +4201,12 @@ graph TD
 532 |       errors: errors,
 533 |       data: undefined // Bulk operations don't return driver data
 534 |     }
-535 | 
+535 |
 536 |   } catch (error) {
 537 |     console.error("Error bulk updating drivers:", error)
-538 |     
+538 |
 539 |     if (error instanceof z.ZodError) {
-540 |       return { 
+540 |       return {
 541 |         success: false,
 542 |         processed: 0,
 543 |         succeeded: 0,
@@ -4196,8 +4214,8 @@ graph TD
 545 |         errors: [{ driverId: "unknown", error: "Invalid bulk update data" }]
 546 |       }
 547 |     }
-548 |     
-549 |     return { 
+548 |
+549 |     return {
 550 |       success: false,
 551 |       processed: 0,
 552 |       succeeded: 0,
@@ -4206,9 +4224,9 @@ graph TD
 555 |     }
 556 |   }
 557 | }
-558 | 
+558 |
 559 | // ================== Assignment Management ==================
-560 | 
+560 |
 561 | /**
 562 |  * Assign driver to a load/vehicle
 563 |  */
@@ -4220,10 +4238,10 @@ graph TD
 569 |     if (!userId) {
 570 |       return { success: false, error: "Authentication required", code: "UNAUTHORIZED" }
 571 |     }
-572 | 
+572 |
 573 |     // Validate input
 574 |     const validatedData = driverAssignmentSchema.parse(assignmentData)
-575 | 
+575 |
 576 |     // Get driver to check permissions
 577 |     const driver = await db.driver.findFirst({
 578 |       where: {
@@ -4231,20 +4249,20 @@ graph TD
 580 |         isActive: true
 581 |       }
 582 |     })
-583 | 
+583 |
 584 |     if (!driver) {
 585 |       return { success: false, error: "Driver not found", code: "NOT_FOUND" }
 586 |     }
-587 | 
+587 |
 588 |     // Check driver availability
 589 |     if (driver.availabilityStatus !== 'available') {
-590 |       return { 
-591 |         success: false, 
-592 |         error: "Driver is not available for assignment", 
-593 |         code: "DRIVER_NOT_AVAILABLE" 
+590 |       return {
+591 |         success: false,
+592 |         error: "Driver is not available for assignment",
+593 |         code: "DRIVER_NOT_AVAILABLE"
 594 |       }
 595 |     }
-596 | 
+596 |
 597 |     // Update driver status
 598 |     await db.driver.update({
 599 |       where: { id: validatedData.driverId },
@@ -4255,7 +4273,7 @@ graph TD
 604 |         updatedAt: new Date(),
 605 |       }
 606 |     })
-607 | 
+607 |
 608 |     // Create audit log
 609 |     await createAuditLog({
 610 |       tenantId: driver.tenantId,
@@ -4270,31 +4288,31 @@ graph TD
 619 |         vehicleId: validatedData.vehicleId
 620 |       }
 621 |     })
-622 | 
+622 |
 623 |     revalidatePath(`/dashboard/${driver.tenantId}/driver`)
 624 |     revalidatePath(`/dashboard/${driver.tenantId}/dispatch`)
-625 |     
+625 |
 626 |     return { success: true }
-627 | 
+627 |
 628 |   } catch (error) {
 629 |     console.error("Error assigning driver:", error)
-630 |     
+630 |
 631 |     if (error instanceof z.ZodError) {
-632 |       return { 
-633 |         success: false, 
-634 |         error: "Invalid assignment data", 
-635 |         code: "VALIDATION_ERROR" 
+632 |       return {
+633 |         success: false,
+634 |         error: "Invalid assignment data",
+635 |         code: "VALIDATION_ERROR"
 636 |       }
 637 |     }
-638 |     
-639 |     return { 
-640 |       success: false, 
-641 |       error: "Failed to assign driver", 
-642 |       code: "INTERNAL_ERROR" 
+638 |
+639 |     return {
+640 |       success: false,
+641 |       error: "Failed to assign driver",
+642 |       code: "INTERNAL_ERROR"
 643 |     }
 644 |   }
 645 | }
-646 | 
+646 |
 647 | /**
 648 |  * Unassign driver from current assignment
 649 |  */
@@ -4304,7 +4322,7 @@ graph TD
 653 |     if (!userId) {
 654 |       return { success: false, error: "Authentication required", code: "UNAUTHORIZED" }
 655 |     }
-656 | 
+656 |
 657 |     // Get driver
 658 |     const driver = await db.driver.findFirst({
 659 |       where: {
@@ -4312,11 +4330,11 @@ graph TD
 661 |         isActive: true
 662 |       }
 663 |     })
-664 | 
+664 |
 665 |     if (!driver) {
 666 |       return { success: false, error: "Driver not found", code: "NOT_FOUND" }
 667 |     }
-668 | 
+668 |
 669 |     // Update driver status
 670 |     await db.driver.update({
 671 |       where: { id: driverId },
@@ -4327,7 +4345,7 @@ graph TD
 676 |         updatedAt: new Date(),
 677 |       }
 678 |     })
-679 | 
+679 |
 680 |     // Create audit log
 681 |     await createAuditLog({
 682 |       tenantId: driver.tenantId,
@@ -4340,65 +4358,66 @@ graph TD
 689 |         previousAssignment: driver.currentAssignment
 690 |       }
 691 |     })
-692 | 
+692 |
 693 |     revalidatePath(`/dashboard/${driver.tenantId}/driver`)
 694 |     revalidatePath(`/dashboard/${driver.tenantId}/dispatch`)
-695 |     
+695 |
 696 |     return { success: true }
-697 | 
+697 |
 698 |   } catch (error) {
 699 |     console.error("Error unassigning driver:", error)
-700 |     return { 
-701 |       success: false, 
-702 |       error: "Failed to unassign driver", 
-703 |       code: "INTERNAL_ERROR" 
+700 |     return {
+701 |       success: false,
+702 |       error: "Failed to unassign driver",
+703 |       code: "INTERNAL_ERROR"
 704 |     }
 705 |   }
 706 | }
-707 | 
+707 |
 708 |
 
 ```
 
 ### lib/actions/vehicleActions.ts
+
 - Reason: Vehicle tracking and management implementation
 - File size: 1224 bytes
 
 ```ts
  1 | "use server";
- 2 | 
+ 2 |
  3 | import { revalidatePath } from "next/cache";
  4 | import { redirect } from "next/navigation";
  5 | import { auth } from "@clerk/nextjs/server";
  6 | import { prisma } from "@/lib/db";
  7 | // All other code commented out for migration
  8 | // TODO: Re-implement with Prisma and correct types
- 9 | 
+ 9 |
 10 | export async function createVehicleAction(organizationId: string, data: any) {
 11 |   // TODO: Implement with Prisma
 12 |   return { error: 'Not implemented' };
 13 | }
-14 | 
+14 |
 15 | export async function updateVehicleStatus(vehicleId: string, data: any) {
 16 |   // TODO: Implement with Prisma
 17 |   return { error: 'Not implemented' };
 18 | }
-19 | 
+19 |
 20 | export async function updateVehicleAction(vehicleId: string, data: any) {
 21 |   // TODO: Implement with Prisma
 22 |   return { error: 'Not implemented' };
 23 | }
-24 | 
+24 |
 25 | export async function deleteVehicleAction(vehicleId: string) {
 26 |   // TODO: Implement with Prisma
 27 |   return { error: 'Not implemented' };
 28 | }
-29 | 
+29 |
 30 | export async function assignVehicleToDriverAction(vehicleId: string, driverId: string) {
 31 |   // TODO: Implement with Prisma
 32 |   return { error: 'Not implemented' };
 33 | }
-34 | 
+34 |
 35 | export async function unassignVehicleFromDriverAction(vehicleId: string) {
 36 |   // TODO: Implement with Prisma
 37 |   return { error: 'Not implemented' };
@@ -4408,12 +4427,13 @@ graph TD
 ```
 
 ### components/compliance/hos-log-viewer.tsx
+
 - Reason: Hours of Service compliance monitoring implementation
 - File size: 9502 bytes
 
 ```tsx
   1 | "use client"
-  2 | 
+  2 |
   3 | import { useState } from "react"
   4 | import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
   5 | import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -4423,11 +4443,11 @@ graph TD
   9 | import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
  10 | import { format } from "date-fns"
  11 | import { CalendarIcon, ChevronLeft, ChevronRight, Download, Filter } from "lucide-react"
- 12 | 
+ 12 |
  13 | export function HosLogViewer() {
  14 |   const [date, setDate] = useState<Date>(new Date())
  15 |   const [driver, setDriver] = useState<string>("all")
- 16 | 
+ 16 |
  17 |   return (
  18 |     <div className="space-y-6">
  19 |       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -4446,7 +4466,7 @@ graph TD
  32 |           </Button>
  33 |         </div>
  34 |       </div>
- 35 | 
+ 35 |
  36 |       <div className="flex flex-col md:flex-row gap-4">
  37 |         <Card className="md:w-1/3">
  38 |           <CardHeader>
@@ -4470,7 +4490,7 @@ graph TD
  56 |                 </SelectContent>
  57 |               </Select>
  58 |             </div>
- 59 | 
+ 59 |
  60 |             <div className="space-y-2">
  61 |               <label className="text-sm font-medium">Date</label>
  62 |               <Popover>
@@ -4485,7 +4505,7 @@ graph TD
  71 |                 </PopoverContent>
  72 |               </Popover>
  73 |             </div>
- 74 | 
+ 74 |
  75 |             <div className="flex justify-between">
  76 |               <Button variant="outline" size="sm">
  77 |                 <ChevronLeft className="mr-1 h-4 w-4" />
@@ -4498,7 +4518,7 @@ graph TD
  84 |             </div>
  85 |           </CardContent>
  86 |         </Card>
- 87 | 
+ 87 |
  88 |         <Card className="md:w-2/3">
  89 |           <CardHeader>
  90 |             <CardTitle>Driver's Daily Log</CardTitle>
@@ -4514,7 +4534,7 @@ graph TD
 100 |                 <TabsTrigger value="events">Events</TabsTrigger>
 101 |                 <TabsTrigger value="summary">Summary</TabsTrigger>
 102 |               </TabsList>
-103 | 
+103 |
 104 |               <TabsContent value="graph" className="pt-4">
 105 |                 <div className="h-[300px] border rounded-md p-4 flex items-center justify-center">
 106 |                   <div className="text-center text-muted-foreground">
@@ -4523,7 +4543,7 @@ graph TD
 109 |                   </div>
 110 |                 </div>
 111 |               </TabsContent>
-112 | 
+112 |
 113 |               <TabsContent value="events" className="pt-4">
 114 |                 <div className="rounded-md border">
 115 |                   <table className="w-full">
@@ -4570,7 +4590,7 @@ graph TD
 156 |                   </table>
 157 |                 </div>
 158 |               </TabsContent>
-159 | 
+159 |
 160 |               <TabsContent value="summary" className="pt-4">
 161 |                 <div className="space-y-4">
 162 |                   <div className="grid grid-cols-2 gap-4">
@@ -4593,7 +4613,7 @@ graph TD
 179 |                       <p className="text-2xl font-bold">2:00</p>
 180 |                     </div>
 181 |                   </div>
-182 | 
+182 |
 183 |                   <div className="rounded-md border p-3">
 184 |                     <p className="text-sm font-medium">Cycle Summary</p>
 185 |                     <p className="text-xs text-muted-foreground mt-1">70-hour/8-day rule</p>
@@ -4617,17 +4637,18 @@ graph TD
 203 |     </div>
 204 |   )
 205 | }
-206 | 
+206 |
 
 ```
 
 ### lib/actions/auditActions.ts
+
 - Reason: System-wide audit logging implementation
 - File size: 779 bytes
 
 ```ts
  1 | import { db } from "@/lib/database";
- 2 | 
+ 2 |
  3 | interface CreateAuditLogParams {
  4 |   tenantId: string;
  5 |   userId?: string;
@@ -4638,7 +4659,7 @@ graph TD
 10 |   changes?: Record<string, any>;
 11 |   metadata?: Record<string, any>;
 12 | }
-13 | 
+13 |
 14 | export const createAuditLog = async (params: CreateAuditLogParams) => {
 15 |   try {
 16 |     await db.auditLog.create({
@@ -4659,18 +4680,19 @@ graph TD
 ```
 
 ### types/abac.ts
+
 - Reason: Attribute-based access control type definitions
 - File size: 5856 bytes
 
 ```tsx
   1 | /**
   2 |  * FleetFusion ABAC (Attribute-Based Access Control) Type Definitions
-  3 |  * 
+  3 |  *
   4 |  * This file defines all role types, permissions, and attributes used for
   5 |  * authorization throughout the application. These types are used by Clerk
   6 |  * for custom session claims and by our middleware for access control.
   7 |  */
-  8 | 
+  8 |
   9 | /**
  10 |  * System Roles - Core roles available in the FleetFusion platform
  11 |  * These are synchronized with Clerk's organization roles
@@ -4683,9 +4705,9 @@ graph TD
  18 |   ACCOUNTANT: 'accountant',
  19 |   VIEWER: 'viewer',
  20 | } as const;
- 21 | 
+ 21 |
  22 | export type SystemRole = typeof SystemRoles[keyof typeof SystemRoles];
- 23 | 
+ 23 |
  24 | /**
  25 |  * Resource Types - Entities that can be accessed/modified in the system
  26 |  */
@@ -4699,9 +4721,9 @@ graph TD
  34 |   ORGANIZATION: 'organization',
  35 |   BILLING: 'billing',
  36 | } as const;
- 37 | 
+ 37 |
  38 | export type ResourceType = typeof ResourceTypes[keyof typeof ResourceTypes];
- 39 | 
+ 39 |
  40 | /**
  41 |  * Permission Actions - Operations that can be performed on resources
  42 |  */
@@ -4715,9 +4737,9 @@ graph TD
  50 |   APPROVE: 'approve', // Special action for compliance officers
  51 |   REPORT: 'report', // Special action for generating reports
  52 | } as const;
- 53 | 
+ 53 |
  54 | export type PermissionAction = typeof PermissionActions[keyof typeof PermissionActions];
- 55 | 
+ 55 |
  56 | /**
  57 |  * Permission - Represents a single permission (action + resource)
  58 |  * Example: { action: 'create', resource: 'load' }
@@ -4726,21 +4748,21 @@ graph TD
  61 |   action: PermissionAction;
  62 |   resource: ResourceType;
  63 | }
- 64 | 
+ 64 |
  65 | /**
  66 |  * Role Permission Map - Defines permissions for each role
  67 |  */
  68 | export const RolePermissions: Record<SystemRole, Permission[]> = {
  69 |   [SystemRoles.ADMIN]: [
  70 |     // Admin has full access to everything
- 71 |     ...Object.values(ResourceTypes).flatMap((resource) => 
+ 71 |     ...Object.values(ResourceTypes).flatMap((resource) =>
  72 |       Object.values(PermissionActions).map((action) => ({
  73 |         action,
  74 |         resource: resource as ResourceType,
  75 |       }))
  76 |     )
  77 |   ],
- 78 |   
+ 78 |
  79 |   [SystemRoles.DISPATCHER]: [
  80 |     // Dispatcher permissions
  81 |     { action: PermissionActions.CREATE, resource: ResourceTypes.LOAD },
@@ -4753,7 +4775,7 @@ graph TD
  88 |     { action: PermissionActions.READ, resource: ResourceTypes.VEHICLE },
  89 |     { action: PermissionActions.READ, resource: ResourceTypes.DOCUMENT },
  90 |   ],
- 91 |   
+ 91 |
  92 |   [SystemRoles.DRIVER]: [
  93 |     // Driver permissions
  94 |     { action: PermissionActions.READ, resource: ResourceTypes.LOAD },
@@ -4761,7 +4783,7 @@ graph TD
  96 |     { action: PermissionActions.CREATE, resource: ResourceTypes.DOCUMENT }, // Upload their documents
  97 |     { action: PermissionActions.READ, resource: ResourceTypes.DOCUMENT }, // View their documents
  98 |   ],
- 99 |   
+ 99 |
 100 |   [SystemRoles.COMPLIANCE_OFFICER]: [
 101 |     // Compliance officer permissions
 102 |     { action: PermissionActions.READ, resource: ResourceTypes.DRIVER },
@@ -4772,7 +4794,7 @@ graph TD
 107 |     { action: PermissionActions.APPROVE, resource: ResourceTypes.DOCUMENT },
 108 |     { action: PermissionActions.REPORT, resource: ResourceTypes.DOCUMENT },
 109 |   ],
-110 |   
+110 |
 111 |   [SystemRoles.ACCOUNTANT]: [
 112 |     // Accountant permissions
 113 |     { action: PermissionActions.READ, resource: ResourceTypes.LOAD },
@@ -4784,7 +4806,7 @@ graph TD
 119 |     { action: PermissionActions.REPORT, resource: ResourceTypes.IFTA },
 120 |     { action: PermissionActions.READ, resource: ResourceTypes.BILLING },
 121 |   ],
-122 |   
+122 |
 123 |   [SystemRoles.VIEWER]: [
 124 |     // Viewer permissions (read-only access)
 125 |     { action: PermissionActions.READ, resource: ResourceTypes.LOAD },
@@ -4794,7 +4816,7 @@ graph TD
 129 |     { action: PermissionActions.READ, resource: ResourceTypes.IFTA },
 130 |   ]
 131 | };
-132 | 
+132 |
 133 | /**
 134 |  * Interface for user session with ABAC attributes
 135 |  * This is what will be added to the Clerk session claims
@@ -4804,7 +4826,7 @@ graph TD
 139 |   organizationId: string;
 140 |   permissions: Permission[];
 141 | }
-142 | 
+142 |
 143 | /**
 144 |  * Check if a user has a specific permission
 145 |  */
@@ -4814,19 +4836,18 @@ graph TD
 149 |   resource: ResourceType
 150 | ): boolean {
 151 |   return userPermissions.some(
-152 |     (permission) => 
-153 |       (permission.action === action || permission.action === PermissionActions.MANAGE) && 
+152 |     (permission) =>
+153 |       (permission.action === action || permission.action === PermissionActions.MANAGE) &&
 154 |       permission.resource === resource
 155 |   );
 156 | }
-157 | 
+157 |
 158 | /**
 159 |  * Get permissions for a specific role
 160 |  */
 161 | export function getPermissionsForRole(role: SystemRole): Permission[] {
 162 |   return RolePermissions[role] || [];
 163 | }
-164 | 
+164 |
 
 ```
-

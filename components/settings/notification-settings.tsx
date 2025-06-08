@@ -1,13 +1,13 @@
-"use client"
+'use client';
 
-import { useState } from "react"
+import { useState } from 'react';
 
-import { Button } from "@/components/ui/button"
-import { Switch } from "@/components/ui/switch"
-import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
-import { Input } from "@/components/ui/input"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export function NotificationSettings() {
   const [emailSettings, setEmailSettings] = useState({
@@ -19,7 +19,7 @@ export function NotificationSettings() {
     financialReports: true,
     systemUpdates: false,
     marketingNews: false,
-  })
+  });
 
   const [smsSettings, setSmsSettings] = useState({
     dispatchUpdates: false,
@@ -30,7 +30,7 @@ export function NotificationSettings() {
     financialReports: false,
     systemUpdates: false,
     marketingNews: false,
-  })
+  });
 
   const [appSettings, setAppSettings] = useState({
     dispatchUpdates: true,
@@ -41,40 +41,40 @@ export function NotificationSettings() {
     financialReports: true,
     systemUpdates: true,
     marketingNews: false,
-  })
+  });
 
   const [contactInfo, setContactInfo] = useState({
-    email: "admin@cjexpress.com",
-    phone: "(312) 555-1234",
-  })
+    email: 'admin@cjexpress.com',
+    phone: '(312) 555-1234',
+  });
 
   const toggleEmailSetting = (setting: string) => {
-    setEmailSettings((prev) => ({
+    setEmailSettings(prev => ({
       ...prev,
       [setting]: !prev[setting as keyof typeof prev],
-    }))
-  }
+    }));
+  };
 
   const toggleSmsSetting = (setting: string) => {
-    setSmsSettings((prev) => ({
+    setSmsSettings(prev => ({
       ...prev,
       [setting]: !prev[setting as keyof typeof prev],
-    }))
-  }
+    }));
+  };
 
   const toggleAppSetting = (setting: string) => {
-    setAppSettings((prev) => ({
+    setAppSettings(prev => ({
       ...prev,
       [setting]: !prev[setting as keyof typeof prev],
-    }))
-  }
+    }));
+  };
 
   const handleContactInfoChange = (field: string, value: string) => {
-    setContactInfo((prev) => ({
+    setContactInfo(prev => ({
       ...prev,
       [field]: value,
-    }))
-  }
+    }));
+  };
 
   return (
     <div className="space-y-6">
@@ -90,14 +90,14 @@ export function NotificationSettings() {
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="email-dispatch">Dispatch Updates</Label>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   Receive notifications about changes to dispatch assignments
                 </p>
               </div>
               <Switch
                 id="email-dispatch"
                 checked={emailSettings.dispatchUpdates}
-                onCheckedChange={() => toggleEmailSetting("dispatchUpdates")}
+                onCheckedChange={() => toggleEmailSetting('dispatchUpdates')}
               />
             </div>
 
@@ -106,14 +106,14 @@ export function NotificationSettings() {
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="email-driver">Driver Assignments</Label>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   Receive notifications when drivers are assigned to loads
                 </p>
               </div>
               <Switch
                 id="email-driver"
                 checked={emailSettings.driverAssignments}
-                onCheckedChange={() => toggleEmailSetting("driverAssignments")}
+                onCheckedChange={() => toggleEmailSetting('driverAssignments')}
               />
             </div>
 
@@ -122,12 +122,14 @@ export function NotificationSettings() {
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="email-load">Load Completions</Label>
-                <p className="text-sm text-muted-foreground">Receive notifications when loads are completed</p>
+                <p className="text-muted-foreground text-sm">
+                  Receive notifications when loads are completed
+                </p>
               </div>
               <Switch
                 id="email-load"
                 checked={emailSettings.loadCompletions}
-                onCheckedChange={() => toggleEmailSetting("loadCompletions")}
+                onCheckedChange={() => toggleEmailSetting('loadCompletions')}
               />
             </div>
 
@@ -136,12 +138,14 @@ export function NotificationSettings() {
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="email-maintenance">Maintenance Alerts</Label>
-                <p className="text-sm text-muted-foreground">Receive notifications about vehicle maintenance issues</p>
+                <p className="text-muted-foreground text-sm">
+                  Receive notifications about vehicle maintenance issues
+                </p>
               </div>
               <Switch
                 id="email-maintenance"
                 checked={emailSettings.maintenanceAlerts}
-                onCheckedChange={() => toggleEmailSetting("maintenanceAlerts")}
+                onCheckedChange={() => toggleEmailSetting('maintenanceAlerts')}
               />
             </div>
 
@@ -150,12 +154,16 @@ export function NotificationSettings() {
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="email-compliance">Compliance Reminders</Label>
-                <p className="text-sm text-muted-foreground">Receive reminders about upcoming compliance deadlines</p>
+                <p className="text-muted-foreground text-sm">
+                  Receive reminders about upcoming compliance deadlines
+                </p>
               </div>
               <Switch
                 id="email-compliance"
                 checked={emailSettings.complianceReminders}
-                onCheckedChange={() => toggleEmailSetting("complianceReminders")}
+                onCheckedChange={() =>
+                  toggleEmailSetting('complianceReminders')
+                }
               />
             </div>
 
@@ -164,12 +172,14 @@ export function NotificationSettings() {
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="email-financial">Financial Reports</Label>
-                <p className="text-sm text-muted-foreground">Receive notifications about financial reports</p>
+                <p className="text-muted-foreground text-sm">
+                  Receive notifications about financial reports
+                </p>
               </div>
               <Switch
                 id="email-financial"
                 checked={emailSettings.financialReports}
-                onCheckedChange={() => toggleEmailSetting("financialReports")}
+                onCheckedChange={() => toggleEmailSetting('financialReports')}
               />
             </div>
 
@@ -178,14 +188,14 @@ export function NotificationSettings() {
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="email-system">System Updates</Label>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   Receive notifications about system updates and maintenance
                 </p>
               </div>
               <Switch
                 id="email-system"
                 checked={emailSettings.systemUpdates}
-                onCheckedChange={() => toggleEmailSetting("systemUpdates")}
+                onCheckedChange={() => toggleEmailSetting('systemUpdates')}
               />
             </div>
 
@@ -194,12 +204,14 @@ export function NotificationSettings() {
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="email-marketing">Marketing & News</Label>
-                <p className="text-sm text-muted-foreground">Receive marketing emails and industry news</p>
+                <p className="text-muted-foreground text-sm">
+                  Receive marketing emails and industry news
+                </p>
               </div>
               <Switch
                 id="email-marketing"
                 checked={emailSettings.marketingNews}
-                onCheckedChange={() => toggleEmailSetting("marketingNews")}
+                onCheckedChange={() => toggleEmailSetting('marketingNews')}
               />
             </div>
           </div>
@@ -210,9 +222,9 @@ export function NotificationSettings() {
               id="email-address"
               type="email"
               value={contactInfo.email}
-              onChange={(e) => handleContactInfoChange("email", e.target.value)}
+              onChange={e => handleContactInfoChange('email', e.target.value)}
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               This is the email address where you'll receive notifications.
             </p>
           </div>
@@ -223,14 +235,15 @@ export function NotificationSettings() {
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="sms-dispatch">Dispatch Updates</Label>
-                <p className="text-sm text-muted-foreground">
-                  Receive SMS notifications about changes to dispatch assignments
+                <p className="text-muted-foreground text-sm">
+                  Receive SMS notifications about changes to dispatch
+                  assignments
                 </p>
               </div>
               <Switch
                 id="sms-dispatch"
                 checked={smsSettings.dispatchUpdates}
-                onCheckedChange={() => toggleSmsSetting("dispatchUpdates")}
+                onCheckedChange={() => toggleSmsSetting('dispatchUpdates')}
               />
             </div>
 
@@ -239,14 +252,14 @@ export function NotificationSettings() {
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="sms-driver">Driver Assignments</Label>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   Receive SMS notifications when drivers are assigned to loads
                 </p>
               </div>
               <Switch
                 id="sms-driver"
                 checked={smsSettings.driverAssignments}
-                onCheckedChange={() => toggleSmsSetting("driverAssignments")}
+                onCheckedChange={() => toggleSmsSetting('driverAssignments')}
               />
             </div>
 
@@ -255,14 +268,14 @@ export function NotificationSettings() {
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="sms-maintenance">Maintenance Alerts</Label>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   Receive SMS notifications about vehicle maintenance issues
                 </p>
               </div>
               <Switch
                 id="sms-maintenance"
                 checked={smsSettings.maintenanceAlerts}
-                onCheckedChange={() => toggleSmsSetting("maintenanceAlerts")}
+                onCheckedChange={() => toggleSmsSetting('maintenanceAlerts')}
               />
             </div>
 
@@ -271,14 +284,14 @@ export function NotificationSettings() {
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="sms-compliance">Compliance Reminders</Label>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   Receive SMS reminders about upcoming compliance deadlines
                 </p>
               </div>
               <Switch
                 id="sms-compliance"
                 checked={smsSettings.complianceReminders}
-                onCheckedChange={() => toggleSmsSetting("complianceReminders")}
+                onCheckedChange={() => toggleSmsSetting('complianceReminders')}
               />
             </div>
           </div>
@@ -289,9 +302,9 @@ export function NotificationSettings() {
               id="phone-number"
               type="tel"
               value={contactInfo.phone}
-              onChange={(e) => handleContactInfoChange("phone", e.target.value)}
+              onChange={e => handleContactInfoChange('phone', e.target.value)}
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               This is the phone number where you'll receive SMS notifications.
             </p>
           </div>
@@ -302,14 +315,15 @@ export function NotificationSettings() {
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="app-dispatch">Dispatch Updates</Label>
-                <p className="text-sm text-muted-foreground">
-                  Receive in-app notifications about changes to dispatch assignments
+                <p className="text-muted-foreground text-sm">
+                  Receive in-app notifications about changes to dispatch
+                  assignments
                 </p>
               </div>
               <Switch
                 id="app-dispatch"
                 checked={appSettings.dispatchUpdates}
-                onCheckedChange={() => toggleAppSetting("dispatchUpdates")}
+                onCheckedChange={() => toggleAppSetting('dispatchUpdates')}
               />
             </div>
 
@@ -318,14 +332,15 @@ export function NotificationSettings() {
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="app-driver">Driver Assignments</Label>
-                <p className="text-sm text-muted-foreground">
-                  Receive in-app notifications when drivers are assigned to loads
+                <p className="text-muted-foreground text-sm">
+                  Receive in-app notifications when drivers are assigned to
+                  loads
                 </p>
               </div>
               <Switch
                 id="app-driver"
                 checked={appSettings.driverAssignments}
-                onCheckedChange={() => toggleAppSetting("driverAssignments")}
+                onCheckedChange={() => toggleAppSetting('driverAssignments')}
               />
             </div>
 
@@ -334,12 +349,14 @@ export function NotificationSettings() {
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="app-load">Load Completions</Label>
-                <p className="text-sm text-muted-foreground">Receive in-app notifications when loads are completed</p>
+                <p className="text-muted-foreground text-sm">
+                  Receive in-app notifications when loads are completed
+                </p>
               </div>
               <Switch
                 id="app-load"
                 checked={appSettings.loadCompletions}
-                onCheckedChange={() => toggleAppSetting("loadCompletions")}
+                onCheckedChange={() => toggleAppSetting('loadCompletions')}
               />
             </div>
 
@@ -348,14 +365,14 @@ export function NotificationSettings() {
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="app-maintenance">Maintenance Alerts</Label>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   Receive in-app notifications about vehicle maintenance issues
                 </p>
               </div>
               <Switch
                 id="app-maintenance"
                 checked={appSettings.maintenanceAlerts}
-                onCheckedChange={() => toggleAppSetting("maintenanceAlerts")}
+                onCheckedChange={() => toggleAppSetting('maintenanceAlerts')}
               />
             </div>
 
@@ -364,14 +381,14 @@ export function NotificationSettings() {
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="app-compliance">Compliance Reminders</Label>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   Receive in-app reminders about upcoming compliance deadlines
                 </p>
               </div>
               <Switch
                 id="app-compliance"
                 checked={appSettings.complianceReminders}
-                onCheckedChange={() => toggleAppSetting("complianceReminders")}
+                onCheckedChange={() => toggleAppSetting('complianceReminders')}
               />
             </div>
 
@@ -380,14 +397,15 @@ export function NotificationSettings() {
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="app-system">System Updates</Label>
-                <p className="text-sm text-muted-foreground">
-                  Receive in-app notifications about system updates and maintenance
+                <p className="text-muted-foreground text-sm">
+                  Receive in-app notifications about system updates and
+                  maintenance
                 </p>
               </div>
               <Switch
                 id="app-system"
                 checked={appSettings.systemUpdates}
-                onCheckedChange={() => toggleAppSetting("systemUpdates")}
+                onCheckedChange={() => toggleAppSetting('systemUpdates')}
               />
             </div>
           </div>
@@ -399,5 +417,5 @@ export function NotificationSettings() {
         <Button>Save Changes</Button>
       </div>
     </div>
-  )
+  );
 }

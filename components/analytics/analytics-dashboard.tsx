@@ -1,27 +1,41 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { Download, Filter } from "lucide-react"
+import { useState } from 'react';
+import { Download, Filter } from 'lucide-react';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
-import { PerformanceMetrics } from "./performance-metrics"
-import { FinancialMetrics } from "./financial-metrics"
-import { DriverPerformance } from "./driver-performance"
-import { VehicleUtilization } from "./vehicle-utilization"
+import { PerformanceMetrics } from './performance-metrics';
+import { FinancialMetrics } from './financial-metrics';
+import { DriverPerformance } from './driver-performance';
+import { VehicleUtilization } from './vehicle-utilization';
 
 export function AnalyticsDashboard() {
-  const [timeRange, setTimeRange] = useState("30d")
+  const [timeRange, setTimeRange] = useState('30d');
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Analytics</h2>
-          <p className="text-muted-foreground">Track key performance indicators and business metrics</p>
+          <p className="text-muted-foreground">
+            Track key performance indicators and business metrics
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <Select value={timeRange} onValueChange={setTimeRange}>
@@ -54,8 +68,9 @@ export function AnalyticsDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">$128,450</div>
-            <p className="text-xs text-muted-foreground flex items-center">
-              <span className="text-green-500 mr-1">↑ 12%</span> vs previous period
+            <p className="text-muted-foreground flex items-center text-xs">
+              <span className="mr-1 text-green-500">↑ 12%</span> vs previous
+              period
             </p>
           </CardContent>
         </Card>
@@ -66,8 +81,9 @@ export function AnalyticsDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">42,587</div>
-            <p className="text-xs text-muted-foreground flex items-center">
-              <span className="text-green-500 mr-1">↑ 8%</span> vs previous period
+            <p className="text-muted-foreground flex items-center text-xs">
+              <span className="mr-1 text-green-500">↑ 8%</span> vs previous
+              period
             </p>
           </CardContent>
         </Card>
@@ -78,20 +94,23 @@ export function AnalyticsDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">$26,842</div>
-            <p className="text-xs text-muted-foreground flex items-center">
-              <span className="text-red-500 mr-1">↑ 5%</span> vs previous period
+            <p className="text-muted-foreground flex items-center text-xs">
+              <span className="mr-1 text-red-500">↑ 5%</span> vs previous period
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">On-Time Delivery</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              On-Time Delivery
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">94.2%</div>
-            <p className="text-xs text-muted-foreground flex items-center">
-              <span className="text-green-500 mr-1">↑ 2%</span> vs previous period
+            <p className="text-muted-foreground flex items-center text-xs">
+              <span className="mr-1 text-green-500">↑ 2%</span> vs previous
+              period
             </p>
           </CardContent>
         </Card>
@@ -109,10 +128,12 @@ export function AnalyticsDashboard() {
           <Card>
             <CardHeader>
               <CardTitle>Performance Metrics</CardTitle>
-              <CardDescription>Key operational performance indicators</CardDescription>
+              <CardDescription>
+                Key operational performance indicators
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <PerformanceMetrics timeRange={ "" } performanceData={ [] }  />
+              <PerformanceMetrics timeRange={''} performanceData={[]} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -121,10 +142,16 @@ export function AnalyticsDashboard() {
           <Card>
             <CardHeader>
               <CardTitle>Financial Metrics</CardTitle>
-              <CardDescription>Revenue, costs, and profitability analysis</CardDescription>
+              <CardDescription>
+                Revenue, costs, and profitability analysis
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <FinancialMetrics timeRange={ timeRange } financialData={ [] } expenseBreakdown={ [] } />
+              <FinancialMetrics
+                timeRange={timeRange}
+                financialData={[]}
+                expenseBreakdown={[]}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -133,10 +160,15 @@ export function AnalyticsDashboard() {
           <Card>
             <CardHeader>
               <CardTitle>Driver Performance</CardTitle>
-              <CardDescription>Driver productivity and safety metrics</CardDescription>
+              <CardDescription>
+                Driver productivity and safety metrics
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <DriverPerformance timeRange={ timeRange } driverPerformanceMetrics={ [] } />
+              <DriverPerformance
+                timeRange={timeRange}
+                driverPerformanceMetrics={[]}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -145,14 +177,16 @@ export function AnalyticsDashboard() {
           <Card>
             <CardHeader>
               <CardTitle>Vehicle Utilization</CardTitle>
-              <CardDescription>Vehicle usage and maintenance metrics</CardDescription>
+              <CardDescription>
+                Vehicle usage and maintenance metrics
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <VehicleUtilization timeRange={ timeRange } vehicleData={ [] } />
+              <VehicleUtilization timeRange={timeRange} vehicleData={[]} />
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }

@@ -1,47 +1,27 @@
-import { UserContext } from "@/types/auth";
+'use server';
 
-"use server"
-
-import { auth } from "@clerk/nextjs/server"
-import { revalidatePath } from "next/cache"
-import { z } from "zod"
+import { auth } from '@clerk/nextjs/server';
+import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
 
 import type {
   Driver,
   DriverFormData,
   DriverUpdateData,
   DriverActionResult,
-  DriverBulkActionResult
-} from "@/types/drivers"
-import { db } from "@/lib/database/db"
-import { logAuditEvent } from "@/lib/actions/auditActions"
+  DriverBulkActionResult,
+} from '@/types/drivers';
+import { db } from '@/lib/database/db';
+import { logAuditEvent } from '@/lib/actions/auditActions';
 import {
   driverFormSchema,
   driverUpdateSchema,
   driverStatusUpdateSchema,
-  driverDocumentSchema,
-  hosEntrySchema,
   driverAssignmentSchema,
-  driverBulkUpdateSchema
-} from "@/schemas/drivers"
+  driverBulkUpdateSchema,
+} from '@/schemas/drivers';
 
 // Helper function to convert Prisma Driver to Driver interface
-function convertPrismaDriverToDriver(prismaDriver: any): Driver {
-  return {
-    ...prismaDriver,
-    tenantId: prismaDriver.tenantId || prismaDriver.organizationId,
-    address: prismaDriver.address ? JSON.parse(prismaDriver.address) : undefined,
-    endorsements: prismaDriver.endorsements ? JSON.parse(prismaDriver.endorsements) : undefined,
-    restrictions: prismaDriver.restrictions ? JSON.parse(prismaDriver.restrictions) : undefined,
-    emergencyContact: prismaDriver.emergencyContact ? JSON.parse(prismaDriver.emergencyContact) : undefined,
-    tags: prismaDriver.tags ? JSON.parse(prismaDriver.tags) : undefined,
-    payRate: prismaDriver.payRate ? Number(prismaDriver.payRate) : undefined,
-    createdAt: prismaDriver.createdAt.toISOString(),
-    updatedAt: prismaDriver.updatedAt.toISOString(),
-    hireDate: prismaDriver.hireDate?.toISOString() || '',
-    medicalCardExpiration: prismaDriver.medicalCardExpiration?.toISOString() || ''
-  } as Driver
-}
 
 // ================== Core CRUD Operations ==================
 
@@ -52,54 +32,58 @@ export async function createDriverAction(
   tenantId: string,
   data: DriverFormData
 ): Promise<DriverActionResult> {
-  const parsed = driverFormSchema.safeParse(data)
+  const parsed = driverFormSchema.safeParse(data);
   if (!parsed.success) {
-    return { success: false, error: parsed.error.message }
+    return { success: false, error: parsed.error.message };
   }
   try {
-    const { userId } = await auth()
+    const { userId } = await auth();
     if (!userId) {
-      return { success: false, error: "Authentication required", code: "UNAUTHORIZED" }
+      return {
+        success: false,
+        error: 'Authentication required',
+        code: 'UNAUTHORIZED',
+      };
     }
 
     // Validate permissions
 
     // Validate input data
-    const validatedData = driverFormSchema.parse(data)    // Check for duplicate CDL number within tenant
+    const validatedData = driverFormSchema.parse(data); // Check for duplicate CDL number within tenant
     const existingDriver = await db.driver.findFirst({
       where: {
         organizationId: tenantId,
         licenseNumber: validatedData.cdlNumber,
         status: {
-          not: "terminated"
-        }
-      }
-    })
+          not: 'terminated',
+        },
+      },
+    });
 
     if (existingDriver) {
-      return { 
-        success: false, 
-        error: "A driver with this CDL number already exists", 
-        code: "DUPLICATE_CDL" 
-      }
-    }    // Check for duplicate email within tenant
+      return {
+        success: false,
+        error: 'A driver with this CDL number already exists',
+        code: 'DUPLICATE_CDL',
+      };
+    } // Check for duplicate email within tenant
     const existingEmail = await db.driver.findFirst({
       where: {
         organizationId: tenantId,
         email: validatedData.email,
         status: {
-          not: "terminated"
-        }
-      }
-    })
+          not: 'terminated',
+        },
+      },
+    });
 
     if (existingEmail) {
-      return { 
-        success: false, 
-        error: "A driver with this email already exists", 
-        code: "DUPLICATE_EMAIL" 
-      }
-    }    // Create driver record
+      return {
+        success: false,
+        error: 'A driver with this email already exists',
+        code: 'DUPLICATE_EMAIL',
+      };
+    } // Create driver record
     const newDriver = await db.driver.create({
       data: {
         organizationId: tenantId,
@@ -109,44 +93,50 @@ export async function createDriverAction(
         phone: validatedData.phone,
         employeeId: validatedData.employeeId || null,
         hireDate: validatedData.hireDate,
-        
+
         licenseNumber: validatedData.cdlNumber,
         licenseState: validatedData.cdlState,
         licenseClass: validatedData.cdlClass,
         licenseExpiration: validatedData.cdlExpiration,
-        
+
         medicalCardExpiration: validatedData.medicalCardExpiration,
-        
+
         status: 'active',
-        
+
         emergencyContact1: validatedData.emergencyContact?.name || null,
         emergencyContact2: validatedData.emergencyContact?.phone || null,
         notes: validatedData.notes || null,
-        
+
         customFields: validatedData.tags ? { tags: validatedData.tags } : {},
-      }
-    })
+      },
+    });
 
     if (!newDriver) {
-      return { success: false, error: "Failed to create driver", code: "CREATE_FAILED" }
+      return {
+        success: false,
+        error: 'Failed to create driver',
+        code: 'CREATE_FAILED',
+      };
     }
 
-    await logAuditEvent('driver.created', 'driver', newDriver.id, { driverName: `${newDriver.firstName} ${newDriver.lastName}`, cdlNumber: newDriver.licenseNumber })
-    revalidatePath(`/dashboard/${tenantId}/drivers`)
-    
-    return { 
-      success: true, 
-      data: newDriver as unknown as Driver
-    }
+    await logAuditEvent('driver.created', 'driver', newDriver.id, {
+      driverName: `${newDriver.firstName} ${newDriver.lastName}`,
+      cdlNumber: newDriver.licenseNumber,
+    });
+    revalidatePath(`/dashboard/${tenantId}/drivers`);
 
+    return {
+      success: true,
+      data: newDriver as unknown as Driver,
+    };
   } catch (error) {
-    console.error("Error creating driver:", error)
-    
-    return { 
-      success: false, 
-      error: "Failed to create driver", 
-      code: "INTERNAL_ERROR" 
-    }
+    console.error('Error creating driver:', error);
+
+    return {
+      success: false,
+      error: 'Failed to create driver',
+      code: 'INTERNAL_ERROR',
+    };
   }
 }
 
@@ -157,104 +147,140 @@ export async function updateDriverAction(
   driverId: string,
   data: DriverUpdateData
 ): Promise<DriverActionResult> {
-  const parsed = driverUpdateSchema.safeParse(data)
+  const parsed = driverUpdateSchema.safeParse(data);
   if (!parsed.success) {
-    return { success: false, error: parsed.error.message }
+    return { success: false, error: parsed.error.message };
   }
   try {
-    const { userId } = await auth()
+    const { userId } = await auth();
     if (!userId) {
-      return { success: false, error: "Authentication required", code: "UNAUTHORIZED" }
+      return {
+        success: false,
+        error: 'Authentication required',
+        code: 'UNAUTHORIZED',
+      };
     }
 
     // Get existing driver to check permissions
     const existingDriver = await db.driver.findUnique({
-      where: { id: driverId }
-    })
+      where: { id: driverId },
+    });
 
     if (!existingDriver) {
-      return { success: false, error: "Driver not found", code: "NOT_FOUND" }
+      return { success: false, error: 'Driver not found', code: 'NOT_FOUND' };
     }
 
     // Validate permissions
-    
-
 
     // Validate input data
-    const validatedData = driverUpdateSchema.parse(data)
+    const validatedData = driverUpdateSchema.parse(data);
 
     // Prepare update object
     const updateData: any = {
       updatedAt: new Date().toISOString(),
-      updatedBy: userId
-    }
+      updatedBy: userId,
+    };
 
     // Update only provided fields
-    if (validatedData.phone !== undefined) updateData.phone = validatedData.phone
-    if (validatedData.address !== undefined) updateData.address = validatedData.address ? JSON.stringify(validatedData.address) : null
-    if (validatedData.payRate !== undefined) updateData.payRate = validatedData.payRate
-    if (validatedData.payType !== undefined) updateData.payType = validatedData.payType
-    if (validatedData.homeTerminal !== undefined) updateData.homeTerminal = validatedData.homeTerminal
-    if (validatedData.cdlExpiration !== undefined) updateData.cdlExpiration = validatedData.cdlExpiration
-    if (validatedData.endorsements !== undefined) updateData.endorsements = validatedData.endorsements ? JSON.stringify(validatedData.endorsements) : null
-    if (validatedData.restrictions !== undefined) updateData.restrictions = validatedData.restrictions ? JSON.stringify(validatedData.restrictions) : null
-    if (validatedData.medicalCardExpiration !== undefined) updateData.medicalCardExpiration = validatedData.medicalCardExpiration
-    if (validatedData.status !== undefined) updateData.status = validatedData.status
-    if (validatedData.availabilityStatus !== undefined) updateData.availabilityStatus = validatedData.availabilityStatus
-    if (validatedData.emergencyContact !== undefined) updateData.emergencyContact = validatedData.emergencyContact ? JSON.stringify(validatedData.emergencyContact) : null
-    if (validatedData.notes !== undefined) updateData.notes = validatedData.notes
-    if (validatedData.tags !== undefined) updateData.tags = validatedData.tags ? JSON.stringify(validatedData.tags) : null
+    if (validatedData.phone !== undefined)
+      updateData.phone = validatedData.phone;
+    if (validatedData.address !== undefined)
+      updateData.address = validatedData.address
+        ? JSON.stringify(validatedData.address)
+        : null;
+    if (validatedData.payRate !== undefined)
+      updateData.payRate = validatedData.payRate;
+    if (validatedData.payType !== undefined)
+      updateData.payType = validatedData.payType;
+    if (validatedData.homeTerminal !== undefined)
+      updateData.homeTerminal = validatedData.homeTerminal;
+    if (validatedData.cdlExpiration !== undefined)
+      updateData.cdlExpiration = validatedData.cdlExpiration;
+    if (validatedData.endorsements !== undefined)
+      updateData.endorsements = validatedData.endorsements
+        ? JSON.stringify(validatedData.endorsements)
+        : null;
+    if (validatedData.restrictions !== undefined)
+      updateData.restrictions = validatedData.restrictions
+        ? JSON.stringify(validatedData.restrictions)
+        : null;
+    if (validatedData.medicalCardExpiration !== undefined)
+      updateData.medicalCardExpiration = validatedData.medicalCardExpiration;
+    if (validatedData.status !== undefined)
+      updateData.status = validatedData.status;
+    if (validatedData.availabilityStatus !== undefined)
+      updateData.availabilityStatus = validatedData.availabilityStatus;
+    if (validatedData.emergencyContact !== undefined)
+      updateData.emergencyContact = validatedData.emergencyContact
+        ? JSON.stringify(validatedData.emergencyContact)
+        : null;
+    if (validatedData.notes !== undefined)
+      updateData.notes = validatedData.notes;
+    if (validatedData.tags !== undefined)
+      updateData.tags = validatedData.tags
+        ? JSON.stringify(validatedData.tags)
+        : null;
 
     // Update driver
     const updatedDriver = await db.driver.update({
       where: { id: driverId },
-      data: updateData
-    })
+      data: updateData,
+    });
 
     if (!updatedDriver) {
-      return { success: false, error: "Failed to update driver", code: "UPDATE_FAILED" }
+      return {
+        success: false,
+        error: 'Failed to update driver',
+        code: 'UPDATE_FAILED',
+      };
     }
 
-    await logAuditEvent('driver.updated', 'driver', driverId, { updatedFields: Object.keys(updateData).filter(key => key !== 'updatedAt' && key !== 'updatedBy') })
-    return { 
-      success: true, 
-      data: updatedDriver as unknown as Driver
-    }
-
+    await logAuditEvent('driver.updated', 'driver', driverId, {
+      updatedFields: Object.keys(updateData).filter(
+        key => key !== 'updatedAt' && key !== 'updatedBy'
+      ),
+    });
+    return {
+      success: true,
+      data: updatedDriver as unknown as Driver,
+    };
   } catch (error) {
-    console.error("Error updating driver:", error)
-    
-    return { 
-      success: false, 
-      error: "Failed to update driver", 
-      code: "INTERNAL_ERROR" 
-    }
+    console.error('Error updating driver:', error);
+
+    return {
+      success: false,
+      error: 'Failed to update driver',
+      code: 'INTERNAL_ERROR',
+    };
   }
 }
 
 /**
  * Delete (deactivate) a driver
  */
-export async function deleteDriverAction(driverId: string): Promise<DriverActionResult> {
+export async function deleteDriverAction(
+  driverId: string
+): Promise<DriverActionResult> {
   try {
-    const { userId } = await auth()
+    const { userId } = await auth();
     if (!userId) {
-      return { success: false, error: "Authentication required", code: "UNAUTHORIZED" }
+      return {
+        success: false,
+        error: 'Authentication required',
+        code: 'UNAUTHORIZED',
+      };
     }
 
     // Get existing driver to check permissions
     const existingDriver = await db.driver.findUnique({
-      where: { id: driverId }
-    })
+      where: { id: driverId },
+    });
 
     if (!existingDriver) {
-      return { success: false, error: "Driver not found", code: "NOT_FOUND" }
+      return { success: false, error: 'Driver not found', code: 'NOT_FOUND' };
     }
 
     // Validate permissions
-
-
-
 
     // Soft delete (deactivate) driver
     const deletedDriver = await db.driver.update({
@@ -263,24 +289,27 @@ export async function deleteDriverAction(driverId: string): Promise<DriverAction
         status: 'terminated',
         terminationDate: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-      }
-    })
+      },
+    });
 
     if (!deletedDriver) {
-      return { success: false, error: "Failed to delete driver", code: "DELETE_FAILED" }
+      return {
+        success: false,
+        error: 'Failed to delete driver',
+        code: 'DELETE_FAILED',
+      };
     }
 
-    await logAuditEvent('driver.deleted', 'driver', driverId)
-    
-    return { success: true }
+    await logAuditEvent('driver.deleted', 'driver', driverId);
 
+    return { success: true };
   } catch (error) {
-    console.error("Error deleting driver:", error)
-    return { 
-      success: false, 
-      error: "Failed to delete driver", 
-      code: "INTERNAL_ERROR" 
-    }
+    console.error('Error deleting driver:', error);
+    return {
+      success: false,
+      error: 'Failed to delete driver',
+      code: 'INTERNAL_ERROR',
+    };
   }
 }
 
@@ -293,62 +322,69 @@ export async function updateDriverStatusAction(
   driverId: string,
   statusUpdate: z.infer<typeof driverStatusUpdateSchema>
 ): Promise<DriverActionResult> {
-  const parsed = driverStatusUpdateSchema.safeParse(statusUpdate)
+  const parsed = driverStatusUpdateSchema.safeParse(statusUpdate);
   if (!parsed.success) {
-    return { success: false, error: parsed.error.message }
+    return { success: false, error: parsed.error.message };
   }
   try {
-    const { userId } = await auth()
+    const { userId } = await auth();
     if (!userId) {
-      return { success: false, error: "Authentication required", code: "UNAUTHORIZED" }
+      return {
+        success: false,
+        error: 'Authentication required',
+        code: 'UNAUTHORIZED',
+      };
     }
 
     // Get existing driver
     const existingDriver = await db.driver.findUnique({
-      where: { id: driverId }
-    })
+      where: { id: driverId },
+    });
 
     if (!existingDriver) {
-      return { success: false, error: "Driver not found", code: "NOT_FOUND" }
+      return { success: false, error: 'Driver not found', code: 'NOT_FOUND' };
     }
 
     // Validate permissions
 
     // Validate input
-    const validatedData = driverStatusUpdateSchema.parse(statusUpdate)
+    const validatedData = driverStatusUpdateSchema.parse(statusUpdate);
 
     // Update driver status
     const updateData: any = {
       status: validatedData.status,
       updatedAt: new Date().toISOString(),
-      updatedBy: userId
-    }
+      updatedBy: userId,
+    };
 
     if (validatedData.availabilityStatus) {
-      updateData.availabilityStatus = validatedData.availabilityStatus
+      updateData.availabilityStatus = validatedData.availabilityStatus;
     }
 
     if (validatedData.location) {
-      updateData.currentLocation = JSON.stringify(validatedData.location)
+      updateData.currentLocation = JSON.stringify(validatedData.location);
     }
 
     const updatedDriver = await db.driver.update({
       where: { id: driverId },
-      data: updateData
-    })
+      data: updateData,
+    });
 
-    await logAuditEvent('driver.statusUpdated', 'driver', driverId, { status: validatedData.status, availabilityStatus: validatedData.availabilityStatus })
-    return { 
-      success: true, 
-      data: updatedDriver as unknown as Driver
-    }
+    await logAuditEvent('driver.statusUpdated', 'driver', driverId, {
+      status: validatedData.status,
+      availabilityStatus: validatedData.availabilityStatus,
+    });
+    return {
+      success: true,
+      data: updatedDriver as unknown as Driver,
+    };
   } catch (error) {
-    console.error("Error updating driver status:", error)
-    return { 
-      success: false, 
-      error: "Failed to update driver status", 
-      code: "INTERNAL_ERROR" 
-    }
+    console.error('Error updating driver status:', error);
+    return {
+      success: false,
+      error: 'Failed to update driver status',
+      code: 'INTERNAL_ERROR',
+    };
   }
 }
 
@@ -361,88 +397,94 @@ export async function bulkUpdateDriversAction(
   bulkUpdate: z.infer<typeof driverBulkUpdateSchema>
 ): Promise<DriverBulkActionResult> {
   try {
-    const { userId } = await auth()
+    const { userId } = await auth();
     if (!userId) {
-      return { 
-        success: false, 
-        processed: 0, 
-        succeeded: 0, 
+      return {
+        success: false,
+        processed: 0,
+        succeeded: 0,
         failed: bulkUpdate.driverIds.length,
-        errors: bulkUpdate.driverIds.map(id => ({ driverId: id, error: "Authentication required" }))
-      }
+        errors: bulkUpdate.driverIds.map(id => ({
+          driverId: id,
+          error: 'Authentication required',
+        })),
+      };
     }
 
     // Validate input
-    const validatedData = driverBulkUpdateSchema.parse(bulkUpdate)
-    
-    let succeeded = 0
-    let failed = 0
-    const errors: Array<{ driverId: string; error: string }> = []
+    const validatedData = driverBulkUpdateSchema.parse(bulkUpdate);
+
+    let succeeded = 0;
+    let failed = 0;
+    const errors: Array<{ driverId: string; error: string }> = [];
 
     // Process each driver
     for (const driverId of validatedData.driverIds) {
       try {
         // Get driver to check permissions
         const driver = await db.driver.findUnique({
-          where: { id: driverId }
-        })
+          where: { id: driverId },
+        });
 
         if (!driver) {
-          errors.push({ driverId, error: "Driver not found" })
-          failed++
-          continue
+          errors.push({ driverId, error: 'Driver not found' });
+          failed++;
+          continue;
         }
 
         // Check permissions
-    
+
         // Prepare update
         const updateData: any = {
           updatedAt: new Date().toISOString(),
-          updatedBy: userId
-        }
+          updatedBy: userId,
+        };
 
-        if (validatedData.updates.status) updateData.status = validatedData.updates.status
-        if (validatedData.updates.availabilityStatus) updateData.availabilityStatus = validatedData.updates.availabilityStatus
-        if (validatedData.updates.homeTerminal) updateData.homeTerminal = validatedData.updates.homeTerminal
-        if (validatedData.updates.tags) updateData.tags = JSON.stringify(validatedData.updates.tags)
+        if (validatedData.updates.status)
+          updateData.status = validatedData.updates.status;
+        if (validatedData.updates.availabilityStatus)
+          updateData.availabilityStatus =
+            validatedData.updates.availabilityStatus;
+        if (validatedData.updates.homeTerminal)
+          updateData.homeTerminal = validatedData.updates.homeTerminal;
+        if (validatedData.updates.tags)
+          updateData.tags = JSON.stringify(validatedData.updates.tags);
 
         // Update driver
         await db.driver.update({
           where: { id: driverId },
-          data: updateData
-        })
+          data: updateData,
+        });
 
-        succeeded++
-
-      
-
+        succeeded++;
       } catch (error) {
-        console.error(`Error updating driver ${driverId}:`, error)
-        errors.push({ driverId, error: "Update failed" })
-        failed++
+        console.error(`Error updating driver ${driverId}:`, error);
+        errors.push({ driverId, error: 'Update failed' });
+        failed++;
       }
     }
 
     // Revalidate paths for all affected tenants
-  
-  
+
     return {
       success: succeeded > 0,
       processed: validatedData.driverIds.length,
       succeeded,
       failed,
-      errors
-    }
-
+      errors,
+    };
   } catch (error) {
-    console.error("Error in bulk update:", error)
+    console.error('Error in bulk update:', error);
     return {
       success: false,
       processed: bulkUpdate.driverIds.length,
       succeeded: 0,
       failed: bulkUpdate.driverIds.length,
-      errors: bulkUpdate.driverIds.map(id => ({ driverId: id, error: "Internal error" }))
-    }
+      errors: bulkUpdate.driverIds.map(id => ({
+        driverId: id,
+        error: 'Internal error',
+      })),
+    };
   }
 }
 
@@ -454,57 +496,74 @@ export async function bulkUpdateDriversAction(
 export async function assignDriverAction(
   assignmentData: z.infer<typeof driverAssignmentSchema>
 ): Promise<DriverActionResult> {
-  const parsed = driverAssignmentSchema.safeParse(assignmentData)
+  const parsed = driverAssignmentSchema.safeParse(assignmentData);
   if (!parsed.success) {
-    return { success: false, error: parsed.error.message }
+    return { success: false, error: parsed.error.message };
   }
-  const { userId } = await auth()
+  const { userId } = await auth();
   if (!userId) {
-    return { success: false, error: "Authentication required", code: "UNAUTHORIZED" }
+    return {
+      success: false,
+      error: 'Authentication required',
+      code: 'UNAUTHORIZED',
+    };
   }
   // Simulate assignment logic (replace with real logic as needed)
   // e.g., update driver assignment in DB
-  return { success: true }
+  return { success: true };
 }
 
 /**
  * Unassign driver from current assignment
  */
-export async function unassignDriverAction(driverId: string): Promise<DriverActionResult> {
+export async function unassignDriverAction(
+  driverId: string
+): Promise<DriverActionResult> {
   try {
-    const { userId } = await auth()
+    const { userId } = await auth();
     if (!userId) {
-      return { success: false, error: "Authentication required", code: "UNAUTHORIZED" }
-    }    // Get driver with current assignments
+      return {
+        success: false,
+        error: 'Authentication required',
+        code: 'UNAUTHORIZED',
+      };
+    } // Get driver with current assignments
     const driver = await db.driver.findUnique({
       where: { id: driverId },
       include: {
         loads: {
           where: {
             status: {
-              in: ['assigned', 'dispatched', 'in_transit', 'at_pickup', 'picked_up', 'en_route']
-            }
-          }
-        }
-      }
-    })
+              in: [
+                'assigned',
+                'dispatched',
+                'in_transit',
+                'at_pickup',
+                'picked_up',
+                'en_route',
+              ],
+            },
+          },
+        },
+      },
+    });
 
     if (!driver) {
-      return { success: false, error: "Driver not found", code: "NOT_FOUND" }
+      return { success: false, error: 'Driver not found', code: 'NOT_FOUND' };
     }
 
     // Check if driver has any active assignments
     if (driver.loads.length === 0) {
-      return { 
-        success: false, 
-        error: "Driver has no active assignments to unassign", 
-        code: "NO_ASSIGNMENT" 
-      }
+      return {
+        success: false,
+        error: 'Driver has no active assignments to unassign',
+        code: 'NO_ASSIGNMENT',
+      };
     }
 
     // Start database transaction for unassignment
-    await db.$transaction(async (tx) => {
-      const updates: any[] = []
+    await db.$transaction(async tx => {
+      const updates: any[] = [];
 
       // Unassign from all active loads
       for (const load of driver.loads) {
@@ -516,9 +575,9 @@ export async function unassignDriverAction(driverId: string): Promise<DriverActi
               driverId: null,
               status: load.status === 'assigned' ? 'pending' : load.status,
               updatedAt: new Date(),
-            }
+            },
           })
-        )
+        );
 
         // Create load status event
         updates.push(
@@ -529,47 +588,41 @@ export async function unassignDriverAction(driverId: string): Promise<DriverActi
               timestamp: new Date(),
               notes: `Driver unassigned: ${driver.firstName} ${driver.lastName}`,
               automaticUpdate: false,
-              source: 'dispatcher'
-            }
+              source: 'dispatcher',
+            },
           })
-        )
-      }      // Update driver's last modification time (don't change base status)
+        );
+      } // Update driver's last modification time (don't change base status)
       updates.push(
         tx.driver.update({
           where: { id: driverId },
           data: {
             updatedAt: new Date(),
-          }
+          },
         })
-      )
+      );
 
       // Execute all updates
-      await Promise.all(updates)
-    })
+      await Promise.all(updates);
+    });
 
     // Log audit event
-    await logAuditEvent(
-      'driver.unassigned', 
-      'driver', 
-      driverId, 
-      { 
-        loadIds: driver.loads.map(l => l.id),
-        unassignedBy: userId 
-      }
-    )
+    await logAuditEvent('driver.unassigned', 'driver', driverId, {
+      loadIds: driver.loads.map(l => l.id),
+      unassignedBy: userId,
+    });
 
     // Revalidate related pages
-    revalidatePath('/[orgId]/drivers', 'page')
-    revalidatePath('/[orgId]/dispatch', 'page')
-    
-    return { success: true }
+    revalidatePath('/[orgId]/drivers', 'page');
+    revalidatePath('/[orgId]/dispatch', 'page');
 
+    return { success: true };
   } catch (error) {
-    console.error("Error unassigning driver:", error)
-    return { 
-      success: false, 
-      error: "Failed to unassign driver", 
-      code: "INTERNAL_ERROR" 
-    }
+    console.error('Error unassigning driver:', error);
+    return {
+      success: false,
+      error: 'Failed to unassign driver',
+      code: 'INTERNAL_ERROR',
+    };
   }
 }

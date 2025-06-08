@@ -1,9 +1,12 @@
-"use client";
+'use client';
 
-import React, { useRef, useState } from "react";
-import { put } from "@vercel/blob/client";
+import React, { useRef, useState } from 'react';
+import { put } from '@vercel/blob/client';
 
-import { saveUploadedDocument, getSignedUploadToken } from "@/lib/actions/fileUploadActions";
+import {
+  saveUploadedDocument,
+  getSignedUploadToken,
+} from '@/lib/actions/fileUploadActions';
 
 type EntityType = 'driver' | 'vehicle' | 'trailer' | 'company';
 
@@ -14,7 +17,12 @@ interface DocumentUploadFormProps {
   documentType?: string;
 }
 
-export function DocumentUploadForm({ onUpload, entityType, entityId, documentType = 'other' }: DocumentUploadFormProps) {
+export function DocumentUploadForm({
+  onUpload,
+  entityType,
+  entityId,
+  documentType = 'other',
+}: DocumentUploadFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -25,22 +33,29 @@ export function DocumentUploadForm({ onUpload, entityType, entityId, documentTyp
     if (!file) return;
     // Validate file type/size (example: max 10MB, PDF/JPG/PNG)
     if (file.size > 10 * 1024 * 1024) {
-      setError("File too large (max 10MB)");
+      setError('File too large (max 10MB)');
       return;
     }
     if (!/\.(pdf|jpg|jpeg|png)$/i.test(file.name)) {
-      setError("Invalid file type. Only PDF, JPG, PNG allowed.");
+      setError('Invalid file type. Only PDF, JPG, PNG allowed.');
       return;
     }
     setUploading(true);
     try {
       const tokenRes = await getSignedUploadToken(file.name);
       if (!tokenRes.success || !('token' in tokenRes) || !tokenRes.token) {
-        const errMsg = 'error' in tokenRes && tokenRes.error ? tokenRes.error : 'Failed to get upload token';
+        const errMsg =
+          'error' in tokenRes && tokenRes.error
+            ? tokenRes.error
+            : 'Failed to get upload token';
         setError(errMsg);
         return;
       }
-      const { token, pathname } = tokenRes as { token: string; pathname: string; success: true };
+      const { token, pathname } = tokenRes as {
+        token: string;
+        pathname: string;
+        success: true;
+      };
 
       const { url } = await put(pathname, file, { access: 'public', token });
 
@@ -56,12 +71,12 @@ export function DocumentUploadForm({ onUpload, entityType, entityId, documentTyp
       if (result.success && 'data' in result) {
         onUpload(file, result.data);
       } else if ('error' in result) {
-        setError(result.error || "Upload failed");
+        setError(result.error || 'Upload failed');
       } else {
-        setError("Upload failed");
+        setError('Upload failed');
       }
     } catch (err) {
-      setError("Upload error");
+      setError('Upload error');
     } finally {
       setUploading(false);
     }

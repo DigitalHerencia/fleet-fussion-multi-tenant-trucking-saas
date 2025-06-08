@@ -1,15 +1,14 @@
-import PricingSection from "@/components/pricing/pricing-section"
-import { SharedFooter } from "@/components/shared/SharedFooter"
+import PricingSection from '@/components/pricing/pricing-section';
+import { SharedFooter } from '@/components/shared/SharedFooter';
 
 export default function PricingPage() {
   return (
-    <div >
+    <div>
       <main>
         <PricingSection showTitle={true} />
-        <div className="text-center">
-        </div>
+        <div className="text-center"></div>
       </main>
       <SharedFooter />
     </div>
-  )
+  );
 }

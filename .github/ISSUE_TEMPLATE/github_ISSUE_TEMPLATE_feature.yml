@@ -11,7 +11,7 @@ body:
       placeholder: "Add real-time GPS tracking for vehicles"
     validations:
       required: true
-      
+
   - type: textarea
     id: description
     attributes:
@@ -24,7 +24,7 @@ body:
         - Track delivery progress
     validations:
       required: true
-      
+
   - type: textarea
     id: acceptance
     attributes:
@@ -37,7 +37,7 @@ body:
         - [ ] Geofencing alerts are triggered when vehicles enter/exit zones
     validations:
       required: true
-      
+
   - type: textarea
     id: dependencies
     attributes:
@@ -49,7 +49,7 @@ body:
         - May need mobile app updates
     validations:
       required: false
-      
+
   - type: dropdown
     id: priority
     attributes:
@@ -61,7 +61,7 @@ body:
         - "Priority-High"
     validations:
       required: true
-      
+
   - type: dropdown
     id: milestone
     attributes:
@@ -74,7 +74,7 @@ body:
         - "Post-Launch Enhancements"
     validations:
       required: false
-      
+
   - type: dropdown
     id: user_type
     attributes:

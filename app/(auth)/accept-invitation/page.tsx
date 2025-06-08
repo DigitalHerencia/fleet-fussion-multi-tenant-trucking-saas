@@ -8,7 +8,13 @@ import { Loader2, MapPinned } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
 import { SystemRoles, type SystemRole } from '@/types/abac';
 
@@ -25,7 +31,7 @@ export default function AcceptInvitationPage() {
   const searchParams = useSearchParams();
   const { isLoaded: userLoaded, user } = useUser();
   const { isLoaded: signUpLoaded, signUp, setActive } = useSignUp();
-  
+
   const [loading, setLoading] = useState(false);
   const [invitationToken, setInvitationToken] = useState<string | null>(null);
   const [userInfo, setUserInfo] = useState({
@@ -56,13 +62,15 @@ export default function AcceptInvitationPage() {
       // This would typically happen if they clicked the invite link while already logged in
       toast({
         title: 'Already Signed In',
-        description: 'You are already signed in. Redirecting to your dashboard.',
+        description:
+          'You are already signed in. Redirecting to your dashboard.',
       });
-      
+
       // Get user's role and redirect to appropriate dashboard
-      const userRole = user.publicMetadata?.role as SystemRole || SystemRoles.VIEWER;
+      const userRole =
+        (user.publicMetadata?.role as SystemRole) || SystemRoles.VIEWER;
       const orgId = user.publicMetadata?.organizationId as string;
-      
+
       if (orgId) {
         const dashboardPath = getRoleDashboardPath(userRole, orgId, user.id);
         router.push(dashboardPath);
@@ -72,7 +80,11 @@ export default function AcceptInvitationPage() {
     }
   }, [userLoaded, user, router, invitationToken]);
 
-  const getRoleDashboardPath = (role: SystemRole, orgId: string, userId: string): string => {
+  const getRoleDashboardPath = (
+    role: SystemRole,
+    orgId: string,
+    userId: string
+  ): string => {
     switch (role) {
       case SystemRoles.ADMIN:
         return `/${orgId}/dashboard/${userId}`;
@@ -91,7 +103,7 @@ export default function AcceptInvitationPage() {
 
   const handleSignUpWithInvitation = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!signUpLoaded || !invitationToken) {
       toast({
         title: 'Not Ready',
@@ -125,8 +137,8 @@ export default function AcceptInvitationPage() {
       // Clerk automatically verifies email for invited users
       if (result.status === 'complete') {
         // Get invitation metadata from the result
-        const invitationMetadata = result.createdSessionId 
-          ? (result as any).publicMetadata as InvitationMetadata
+        const invitationMetadata = result.createdSessionId
+          ? ((result as any).publicMetadata as InvitationMetadata)
           : null;
 
         // Set the session as active
@@ -143,7 +155,11 @@ export default function AcceptInvitationPage() {
           });
 
           // Redirect to role-specific dashboard
-          const dashboardPath = getRoleDashboardPath(role, orgId, result.createdUserId!);
+          const dashboardPath = getRoleDashboardPath(
+            role,
+            orgId,
+            result.createdUserId!
+          );
           router.push(dashboardPath);
         } else {
           // Fallback to regular onboarding
@@ -155,12 +171,13 @@ export default function AcceptInvitationPage() {
           description: 'Please check your email for verification instructions.',
         });
       }
-
     } catch (error: any) {
       console.error('Error accepting invitation:', error);
       toast({
         title: 'Error',
-        description: error.errors?.[0]?.message || 'Failed to accept invitation. Please try again.',
+        description:
+          error.errors?.[0]?.message ||
+          'Failed to accept invitation. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -170,7 +187,7 @@ export default function AcceptInvitationPage() {
 
   if (!signUpLoaded) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
@@ -181,20 +198,21 @@ export default function AcceptInvitationPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
       <Card className="w-full max-w-md">
-        <CardHeader className="text-center space-y-2">
-          <div className="flex items-center justify-center mb-4">
-            <div className="bg-blue-600 rounded-lg p-3">
+        <CardHeader className="space-y-2 text-center">
+          <div className="mb-4 flex items-center justify-center">
+            <div className="rounded-lg bg-blue-600 p-3">
               <MapPinned className="h-8 w-8 text-white" />
             </div>
           </div>
           <CardTitle className="text-2xl font-bold">Join FleetFusion</CardTitle>
           <CardDescription>
-            You've been invited to join an organization. Complete your profile to get started.
+            You've been invited to join an organization. Complete your profile
+            to get started.
           </CardDescription>
         </CardHeader>
-        
+
         <CardContent>
           <form onSubmit={handleSignUpWithInvitation} className="space-y-4">
             <div className="space-y-2">
@@ -203,45 +221,47 @@ export default function AcceptInvitationPage() {
                 id="firstName"
                 type="text"
                 value={userInfo.firstName}
-                onChange={(e) => setUserInfo(prev => ({ ...prev, firstName: e.target.value }))}
+                onChange={e =>
+                  setUserInfo(prev => ({ ...prev, firstName: e.target.value }))
+                }
                 required
                 disabled={loading}
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="lastName">Last Name</Label>
               <Input
                 id="lastName"
                 type="text"
                 value={userInfo.lastName}
-                onChange={(e) => setUserInfo(prev => ({ ...prev, lastName: e.target.value }))}
+                onChange={e =>
+                  setUserInfo(prev => ({ ...prev, lastName: e.target.value }))
+                }
                 required
                 disabled={loading}
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
                 type="password"
                 value={userInfo.password}
-                onChange={(e) => setUserInfo(prev => ({ ...prev, password: e.target.value }))}
+                onChange={e =>
+                  setUserInfo(prev => ({ ...prev, password: e.target.value }))
+                }
                 required
                 disabled={loading}
                 minLength={8}
               />
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 Password must be at least 8 characters long
               </p>
             </div>
-            
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={loading}
-            >
+
+            <Button type="submit" className="w-full" disabled={loading}>
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -252,14 +272,11 @@ export default function AcceptInvitationPage() {
               )}
             </Button>
           </form>
-          
+
           <div className="mt-6 text-center">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Already have an account?{' '}
-              <a 
-                href="/sign-in" 
-                className="text-blue-600 hover:underline"
-              >
+              <a href="/sign-in" className="text-blue-600 hover:underline">
                 Sign in here
               </a>
             </p>

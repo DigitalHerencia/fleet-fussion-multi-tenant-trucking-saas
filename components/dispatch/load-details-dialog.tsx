@@ -1,136 +1,195 @@
-"use client"
+'use client';
 
-import { useState, type ReactNode } from "react"
-import { MapPin, Calendar, DollarSign, Package, FileText, Truck, User, Weight, Route } from "lucide-react"
-import Link from "next/link"
-import type { LoadStatus, LoadPriority, LoadStatusEvent } from "@prisma/client"
+import { useState, type ReactNode } from 'react';
+import {
+  MapPin,
+  Calendar,
+  DollarSign,
+  Package,
+  FileText,
+  Truck,
+  User,
+  Weight,
+  Route,
+} from 'lucide-react';
+import Link from 'next/link';
+import type { LoadStatus, LoadPriority, LoadStatusEvent } from '@prisma/client';
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Label } from "@/components/ui/label"
-import { formatDate, formatCurrency } from "@/lib/utils/utils"
-import { DocumentUpload, DocumentListEmpty } from "@/components/shared/DocumentUpload"
-import type { Customer, LoadAssignedDriver, LoadAssignedVehicle, LoadAssignedTrailer, EquipmentRequirement, CargoDetails, Rate, LoadDocument, TrackingUpdate, BrokerInfo, FactoringInfo, LoadAlert } from "@/types/dispatch"
-
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { formatDate, formatCurrency } from '@/lib/utils/utils';
+import {
+  DocumentUpload,
+  DocumentListEmpty,
+} from '@/components/shared/DocumentUpload';
+import type {
+  Customer,
+  LoadAssignedDriver,
+  LoadAssignedVehicle,
+  LoadAssignedTrailer,
+  EquipmentRequirement,
+  CargoDetails,
+  Rate,
+  LoadDocument,
+  TrackingUpdate,
+  BrokerInfo,
+  FactoringInfo,
+  LoadAlert,
+} from '@/types/dispatch';
 
 interface Driver {
-  id: string
-  firstName: string
-  lastName: string
-  status: string
+  id: string;
+  firstName: string;
+  lastName: string;
+  status: string;
 }
 
 interface Vehicle {
-  make: ReactNode
-  model: ReactNode
-  id: string
-  unitNumber: string
-  status: string
-  type: string
+  make: ReactNode;
+  model: ReactNode;
+  id: string;
+  unitNumber: string;
+  status: string;
+  type: string;
 }
 
 interface Load {
-  id: string
-    organizationId: string
-    referenceNumber: string
-    status: LoadStatus
-    priority: LoadPriority
-    customer: Customer
-    origin: string
-    destination: string
-    pickupDate: Date
-    deliveryDate: Date
-    estimatedPickupTime?: string
-    estimatedDeliveryTime?: string
-    actualPickupTime?: Date
-    actualDeliveryTime?: Date
-    driver?: LoadAssignedDriver
-    vehicle?: LoadAssignedVehicle
-    trailer?: LoadAssignedTrailer
-    equipment?: EquipmentRequirement
-    cargo: CargoDetails
-    rate: Rate
-    miles?: number
-    estimatedMiles?: number
-    fuelCost?: number
-    notes?: string
-    internalNotes?: string
-    specialInstructions?: string
-    documents?: LoadDocument[]
-    statusHistory?: LoadStatusEvent[]
-    trackingUpdates?: TrackingUpdate[]
-    brokerInfo?: BrokerInfo
-    factoring?: FactoringInfo
-    alerts?: LoadAlert[]
-    tags?: string[]
-    createdAt: Date
-    updatedAt: Date
-    createdBy?: string
-    lastModifiedBy?: string
-    statusEvents?: LoadStatusEvent[]
+  id: string;
+  organizationId: string;
+  referenceNumber: string;
+  status: LoadStatus;
+  priority: LoadPriority;
+  customer: Customer;
+  origin: string;
+  destination: string;
+  pickupDate: Date;
+  deliveryDate: Date;
+  estimatedPickupTime?: string;
+  estimatedDeliveryTime?: string;
+  actualPickupTime?: Date;
+  actualDeliveryTime?: Date;
+  driver?: LoadAssignedDriver;
+  vehicle?: LoadAssignedVehicle;
+  trailer?: LoadAssignedTrailer;
+  equipment?: EquipmentRequirement;
+  cargo: CargoDetails;
+  rate: Rate;
+  miles?: number;
+  estimatedMiles?: number;
+  fuelCost?: number;
+  notes?: string;
+  internalNotes?: string;
+  specialInstructions?: string;
+  documents?: LoadDocument[];
+  statusHistory?: LoadStatusEvent[];
+  trackingUpdates?: TrackingUpdate[];
+  brokerInfo?: BrokerInfo;
+  factoring?: FactoringInfo;
+  alerts?: LoadAlert[];
+  tags?: string[];
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy?: string;
+  lastModifiedBy?: string;
+  statusEvents?: LoadStatusEvent[];
 }
 
 interface LoadDetailsDialogProps {
-  load: Load
-  drivers: Driver[]
-  vehicles: Vehicle[]
-  isOpen: boolean
-  onClose: () => void
+  load: Load;
+  drivers: Driver[];
+  vehicles: Vehicle[];
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-export function LoadDetailsDialog({ load, drivers, vehicles, isOpen, onClose }: LoadDetailsDialogProps) {
-  const [selectedDriverId, setSelectedDriverId] = useState(load.driver?.id || "")
-  const [selectedVehicleId, setSelectedVehicleId] = useState(load.vehicle?.id || "")
-  const [selectedTrailerId, setSelectedTrailerId] = useState(load.trailer?.id || "")
-  const [isAssigning, setIsAssigning] = useState(false)
-  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
+export function LoadDetailsDialog({
+  load,
+  drivers,
+  vehicles,
+  isOpen,
+  onClose,
+}: LoadDetailsDialogProps) {
+  const [selectedDriverId, setSelectedDriverId] = useState(
+    load.driver?.id || ''
+  );
+  const [selectedVehicleId, setSelectedVehicleId] = useState(
+    load.vehicle?.id || ''
+  );
+  const [selectedTrailerId, setSelectedTrailerId] = useState(
+    load.trailer?.id || ''
+  );
+  const [isAssigning, setIsAssigning] = useState(false);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "pending":
-        return "bg-yellow-100 text-yellow-800"
-      case "assigned":
-        return "bg-blue-100 text-blue-800"
-      case "in_transit":
-        return "bg-indigo-100 text-indigo-800"
-      case "completed":
-        return "bg-green-100 text-green-800"
-      case "cancelled":
-        return "bg-red-100 text-red-800"
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'assigned':
+        return 'bg-blue-100 text-blue-800';
+      case 'in_transit':
+        return 'bg-indigo-100 text-indigo-800';
+      case 'completed':
+        return 'bg-green-100 text-green-800';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800';
       default:
-        return "bg-gray-100 text-gray-800"
+        return 'bg-gray-100 text-gray-800';
     }
-  }
+  };
 
-  const tractors = vehicles.filter((vehicle) => vehicle.type === "tractor" && vehicle.status === "active")
-  const trailers = vehicles.filter((vehicle) => vehicle.type === "trailer" && vehicle.status === "active")
-  const activeDrivers = drivers.filter((driver) => driver.status === "active")
+  const tractors = vehicles.filter(
+    vehicle => vehicle.type === 'tractor' && vehicle.status === 'active'
+  );
+  const trailers = vehicles.filter(
+    vehicle => vehicle.type === 'trailer' && vehicle.status === 'active'
+  );
+  const activeDrivers = drivers.filter(driver => driver.status === 'active');
 
   const handleAssign = async () => {
-    setIsAssigning(true)
+    setIsAssigning(true);
     // Simulate API call
     setTimeout(() => {
-      setIsAssigning(false)
-      onClose()
-    }, 1000)
-  }
+      setIsAssigning(false);
+      onClose();
+    }, 1000);
+  };
 
   const handleStatusUpdate = async (newStatus: string) => {
-    setIsUpdatingStatus(true)
+    setIsUpdatingStatus(true);
     // Simulate API call
     setTimeout(() => {
-      setIsUpdatingStatus(false)
-      onClose()
-    }, 1000)
-  }
+      setIsUpdatingStatus(false);
+      onClose();
+    }, 1000);
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-zinc-900 border border-zinc-700 shadow-2xl text-zinc-100">
+      <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto border border-zinc-700 bg-zinc-900 text-zinc-100 shadow-2xl">
         <style>{`
           .select-menu-bg-fix [role='listbox'],
           .select-menu-bg-fix [data-radix-popper-content-wrapper],
@@ -142,25 +201,31 @@ export function LoadDetailsDialog({ load, drivers, vehicles, isOpen, onClose }: 
         `}</style>
         <div className="select-menu-bg-fix">
           <DialogHeader>
-            <div className="flex justify-between items-center">
-              <DialogTitle className="text-xl">Load {load.referenceNumber}</DialogTitle>
-              <Badge className={getStatusColor(load.status)}>{load.status.replace("_", " ")}</Badge>
+            <div className="flex items-center justify-between">
+              <DialogTitle className="text-xl">
+                Load {load.referenceNumber}
+              </DialogTitle>
+              <Badge className={getStatusColor(load.status)}>
+                {load.status.replace('_', ' ')}
+              </Badge>
             </div>
           </DialogHeader>
 
           <Tabs defaultValue="details" className="w-full">
-            <TabsList className="grid grid-cols-4 w-full">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="details">Details</TabsTrigger>
               <TabsTrigger value="assignment">Assignment</TabsTrigger>
               <TabsTrigger value="documents">Documents</TabsTrigger>
               <TabsTrigger value="history">History</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="details" className="space-y-4 mt-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <TabsContent value="details" className="mt-4 space-y-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <Card>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Customer Information</CardTitle>
+                    <CardTitle className="text-sm">
+                      Customer Information
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
@@ -171,12 +236,16 @@ export function LoadDetailsDialog({ load, drivers, vehicles, isOpen, onClose }: 
                       <div className="grid grid-cols-2 gap-2">
                         <div>
                           <Label className="text-xs">Reference Number</Label>
-                          <div className="font-medium">{load.referenceNumber}</div>
+                          <div className="font-medium">
+                            {load.referenceNumber}
+                          </div>
                         </div>
                         <div>
                           <Label className="text-xs">Status</Label>
                           <div>
-                            <Badge className={getStatusColor(load.status)}>{load.status.replace("_", " ")}</Badge>
+                            <Badge className={getStatusColor(load.status)}>
+                              {load.status.replace('_', ' ')}
+                            </Badge>
                           </div>
                         </div>
                       </div>
@@ -192,35 +261,45 @@ export function LoadDetailsDialog({ load, drivers, vehicles, isOpen, onClose }: 
                     <div className="space-y-2">
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <Label className="text-xs flex items-center gap-1">
+                          <Label className="flex items-center gap-1 text-xs">
                             <Package className="h-3 w-3" /> Commodity
                           </Label>
                           <div className="font-medium">
-                            {load.cargo?.commodity || load.cargo?.description || "N/A"}
+                            {load.cargo?.commodity ||
+                              load.cargo?.description ||
+                              'N/A'}
                           </div>
                         </div>
                         <div>
-                          <Label className="text-xs flex items-center gap-1">
+                          <Label className="flex items-center gap-1 text-xs">
                             <Weight className="h-3 w-3" /> Weight
                           </Label>
-                          <div className="font-medium">{load.cargo?.weight ? `${load.cargo.weight.toLocaleString()} lbs` : "N/A"}</div>
+                          <div className="font-medium">
+                            {load.cargo?.weight
+                              ? `${load.cargo.weight.toLocaleString()} lbs`
+                              : 'N/A'}
+                          </div>
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <Label className="text-xs flex items-center gap-1">
+                          <Label className="flex items-center gap-1 text-xs">
                             <DollarSign className="h-3 w-3" /> Rate
                           </Label>
                           <div className="font-medium">
                             {/* FIX: Use the correct property from Rate, e.g., load.rate.rate */}
-                            {load.rate && typeof load.rate === "number" ? formatCurrency(load.rate) : "N/A"}
+                            {load.rate && typeof load.rate === 'number'
+                              ? formatCurrency(load.rate)
+                              : 'N/A'}
                           </div>
                         </div>
                         <div>
-                          <Label className="text-xs flex items-center gap-1">
+                          <Label className="flex items-center gap-1 text-xs">
                             <Route className="h-3 w-3" /> Miles
                           </Label>
-                          <div className="font-medium">{load.miles ? load.miles.toLocaleString() : "N/A"}</div>
+                          <div className="font-medium">
+                            {load.miles ? load.miles.toLocaleString() : 'N/A'}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -234,18 +313,18 @@ export function LoadDetailsDialog({ load, drivers, vehicles, isOpen, onClose }: 
                   <CardContent>
                     <div className="space-y-2">
                       <div className="flex items-start gap-2">
-                        <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
+                        <MapPin className="text-muted-foreground mt-0.5 h-4 w-4" />
                         <div>
-                          <p className="font-medium">
-                             {load.origin}
-                          </p>
+                          <p className="font-medium">{load.origin}</p>
                         </div>
                       </div>
                       <div className="flex items-start gap-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground mt-0.5" />
+                        <Calendar className="text-muted-foreground mt-0.5 h-4 w-4" />
                         <div>
                           <p className="text-sm">Pickup Date</p>
-                          <p className="font-medium">{formatDate(load.pickupDate)}</p>
+                          <p className="font-medium">
+                            {formatDate(load.pickupDate)}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -259,18 +338,18 @@ export function LoadDetailsDialog({ load, drivers, vehicles, isOpen, onClose }: 
                   <CardContent>
                     <div className="space-y-2">
                       <div className="flex items-start gap-2">
-                        <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
+                        <MapPin className="text-muted-foreground mt-0.5 h-4 w-4" />
                         <div>
-                          <p className="font-medium">
-                            {load.destination}
-                          </p>
+                          <p className="font-medium">{load.destination}</p>
                         </div>
                       </div>
                       <div className="flex items-start gap-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground mt-0.5" />
+                        <Calendar className="text-muted-foreground mt-0.5 h-4 w-4" />
                         <div>
                           <p className="text-sm">Delivery Date</p>
-                          <p className="font-medium">{formatDate(load.deliveryDate)}</p>
+                          <p className="font-medium">
+                            {formatDate(load.deliveryDate)}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -282,26 +361,30 @@ export function LoadDetailsDialog({ load, drivers, vehicles, isOpen, onClose }: 
                     <CardTitle className="text-sm">Assignment</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                       <div>
-                        <Label className="text-xs flex items-center gap-1">
+                        <Label className="flex items-center gap-1 text-xs">
                           <User className="h-3 w-3" /> Driver
                         </Label>
                         <div className="font-medium">
-                          {load.driver ? `${load.driver.name}` : "Not Assigned"}
+                          {load.driver ? `${load.driver.name}` : 'Not Assigned'}
                         </div>
                       </div>
                       <div>
-                        <Label className="text-xs flex items-center gap-1">
+                        <Label className="flex items-center gap-1 text-xs">
                           <Truck className="h-3 w-3" /> Tractor
                         </Label>
-                        <div className="font-medium">{load.vehicle ? load.vehicle.unit: "Not Assigned"}</div>
+                        <div className="font-medium">
+                          {load.vehicle ? load.vehicle.unit : 'Not Assigned'}
+                        </div>
                       </div>
                       <div>
-                        <Label className="text-xs flex items-center gap-1">
+                        <Label className="flex items-center gap-1 text-xs">
                           <Truck className="h-3 w-3" /> Trailer
                         </Label>
-                        <div className="font-medium">{load.trailer ? load.trailer.unit: "Not Assigned"}</div>
+                        <div className="font-medium">
+                          {load.trailer ? load.trailer.unit : 'Not Assigned'}
+                        </div>
                       </div>
                     </div>
                   </CardContent>
@@ -309,22 +392,29 @@ export function LoadDetailsDialog({ load, drivers, vehicles, isOpen, onClose }: 
               </div>
             </TabsContent>
 
-            <TabsContent value="assignment" className="space-y-4 mt-4">
+            <TabsContent value="assignment" className="mt-4 space-y-4">
               <Card>
                 <CardHeader>
                   <CardTitle>Assign Resources</CardTitle>
-                  <CardDescription>Select a driver and equipment for this load</CardDescription>
+                  <CardDescription>
+                    Select a driver and equipment for this load
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="driver">Driver</Label>
-                    <Select value={selectedDriverId} onValueChange={setSelectedDriverId}>
+                    <Select
+                      value={selectedDriverId}
+                      onValueChange={setSelectedDriverId}
+                    >
                       <SelectTrigger id="driver">
                         <SelectValue placeholder="Select a driver" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="not_assigned">Not Assigned</SelectItem>
-                        {activeDrivers.map((driver) => (
+                        <SelectItem value="not_assigned">
+                          Not Assigned
+                        </SelectItem>
+                        {activeDrivers.map(driver => (
                           <SelectItem key={driver.id} value={driver.id}>
                             {driver.firstName} {driver.lastName}
                           </SelectItem>
@@ -335,15 +425,21 @@ export function LoadDetailsDialog({ load, drivers, vehicles, isOpen, onClose }: 
 
                   <div className="space-y-2">
                     <Label htmlFor="tractor">Tractor</Label>
-                    <Select value={selectedVehicleId} onValueChange={setSelectedVehicleId}>
+                    <Select
+                      value={selectedVehicleId}
+                      onValueChange={setSelectedVehicleId}
+                    >
                       <SelectTrigger id="tractor">
                         <SelectValue placeholder="Select a tractor" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="not_assigned">Not Assigned</SelectItem>
-                        {tractors.map((tractor) => (
+                        <SelectItem value="not_assigned">
+                          Not Assigned
+                        </SelectItem>
+                        {tractors.map(tractor => (
                           <SelectItem key={tractor.id} value={tractor.id}>
-                            {tractor.unitNumber} - {tractor.make} {tractor.model}
+                            {tractor.unitNumber} - {tractor.make}{' '}
+                            {tractor.model}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -352,15 +448,21 @@ export function LoadDetailsDialog({ load, drivers, vehicles, isOpen, onClose }: 
 
                   <div className="space-y-2">
                     <Label htmlFor="trailer">Trailer</Label>
-                    <Select value={selectedTrailerId} onValueChange={setSelectedTrailerId}>
+                    <Select
+                      value={selectedTrailerId}
+                      onValueChange={setSelectedTrailerId}
+                    >
                       <SelectTrigger id="trailer">
                         <SelectValue placeholder="Select a trailer" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="not_assigned">Not Assigned</SelectItem>
-                        {trailers.map((trailer) => (
+                        <SelectItem value="not_assigned">
+                          Not Assigned
+                        </SelectItem>
+                        {trailers.map(trailer => (
                           <SelectItem key={trailer.id} value={trailer.id}>
-                            {trailer.unitNumber} - {trailer.make} {trailer.model}
+                            {trailer.unitNumber} - {trailer.make}{' '}
+                            {trailer.model}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -370,38 +472,55 @@ export function LoadDetailsDialog({ load, drivers, vehicles, isOpen, onClose }: 
               </Card>
             </TabsContent>
 
-            <TabsContent value="documents" className="space-y-4 mt-4">
+            <TabsContent value="documents" className="mt-4 space-y-4">
               <Card>
                 <CardHeader>
                   <CardTitle>Load Documents</CardTitle>
-                  <CardDescription>Manage documents related to this load</CardDescription>
+                  <CardDescription>
+                    Manage documents related to this load
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <DocumentUpload label="Upload Document" description="Add BOL, POD, or other documents" />
+                  <DocumentUpload
+                    label="Upload Document"
+                    description="Add BOL, POD, or other documents"
+                  />
                   <DocumentListEmpty />
                 </CardContent>
               </Card>
             </TabsContent>
 
-            <TabsContent value="history" className="space-y-4 mt-4">
+            <TabsContent value="history" className="mt-4 space-y-4">
               <Card>
                 <CardHeader>
                   <CardTitle>Load History</CardTitle>
-                  <CardDescription>Track changes and updates to this load</CardDescription>
+                  <CardDescription>
+                    Track changes and updates to this load
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="border-l-2 border-muted pl-4 py-2">
+                    <div className="border-muted border-l-2 py-2 pl-4">
                       <p className="text-sm font-medium">Load created</p>
-                      <p className="text-xs text-muted-foreground">2025-05-01 09:30 AM</p>
+                      <p className="text-muted-foreground text-xs">
+                        2025-05-01 09:30 AM
+                      </p>
                     </div>
-                    <div className="border-l-2 border-muted pl-4 py-2">
-                      <p className="text-sm font-medium">Status changed to assigned</p>
-                      <p className="text-xs text-muted-foreground">2025-05-01 10:15 AM</p>
+                    <div className="border-muted border-l-2 py-2 pl-4">
+                      <p className="text-sm font-medium">
+                        Status changed to assigned
+                      </p>
+                      <p className="text-muted-foreground text-xs">
+                        2025-05-01 10:15 AM
+                      </p>
                     </div>
-                    <div className="border-l-2 border-muted pl-4 py-2">
-                      <p className="text-sm font-medium">Driver assigned: John Smith</p>
-                      <p className="text-xs text-muted-foreground">2025-05-01 10:15 AM</p>
+                    <div className="border-muted border-l-2 py-2 pl-4">
+                      <p className="text-sm font-medium">
+                        Driver assigned: John Smith
+                      </p>
+                      <p className="text-muted-foreground text-xs">
+                        2025-05-01 10:15 AM
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -409,7 +528,7 @@ export function LoadDetailsDialog({ load, drivers, vehicles, isOpen, onClose }: 
             </TabsContent>
           </Tabs>
 
-          <DialogFooter className="flex justify-between items-center">
+          <DialogFooter className="flex items-center justify-between">
             <div className="flex gap-2">
               <Button variant="outline" asChild>
                 <Link href={`/dispatch/${load.id}/edit`}>Edit Load</Link>
@@ -419,19 +538,25 @@ export function LoadDetailsDialog({ load, drivers, vehicles, isOpen, onClose }: 
               </Button>
             </div>
             <div className="flex gap-2">
-              {load.status === "pending" && (
+              {load.status === 'pending' && (
                 <Button onClick={handleAssign} disabled={isAssigning}>
-                  {isAssigning ? "Assigning..." : "Assign Load"}
+                  {isAssigning ? 'Assigning...' : 'Assign Load'}
                 </Button>
               )}
-              {load.status === "assigned" && (
-                <Button onClick={() => handleStatusUpdate("in_transit")} disabled={isUpdatingStatus}>
-                  {isUpdatingStatus ? "Updating..." : "Mark In Transit"}
+              {load.status === 'assigned' && (
+                <Button
+                  onClick={() => handleStatusUpdate('in_transit')}
+                  disabled={isUpdatingStatus}
+                >
+                  {isUpdatingStatus ? 'Updating...' : 'Mark In Transit'}
                 </Button>
               )}
-              {load.status === "in_transit" && (
-                <Button onClick={() => handleStatusUpdate("completed")} disabled={isUpdatingStatus}>
-                  {isUpdatingStatus ? "Updating..." : "Mark Completed"}
+              {load.status === 'in_transit' && (
+                <Button
+                  onClick={() => handleStatusUpdate('completed')}
+                  disabled={isUpdatingStatus}
+                >
+                  {isUpdatingStatus ? 'Updating...' : 'Mark Completed'}
                 </Button>
               )}
             </div>
@@ -439,5 +564,5 @@ export function LoadDetailsDialog({ load, drivers, vehicles, isOpen, onClose }: 
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

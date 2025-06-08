@@ -1,8 +1,8 @@
-import React from "react";
-import { z } from "zod";
+import React from 'react';
+import { z } from 'zod';
 
-import { CompanyProfileSchema } from "@/schemas/settings";
-import { CompanyProfile } from "@/types/settings";
+import { CompanyProfileSchema } from '@/schemas/settings';
+import { CompanyProfile } from '@/types/settings';
 
 interface Props {
   profile: CompanyProfile;

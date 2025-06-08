@@ -1,80 +1,115 @@
-"use client"
+'use client';
 
-import { Line, LineChart, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer } from "recharts"
+import {
+  Line,
+  LineChart,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Legend,
+  ResponsiveContainer,
+} from 'recharts';
 
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { RevenueMetrics } from "@/types/analytics"
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@/components/ui/chart';
+import { RevenueMetrics } from '@/types/analytics';
 
 interface PerformanceMetricsProps {
-  timeRange: string
-  performanceData: RevenueMetrics[] // Updated prop type to RevenueMetrics
+  timeRange: string;
+  performanceData: RevenueMetrics[]; // Updated prop type to RevenueMetrics
 }
 
-export function PerformanceMetrics({ performanceData }: PerformanceMetricsProps) {
+export function PerformanceMetrics({
+  performanceData,
+}: PerformanceMetricsProps) {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="bg-black border border-gray-200 rounded-md p-4">
-          <h3 className="text-lg font-bold text-white mb-4">Loads Delivered</h3>
+        <div className="rounded-md border border-gray-200 bg-black p-4">
+          <h3 className="mb-4 text-lg font-bold text-white">Loads Delivered</h3>
           <ChartContainer
             config={{
               loads: {
-                label: "Loads",
-                color: "hsl(var(--chart-1))",
+                label: 'Loads',
+                color: 'hsl(var(--chart-1))',
               },
             }}
             className="h-[300px]"
           >
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={performanceData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+              <LineChart
+                data={performanceData}
+                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+              >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
                 <YAxis />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Legend />
-                <Line type="monotone" dataKey="loads" stroke="var(--color-loads)" name="Loads" />
+                <Line
+                  type="monotone"
+                  dataKey="loads"
+                  stroke="var(--color-loads)"
+                  name="Loads"
+                />
               </LineChart>
             </ResponsiveContainer>
           </ChartContainer>
         </div>
 
-        <div className="bg-black border border-gray-200 rounded-md p-4">
-          <h3 className="text-lg font-bold text-white mb-4">Miles Driven</h3>
+        <div className="rounded-md border border-gray-200 bg-black p-4">
+          <h3 className="mb-4 text-lg font-bold text-white">Miles Driven</h3>
           <ChartContainer
             config={{
               miles: {
-                label: "Miles",
-                color: "hsl(var(--chart-2))",
+                label: 'Miles',
+                color: 'hsl(var(--chart-2))',
               },
             }}
             className="h-[300px]"
           >
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={performanceData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+              <LineChart
+                data={performanceData}
+                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+              >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
                 <YAxis />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Legend />
-                <Line type="monotone" dataKey="miles" stroke="var(--color-miles)" name="Miles" />
+                <Line
+                  type="monotone"
+                  dataKey="miles"
+                  stroke="var(--color-miles)"
+                  name="Miles"
+                />
               </LineChart>
             </ResponsiveContainer>
           </ChartContainer>
         </div>
 
-        <div className="bg-black border border-gray-200 rounded-md p-4">
-          <h3 className="text-lg font-bold text-white mb-4">On-Time Delivery (%)</h3>
+        <div className="rounded-md border border-gray-200 bg-black p-4">
+          <h3 className="mb-4 text-lg font-bold text-white">
+            On-Time Delivery (%)
+          </h3>
           <ChartContainer
             config={{
               onTimeDelivery: {
-                label: "On-Time Delivery",
-                color: "hsl(var(--chart-3))",
+                label: 'On-Time Delivery',
+                color: 'hsl(var(--chart-3))',
               },
             }}
             className="h-[300px]"
           >
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={performanceData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+              <LineChart
+                data={performanceData}
+                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+              >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
                 <YAxis domain={[80, 100]} />
@@ -91,25 +126,35 @@ export function PerformanceMetrics({ performanceData }: PerformanceMetricsProps)
           </ChartContainer>
         </div>
 
-        <div className="bg-black border border-gray-200 rounded-md p-4">
-          <h3 className="text-lg font-bold text-white mb-4">Fleet Utilization (%)</h3>
+        <div className="rounded-md border border-gray-200 bg-black p-4">
+          <h3 className="mb-4 text-lg font-bold text-white">
+            Fleet Utilization (%)
+          </h3>
           <ChartContainer
             config={{
               utilization: {
-                label: "Utilization",
-                color: "hsl(var(--chart-4))",
+                label: 'Utilization',
+                color: 'hsl(var(--chart-4))',
               },
             }}
             className="h-[300px]"
           >
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={performanceData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+              <LineChart
+                data={performanceData}
+                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+              >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
                 <YAxis domain={[80, 100]} />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Legend />
-                <Line type="monotone" dataKey="utilization" stroke="var(--color-utilization)" name="Utilization" />
+                <Line
+                  type="monotone"
+                  dataKey="utilization"
+                  stroke="var(--color-utilization)"
+                  name="Utilization"
+                />
               </LineChart>
             </ResponsiveContainer>
           </ChartContainer>
@@ -121,45 +166,49 @@ export function PerformanceMetrics({ performanceData }: PerformanceMetricsProps)
           <thead>
             <tr className="border-b border-gray-200 bg-zinc-900/50">
               <th className="p-2 text-left text-sm font-medium">Metric</th>
-              <th className="p-2 text-right text-sm font-medium">Current Period</th>
-              <th className="p-2 text-right text-sm font-medium">Previous Period</th>
+              <th className="p-2 text-right text-sm font-medium">
+                Current Period
+              </th>
+              <th className="p-2 text-right text-sm font-medium">
+                Previous Period
+              </th>
               <th className="p-2 text-right text-sm font-medium">Change</th>
             </tr>
           </thead>
           <tbody>
             <tr className="border-b">
               <td className="p-2 text-sm font-medium">Total Loads</td>
-              <td className="p-2 text-sm text-right">209</td>
-              <td className="p-2 text-sm text-right">195</td>
-              <td className="p-2 text-sm text-right text-green-600">+7.2%</td>
+              <td className="p-2 text-right text-sm">209</td>
+              <td className="p-2 text-right text-sm">195</td>
+              <td className="p-2 text-right text-sm text-green-600">+7.2%</td>
             </tr>
             <tr className="border-b">
               <td className="p-2 text-sm font-medium">Total Miles</td>
-              <td className="p-2 text-sm text-right">62,350</td>
-              <td className="p-2 text-sm text-right">58,450</td>
-              <td className="p-2 text-sm text-right text-green-600">+6.7%</td>
+              <td className="p-2 text-right text-sm">62,350</td>
+              <td className="p-2 text-right text-sm">58,450</td>
+              <td className="p-2 text-right text-sm text-green-600">+6.7%</td>
             </tr>
             <tr className="border-b">
               <td className="p-2 text-sm font-medium">Average Load Distance</td>
-              <td className="p-2 text-sm text-right">298 mi</td>
-              <td className="p-2 text-sm text-right">300 mi</td>
-              <td className="p-2 text-sm text-right text-red-600">-0.7%</td>
+              <td className="p-2 text-right text-sm">298 mi</td>
+              <td className="p-2 text-right text-sm">300 mi</td>
+              <td className="p-2 text-right text-sm text-red-600">-0.7%</td>
             </tr>
             <tr className="border-b">
               <td className="p-2 text-sm font-medium">On-Time Delivery Rate</td>
-              <td className="p-2 text-sm text-right">94.2%</td>
-              <td className="p-2 text-sm text-right">92.5%</td>
-              <td className="p-2 text-sm text-right text-green-600">+1.8%</td>
+              <td className="p-2 text-right text-sm">94.2%</td>
+              <td className="p-2 text-right text-sm">92.5%</td>
+              <td className="p-2 text-right text-sm text-green-600">+1.8%</td>
             </tr>
             <tr>
               <td className="p-2 text-sm font-medium">Fleet Utilization</td>
-              <td className="p-2 text-sm text-right">87.8%</td>
-              <td className="p-2 text-sm text-right">85.2%</td>
-              <td className="p-2 text-sm text-right text-green-600">+3.1%</td>
+              <td className="p-2 text-right text-sm">87.8%</td>
+              <td className="p-2 text-right text-sm">85.2%</td>
+              <td className="p-2 text-right text-sm text-green-600">+3.1%</td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
-  )
+  );
 }

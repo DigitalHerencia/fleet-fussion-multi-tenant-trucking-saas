@@ -39,7 +39,7 @@ jobs:
             const state = item.state;
 
             let targetColumn = null;
-            
+
             // Determine target column based on state and labels
             if (state === 'closed') {
               targetColumn = columns.done;
@@ -91,7 +91,7 @@ jobs:
               repo: context.repo.repo,
               state: 'open'
             });
-            
+
             const milestone = milestones.data.find(m => m.title === milestoneTitle);
             if (!milestone) {
               console.log(`Milestone "${milestoneTitle}" not found`);

@@ -1,9 +1,13 @@
-"use server";
+'use server';
 
-import { auth } from "@clerk/nextjs/server";
+import { auth } from '@clerk/nextjs/server';
 
-import prisma from "@/lib/database/db";
-import { getCachedData, setCachedData, CACHE_TTL } from "@/lib/cache/auth-cache";
+import prisma from '@/lib/database/db';
+import {
+  getCachedData,
+  setCachedData,
+  CACHE_TTL,
+} from '@/lib/cache/auth-cache';
 
 /**
  * Check user access to organization
@@ -11,7 +15,7 @@ import { getCachedData, setCachedData, CACHE_TTL } from "@/lib/cache/auth-cache"
 async function checkUserAccess(organizationId: string) {
   const { userId } = await auth();
   if (!userId) {
-    throw new Error("Unauthorized");
+    throw new Error('Unauthorized');
   }
 
   const user = await prisma.user.findUnique({
@@ -20,7 +24,7 @@ async function checkUserAccess(organizationId: string) {
   });
 
   if (!user?.organizationId || user.organizationId !== organizationId) {
-    throw new Error("Access denied");
+    throw new Error('Access denied');
   }
 
   return user;
@@ -29,19 +33,28 @@ async function checkUserAccess(organizationId: string) {
 /**
  * Get IFTA data for a specific period
  */
-export async function getIftaDataForPeriod(orgId: string, quarter: string, year: string) {
+export async function getIftaDataForPeriod(
+  orgId: string,
+  quarter: string,
+  year: string
+) {
   try {
     await checkUserAccess(orgId);
 
     const quarterNum = parseInt(quarter.replace('Q', ''));
     const yearNum = parseInt(year);
 
-    if (isNaN(quarterNum) || isNaN(yearNum) || quarterNum < 1 || quarterNum > 4) {
-      throw new Error("Invalid quarter or year format");
+    if (
+      isNaN(quarterNum) ||
+      isNaN(yearNum) ||
+      quarterNum < 1 ||
+      quarterNum > 4
+    ) {
+      throw new Error('Invalid quarter or year format');
     }
 
     const cacheKey = `ifta:${orgId}:${year}:Q${quarterNum}`;
-    
+
     // Check cache first
     const cached = getCachedData(cacheKey);
     if (cached) {
@@ -103,30 +116,41 @@ export async function getIftaDataForPeriod(orgId: string, quarter: string, year:
 
     // Calculate summary statistics
     const totalMiles = trips.reduce((sum, trip) => sum + trip.distance, 0);
-    const totalGallons = fuelPurchases.reduce((sum, purchase) => sum + Number(purchase.gallons), 0);
+    const totalGallons = fuelPurchases.reduce(
+      (sum, purchase) => sum + Number(purchase.gallons),
+      0
+    );
     const averageMpg = totalGallons > 0 ? totalMiles / totalGallons : 0;
-    const totalFuelCost = fuelPurchases.reduce((sum, purchase) => sum + Number(purchase.amount), 0);
+    const totalFuelCost = fuelPurchases.reduce(
+      (sum, purchase) => sum + Number(purchase.amount),
+      0
+    );
 
     // Group by jurisdiction
-    const jurisdictionSummary = trips.reduce((acc, trip) => {
-      const jurisdiction = trip.jurisdiction;
-      if (!acc[jurisdiction]) {
-        acc[jurisdiction] = {
-          jurisdiction,
-          miles: 0,
-          fuelGallons: 0,
-          taxPaid: 0,
-        };
-      }
-      acc[jurisdiction].miles += trip.distance;
-      return acc;
-    }, {} as Record<string, any>);
+    const jurisdictionSummary = trips.reduce(
+      (acc, trip) => {
+        const jurisdiction = trip.jurisdiction;
+        if (!acc[jurisdiction]) {
+          acc[jurisdiction] = {
+            jurisdiction,
+            miles: 0,
+            fuelGallons: 0,
+            taxPaid: 0,
+          };
+        }
+        acc[jurisdiction].miles += trip.distance;
+        return acc;
+      },
+      {} as Record<string, any>
+    );
 
     // Add fuel data to jurisdiction summary
     fuelPurchases.forEach(purchase => {
       const jurisdiction = purchase.jurisdiction;
       if (jurisdictionSummary[jurisdiction]) {
-        jurisdictionSummary[jurisdiction].fuelGallons += Number(purchase.gallons);
+        jurisdictionSummary[jurisdiction].fuelGallons += Number(
+          purchase.gallons
+        );
       }
     });
 
@@ -170,12 +194,14 @@ export async function getIftaDataForPeriod(orgId: string, quarter: string, year:
         notes: purchase.notes,
       })),
       jurisdictionSummary: Object.values(jurisdictionSummary),
-      report: existingReport ? {
-        id: existingReport.id,
-        status: existingReport.status,
-        submittedAt: existingReport.submittedAt,
-        dueDate: existingReport.dueDate,
-      } : null,
+      report: existingReport
+        ? {
+            id: existingReport.id,
+            status: existingReport.status,
+            submittedAt: existingReport.submittedAt,
+            dueDate: existingReport.dueDate,
+          }
+        : null,
     };
 
     // Cache the result for 1 hour
@@ -183,8 +209,8 @@ export async function getIftaDataForPeriod(orgId: string, quarter: string, year:
 
     return result;
   } catch (error) {
-    console.error("Error fetching IFTA data:", error);
-    throw new Error("Failed to fetch IFTA data");
+    console.error('Error fetching IFTA data:', error);
+    throw new Error('Failed to fetch IFTA data');
   }
 }
 
@@ -259,8 +285,8 @@ export async function getIftaTripData(
       })),
     };
   } catch (error) {
-    console.error("Error fetching IFTA trip data:", error);
-    throw new Error("Failed to fetch IFTA trip data");
+    console.error('Error fetching IFTA trip data:', error);
+    throw new Error('Failed to fetch IFTA trip data');
   }
 }
 
@@ -336,8 +362,8 @@ export async function getIftaFuelPurchases(
       })),
     };
   } catch (error) {
-    console.error("Error fetching IFTA fuel purchases:", error);
-    throw new Error("Failed to fetch IFTA fuel purchases");
+    console.error('Error fetching IFTA fuel purchases:', error);
+    throw new Error('Failed to fetch IFTA fuel purchases');
   }
 }
 
@@ -366,10 +392,7 @@ export async function getIftaReports(orgId: string, year?: number) {
           },
         },
       },
-      orderBy: [
-        { year: 'desc' },
-        { quarter: 'desc' },
-      ],
+      orderBy: [{ year: 'desc' }, { quarter: 'desc' }],
     });
 
     return {
@@ -394,7 +417,7 @@ export async function getIftaReports(orgId: string, year?: number) {
       })),
     };
   } catch (error) {
-    console.error("Error fetching IFTA reports:", error);
-    throw new Error("Failed to fetch IFTA reports");
+    console.error('Error fetching IFTA reports:', error);
+    throw new Error('Failed to fetch IFTA reports');
   }
 }

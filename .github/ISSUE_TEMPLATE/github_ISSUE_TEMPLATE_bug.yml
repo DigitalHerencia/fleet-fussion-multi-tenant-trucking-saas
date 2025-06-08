@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         Thank you for helping us improve FleetFusion! Please fill out **all** sections to help us reproduce and fix the issue.
-        
+
   - type: input
     id: summary
     attributes:
@@ -16,7 +16,7 @@ body:
       placeholder: "The driver dashboard crashes when loading vehicle assignments"
     validations:
       required: true
-      
+
   - type: textarea
     id: steps
     attributes:
@@ -29,7 +29,7 @@ body:
         4. Observe the crash/error
     validations:
       required: true
-      
+
   - type: textarea
     id: expected
     attributes:
@@ -38,7 +38,7 @@ body:
       placeholder: "The assignments should load and display properly"
     validations:
       required: true
-      
+
   - type: textarea
     id: actual
     attributes:
@@ -47,7 +47,7 @@ body:
       placeholder: "Page crashes with a 500 error"
     validations:
       required: true
-      
+
   - type: dropdown
     id: severity
     attributes:
@@ -60,7 +60,7 @@ body:
         - "Critical - App unusable"
     validations:
       required: true
-      
+
   - type: dropdown
     id: priority
     attributes:
@@ -68,11 +68,11 @@ body:
       description: "When should this be fixed?"
       options:
         - "Priority-Low"
-        - "Priority-Medium" 
+        - "Priority-Medium"
         - "Priority-High"
     validations:
       required: true
-      
+
   - type: dropdown
     id: milestone
     attributes:
@@ -85,7 +85,7 @@ body:
         - "Post-Launch Enhancements"
     validations:
       required: false
-      
+
   - type: textarea
     id: environment
     attributes:

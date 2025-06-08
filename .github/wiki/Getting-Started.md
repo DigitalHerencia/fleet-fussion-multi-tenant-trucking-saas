@@ -3,6 +3,7 @@
 Complete setup guide for FleetFusion development environment and deployment.
 
 ## Table of Contents
+
 - [Prerequisites](#prerequisites)
 - [Quick Start](#quick-start)
 - [Environment Configuration](#environment-configuration)
@@ -17,12 +18,14 @@ Complete setup guide for FleetFusion development environment and deployment.
 ## Prerequisites
 
 ### System Requirements
+
 - **Node.js**: 18.x or later (LTS recommended)
 - **Package Manager**: npm (included with Node.js) or yarn
 - **Git**: For version control
 - **VS Code**: Recommended editor with TypeScript support
 
 ### Recommended VS Code Extensions
+
 - TypeScript (built-in)
 - Tailwind CSS IntelliSense
 - Prisma
@@ -32,23 +35,29 @@ Complete setup guide for FleetFusion development environment and deployment.
 ## Quick Start
 
 ### 1. Clone Repository
+
 ```bash
 git clone https://github.com/your-org/fleetfusion.git
 cd fleetfusion
 ```
 
 ### 2. Install Dependencies
+
 ```bash
 npm install
 ```
 
 ### 3. Environment Setup
+
 ```bash
 cp .env.example .env
 ```
-Edit `.env` with your service credentials (see [Environment Configuration](#environment-configuration))
+
+Edit `.env` with your service credentials (see
+[Environment Configuration](#environment-configuration))
 
 ### 4. Database Setup
+
 ```bash
 npx prisma migrate dev
 npx prisma generate
@@ -56,6 +65,7 @@ npx prisma db seed  # Optional: seed with sample data
 ```
 
 ### 5. Start Development Server
+
 ```bash
 npm run dev
 ```
@@ -69,6 +79,7 @@ Application available at `http://localhost:3000`
 Copy `.env.example` to `.env` and configure:
 
 #### Database (Neon)
+
 ```env
 # Primary database connection (pooled)
 DATABASE_URL=postgresql://username:password@endpoint-pooler.region.aws.neon.tech/database?sslmode=require
@@ -78,6 +89,7 @@ DIRECT_URL=postgresql://username:password@endpoint.region.aws.neon.tech/database
 ```
 
 #### Authentication (Clerk)
+
 ```env
 # Clerk authentication keys
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_your_key_here
@@ -90,12 +102,14 @@ NEXT_PUBLIC_CLERK_WEBHOOK_ENDPOINT=https://your-domain.com/api/clerk/webhook-han
 ```
 
 #### File Storage (Vercel Blob)
+
 ```env
 # Vercel Blob storage token
 BLOB_READ_WRITE_TOKEN=vercel_blob_rw_your_token_here
 ```
 
 #### Application Configuration
+
 ```env
 # Environment
 NODE_ENV=development
@@ -121,12 +135,14 @@ LOG_LEVEL=debug
 1. **Create Account**: Sign up at [neon.tech](https://neon.tech)
 
 2. **Create Project**:
+
    - Navigate to dashboard
    - Click "Create Project"
    - Choose region closest to your users
    - Note the project ID
 
 3. **Get Connection Strings**:
+
    - Go to project dashboard
    - Copy "Pooled connection" for `DATABASE_URL`
    - Copy "Direct connection" for `DIRECT_URL`
@@ -143,16 +159,19 @@ LOG_LEVEL=debug
 1. **Create Account**: Sign up at [clerk.com](https://clerk.com)
 
 2. **Create Application**:
+
    - Choose "Next.js" as framework
    - Select authentication methods (email, OAuth)
    - Note application ID
 
 3. **Configure OAuth Providers**:
+
    - Go to "User & Authentication" → "Social providers"
    - Enable Google, GitHub, or other providers
    - Configure redirect URLs
 
 4. **Setup Webhooks**:
+
    - Go to "Webhooks" in dashboard
    - Add endpoint: `https://your-domain.com/api/clerk/webhook-handler`
    - Select events:
@@ -184,6 +203,7 @@ LOG_LEVEL=debug
 ## Database Setup
 
 ### Initial Migration
+
 ```bash
 # Generate Prisma client
 npx prisma generate
@@ -193,12 +213,14 @@ npx prisma migrate dev --name init
 ```
 
 ### Seed Database (Optional)
+
 ```bash
 # Seed with sample data
 npx prisma db seed
 ```
 
 ### Database Operations
+
 ```bash
 # View data in Prisma Studio
 npx prisma studio
@@ -214,6 +236,7 @@ npx prisma migrate deploy
 ```
 
 ### Schema Overview
+
 Key entities in the database:
 
 - **Organizations**: Multi-tenant containers
@@ -229,17 +252,18 @@ Key entities in the database:
 
 The system implements comprehensive RBAC:
 
-| Role | Access Level | Permissions |
-|------|-------------|-------------|
-| **Admin** | Full | All operations across all modules |
-| **Dispatcher** | Operational | Driver, vehicle, and load management |
-| **Driver** | Limited | View assigned loads and update status |
-| **Compliance** | Specialized | Compliance records and reporting |
-| **Accountant** | Financial | IFTA reporting and financial analytics |
-| **Manager** | Oversight | Read access to analytics and reports |
-| **User** | Basic | Read-only access to most modules |
+| Role           | Access Level | Permissions                            |
+| -------------- | ------------ | -------------------------------------- |
+| **Admin**      | Full         | All operations across all modules      |
+| **Dispatcher** | Operational  | Driver, vehicle, and load management   |
+| **Driver**     | Limited      | View assigned loads and update status  |
+| **Compliance** | Specialized  | Compliance records and reporting       |
+| **Accountant** | Financial    | IFTA reporting and financial analytics |
+| **Manager**    | Oversight    | Read access to analytics and reports   |
+| **User**       | Basic        | Read-only access to most modules       |
 
 ### Permission Matrix
+
 Detailed permissions are defined in `lib/auth/permissions.ts`:
 
 ```typescript
@@ -250,13 +274,14 @@ const ROLE_PERMISSIONS = {
   compliance_officer: ['compliance:all', 'drivers:read', 'vehicles:read'],
   accountant: ['ifta:all', 'analytics:read', 'financial:read'],
   manager: ['analytics:read', 'reports:read'],
-  user: ['*:read']
+  user: ['*:read'],
 };
 ```
 
 ## Development Workflow
 
 ### Available Scripts
+
 ```bash
 # Development
 npm run dev          # Start development server
@@ -281,6 +306,7 @@ npm run test:coverage # Generate coverage report
 ```
 
 ### Project Structure
+
 ```
 fleetfusion/
 ├── app/                    # Next.js App Router pages
@@ -305,21 +331,25 @@ fleetfusion/
 ### Development Guidelines
 
 #### 1. Component Development
+
 - Use React Server Components by default
 - Client components only for interactivity
 - Follow the component hierarchy in `/components`
 
 #### 2. Data Fetching
+
 - Server Actions for mutations
 - Data fetchers for queries
 - Implement proper error handling
 
 #### 3. Styling
+
 - Use Tailwind CSS utility classes
 - Follow the design system in `/components/ui`
 - Responsive design with mobile-first approach
 
 #### 4. Type Safety
+
 - Define types in `/types` directory
 - Use Zod schemas for validation
 - Leverage Prisma's generated types
@@ -327,11 +357,13 @@ fleetfusion/
 ## Testing
 
 ### Test Strategy
+
 - **Unit Tests**: Individual functions and components
 - **Integration Tests**: API routes and database operations
 - **E2E Tests**: Critical user journeys
 
 ### Running Tests
+
 ```bash
 # All tests
 npm run test
@@ -347,6 +379,7 @@ npm run test:e2e
 ```
 
 ### Testing Tools
+
 - **Jest**: Unit and integration testing
 - **React Testing Library**: Component testing
 - **Playwright**: End-to-end testing
@@ -357,14 +390,17 @@ npm run test:e2e
 ### Vercel Deployment
 
 1. **Connect Repository**:
+
    - Import project from GitHub
    - Configure build settings
 
 2. **Environment Variables**:
+
    - Add all production environment variables
    - Use Vercel's secret management
 
 3. **Database Migration**:
+
    ```bash
    # Deploy migrations
    npx prisma migrate deploy
@@ -376,6 +412,7 @@ npm run test:e2e
    - Enable HTTPS
 
 ### Production Checklist
+
 - [ ] Environment variables configured
 - [ ] Database migrations deployed
 - [ ] Clerk webhooks configured with production URLs
@@ -388,6 +425,7 @@ npm run test:e2e
 ### Common Issues
 
 #### 1. Database Connection Issues
+
 ```bash
 # Check connection
 npx prisma db pull
@@ -397,11 +435,13 @@ npx prisma migrate reset
 ```
 
 #### 2. Clerk Webhook Issues
+
 - Verify webhook URL is accessible
 - Check webhook secret matches
 - Validate event payload structure
 
 #### 3. Build Issues
+
 ```bash
 # Clear Next.js cache
 rm -rf .next
@@ -412,6 +452,7 @@ npm install
 ```
 
 #### 4. Type Errors
+
 ```bash
 # Regenerate Prisma client
 npx prisma generate
@@ -421,16 +462,19 @@ npm run type-check
 ```
 
 ### Getting Help
+
 - Check the [Wiki](../wiki/Home.md) for detailed documentation
 - Review [API Reference](../wiki/API-Reference.md) for endpoints
 - See [Architecture](../wiki/Architecture.md) for system design
 - Join the development Slack channel for support
 
 ### Performance Tips
+
 - Use React Server Components for static content
 - Implement proper caching strategies
 - Optimize database queries with Prisma
 - Use Next.js Image component for images
 - Monitor Core Web Vitals
 
-This getting started guide should get you up and running with FleetFusion development. For more detailed information, refer to the specific documentation sections in the wiki.
+This getting started guide should get you up and running with FleetFusion development. For more
+detailed information, refer to the specific documentation sections in the wiki.

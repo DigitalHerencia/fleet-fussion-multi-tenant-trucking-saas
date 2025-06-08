@@ -8,7 +8,6 @@ import { handleError } from '@/lib/errors/handleError';
 
 import { db } from '../database/db';
 
-
 export const fileUploadSchema = z.object({
   fileName: z.string().min(1),
   fileSize: z.number().min(1),
@@ -20,7 +19,9 @@ export const fileUploadSchema = z.object({
   notes: z.string().optional(),
 });
 
-export async function saveUploadedDocument(data: z.infer<typeof fileUploadSchema>) {
+export async function saveUploadedDocument(
+  data: z.infer<typeof fileUploadSchema>
+) {
   try {
     const user = await getCurrentUser();
     const userId = user?.userId;
@@ -31,8 +32,10 @@ export async function saveUploadedDocument(data: z.infer<typeof fileUploadSchema
     const doc = await db.complianceDocument.create({
       data: {
         organizationId: orgId,
-        driverId: validated.entityType === 'driver' ? validated.entityId : undefined,
-        vehicleId: validated.entityType === 'vehicle' ? validated.entityId : undefined,
+        driverId:
+          validated.entityType === 'driver' ? validated.entityId : undefined,
+        vehicleId:
+          validated.entityType === 'vehicle' ? validated.entityId : undefined,
         type: validated.documentType,
         title: validated.fileName,
         fileUrl: validated.url,

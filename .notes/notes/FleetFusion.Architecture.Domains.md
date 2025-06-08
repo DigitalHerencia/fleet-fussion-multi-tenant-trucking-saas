@@ -8,23 +8,35 @@ created: 1748450930556
 
 # FleetFusion Domain Architecture
 
-This document outlines the domain architecture for the FleetFusion application, built with Next.js 15, React 19, and TypeScript. It follows a modern full-stack approach, emphasizing server-first rendering, React Server Components (RSC), and a feature-driven, scalable, and modular structure.
+This document outlines the domain architecture for the FleetFusion application, built with Next.js
+15, React 19, and TypeScript. It follows a modern full-stack approach, emphasizing server-first
+rendering, React Server Components (RSC), and a feature-driven, scalable, and modular structure.
 
 ## Core Architectural Principles
 
 - **Server-First Rendering**: Prioritize rendering on the server using React Server Components.
-- **React Server Components (RSC)**: Used by default for pages and components that fetch data or don't require client-side interactivity.
-- **Client Components**: Components are marked with `'use client'` only when interactivity (state, event handlers, browser APIs) is essential.
-- **Feature-Driven Structure**: Logic is organized around business features for better modularity and scalability, primarily within the `features/` directory.
+- **React Server Components (RSC)**: Used by default for pages and components that fetch data or
+  don't require client-side interactivity.
+- **Client Components**: Components are marked with `'use client'` only when interactivity (state,
+  event handlers, browser APIs) is essential.
+- **Feature-Driven Structure**: Logic is organized around business features for better modularity
+  and scalability, primarily within the `features/` directory.
 - **Separation of Concerns**:
-    - **UI (`components/`)**: Dumb, reusable presentational components, often stateless.
-    - **Business Logic & Smart UI (`features/`)**: Encapsulates feature-specific logic and orchestrates UI components. These can be Server or Client Components.
-    - **Domain Logic & Infrastructure (`lib/`)**: Contains server actions, data fetchers, utility functions, and database interactions (e.g., Prisma client).
-    - **Routing & Pages (`app/`)**: Managed by the Next.js App Router, defining routes and composing UI.
-- **Server Actions (`lib/actions/`)**: Used for data mutations and enforcing business rules, callable from both server and client components. Marked with `'use server'`.
-- **Data Fetching (`lib/fetchers/`)**: Centralized logic for retrieving data, primarily for Server Components.
-- **Styling**: Tailwind CSS 4 with CSS variables for theming, as defined in `tailwind.config.ts` and `app/globals.css`.
-- **TypeScript**: For end-to-end type safety, with types defined in `types/` and validation schemas in `validations/`.
+  - **UI (`components/`)**: Dumb, reusable presentational components, often stateless.
+  - **Business Logic & Smart UI (`features/`)**: Encapsulates feature-specific logic and
+    orchestrates UI components. These can be Server or Client Components.
+  - **Domain Logic & Infrastructure (`lib/`)**: Contains server actions, data fetchers, utility
+    functions, and database interactions (e.g., Prisma client).
+  - **Routing & Pages (`app/`)**: Managed by the Next.js App Router, defining routes and composing
+    UI.
+- **Server Actions (`lib/actions/`)**: Used for data mutations and enforcing business rules,
+  callable from both server and client components. Marked with `'use server'`.
+- **Data Fetching (`lib/fetchers/`)**: Centralized logic for retrieving data, primarily for Server
+  Components.
+- **Styling**: Tailwind CSS 4 with CSS variables for theming, as defined in `tailwind.config.ts` and
+  `app/globals.css`.
+- **TypeScript**: For end-to-end type safety, with types defined in `types/` and validation schemas
+  in `validations/`.
 
 ## Domain Breakdown
 
@@ -47,20 +59,28 @@ The application is divided into the following key domains:
 
 ### 1. Domain Architecture Overview
 
-The Auth domain handles all aspects related to user authentication, registration, session management, and authorization. It leverages Clerk for core authentication services, integrated via API routes (`app/api/clerk/`) and server-side utilities.
+The Auth domain handles all aspects related to user authentication, registration, session
+management, and authorization. It leverages Clerk for core authentication services, integrated via
+API routes (`app/api/clerk/`) and server-side utilities.
 
-- **Frontend**: Primarily uses Client Components within the `app/(auth)/` routes (e.g., `sign-in`, `sign-up`) for interactive forms. Shared components like `UserButton` are managed via `components/auth/context.tsx`.
-- **Backend**: Server Actions may wrap some Clerk operations or handle related profile updates. Clerk's SDK is used for session management and user data retrieval, often within `lib/auth/` utilities.
+- **Frontend**: Primarily uses Client Components within the `app/(auth)/` routes (e.g., `sign-in`,
+  `sign-up`) for interactive forms. Shared components like `UserButton` are managed via
+  `components/auth/context.tsx`.
+- **Backend**: Server Actions may wrap some Clerk operations or handle related profile updates.
+  Clerk's SDK is used for session management and user data retrieval, often within `lib/auth/`
+  utilities.
 
 ### 2. UI Components (Dumb Components)
 
-UI components for the Auth domain are located in `components/auth/` and `components/ui/` (for generic elements like buttons, inputs).
+UI components for the Auth domain are located in `components/auth/` and `components/ui/` (for
+generic elements like buttons, inputs).
 
-- **Responsibilities**: Rendering sign-in/sign-up forms, displaying user profile information snippets, and password recovery UIs.
+- **Responsibilities**: Rendering sign-in/sign-up forms, displaying user profile information
+  snippets, and password recovery UIs.
 - **Stateless & Reusable**: Form fields are generic; specific auth forms compose these.
 - **Examples**:
-    - `SignInFormFields`: Renders email/password inputs.
-    - `OAuthButton`: A button for initiating OAuth flows (e.g., Google, GitHub).
+  - `SignInFormFields`: Renders email/password inputs.
+  - `OAuthButton`: A button for initiating OAuth flows (e.g., Google, GitHub).
 
 ```tsx
 // Example: components/auth/SignInFormFields.tsx
@@ -86,10 +106,13 @@ export function SignInFormFields() {
 
 ### 3. Business Logic (Features)
 
-Feature-specific logic for authentication resides in components within `app/(auth)/` (e.g., `app/(auth)/sign-in/page.tsx`) or potentially `features/auth/`.
+Feature-specific logic for authentication resides in components within `app/(auth)/` (e.g.,
+`app/(auth)/sign-in/page.tsx`) or potentially `features/auth/`.
 
-- **Encapsulation**: Manages the flow of signing in, signing up, password reset, and onboarding initiation.
-- **Form Handling**: Uses standard HTML forms with Server Actions or client-side handlers that call Server Actions. React 19's `useActionState` and `useFormStatus` enhance form UX.
+- **Encapsulation**: Manages the flow of signing in, signing up, password reset, and onboarding
+  initiation.
+- **Form Handling**: Uses standard HTML forms with Server Actions or client-side handlers that call
+  Server Actions. React 19's `useActionState` and `useFormStatus` enhance form UX.
 - **Complex Interactions**: Handling MFA, social logins, and redirects post-authentication.
 
 ```tsx
@@ -118,11 +141,13 @@ export default function SignInPage() {
 
 ### 4. Server Actions
 
-Server Actions for the Auth domain are in `lib/actions/authActions.ts`. They interface with Clerk or custom user management logic.
+Server Actions for the Auth domain are in `lib/actions/authActions.ts`. They interface with Clerk or
+custom user management logic.
 
 - **`'use server';`**: Standard directive.
 - **Data Mutations**: User creation (sign-up), session creation (sign-in), user profile updates.
-- **Business Rule Enforcement**: Validating credentials, checking for existing users, handling password policies.
+- **Business Rule Enforcement**: Validating credentials, checking for existing users, handling
+  password policies.
 - **Integration**: Called from auth forms. May use `revalidatePath` for profile pages or redirect.
 
 ```typescript
@@ -138,7 +163,7 @@ export async function signInAction(prevState: any, formData: FormData) {
   const validatedFields = signInSchema.safeParse(Object.fromEntries(formData));
 
   if (!validatedFields.success) {
-    return { error: "Invalid input.", fieldErrors: validatedFields.error.flatten().fieldErrors };
+    return { error: 'Invalid input.', fieldErrors: validatedFields.error.flatten().fieldErrors };
   }
 
   const { email, password } = validatedFields.data;
@@ -147,11 +172,11 @@ export async function signInAction(prevState: any, formData: FormData) {
     // Replace with actual Clerk sign-in logic or your auth provider
     // const user = await attemptSignIn(email, password);
     // if (!user) return { error: "Invalid credentials." };
-    console.log("Simulating sign in for:", email);
+    console.log('Simulating sign in for:', email);
   } catch (error) {
-    return { error: "Sign in failed." };
+    return { error: 'Sign in failed.' };
   }
-  
+
   // On successful sign-in, Clerk typically handles redirection via middleware or its components.
   // If custom logic needed:
   // revalidatePath('/'); // Or dashboard path
@@ -166,9 +191,11 @@ export async function signUpAction(prevState: any, formData: FormData) {
 
 ### 5. Fetchers
 
-Fetchers in `lib/fetchers/authFetchers.ts` would typically retrieve user-related data not directly handled by Clerk's hooks/components.
+Fetchers in `lib/fetchers/authFetchers.ts` would typically retrieve user-related data not directly
+handled by Clerk's hooks/components.
 
-- **Data Retrieval**: Getting current user session (often handled by Clerk's `auth()` or `currentUser()`), fetching user profile details.
+- **Data Retrieval**: Getting current user session (often handled by Clerk's `auth()` or
+  `currentUser()`), fetching user profile details.
 - **Efficiency**: Clerk SDK handles its own caching. Custom fetchers should use Next.js caching.
 - **Consistency**: Standardized way to access user data if not using Clerk's direct methods.
 
@@ -187,7 +214,7 @@ export async function getCurrentUserCustomProfile(): Promise<UserProfile | null>
     // Assuming you store additional profile data linked to the Clerk user ID
     // const customProfile = await prisma.userProfile.findUnique({ where: { clerkId: userId } });
     // return customProfile;
-    return { clerkId: userId, customData: "some_data" }; // Placeholder
+    return { clerkId: userId, customData: 'some_data' }; // Placeholder
   } catch (error) {
     console.error('Error fetching custom user profile:', error);
     return null;
@@ -200,7 +227,8 @@ export async function getCurrentUserCustomProfile(): Promise<UserProfile | null>
 - **Pages (`app/(auth)/`)**: Use Feature components or directly implement auth forms.
 - **Feature Components**: Orchestrate form UI, call Server Actions.
 - **UI Components (`components/auth/`)**: Provide reusable form elements.
-- **Server Actions (`lib/actions/authActions.ts`)**: Handle credential validation, user creation, session management.
+- **Server Actions (`lib/actions/authActions.ts`)**: Handle credential validation, user creation,
+  session management.
 - **Fetchers (`lib/fetchers/authFetchers.ts`)**: Provide access to user data.
 - **Clerk**: Provides core auth services, UI components (`<UserButton />`, `<SignIn />`), and SDKs.
 - **Types/Validations**: `types/auth.ts`, `validations/auth.ts`.
@@ -211,20 +239,26 @@ export async function getCurrentUserCustomProfile(): Promise<UserProfile | null>
 
 ### 1. Domain Architecture Overview
 
-The Onboarding domain manages the process of guiding new users through initial setup steps after registration, such as completing their profile, setting up their organization, or configuring initial preferences.
+The Onboarding domain manages the process of guiding new users through initial setup steps after
+registration, such as completing their profile, setting up their organization, or configuring
+initial preferences.
 
-- **Frontend**: Interactive multi-step forms located within `app/(auth)/onboarding/`. Uses Client Components for managing step progression and form state.
-- **Backend**: Server Actions handle the submission of each onboarding step, persisting data progressively.
+- **Frontend**: Interactive multi-step forms located within `app/(auth)/onboarding/`. Uses Client
+  Components for managing step progression and form state.
+- **Backend**: Server Actions handle the submission of each onboarding step, persisting data
+  progressively.
 
 ### 2. UI Components (Dumb Components)
 
-UI components for Onboarding are in `components/onboarding/` (if specific) or use generic UI elements from `components/ui/`.
+UI components for Onboarding are in `components/onboarding/` (if specific) or use generic UI
+elements from `components/ui/`.
 
-- **Responsibilities**: Rendering individual steps of the onboarding flow, progress indicators, and form inputs for collecting user information.
+- **Responsibilities**: Rendering individual steps of the onboarding flow, progress indicators, and
+  form inputs for collecting user information.
 - **Stateless & Reusable**: Components for each step are self-contained.
 - **Examples**:
-    - `OnboardingStepIndicator`: Shows current progress in the onboarding flow.
-    - `ProfileSetupFormFields`: Inputs for name, company role, etc.
+  - `OnboardingStepIndicator`: Shows current progress in the onboarding flow.
+  - `ProfileSetupFormFields`: Inputs for name, company role, etc.
 
 ```tsx
 // Example: components/onboarding/OnboardingStepIndicator.tsx
@@ -247,11 +281,15 @@ export function OnboardingStepIndicator({ currentStep, totalSteps }: OnboardingS
 
 ### 3. Business Logic (Features)
 
-The main onboarding feature is likely a multi-step wizard, managed by a parent component in `app/(auth)/onboarding/page.tsx` or `features/onboarding/OnboardingWizard.tsx`.
+The main onboarding feature is likely a multi-step wizard, managed by a parent component in
+`app/(auth)/onboarding/page.tsx` or `features/onboarding/OnboardingWizard.tsx`.
 
-- **Encapsulation**: Manages the current step, data collected across steps, and navigation between steps.
-- **Form Handling**: Each step is a form submitting to a Server Action. `useActionState` helps manage submission state and errors for each step.
-- **Complex Interactions**: Persisting partial data, validating step-specific information, and redirecting upon completion.
+- **Encapsulation**: Manages the current step, data collected across steps, and navigation between
+  steps.
+- **Form Handling**: Each step is a form submitting to a Server Action. `useActionState` helps
+  manage submission state and errors for each step.
+- **Complex Interactions**: Persisting partial data, validating step-specific information, and
+  redirecting upon completion.
 
 ```tsx
 // Example: features/onboarding/OnboardingWizard.tsx
@@ -273,7 +311,7 @@ export function OnboardingWizard() {
   const handleNextStep = (stepData: any) => {
     const newOnboardingData = { ...onboardingData, ...stepData };
     setOnboardingData(newOnboardingData);
-    
+
     const formData = new FormData();
     formData.append('step', currentStep.toString());
     formData.append('data', JSON.stringify(newOnboardingData));
@@ -284,7 +322,7 @@ export function OnboardingWizard() {
     // if actionState indicates success (from previous submission)
     // setCurrentStep(prev => prev + 1);
   };
-  
+
   // Logic to render current step's form
   // Example: if (currentStep === 1) return <Step1Form onSubmit={handleNextStep} isPending={isPending} errors={actionState?.errors} />;
 
@@ -300,12 +338,14 @@ export function OnboardingWizard() {
 
 ### 4. Server Actions
 
-Server Actions in `lib/actions/onboardingActions.ts` handle data persistence for each onboarding step.
+Server Actions in `lib/actions/onboardingActions.ts` handle data persistence for each onboarding
+step.
 
 - **`'use server';`**: Standard.
 - **Data Mutations**: Updating user profiles, creating organization records, saving preferences.
 - **Business Rule Enforcement**: Validating submitted data for each step.
-- **Integration**: Called by the onboarding wizard. May `revalidatePath` or redirect upon final step completion.
+- **Integration**: Called by the onboarding wizard. May `revalidatePath` or redirect upon final step
+  completion.
 
 ```typescript
 // Example: lib/actions/onboardingActions.ts
@@ -328,7 +368,7 @@ export async function submitOnboardingStepAction(
   formData: FormData
 ): Promise<OnboardingActionState | null> {
   const { userId } = auth();
-  if (!userId) return { message: "User not authenticated.", success: false };
+  if (!userId) return { message: 'User not authenticated.', success: false };
 
   const step = parseInt(formData.get('step') as string, 10);
   const jsonData = formData.get('data') as string; // This might need more robust handling
@@ -338,7 +378,7 @@ export async function submitOnboardingStepAction(
   // if (!validation.success) {
   //   return { errors: validation.error.flatten().fieldErrors, success: false };
   // }
-  
+
   try {
     // Based on 'step', save 'parsedData' to the database
     // Example: if (step === 1) await prisma.userProfile.update({ where: { clerkId: userId }, data: { ... } });
@@ -361,7 +401,8 @@ export async function submitOnboardingStepAction(
 
 ### 5. Fetchers
 
-Fetchers in `lib/fetchers/onboardingFetchers.ts` might be used to retrieve existing onboarding state if a user resumes an incomplete onboarding.
+Fetchers in `lib/fetchers/onboardingFetchers.ts` might be used to retrieve existing onboarding state
+if a user resumes an incomplete onboarding.
 
 - **Data Retrieval**: `getOnboardingStatus(userId: string)`.
 - **Efficiency**: Cache status appropriately.
@@ -397,10 +438,12 @@ export async function getOnboardingStatus(userId: string): Promise<OnboardingSta
 
 - **Pages (`app/(auth)/onboarding/`)**: Host the onboarding wizard.
 - **Feature Components (`features/onboarding/`)**: Manage the multi-step flow.
-- **UI Components (`components/onboarding/`, `components/ui/`)**: Render individual steps and form elements.
+- **UI Components (`components/onboarding/`, `components/ui/`)**: Render individual steps and form
+  elements.
 - **Server Actions (`lib/actions/onboardingActions.ts`)**: Persist data for each step.
 - **Fetchers (`lib/fetchers/onboardingFetchers.ts`)**: Retrieve current onboarding progress.
-- **Types/Validations**: `types/onboarding.ts`, `validations/onboarding.ts` (to be created or use existing like `auth.ts`).
+- **Types/Validations**: `types/onboarding.ts`, `validations/onboarding.ts` (to be created or use
+  existing like `auth.ts`).
 
 ---
 
@@ -408,21 +451,29 @@ export async function getOnboardingStatus(userId: string): Promise<OnboardingSta
 
 ### 1. Domain Architecture Overview
 
-The Analytics domain is responsible for presenting data insights, visualizations, and reports to users, typically within a tenant's context (e.g., for an organization).
+The Analytics domain is responsible for presenting data insights, visualizations, and reports to
+users, typically within a tenant's context (e.g., for an organization).
 
-- **Frontend**: Primarily uses Server Components located in `app/(tenant)/[orgId]/analytics/` to fetch and display analytical data. Client Components from `components/analytics/` are used for interactive charts or data tables.
-- **Backend**: Data is primarily retrieved via Fetcher functions. Server Actions might be used for triggering report generation or saving custom view preferences.
+- **Frontend**: Primarily uses Server Components located in `app/(tenant)/[orgId]/analytics/` to
+  fetch and display analytical data. Client Components from `components/analytics/` are used for
+  interactive charts or data tables.
+- **Backend**: Data is primarily retrieved via Fetcher functions. Server Actions might be used for
+  triggering report generation or saving custom view preferences.
 
 ### 2. UI Components (Dumb Components)
 
 UI components for Analytics are in `components/analytics/` and `components/shared/ui/`.
 
-- **Responsibilities**: Rendering charts (e.g., using a library like Recharts or Chart.js), data tables, metric cards, and filter controls.
-- **Stateless & Reusable**: Chart components take data and configuration as props. Table components render rows based on input data.
+- **Responsibilities**: Rendering charts (e.g., using a library like Recharts or Chart.js), data
+  tables, metric cards, and filter controls.
+- **Stateless & Reusable**: Chart components take data and configuration as props. Table components
+  render rows based on input data.
 - **Examples**:
-    - `BarChart`: A reusable bar chart component. (e.g., `components/analytics/performance-metrics.tsx` might use such a component)
-    - `MetricCard`: Displays a single key metric. (e.g., `components/dashboard/dashboard-cards.tsx` could be adapted or similar used here)
-    - `DateRangePicker`: For filtering data by time period.
+  - `BarChart`: A reusable bar chart component. (e.g.,
+    `components/analytics/performance-metrics.tsx` might use such a component)
+  - `MetricCard`: Displays a single key metric. (e.g., `components/dashboard/dashboard-cards.tsx`
+    could be adapted or similar used here)
+  - `DateRangePicker`: For filtering data by time period.
 
 ```tsx
 // Example: components/analytics/SimpleBarChart.tsx
@@ -441,7 +492,9 @@ export function SimpleBarChart({ data }: SimpleBarChartProps) {
   if (!data || data.length === 0) return <p>No data available for chart.</p>;
 
   return (
-    <div style={{ width: '100%', height: 300 }}> {/* ResponsiveContainer would handle this */}
+    <div style={{ width: '100%', height: 300 }}>
+      {' '}
+      {/* ResponsiveContainer would handle this */}
       {/* <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data}>
           <CartesianGrid strokeDasharray="3 3" />
@@ -460,11 +513,15 @@ export function SimpleBarChart({ data }: SimpleBarChartProps) {
 
 ### 3. Business Logic (Features)
 
-Feature components in `features/analytics/` (or directly within `app/(tenant)/[orgId]/analytics/page.tsx`) orchestrate the display of analytics dashboards.
+Feature components in `features/analytics/` (or directly within
+`app/(tenant)/[orgId]/analytics/page.tsx`) orchestrate the display of analytics dashboards.
 
-- **Encapsulation**: Combining various charts, tables, and filters to present a cohesive analytics view (e.g., `DriverPerformanceDashboardFeature`).
-- **Form Handling**: Forms for custom report parameters or saving view configurations would use Server Actions.
-- **Complex Interactions**: Dynamic filtering, drill-downs in charts, real-time data updates (if applicable, potentially using polling or WebSockets via API routes).
+- **Encapsulation**: Combining various charts, tables, and filters to present a cohesive analytics
+  view (e.g., `DriverPerformanceDashboardFeature`).
+- **Form Handling**: Forms for custom report parameters or saving view configurations would use
+  Server Actions.
+- **Complex Interactions**: Dynamic filtering, drill-downs in charts, real-time data updates (if
+  applicable, potentially using polling or WebSockets via API routes).
 
 ```tsx
 // Example: features/analytics/DriverPerformanceDashboard.tsx (Can be a Server Component)
@@ -478,7 +535,10 @@ interface DriverPerformanceDashboardProps {
   dateRange: { from: string; to: string };
 }
 
-export async function DriverPerformanceDashboard({ orgId, dateRange }: DriverPerformanceDashboardProps) {
+export async function DriverPerformanceDashboard({
+  orgId,
+  dateRange,
+}: DriverPerformanceDashboardProps) {
   const performanceData = await getDriverPerformanceData(orgId, dateRange);
 
   return (
@@ -494,7 +554,8 @@ export async function DriverPerformanceDashboard({ orgId, dateRange }: DriverPer
 
 ### 4. Server Actions
 
-Server Actions in `lib/actions/analyticsActions.ts` are less common for pure display but can be used for tasks like saving user preferences for dashboards or triggering asynchronous report generation.
+Server Actions in `lib/actions/analyticsActions.ts` are less common for pure display but can be used
+for tasks like saving user preferences for dashboards or triggering asynchronous report generation.
 
 - **`'use server';`**: Standard.
 - **Data Mutations**: Saving a user's custom analytics view configuration.
@@ -509,9 +570,12 @@ import { revalidateTag } from 'next/cache';
 // import { prisma } from '@/lib/database/prisma';
 import { auth } from '@clerk/nextjs/server';
 
-export async function saveDashboardPreferences(orgId: string, preferences: any): Promise<{ success: boolean; error?: string }> {
+export async function saveDashboardPreferences(
+  orgId: string,
+  preferences: any
+): Promise<{ success: boolean; error?: string }> {
   const { userId } = auth();
-  if (!userId) return { success: false, error: "User not authenticated." };
+  if (!userId) return { success: false, error: 'User not authenticated.' };
 
   try {
     // await prisma.userDashboardPreference.upsert({
@@ -531,10 +595,13 @@ export async function saveDashboardPreferences(orgId: string, preferences: any):
 
 ### 5. Fetchers
 
-Fetchers in `lib/fetchers/analyticsFetchers.ts` are crucial for retrieving data to populate charts and tables.
+Fetchers in `lib/fetchers/analyticsFetchers.ts` are crucial for retrieving data to populate charts
+and tables.
 
-- **Data Retrieval**: Functions like `getSalesRevenueOverTime(orgId, range)`, `getVehicleUtilizationStats(orgId, range)`.
-- **Efficiency**: Data aggregation and complex queries are performed on the database side. Results are cached using Next.js fetch caching or `revalidateTag`.
+- **Data Retrieval**: Functions like `getSalesRevenueOverTime(orgId, range)`,
+  `getVehicleUtilizationStats(orgId, range)`.
+- **Efficiency**: Data aggregation and complex queries are performed on the database side. Results
+  are cached using Next.js fetch caching or `revalidateTag`.
 - **Consistency**: Standardized way to access analytical data.
 
 ```typescript
@@ -543,40 +610,53 @@ Fetchers in `lib/fetchers/analyticsFetchers.ts` are crucial for retrieving data 
 import { AnalyticsDataPoint, DriverPerformanceData } from '@/types/analytics'; // From types/analytics.ts
 import { unstable_cache as cache } from 'next/cache';
 
-
 export async function getDriverPerformanceData(
-  orgId: string, 
+  orgId: string,
   dateRange: { from: string; to: string }
 ): Promise<DriverPerformanceData> {
   // Use unstable_cache for fine-grained caching with tags
-  return cache(async () => {
-    console.log(`Fetching driver performance data for org ${orgId} in range ${dateRange.from}-${dateRange.to}`);
-    // const data = await prisma.load.groupBy({
-    //   by: ['driverId'],
-    //   where: { orgId, completedAt: { gte: new Date(dateRange.from), lte: new Date(dateRange.to) } },
-    //   _sum: { revenue: true },
-    //   _count: { id: true },
-    // });
-    // Transform data for chart and table
-    return { 
-      chartData: [{ name: 'Driver A', value: 5000 }, { name: 'Driver B', value: 7500 }], // Placeholder
-      tableData: [{ driverId: 'A', totalRevenue: 5000, loadCount: 10 }] // Placeholder
-    };
-  }, [`driver-performance-${orgId}-${dateRange.from}-${dateRange.to}`], {
-    tags: [`analytics-org-${orgId}`, `driver-performance-${orgId}`],
-    revalidate: 3600, // Revalidate every hour
-  })();
+  return cache(
+    async () => {
+      console.log(
+        `Fetching driver performance data for org ${orgId} in range ${dateRange.from}-${dateRange.to}`
+      );
+      // const data = await prisma.load.groupBy({
+      //   by: ['driverId'],
+      //   where: { orgId, completedAt: { gte: new Date(dateRange.from), lte: new Date(dateRange.to) } },
+      //   _sum: { revenue: true },
+      //   _count: { id: true },
+      // });
+      // Transform data for chart and table
+      return {
+        chartData: [
+          { name: 'Driver A', value: 5000 },
+          { name: 'Driver B', value: 7500 },
+        ], // Placeholder
+        tableData: [{ driverId: 'A', totalRevenue: 5000, loadCount: 10 }], // Placeholder
+      };
+    },
+    [`driver-performance-${orgId}-${dateRange.from}-${dateRange.to}`],
+    {
+      tags: [`analytics-org-${orgId}`, `driver-performance-${orgId}`],
+      revalidate: 3600, // Revalidate every hour
+    }
+  )();
 }
 ```
 
 ### 6. Integration
 
-- **Pages (`app/(tenant)/[orgId]/analytics/`)**: Server Components that fetch initial data using Fetchers and render Feature components or specific analytic views.
-- **Feature Components (`features/analytics/`)**: Orchestrate the display of dashboards, combining various UI components.
+- **Pages (`app/(tenant)/[orgId]/analytics/`)**: Server Components that fetch initial data using
+  Fetchers and render Feature components or specific analytic views.
+- **Feature Components (`features/analytics/`)**: Orchestrate the display of dashboards, combining
+  various UI components.
 - **UI Components (`components/analytics/`, `components/ui/`)**: Render charts, tables, filters.
-- **Server Actions (`lib/actions/analyticsActions.ts`)**: Handle preference saving or report generation triggers.
-- **Fetchers (`lib/fetchers/analyticsFetchers.ts`)**: Provide aggregated and processed data for display.
-- **Types/Validations**: `types/analytics.ts`, `validations/analytics.ts` (if forms for settings/reports exist).
+- **Server Actions (`lib/actions/analyticsActions.ts`)**: Handle preference saving or report
+  generation triggers.
+- **Fetchers (`lib/fetchers/analyticsFetchers.ts`)**: Provide aggregated and processed data for
+  display.
+- **Types/Validations**: `types/analytics.ts`, `validations/analytics.ts` (if forms for
+  settings/reports exist).
 
 ---
 
@@ -584,21 +664,26 @@ export async function getDriverPerformanceData(
 
 ### 1. Domain Architecture Overview
 
-The Compliance domain focuses on managing regulatory requirements, such as Hours of Service (HOS) logs, vehicle inspections, driver qualifications, and document management.
+The Compliance domain focuses on managing regulatory requirements, such as Hours of Service (HOS)
+logs, vehicle inspections, driver qualifications, and document management.
 
-- **Frontend**: Routes under `app/(tenant)/[orgId]/compliance/` display compliance statuses, logs, and document lists. Interactive forms for uploading documents or logging events use Client Components.
-- **Backend**: Server Actions handle document uploads, log entries, and status updates. Fetchers retrieve compliance data for display.
+- **Frontend**: Routes under `app/(tenant)/[orgId]/compliance/` display compliance statuses, logs,
+  and document lists. Interactive forms for uploading documents or logging events use Client
+  Components.
+- **Backend**: Server Actions handle document uploads, log entries, and status updates. Fetchers
+  retrieve compliance data for display.
 
 ### 2. UI Components (Dumb Components)
 
 Located in `components/compliance/` and `components/shared/ui/`.
 
-- **Responsibilities**: Displaying HOS logs (`HosLogViewer`), tables of compliance documents (`ComplianceDocumentsTable`), vehicle/driver compliance status indicators.
+- **Responsibilities**: Displaying HOS logs (`HosLogViewer`), tables of compliance documents
+  (`ComplianceDocumentsTable`), vehicle/driver compliance status indicators.
 - **Stateless & Reusable**: Components take data (e.g., list of documents, log entries) as props.
 - **Examples**:
-    - `HosLogEntryCard`: Displays a single HOS log event.
-    - `DocumentStatusBadge`: Shows if a document is valid, expiring, or expired.
-    - `FileUploadArea`: A generic component for dragging & dropping files.
+  - `HosLogEntryCard`: Displays a single HOS log event.
+  - `DocumentStatusBadge`: Shows if a document is valid, expiring, or expired.
+  - `FileUploadArea`: A generic component for dragging & dropping files.
 
 ```tsx
 // Example: components/compliance/DocumentStatusBadge.tsx
@@ -616,7 +701,9 @@ export function DocumentStatusBadge({ status }: DocumentStatusBadgeProps) {
   if (status === 'expired') color = 'red';
 
   return (
-    <span style={{ backgroundColor: color, color: 'white', padding: '2px 6px', borderRadius: '4px' }}>
+    <span
+      style={{ backgroundColor: color, color: 'white', padding: '2px 6px', borderRadius: '4px' }}
+    >
       {status.replace('_', ' ')}
     </span>
   );
@@ -625,11 +712,15 @@ export function DocumentStatusBadge({ status }: DocumentStatusBadgeProps) {
 
 ### 3. Business Logic (Features)
 
-Features in `features/compliance/` or pages like `app/(tenant)/[orgId]/compliance/documents/page.tsx` manage compliance-related workflows.
+Features in `features/compliance/` or pages like
+`app/(tenant)/[orgId]/compliance/documents/page.tsx` manage compliance-related workflows.
 
-- **Encapsulation**: `ManageDriverDocumentsFeature` could allow viewing, uploading, and setting reminders for a driver's documents.
-- **Form Handling**: Forms for uploading new documents or updating compliance information use Server Actions, with client-side UX enhancements.
-- **Complex Interactions**: Displaying timelines of HOS events, managing document expiry notifications.
+- **Encapsulation**: `ManageDriverDocumentsFeature` could allow viewing, uploading, and setting
+  reminders for a driver's documents.
+- **Form Handling**: Forms for uploading new documents or updating compliance information use Server
+  Actions, with client-side UX enhancements.
+- **Complex Interactions**: Displaying timelines of HOS events, managing document expiry
+  notifications.
 
 ```tsx
 // Example: features/compliance/UploadDocumentFeature.tsx
@@ -654,7 +745,7 @@ export function UploadDocumentFeature({ orgId, entityType, entityId }: UploadDoc
       <input type="hidden" name="orgId" value={orgId} />
       <input type="hidden" name="entityType" value={entityType} />
       <input type="hidden" name="entityId" value={entityId} />
-      
+
       <div>
         <label htmlFor="documentType">Document Type</label>
         <input type="text" name="documentType" id="documentType" required />
@@ -667,7 +758,7 @@ export function UploadDocumentFeature({ orgId, entityType, entityId }: UploadDoc
         <label htmlFor="expiryDate">Expiry Date (Optional)</label>
         <input type="date" name="expiryDate" id="expiryDate" />
       </div>
-      
+
       {state?.error && <p style={{ color: 'red' }}>{state.error}</p>}
       {state?.success && <p style={{ color: 'green' }}>Document uploaded successfully!</p>}
       <SubmitButton buttonText="Upload Document" />
@@ -681,9 +772,12 @@ export function UploadDocumentFeature({ orgId, entityType, entityId }: UploadDoc
 Server Actions in `lib/actions/complianceActions.ts` handle mutations related to compliance data.
 
 - **`'use server';`**: Standard.
-- **Data Mutations**: Uploading documents (potentially to cloud storage like S3, then saving metadata), creating HOS log entries, updating vehicle inspection records.
-- **Business Rule Enforcement**: Validating document types, checking for required fields, ensuring HOS rules are met.
-- **Integration**: Called from document upload forms or HOS logging interfaces. `revalidatePath` or `revalidateTag` updates relevant views.
+- **Data Mutations**: Uploading documents (potentially to cloud storage like S3, then saving
+  metadata), creating HOS log entries, updating vehicle inspection records.
+- **Business Rule Enforcement**: Validating document types, checking for required fields, ensuring
+  HOS rules are met.
+- **Integration**: Called from document upload forms or HOS logging interfaces. `revalidatePath` or
+  `revalidateTag` updates relevant views.
 
 ```typescript
 // Example: lib/actions/complianceActions.ts
@@ -697,11 +791,11 @@ import { complianceDocumentSchema } from '@/validations/compliance'; // From val
 import { auth } from '@clerk/nextjs/server';
 
 export async function uploadComplianceDocumentAction(
-  prevState: any, 
+  prevState: any,
   formData: FormData
 ): Promise<{ success: boolean; error?: string; docId?: string }> {
   const { userId, orgId: userOrgId } = auth(); // Clerk's orgId might be different from app's tenant orgId
-  if (!userId) return { success: false, error: "User not authenticated." };
+  if (!userId) return { success: false, error: 'User not authenticated.' };
 
   const submittedOrgId = formData.get('orgId') as string;
   // Validate user belongs to submittedOrgId or has rights
@@ -712,17 +806,22 @@ export async function uploadComplianceDocumentAction(
     entityType: formData.get('entityType'),
     entityId: formData.get('entityId'),
     documentType: formData.get('documentType'),
-    expiryDate: formData.get('expiryDate') ? new Date(formData.get('expiryDate') as string) : undefined,
+    expiryDate: formData.get('expiryDate')
+      ? new Date(formData.get('expiryDate') as string)
+      : undefined,
     // file: formData.get('file') // File handling is more complex
   });
 
   if (!validatedFields.success) {
-    return { success: false, error: "Invalid data.", /* fieldErrors: validatedFields.error.flatten().fieldErrors */ };
+    return {
+      success: false,
+      error: 'Invalid data.' /* fieldErrors: validatedFields.error.flatten().fieldErrors */,
+    };
   }
-  
+
   const file = formData.get('file') as File;
   if (!file || file.size === 0) {
-    return { success: false, error: "File is required." };
+    return { success: false, error: 'File is required.' };
   }
 
   try {
@@ -732,8 +831,8 @@ export async function uploadComplianceDocumentAction(
     // const newDocument = await prisma.complianceDocument.create({
     //   data: { ...validatedFields.data, fileUrl, uploadedByUserId: userId },
     // });
-    const newDocId = "doc_" + Date.now(); // Placeholder
-    console.log("Document uploaded:", validatedFields.data, fileUrl);
+    const newDocId = 'doc_' + Date.now(); // Placeholder
+    console.log('Document uploaded:', validatedFields.data, fileUrl);
 
     revalidatePath(`/tenant/${submittedOrgId}/compliance/documents`);
     return { success: true, docId: newDocId };
@@ -748,8 +847,10 @@ export async function uploadComplianceDocumentAction(
 
 Fetchers in `lib/fetchers/complianceFetchers.ts` retrieve compliance data for display.
 
-- **Data Retrieval**: `getDriverComplianceStatus(driverId)`, `getVehicleHOSLogs(vehicleId, range)`, `listComplianceDocuments(orgId, entityType, entityId)`.
-- **Efficiency**: Queries filter by organization, entity, and date ranges. Caching is important for frequently accessed data.
+- **Data Retrieval**: `getDriverComplianceStatus(driverId)`, `getVehicleHOSLogs(vehicleId, range)`,
+  `listComplianceDocuments(orgId, entityType, entityId)`.
+- **Efficiency**: Queries filter by organization, entity, and date ranges. Caching is important for
+  frequently accessed data.
 - **Consistency**: Standardized access to compliance records.
 
 ```typescript
@@ -764,30 +865,46 @@ export async function listComplianceDocuments(
   entityType: 'driver' | 'vehicle',
   entityId: string
 ): Promise<ComplianceDocument[]> {
-  return cache(async () => {
-    // const documents = await prisma.complianceDocument.findMany({
-    //   where: { orgId, entityType, entityId },
-    //   orderBy: { uploadedAt: 'desc' },
-    // });
-    // return documents;
-    return [{ // Placeholder
-      id: "doc1", orgId, entityType, entityId, documentType: "License", 
-      fileUrl: "http://example.com/license.pdf", uploadedAt: new Date(), 
-      uploadedByUserId: "user1", status: "valid"
-    }];
-  }, [`compliance-docs-${orgId}-${entityType}-${entityId}`], {
-    tags: [`compliance-docs-${orgId}`],
-    revalidate: 3600,
-  })();
+  return cache(
+    async () => {
+      // const documents = await prisma.complianceDocument.findMany({
+      //   where: { orgId, entityType, entityId },
+      //   orderBy: { uploadedAt: 'desc' },
+      // });
+      // return documents;
+      return [
+        {
+          // Placeholder
+          id: 'doc1',
+          orgId,
+          entityType,
+          entityId,
+          documentType: 'License',
+          fileUrl: 'http://example.com/license.pdf',
+          uploadedAt: new Date(),
+          uploadedByUserId: 'user1',
+          status: 'valid',
+        },
+      ];
+    },
+    [`compliance-docs-${orgId}-${entityType}-${entityId}`],
+    {
+      tags: [`compliance-docs-${orgId}`],
+      revalidate: 3600,
+    }
+  )();
 }
 ```
 
 ### 6. Integration
 
-- **Pages (`app/(tenant)/[orgId]/compliance/`)**: Display compliance dashboards and lists, using Fetchers for data.
-- **Feature Components (`features/compliance/`)**: Manage workflows like document uploads or HOS log reviews.
+- **Pages (`app/(tenant)/[orgId]/compliance/`)**: Display compliance dashboards and lists, using
+  Fetchers for data.
+- **Feature Components (`features/compliance/`)**: Manage workflows like document uploads or HOS log
+  reviews.
 - **UI Components (`components/compliance/`)**: Render specific compliance data elements.
-- **Server Actions (`lib/actions/complianceActions.ts`)**: Handle data mutations like uploads and log entries.
+- **Server Actions (`lib/actions/complianceActions.ts`)**: Handle data mutations like uploads and
+  log entries.
 - **Fetchers (`lib/fetchers/complianceFetchers.ts`)**: Provide compliance data to Server Components.
 - **Types/Validations**: `types/compliance.ts`, `validations/compliance.ts`.
 
@@ -797,21 +914,29 @@ export async function listComplianceDocuments(
 
 ### 1. Domain Architecture Overview
 
-The Dispatch domain is central to managing transportation logistics, including creating and assigning loads, tracking shipments, and managing driver assignments.
+The Dispatch domain is central to managing transportation logistics, including creating and
+assigning loads, tracking shipments, and managing driver assignments.
 
-- **Frontend**: Routes under `app/(tenant)/[orgId]/dispatch/` provide interfaces for dispatch boards, load creation forms, and shipment tracking. Client Components are used for interactive elements like drag-and-drop dispatch boards or real-time map updates.
-- **Backend**: Server Actions handle load creation, updates, and assignments. Fetchers retrieve load, driver, and vehicle data for display on dispatch interfaces.
+- **Frontend**: Routes under `app/(tenant)/[orgId]/dispatch/` provide interfaces for dispatch
+  boards, load creation forms, and shipment tracking. Client Components are used for interactive
+  elements like drag-and-drop dispatch boards or real-time map updates.
+- **Backend**: Server Actions handle load creation, updates, and assignments. Fetchers retrieve
+  load, driver, and vehicle data for display on dispatch interfaces.
 
 ### 2. UI Components (Dumb Components)
 
 Located in `components/dispatch/` and `components/shared/ui/`.
 
-- **Responsibilities**: Displaying load information (`LoadCard`), forms for load details (`LoadForm`), elements of a dispatch board.
-- **Stateless & Reusable**: `LoadCard` takes load data as props. Form components are composed of generic inputs.
+- **Responsibilities**: Displaying load information (`LoadCard`), forms for load details
+  (`LoadForm`), elements of a dispatch board.
+- **Stateless & Reusable**: `LoadCard` takes load data as props. Form components are composed of
+  generic inputs.
 - **Examples**:
-    - `LoadCard`: Displays summary information for a single load. (As in `components/dispatch/load-card.tsx`)
-    - `DriverAssignmentDropdown`: A dropdown to select a driver for a load.
-    - `LocationPickerInput`: An input field with map integration for selecting pickup/delivery locations.
+  - `LoadCard`: Displays summary information for a single load. (As in
+    `components/dispatch/load-card.tsx`)
+  - `DriverAssignmentDropdown`: A dropdown to select a driver for a load.
+  - `LocationPickerInput`: An input field with map integration for selecting pickup/delivery
+    locations.
 
 ```tsx
 // Example: components/dispatch/LoadStatusBadge.tsx
@@ -826,7 +951,9 @@ export function LoadStatusBadge({ status }: LoadStatusBadgeProps) {
   // ... logic to determine color based on status ...
   const color = status === 'PENDING' ? 'blue' : status === 'IN_TRANSIT' ? 'orange' : 'green';
   return (
-    <span style={{ backgroundColor: color, color: 'white', padding: '2px 6px', borderRadius: '4px' }}>
+    <span
+      style={{ backgroundColor: color, color: 'white', padding: '2px 6px', borderRadius: '4px' }}
+    >
       {status}
     </span>
   );
@@ -835,11 +962,15 @@ export function LoadStatusBadge({ status }: LoadStatusBadgeProps) {
 
 ### 3. Business Logic (Features)
 
-Features in `features/dispatch/` or pages like `app/(tenant)/[orgId]/dispatch/board/page.tsx` manage dispatch operations.
+Features in `features/dispatch/` or pages like `app/(tenant)/[orgId]/dispatch/board/page.tsx` manage
+dispatch operations.
 
-- **Encapsulation**: `InteractiveDispatchBoardFeature` could allow drag-and-drop assignment of loads to drivers. `CreateLoadFeature` would guide users through creating a new load.
-- **Form Handling**: `LoadForm` (from `components/dispatch/load-form.tsx`) uses Server Actions for creating/updating loads.
-- **Complex Interactions**: Real-time updates on a dispatch board, route optimization suggestions, managing multi-stop loads.
+- **Encapsulation**: `InteractiveDispatchBoardFeature` could allow drag-and-drop assignment of loads
+  to drivers. `CreateLoadFeature` would guide users through creating a new load.
+- **Form Handling**: `LoadForm` (from `components/dispatch/load-form.tsx`) uses Server Actions for
+  creating/updating loads.
+- **Complex Interactions**: Real-time updates on a dispatch board, route optimization suggestions,
+  managing multi-stop loads.
 
 ```tsx
 // Example: features/dispatch/CreateLoadFeature.tsx
@@ -865,12 +996,12 @@ export function CreateLoadFeature({ orgId, availableDrivers, availableVehicles }
       <input type="hidden" name="orgId" value={orgId} />
       {/* LoadForm component would contain all the fields */}
       {/* This is a simplified representation; LoadForm itself might handle its fields and structure */}
-      <LoadForm 
-        initialData={null} 
-        availableDrivers={availableDrivers} 
-        availableVehicles={availableVehicles} 
+      <LoadForm
+        initialData={null}
+        availableDrivers={availableDrivers}
+        availableVehicles={availableVehicles}
       />
-      
+
       {state?.error && <p style={{ color: 'red' }}>Error: {state.error}</p>}
       {state?.fieldErrors && /* display field errors */}
       {state?.loadId && <p style={{ color: 'green' }}>Load created successfully! ID: {state.loadId}</p>}
@@ -885,9 +1016,12 @@ export function CreateLoadFeature({ orgId, availableDrivers, availableVehicles }
 Server Actions in `lib/actions/dispatchActions.ts` handle mutations for loads and assignments.
 
 - **`'use server';`**: Standard.
-- **Data Mutations**: Creating new loads, updating load statuses (e.g., "picked_up", "delivered"), assigning loads to drivers/vehicles.
-- **Business Rule Enforcement**: Validating load details, checking driver/vehicle availability, ensuring compliance with business rules (e.g., weight limits).
-- **Integration**: Called from load creation forms or dispatch board interactions. `revalidatePath` or `revalidateTag` updates dispatch views.
+- **Data Mutations**: Creating new loads, updating load statuses (e.g., "picked_up", "delivered"),
+  assigning loads to drivers/vehicles.
+- **Business Rule Enforcement**: Validating load details, checking driver/vehicle availability,
+  ensuring compliance with business rules (e.g., weight limits).
+- **Integration**: Called from load creation forms or dispatch board interactions. `revalidatePath`
+  or `revalidateTag` updates dispatch views.
 
 ```typescript
 // Example: lib/actions/dispatchActions.ts
@@ -900,12 +1034,12 @@ import { loadSchema } from '@/validations/dispatch'; // From validations/dispatc
 import { auth } from '@clerk/nextjs/server';
 
 export async function createLoadAction(
-  prevState: any, 
+  prevState: any,
   formData: FormData
 ): Promise<{ success: boolean; error?: string; fieldErrors?: any; loadId?: string }> {
   const { userId, orgId: userOrgId } = auth();
-  if (!userId) return { success: false, error: "User not authenticated." };
-  
+  if (!userId) return { success: false, error: 'User not authenticated.' };
+
   const submittedOrgId = formData.get('orgId') as string;
   // Add orgId validation against userOrgId or user's permissions
 
@@ -917,15 +1051,19 @@ export async function createLoadAction(
   const validatedFields = loadSchema.safeParse(rawData);
 
   if (!validatedFields.success) {
-    return { success: false, error: "Invalid data.", fieldErrors: validatedFields.error.flatten().fieldErrors };
+    return {
+      success: false,
+      error: 'Invalid data.',
+      fieldErrors: validatedFields.error.flatten().fieldErrors,
+    };
   }
 
   try {
     // const newLoad = await prisma.load.create({
     //   data: { ...validatedFields.data, orgId: submittedOrgId, createdByUserId: userId },
     // });
-    const newLoadId = "load_" + Date.now(); // Placeholder
-    console.log("Load created:", validatedFields.data);
+    const newLoadId = 'load_' + Date.now(); // Placeholder
+    console.log('Load created:', validatedFields.data);
 
     revalidatePath(`/tenant/${submittedOrgId}/dispatch`);
     revalidateTag(`loads-${submittedOrgId}`);
@@ -941,8 +1079,10 @@ export async function createLoadAction(
 
 Fetchers in `lib/fetchers/dispatchFetchers.ts` retrieve data for dispatch boards and load details.
 
-- **Data Retrieval**: `getActiveLoads(orgId)`, `getLoadDetails(loadId)`, `getAvailableDriversForLoad(orgId, loadRequirements)`.
-- **Efficiency**: Queries filter by status, date, location. Real-time needs might require different strategies (e.g., polling, subscriptions if using GraphQL/WebSockets).
+- **Data Retrieval**: `getActiveLoads(orgId)`, `getLoadDetails(loadId)`,
+  `getAvailableDriversForLoad(orgId, loadRequirements)`.
+- **Efficiency**: Queries filter by status, date, location. Real-time needs might require different
+  strategies (e.g., polling, subscriptions if using GraphQL/WebSockets).
 - **Consistency**: Standardized access to dispatch-related data.
 
 ```typescript
@@ -952,32 +1092,48 @@ import { Load } from '@/types/dispatch'; // From types/dispatch.ts
 import { unstable_cache as cache } from 'next/cache';
 
 export async function getActiveLoads(orgId: string): Promise<Load[]> {
-  return cache(async () => {
-    // const loads = await prisma.load.findMany({
-    //   where: { orgId, status: { notIn: ['DELIVERED', 'CANCELLED'] } },
-    //   orderBy: { createdAt: 'desc' },
-    //   // include: { driver: true, vehicle: true } // Include related data
-    // });
-    // return loads;
-    return [{ // Placeholder
-      id: "load1", orgId, customerName: "Customer X", status: "PENDING",
-      pickupLocation: "City A", deliveryLocation: "City B", 
-      pickupDate: new Date(), deliveryDate: new Date(),
-      // driver: { id: "driver1", name: "John Doe" } 
-    }];
-  }, [`active-loads-${orgId}`], {
-    tags: [`loads-${orgId}`],
-    revalidate: 60, // Revalidate every minute for active loads
-  })();
+  return cache(
+    async () => {
+      // const loads = await prisma.load.findMany({
+      //   where: { orgId, status: { notIn: ['DELIVERED', 'CANCELLED'] } },
+      //   orderBy: { createdAt: 'desc' },
+      //   // include: { driver: true, vehicle: true } // Include related data
+      // });
+      // return loads;
+      return [
+        {
+          // Placeholder
+          id: 'load1',
+          orgId,
+          customerName: 'Customer X',
+          status: 'PENDING',
+          pickupLocation: 'City A',
+          deliveryLocation: 'City B',
+          pickupDate: new Date(),
+          deliveryDate: new Date(),
+          // driver: { id: "driver1", name: "John Doe" }
+        },
+      ];
+    },
+    [`active-loads-${orgId}`],
+    {
+      tags: [`loads-${orgId}`],
+      revalidate: 60, // Revalidate every minute for active loads
+    }
+  )();
 }
 ```
 
 ### 6. Integration
 
-- **Pages (`app/(tenant)/[orgId]/dispatch/`)**: Display dispatch boards, load lists, and creation forms.
-- **Feature Components (`features/dispatch/`)**: Manage interactive dispatch boards or complex load creation flows.
-- **UI Components (`components/dispatch/`)**: Render load cards, form elements, parts of the dispatch board.
-- **Server Actions (`lib/actions/dispatchActions.ts`)**: Handle load creation, updates, and assignments.
+- **Pages (`app/(tenant)/[orgId]/dispatch/`)**: Display dispatch boards, load lists, and creation
+  forms.
+- **Feature Components (`features/dispatch/`)**: Manage interactive dispatch boards or complex load
+  creation flows.
+- **UI Components (`components/dispatch/`)**: Render load cards, form elements, parts of the
+  dispatch board.
+- **Server Actions (`lib/actions/dispatchActions.ts`)**: Handle load creation, updates, and
+  assignments.
 - **Fetchers (`lib/fetchers/dispatchFetchers.ts`)**: Provide data for dispatch views.
 - **Types/Validations**: `types/dispatch.ts`, `validations/dispatch.ts`.
 
@@ -987,21 +1143,26 @@ export async function getActiveLoads(orgId: string): Promise<Load[]> {
 
 ### 1. Domain Architecture Overview
 
-The Drivers domain is concerned with managing all information related to drivers, including their profiles, qualifications, assignments, and performance.
+The Drivers domain is concerned with managing all information related to drivers, including their
+profiles, qualifications, assignments, and performance.
 
-- **Frontend**: Routes under `app/(tenant)/[orgId]/drivers/` allow for viewing driver lists, individual driver profiles, and forms for adding or editing driver information.
-- **Backend**: Server Actions handle the creation and updating of driver profiles. Fetchers retrieve driver data for display and for use in other domains like Dispatch.
+- **Frontend**: Routes under `app/(tenant)/[orgId]/drivers/` allow for viewing driver lists,
+  individual driver profiles, and forms for adding or editing driver information.
+- **Backend**: Server Actions handle the creation and updating of driver profiles. Fetchers retrieve
+  driver data for display and for use in other domains like Dispatch.
 
 ### 2. UI Components (Dumb Components)
 
 Located in `components/drivers/` and `components/shared/ui/`.
 
-- **Responsibilities**: Displaying driver information (`DriverCard`), lists of drivers, forms for driver details.
-- **Stateless & Reusable**: `DriverCard` (from `components/drivers/driver-card.tsx`) takes driver data as props.
+- **Responsibilities**: Displaying driver information (`DriverCard`), lists of drivers, forms for
+  driver details.
+- **Stateless & Reusable**: `DriverCard` (from `components/drivers/driver-card.tsx`) takes driver
+  data as props.
 - **Examples**:
-    - `DriverProfileView`: Shows detailed information about a driver.
-    - `DriverLicenseInfo`: Displays license number, expiry, and class.
-    - `AddDriverFormFields`: Inputs for driver's personal details, contact, license.
+  - `DriverProfileView`: Shows detailed information about a driver.
+  - `DriverLicenseInfo`: Displays license number, expiry, and class.
+  - `AddDriverFormFields`: Inputs for driver's personal details, contact, license.
 
 ```tsx
 // Example: components/drivers/DriverStatusIndicator.tsx
@@ -1019,18 +1180,31 @@ export function DriverStatusIndicator({ status }: DriverStatusIndicatorProps) {
   if (status === 'unavailable') color = 'red';
 
   return (
-    <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: color, marginRight: '8px' }} title={status} />
+    <span
+      style={{
+        display: 'inline-block',
+        width: '10px',
+        height: '10px',
+        borderRadius: '50%',
+        backgroundColor: color,
+        marginRight: '8px',
+      }}
+      title={status}
+    />
   );
 }
 ```
 
 ### 3. Business Logic (Features)
 
-Features in `features/drivers/` or pages like `app/(tenant)/[orgId]/drivers/[driverId]/page.tsx` manage driver-related operations.
+Features in `features/drivers/` or pages like `app/(tenant)/[orgId]/drivers/[driverId]/page.tsx`
+manage driver-related operations.
 
-- **Encapsulation**: `ManageDriverProfileFeature` could allow viewing and editing all aspects of a driver's profile, including qualifications and documents (linking to Compliance).
+- **Encapsulation**: `ManageDriverProfileFeature` could allow viewing and editing all aspects of a
+  driver's profile, including qualifications and documents (linking to Compliance).
 - **Form Handling**: Forms for adding new drivers or editing existing ones use Server Actions.
-- **Complex Interactions**: Managing driver schedules, assigning qualifications, tracking performance metrics (linking to Analytics).
+- **Complex Interactions**: Managing driver schedules, assigning qualifications, tracking
+  performance metrics (linking to Analytics).
 
 ```tsx
 // Example: features/drivers/AddDriverFeature.tsx
@@ -1058,7 +1232,7 @@ export function AddDriverFeature({ orgId }: { orgId: string }) {
         <input type="text" name="lastName" id="lastName" required />
       </div>
       {/* ... other driver fields ... */}
-      
+
       {state?.error && <p style={{ color: 'red' }}>Error: {state.error}</p>}
       {state?.fieldErrors && /* display field errors */}
       {state?.driverId && <p style={{ color: 'green' }}>Driver added successfully! ID: {state.driverId}</p>}
@@ -1073,9 +1247,12 @@ export function AddDriverFeature({ orgId }: { orgId: string }) {
 Server Actions in `lib/actions/driverActions.ts` handle mutations for driver data.
 
 - **`'use server';`**: Standard.
-- **Data Mutations**: Creating new driver profiles, updating driver details, changing driver status (e.g., "active", "inactive").
-- **Business Rule Enforcement**: Validating driver information (e.g., license validity), ensuring required qualifications are met.
-- **Integration**: Called from driver management forms. `revalidatePath` or `revalidateTag` updates driver lists and profiles.
+- **Data Mutations**: Creating new driver profiles, updating driver details, changing driver status
+  (e.g., "active", "inactive").
+- **Business Rule Enforcement**: Validating driver information (e.g., license validity), ensuring
+  required qualifications are met.
+- **Integration**: Called from driver management forms. `revalidatePath` or `revalidateTag` updates
+  driver lists and profiles.
 
 ```typescript
 // Example: lib/actions/driverActions.ts
@@ -1087,11 +1264,11 @@ import { driverSchema } from '@/validations/drivers'; // From validations/driver
 import { auth } from '@clerk/nextjs/server';
 
 export async function addDriverAction(
-  prevState: any, 
+  prevState: any,
   formData: FormData
 ): Promise<{ success: boolean; error?: string; fieldErrors?: any; driverId?: string }> {
   const { userId, orgId: userOrgId } = auth();
-  if (!userId) return { success: false, error: "User not authenticated." };
+  if (!userId) return { success: false, error: 'User not authenticated.' };
 
   const submittedOrgId = formData.get('orgId') as string;
   // Add orgId validation
@@ -1100,15 +1277,19 @@ export async function addDriverAction(
   const validatedFields = driverSchema.safeParse(rawData);
 
   if (!validatedFields.success) {
-    return { success: false, error: "Invalid data.", fieldErrors: validatedFields.error.flatten().fieldErrors };
+    return {
+      success: false,
+      error: 'Invalid data.',
+      fieldErrors: validatedFields.error.flatten().fieldErrors,
+    };
   }
 
   try {
     // const newDriver = await prisma.driver.create({
     //   data: { ...validatedFields.data, orgId: submittedOrgId },
     // });
-    const newDriverId = "driver_" + Date.now(); // Placeholder
-    console.log("Driver added:", validatedFields.data);
+    const newDriverId = 'driver_' + Date.now(); // Placeholder
+    console.log('Driver added:', validatedFields.data);
 
     revalidatePath(`/tenant/${submittedOrgId}/drivers`);
     revalidateTag(`drivers-${submittedOrgId}`);
@@ -1124,7 +1305,8 @@ export async function addDriverAction(
 
 Fetchers in `lib/fetchers/driverFetchers.ts` retrieve driver information.
 
-- **Data Retrieval**: `getAllDrivers(orgId)`, `getDriverById(driverId)`, `getDriverAssignments(driverId)`.
+- **Data Retrieval**: `getAllDrivers(orgId)`, `getDriverById(driverId)`,
+  `getDriverAssignments(driverId)`.
 - **Efficiency**: Queries filter by organization and status. Data is cached.
 - **Consistency**: Standardized access to driver profiles.
 
@@ -1135,42 +1317,64 @@ import { Driver } from '@/types/drivers'; // From types/drivers.ts
 import { unstable_cache as cache } from 'next/cache';
 
 export async function getAllDrivers(orgId: string): Promise<Driver[]> {
-  return cache(async () => {
-    // const drivers = await prisma.driver.findMany({
-    //   where: { orgId, status: 'ACTIVE' }, // Example filter
-    //   orderBy: { lastName: 'asc' },
-    // });
-    // return drivers;
-    return [{ // Placeholder
-      id: "driver1", orgId, firstName: "John", lastName: "Doe", 
-      email: "john.doe@example.com", phone: "555-1234", status: "ACTIVE",
-      availabilityStatus: "available"
-    }];
-  }, [`all-drivers-${orgId}`], {
-    tags: [`drivers-${orgId}`],
-    revalidate: 3600,
-  })();
+  return cache(
+    async () => {
+      // const drivers = await prisma.driver.findMany({
+      //   where: { orgId, status: 'ACTIVE' }, // Example filter
+      //   orderBy: { lastName: 'asc' },
+      // });
+      // return drivers;
+      return [
+        {
+          // Placeholder
+          id: 'driver1',
+          orgId,
+          firstName: 'John',
+          lastName: 'Doe',
+          email: 'john.doe@example.com',
+          phone: '555-1234',
+          status: 'ACTIVE',
+          availabilityStatus: 'available',
+        },
+      ];
+    },
+    [`all-drivers-${orgId}`],
+    {
+      tags: [`drivers-${orgId}`],
+      revalidate: 3600,
+    }
+  )();
 }
 
 export async function getDriverById(driverId: string): Promise<Driver | null> {
-  return cache(async () => {
-    // const driver = await prisma.driver.findUnique({
-    //   where: { id: driverId },
-    //   // include: { qualifications: true, documents: true } // Example includes
-    // });
-    // return driver;
-    if (driverId === "driver1") { // Placeholder
+  return cache(
+    async () => {
+      // const driver = await prisma.driver.findUnique({
+      //   where: { id: driverId },
+      //   // include: { qualifications: true, documents: true } // Example includes
+      // });
+      // return driver;
+      if (driverId === 'driver1') {
+        // Placeholder
         return {
-            id: "driver1", orgId: "org123", firstName: "John", lastName: "Doe",
-            email: "john.doe@example.com", phone: "555-1234", status: "ACTIVE",
-            availabilityStatus: "available"
+          id: 'driver1',
+          orgId: 'org123',
+          firstName: 'John',
+          lastName: 'Doe',
+          email: 'john.doe@example.com',
+          phone: '555-1234',
+          status: 'ACTIVE',
+          availabilityStatus: 'available',
         };
+      }
+      return null;
+    },
+    [`driver-${driverId}`],
+    {
+      tags: [`driver-${driverId}`],
+      revalidate: 3600,
     }
-    return null;
-  }, [`driver-${driverId}`], {
-    tags: [`driver-${driverId}`],
-    revalidate: 3600,
-  })();
+  )();
 }
 ```
 
@@ -1180,7 +1384,8 @@ export async function getDriverById(driverId: string): Promise<Driver | null> {
 - **Feature Components (`features/drivers/`)**: Manage adding/editing driver profiles.
 - **UI Components (`components/drivers/`)**: Render driver cards, profile details, form fields.
 - **Server Actions (`lib/actions/driverActions.ts`)**: Handle creation and updates of driver data.
-- **Fetchers (`lib/fetchers/driverFetchers.ts`)**: Provide driver data to various parts of the application.
+- **Fetchers (`lib/fetchers/driverFetchers.ts`)**: Provide driver data to various parts of the
+  application.
 - **Types/Validations**: `types/drivers.ts`, `validations/drivers.ts`.
 
 ---
@@ -1189,21 +1394,26 @@ export async function getDriverById(driverId: string): Promise<Driver | null> {
 
 ### 1. Domain Architecture Overview
 
-The IFTA (International Fuel Tax Agreement) domain handles the tracking of fuel purchases and mileage traveled in different jurisdictions for tax reporting purposes.
+The IFTA (International Fuel Tax Agreement) domain handles the tracking of fuel purchases and
+mileage traveled in different jurisdictions for tax reporting purposes.
 
-- **Frontend**: Routes under `app/(tenant)/[orgId]/ifta/` provide interfaces for entering trip logs, fuel purchases, and generating IFTA reports.
-- **Backend**: Server Actions record trip data and fuel purchases. Fetchers retrieve this data for reporting. Complex calculations for IFTA reports might be handled in Server Actions or dedicated utility functions.
+- **Frontend**: Routes under `app/(tenant)/[orgId]/ifta/` provide interfaces for entering trip logs,
+  fuel purchases, and generating IFTA reports.
+- **Backend**: Server Actions record trip data and fuel purchases. Fetchers retrieve this data for
+  reporting. Complex calculations for IFTA reports might be handled in Server Actions or dedicated
+  utility functions.
 
 ### 2. UI Components (Dumb Components)
 
 Located in `components/ifta/` and `components/shared/ui/`.
 
-- **Responsibilities**: Displaying IFTA report tables (`IftaReportTable`), forms for trip logs (`IftaTripTable`) and fuel purchases.
+- **Responsibilities**: Displaying IFTA report tables (`IftaReportTable`), forms for trip logs
+  (`IftaTripTable`) and fuel purchases.
 - **Stateless & Reusable**: Components for entering jurisdictional mileage or fuel purchase details.
 - **Examples**:
-    - `JurisdictionMileageInputRow`: A row in a form for entering miles per state/province.
-    - `FuelPurchaseFormFields`: Inputs for date, location, gallons, cost of fuel.
-    - `IftaSummaryTable`: Displays calculated taxes owed or refunded per jurisdiction.
+  - `JurisdictionMileageInputRow`: A row in a form for entering miles per state/province.
+  - `FuelPurchaseFormFields`: Inputs for date, location, gallons, cost of fuel.
+  - `IftaSummaryTable`: Displays calculated taxes owed or refunded per jurisdiction.
 
 ```tsx
 // Example: components/ifta/FuelPurchaseCard.tsx
@@ -1228,11 +1438,14 @@ export function FuelPurchaseCard({ purchase }: FuelPurchaseCardProps) {
 
 ### 3. Business Logic (Features)
 
-Features in `features/ifta/` or pages like `app/(tenant)/[orgId]/ifta/reports/page.tsx` manage IFTA data entry and reporting.
+Features in `features/ifta/` or pages like `app/(tenant)/[orgId]/ifta/reports/page.tsx` manage IFTA
+data entry and reporting.
 
-- **Encapsulation**: `GenerateIftaReportFeature` could guide users through selecting a reporting period and then display the generated report.
+- **Encapsulation**: `GenerateIftaReportFeature` could guide users through selecting a reporting
+  period and then display the generated report.
 - **Form Handling**: Forms for logging trips and fuel purchases use Server Actions.
-- **Complex Interactions**: Calculating taxable miles, fuel consumed per jurisdiction, and tax liabilities based on varying rates.
+- **Complex Interactions**: Calculating taxable miles, fuel consumed per jurisdiction, and tax
+  liabilities based on varying rates.
 
 ```tsx
 // Example: features/ifta/LogTripFeature.tsx
@@ -1258,9 +1471,11 @@ export function LogTripFeature({ orgId, vehicleId }: { orgId: string; vehicleId:
         <input type="date" name="tripDate" id="tripDate" required />
       </div>
       {/* ... other trip log fields ... */}
-      
+
       {state?.error && <p style={{ color: 'red' }}>Error: {state.error}</p>}
-      {state?.tripId && <p style={{ color: 'green' }}>Trip logged successfully! ID: {state.tripId}</p>}
+      {state?.tripId && (
+        <p style={{ color: 'green' }}>Trip logged successfully! ID: {state.tripId}</p>
+      )}
       <SubmitButton buttonText="Log Trip" />
     </form>
   );
@@ -1273,8 +1488,10 @@ Server Actions in `lib/actions/iftaActions.ts` handle mutations for IFTA data.
 
 - **`'use server';`**: Standard.
 - **Data Mutations**: Creating trip logs, recording fuel purchases.
-- **Business Rule Enforcement**: Validating data entries (e.g., ensuring mileage adds up), applying correct jurisdiction codes.
-- **Integration**: Called from IFTA data entry forms. `revalidatePath` or `revalidateTag` updates IFTA data views.
+- **Business Rule Enforcement**: Validating data entries (e.g., ensuring mileage adds up), applying
+  correct jurisdiction codes.
+- **Integration**: Called from IFTA data entry forms. `revalidatePath` or `revalidateTag` updates
+  IFTA data views.
 
 ```typescript
 // Example: lib/actions/iftaActions.ts
@@ -1286,12 +1503,12 @@ import { iftaTripSchema } from '@/validations/ifta'; // From validations/ifta.ts
 import { auth } from '@clerk/nextjs/server';
 
 export async function logIftaTripAction(
-  prevState: any, 
+  prevState: any,
   formData: FormData
 ): Promise<{ success: boolean; error?: string; fieldErrors?: any; tripId?: string }> {
   const { userId, orgId: userOrgId } = auth();
-  if (!userId) return { success: false, error: "User not authenticated." };
-  
+  if (!userId) return { success: false, error: 'User not authenticated.' };
+
   const submittedOrgId = formData.get('orgId') as string;
   // Add orgId validation
 
@@ -1300,15 +1517,19 @@ export async function logIftaTripAction(
   const validatedFields = iftaTripSchema.safeParse(rawData);
 
   if (!validatedFields.success) {
-    return { success: false, error: "Invalid data.", fieldErrors: validatedFields.error.flatten().fieldErrors };
+    return {
+      success: false,
+      error: 'Invalid data.',
+      fieldErrors: validatedFields.error.flatten().fieldErrors,
+    };
   }
 
   try {
     // const newTrip = await prisma.iftaTripLog.create({
     //   data: { ...validatedFields.data, orgId: submittedOrgId },
     // });
-    const newTripId = "ifta_trip_" + Date.now(); // Placeholder
-    console.log("IFTA trip logged:", validatedFields.data);
+    const newTripId = 'ifta_trip_' + Date.now(); // Placeholder
+    console.log('IFTA trip logged:', validatedFields.data);
 
     revalidatePath(`/tenant/${submittedOrgId}/ifta`);
     revalidateTag(`ifta-trips-${submittedOrgId}`);
@@ -1324,7 +1545,8 @@ export async function logIftaTripAction(
 
 Fetchers in `lib/fetchers/iftaFetchers.ts` retrieve data for IFTA reports.
 
-- **Data Retrieval**: `getIftaTripsForPeriod(orgId, period)`, `getFuelPurchasesForPeriod(orgId, period)`.
+- **Data Retrieval**: `getIftaTripsForPeriod(orgId, period)`,
+  `getFuelPurchasesForPeriod(orgId, period)`.
 - **Efficiency**: Queries aggregate data by jurisdiction and filter by reporting period.
 - **Consistency**: Standardized access to IFTA records.
 
@@ -1334,21 +1556,39 @@ Fetchers in `lib/fetchers/iftaFetchers.ts` retrieve data for IFTA reports.
 import { IftaTripLog, FuelPurchase } from '@/types/ifta'; // From types/ifta.ts
 import { unstable_cache as cache } from 'next/cache';
 
-export async function getIftaTripsForPeriod(orgId: string, startDate: Date, endDate: Date): Promise<IftaTripLog[]> {
-  return cache(async () => {
-    // const trips = await prisma.iftaTripLog.findMany({
-    //   where: { orgId, tripDate: { gte: startDate, lte: endDate } },
-    //   orderBy: { tripDate: 'asc' },
-    // });
-    // return trips;
-    return [{ // Placeholder
-      id: "trip1", orgId, vehicleId: "vehicle1", tripDate: new Date(),
-      totalMiles: 200, jurisdictionalMiles: [{ jurisdiction: "CA", miles: 100 }, { jurisdiction: "NV", miles: 100 }]
-    }];
-  }, [`ifta-trips-${orgId}-${startDate.toISOString()}-${endDate.toISOString()}`], {
-    tags: [`ifta-trips-${orgId}`],
-    revalidate: 86400, // Daily revalidation for report data
-  })();
+export async function getIftaTripsForPeriod(
+  orgId: string,
+  startDate: Date,
+  endDate: Date
+): Promise<IftaTripLog[]> {
+  return cache(
+    async () => {
+      // const trips = await prisma.iftaTripLog.findMany({
+      //   where: { orgId, tripDate: { gte: startDate, lte: endDate } },
+      //   orderBy: { tripDate: 'asc' },
+      // });
+      // return trips;
+      return [
+        {
+          // Placeholder
+          id: 'trip1',
+          orgId,
+          vehicleId: 'vehicle1',
+          tripDate: new Date(),
+          totalMiles: 200,
+          jurisdictionalMiles: [
+            { jurisdiction: 'CA', miles: 100 },
+            { jurisdiction: 'NV', miles: 100 },
+          ],
+        },
+      ];
+    },
+    [`ifta-trips-${orgId}-${startDate.toISOString()}-${endDate.toISOString()}`],
+    {
+      tags: [`ifta-trips-${orgId}`],
+      revalidate: 86400, // Daily revalidation for report data
+    }
+  )();
 }
 ```
 
@@ -1367,21 +1607,27 @@ export async function getIftaTripsForPeriod(orgId: string, startDate: Date, endD
 
 ### 1. Domain Architecture Overview
 
-The Settings domain allows users to configure various aspects of the application, including company profile, user preferences, notification settings, and integrations. This is typically specific to a tenant/organization.
+The Settings domain allows users to configure various aspects of the application, including company
+profile, user preferences, notification settings, and integrations. This is typically specific to a
+tenant/organization.
 
-- **Frontend**: Routes under `app/(tenant)/[orgId]/settings/` provide forms and toggles for managing these configurations. Client Components are used for interactive settings forms.
-- **Backend**: Server Actions handle the saving of settings. Fetchers retrieve current settings for display.
+- **Frontend**: Routes under `app/(tenant)/[orgId]/settings/` provide forms and toggles for managing
+  these configurations. Client Components are used for interactive settings forms.
+- **Backend**: Server Actions handle the saving of settings. Fetchers retrieve current settings for
+  display.
 
 ### 2. UI Components (Dumb Components)
 
 Located in `components/settings/` and `components/shared/ui/`.
 
-- **Responsibilities**: Displaying forms for various settings sections (e.g., `CompanySettingsForm`, `NotificationSettingsToggles`).
-- **Stateless & Reusable**: Form field components are generic. Specific settings forms compose these.
+- **Responsibilities**: Displaying forms for various settings sections (e.g., `CompanySettingsForm`,
+  `NotificationSettingsToggles`).
+- **Stateless & Reusable**: Form field components are generic. Specific settings forms compose
+  these.
 - **Examples**:
-    - `ProfileUpload`: Component for uploading a company logo or user avatar.
-    - `ToggleSwitch`: A reusable switch for boolean settings.
-    - `ApiKeyInput`: An input field for managing API keys for integrations.
+  - `ProfileUpload`: Component for uploading a company logo or user avatar.
+  - `ToggleSwitch`: A reusable switch for boolean settings.
+  - `ApiKeyInput`: An input field for managing API keys for integrations.
 
 ```tsx
 // Example: components/settings/ThemeSelector.tsx
@@ -1396,7 +1642,7 @@ interface ThemeSelectorProps {
 
 export function ThemeSelector({ currentTheme, onThemeChange }: ThemeSelectorProps) {
   return (
-    <select value={currentTheme} onChange={(e) => onThemeChange(e.target.value as any)}>
+    <select value={currentTheme} onChange={e => onThemeChange(e.target.value as any)}>
       <option value="light">Light</option>
       <option value="dark">Dark</option>
       <option value="system">System</option>
@@ -1407,11 +1653,15 @@ export function ThemeSelector({ currentTheme, onThemeChange }: ThemeSelectorProp
 
 ### 3. Business Logic (Features)
 
-Features in `features/settings/` or pages like `app/(tenant)/[orgId]/settings/profile/page.tsx` manage different settings categories.
+Features in `features/settings/` or pages like `app/(tenant)/[orgId]/settings/profile/page.tsx`
+manage different settings categories.
 
-- **Encapsulation**: `ManageCompanyProfileFeature` would allow editing company details. `ConfigureNotificationPreferencesFeature` would handle notification toggles.
-- **Form Handling**: Settings forms use Server Actions to persist changes. `useActionState` can provide feedback on save operations.
-- **Complex Interactions**: Managing third-party integrations, which might involve OAuth flows or API key validation.
+- **Encapsulation**: `ManageCompanyProfileFeature` would allow editing company details.
+  `ConfigureNotificationPreferencesFeature` would handle notification toggles.
+- **Form Handling**: Settings forms use Server Actions to persist changes. `useActionState` can
+  provide feedback on save operations.
+- **Complex Interactions**: Managing third-party integrations, which might involve OAuth flows or
+  API key validation.
 
 ```tsx
 // Example: features/settings/CompanyProfileSettings.tsx
@@ -1436,10 +1686,16 @@ export function CompanyProfileSettings({ orgId, initialProfile }: CompanyProfile
       <input type="hidden" name="orgId" value={orgId} />
       <div>
         <label htmlFor="companyName">Company Name</label>
-        <input type="text" name="companyName" id="companyName" defaultValue={initialProfile?.companyName || ''} required />
+        <input
+          type="text"
+          name="companyName"
+          id="companyName"
+          defaultValue={initialProfile?.companyName || ''}
+          required
+        />
       </div>
       {/* ... other company profile fields ... */}
-      
+
       {state?.error && <p style={{ color: 'red' }}>Error: {state.error}</p>}
       {state?.success && <p style={{ color: 'green' }}>Profile updated successfully!</p>}
       <SubmitButton buttonText="Save Profile" />
@@ -1455,7 +1711,8 @@ Server Actions in `lib/actions/settingsActions.ts` handle saving various setting
 - **`'use server';`**: Standard.
 - **Data Mutations**: Updating company profile, user preferences, notification settings.
 - **Business Rule Enforcement**: Validating input data for settings.
-- **Integration**: Called from settings forms. `revalidatePath` or `revalidateTag` ensures updated settings are reflected.
+- **Integration**: Called from settings forms. `revalidatePath` or `revalidateTag` ensures updated
+  settings are reflected.
 
 ```typescript
 // Example: lib/actions/settingsActions.ts
@@ -1467,11 +1724,11 @@ import { companyProfileSchema } from '@/validations/settings'; // Assuming valid
 import { auth } from '@clerk/nextjs/server';
 
 export async function updateCompanyProfileAction(
-  prevState: any, 
+  prevState: any,
   formData: FormData
 ): Promise<{ success: boolean; error?: string; fieldErrors?: any }> {
   const { userId, orgId: userOrgId } = auth(); // Clerk's orgId
-  if (!userId) return { success: false, error: "User not authenticated." };
+  if (!userId) return { success: false, error: 'User not authenticated.' };
 
   const submittedOrgId = formData.get('orgId') as string; // App's tenant orgId
   // Validate user has permission to update settings for submittedOrgId
@@ -1480,7 +1737,11 @@ export async function updateCompanyProfileAction(
   const validatedFields = companyProfileSchema.safeParse(rawData);
 
   if (!validatedFields.success) {
-    return { success: false, error: "Invalid data.", fieldErrors: validatedFields.error.flatten().fieldErrors };
+    return {
+      success: false,
+      error: 'Invalid data.',
+      fieldErrors: validatedFields.error.flatten().fieldErrors,
+    };
   }
 
   try {
@@ -1488,7 +1749,7 @@ export async function updateCompanyProfileAction(
     //   where: { orgId: submittedOrgId },
     //   data: validatedFields.data,
     // });
-    console.log("Company profile updated for org:", submittedOrgId, validatedFields.data);
+    console.log('Company profile updated for org:', submittedOrgId, validatedFields.data);
 
     revalidatePath(`/tenant/${submittedOrgId}/settings/profile`);
     revalidateTag(`profile-${submittedOrgId}`);
@@ -1516,39 +1777,51 @@ import { unstable_cache as cache } from 'next/cache';
 import { auth } from '@clerk/nextjs/server';
 
 export async function getCompanyProfile(orgId: string): Promise<CompanyProfile | null> {
-  return cache(async () => {
-    // const profile = await prisma.organizationProfile.findUnique({
-    //   where: { orgId },
-    // });
-    // return profile;
-    return { orgId, companyName: "Fleet Fusion Inc.", address: "123 Main St" }; // Placeholder
-  }, [`profile-${orgId}`], {
-    tags: [`profile-${orgId}`],
-    revalidate: 3600,
-  })();
+  return cache(
+    async () => {
+      // const profile = await prisma.organizationProfile.findUnique({
+      //   where: { orgId },
+      // });
+      // return profile;
+      return { orgId, companyName: 'Fleet Fusion Inc.', address: '123 Main St' }; // Placeholder
+    },
+    [`profile-${orgId}`],
+    {
+      tags: [`profile-${orgId}`],
+      revalidate: 3600,
+    }
+  )();
 }
 
-export async function getUserNotificationPreferences(orgId: string): Promise<UserNotificationPreferences | null> {
+export async function getUserNotificationPreferences(
+  orgId: string
+): Promise<UserNotificationPreferences | null> {
   const { userId } = auth();
   if (!userId) return null;
 
-  return cache(async () => {
-    // const preferences = await prisma.userNotificationPreference.findUnique({
-    //   where: { userId_orgId: { userId, orgId } },
-    // });
-    // return preferences || { emailNotifications: true, smsNotifications: false }; // Default
-    return { userId, orgId, emailNotifications: true, smsNotifications: false }; // Placeholder
-  }, [`notifications-${userId}-${orgId}`], {
-    tags: [`notifications-${userId}-${orgId}`],
-    revalidate: 3600,
-  })();
+  return cache(
+    async () => {
+      // const preferences = await prisma.userNotificationPreference.findUnique({
+      //   where: { userId_orgId: { userId, orgId } },
+      // });
+      // return preferences || { emailNotifications: true, smsNotifications: false }; // Default
+      return { userId, orgId, emailNotifications: true, smsNotifications: false }; // Placeholder
+    },
+    [`notifications-${userId}-${orgId}`],
+    {
+      tags: [`notifications-${userId}-${orgId}`],
+      revalidate: 3600,
+    }
+  )();
 }
 ```
 
 ### 6. Integration
 
-- **Pages (`app/(tenant)/[orgId]/settings/`)**: Organize different settings sections, using Fetchers for initial data.
-- **Feature Components (`features/settings/`)**: Manage forms and interactions for specific settings categories.
+- **Pages (`app/(tenant)/[orgId]/settings/`)**: Organize different settings sections, using Fetchers
+  for initial data.
+- **Feature Components (`features/settings/`)**: Manage forms and interactions for specific settings
+  categories.
 - **UI Components (`components/settings/`)**: Render form elements and display current settings.
 - **Server Actions (`lib/actions/settingsActions.ts`)**: Save updated settings.
 - **Fetchers (`lib/fetchers/settingsFetchers.ts`)**: Provide current settings data.
@@ -1560,21 +1833,26 @@ export async function getUserNotificationPreferences(orgId: string): Promise<Use
 
 ### 1. Domain Architecture Overview
 
-The Vehicles domain is responsible for managing the fleet's vehicles, including their details, specifications, maintenance records, and current status.
+The Vehicles domain is responsible for managing the fleet's vehicles, including their details,
+specifications, maintenance records, and current status.
 
-- **Frontend**: Routes under `app/(tenant)/[orgId]/vehicles/` allow users to view vehicle lists, individual vehicle details, and forms for adding or editing vehicles and logging maintenance.
-- **Backend**: Server Actions handle the creation and updating of vehicle information and maintenance logs. Fetchers retrieve vehicle data for display and for use in other domains like Dispatch or Compliance.
+- **Frontend**: Routes under `app/(tenant)/[orgId]/vehicles/` allow users to view vehicle lists,
+  individual vehicle details, and forms for adding or editing vehicles and logging maintenance.
+- **Backend**: Server Actions handle the creation and updating of vehicle information and
+  maintenance logs. Fetchers retrieve vehicle data for display and for use in other domains like
+  Dispatch or Compliance.
 
 ### 2. UI Components (Dumb Components)
 
 Located in `components/vehicles/` and `components/shared/ui/`.
 
-- **Responsibilities**: Displaying vehicle information (`VehicleCard`), lists of vehicles, forms for vehicle details and maintenance logs.
+- **Responsibilities**: Displaying vehicle information (`VehicleCard`), lists of vehicles, forms for
+  vehicle details and maintenance logs.
 - **Stateless & Reusable**: `VehicleCard` takes vehicle data as props.
 - **Examples**:
-    - `VehicleDetailsView`: Shows comprehensive information about a vehicle.
-    - `MaintenanceLogEntry`: Displays a single maintenance record.
-    - `AddVehicleFormFields`: Inputs for make, model, VIN, year, etc.
+  - `VehicleDetailsView`: Shows comprehensive information about a vehicle.
+  - `MaintenanceLogEntry`: Displays a single maintenance record.
+  - `AddVehicleFormFields`: Inputs for make, model, VIN, year, etc.
 
 ```tsx
 // Example: components/vehicles/VehicleStatusTag.tsx
@@ -1592,7 +1870,9 @@ export function VehicleStatusTag({ status }: VehicleStatusTagProps) {
   if (status === 'inactive') color = 'red';
 
   return (
-    <span style={{ backgroundColor: color, color: 'white', padding: '2px 6px', borderRadius: '4px' }}>
+    <span
+      style={{ backgroundColor: color, color: 'white', padding: '2px 6px', borderRadius: '4px' }}
+    >
       {status.replace('_', ' ')}
     </span>
   );
@@ -1601,11 +1881,14 @@ export function VehicleStatusTag({ status }: VehicleStatusTagProps) {
 
 ### 3. Business Logic (Features)
 
-Features in `features/vehicles/` or pages like `app/(tenant)/[orgId]/vehicles/[vehicleId]/page.tsx` manage vehicle-related operations.
+Features in `features/vehicles/` or pages like `app/(tenant)/[orgId]/vehicles/[vehicleId]/page.tsx`
+manage vehicle-related operations.
 
-- **Encapsulation**: `ManageVehicleDetailsFeature` could allow viewing and editing vehicle specs, assigning it to drivers, and viewing its maintenance history.
+- **Encapsulation**: `ManageVehicleDetailsFeature` could allow viewing and editing vehicle specs,
+  assigning it to drivers, and viewing its maintenance history.
 - **Form Handling**: Forms for adding new vehicles or logging maintenance use Server Actions.
-- **Complex Interactions**: Scheduling maintenance, tracking vehicle utilization (linking to Analytics), managing vehicle documents (linking to Compliance).
+- **Complex Interactions**: Scheduling maintenance, tracking vehicle utilization (linking to
+  Analytics), managing vehicle documents (linking to Compliance).
 
 ```tsx
 // Example: features/vehicles/AddVehicleFeature.tsx
@@ -1633,7 +1916,7 @@ export function AddVehicleFeature({ orgId }: { orgId: string }) {
         <input type="text" name="model" id="model" required />
       </div>
       {/* ... other vehicle fields ... */}
-      
+
       {state?.error && <p style={{ color: 'red' }}>Error: {state.error}</p>}
       {state?.fieldErrors && /* display field errors */}
       {state?.vehicleId && <p style={{ color: 'green' }}>Vehicle added successfully! ID: {state.vehicleId}</p>}
@@ -1648,9 +1931,12 @@ export function AddVehicleFeature({ orgId }: { orgId: string }) {
 Server Actions in `lib/actions/vehicleActions.ts` handle mutations for vehicle data.
 
 - **`'use server';`**: Standard.
-- **Data Mutations**: Creating new vehicle records, updating vehicle details, logging maintenance events, changing vehicle status.
-- **Business Rule Enforcement**: Validating vehicle information (e.g., VIN format), ensuring maintenance schedules are followed.
-- **Integration**: Called from vehicle management forms. `revalidatePath` or `revalidateTag` updates vehicle lists and details.
+- **Data Mutations**: Creating new vehicle records, updating vehicle details, logging maintenance
+  events, changing vehicle status.
+- **Business Rule Enforcement**: Validating vehicle information (e.g., VIN format), ensuring
+  maintenance schedules are followed.
+- **Integration**: Called from vehicle management forms. `revalidatePath` or `revalidateTag` updates
+  vehicle lists and details.
 
 ```typescript
 // Example: lib/actions/vehicleActions.ts
@@ -1662,11 +1948,11 @@ import { vehicleSchema } from '@/validations/vehicles'; // From validations/vehi
 import { auth } from '@clerk/nextjs/server';
 
 export async function addVehicleAction(
-  prevState: any, 
+  prevState: any,
   formData: FormData
 ): Promise<{ success: boolean; error?: string; fieldErrors?: any; vehicleId?: string }> {
   const { userId, orgId: userOrgId } = auth();
-  if (!userId) return { success: false, error: "User not authenticated." };
+  if (!userId) return { success: false, error: 'User not authenticated.' };
 
   const submittedOrgId = formData.get('orgId') as string;
   // Add orgId validation
@@ -1675,15 +1961,19 @@ export async function addVehicleAction(
   const validatedFields = vehicleSchema.safeParse(rawData);
 
   if (!validatedFields.success) {
-    return { success: false, error: "Invalid data.", fieldErrors: validatedFields.error.flatten().fieldErrors };
+    return {
+      success: false,
+      error: 'Invalid data.',
+      fieldErrors: validatedFields.error.flatten().fieldErrors,
+    };
   }
 
   try {
     // const newVehicle = await prisma.vehicle.create({
     //   data: { ...validatedFields.data, orgId: submittedOrgId },
     // });
-    const newVehicleId = "vehicle_" + Date.now(); // Placeholder
-    console.log("Vehicle added:", validatedFields.data);
+    const newVehicleId = 'vehicle_' + Date.now(); // Placeholder
+    console.log('Vehicle added:', validatedFields.data);
 
     revalidatePath(`/tenant/${submittedOrgId}/vehicles`);
     revalidateTag(`vehicles-${submittedOrgId}`);
@@ -1699,7 +1989,8 @@ export async function addVehicleAction(
 
 Fetchers in `lib/fetchers/vehicleFetchers.ts` retrieve vehicle information.
 
-- **Data Retrieval**: `getAllVehicles(orgId)`, `getVehicleById(vehicleId)`, `getVehicleMaintenanceHistory(vehicleId)`.
+- **Data Retrieval**: `getAllVehicles(orgId)`, `getVehicleById(vehicleId)`,
+  `getVehicleMaintenanceHistory(vehicleId)`.
 - **Efficiency**: Queries filter by organization and status. Data is cached.
 - **Consistency**: Standardized access to vehicle profiles.
 
@@ -1710,49 +2001,74 @@ import { Vehicle } from '@/types/vehicles'; // Assuming types/vehicles.ts
 import { unstable_cache as cache } from 'next/cache';
 
 export async function getAllVehicles(orgId: string): Promise<Vehicle[]> {
-  return cache(async () => {
-    // const vehicles = await prisma.vehicle.findMany({
-    //   where: { orgId, status: 'active' }, // Example filter
-    //   orderBy: { make: 'asc' },
-    // });
-    // return vehicles;
-    return [{ // Placeholder
-      id: "vehicle1", orgId, make: "Freightliner", model: "Cascadia", year: 2022, vin: "123XYZ", status: "active"
-    }];
-  }, [`all-vehicles-${orgId}`], {
-    tags: [`vehicles-${orgId}`],
-    revalidate: 3600,
-  })();
+  return cache(
+    async () => {
+      // const vehicles = await prisma.vehicle.findMany({
+      //   where: { orgId, status: 'active' }, // Example filter
+      //   orderBy: { make: 'asc' },
+      // });
+      // return vehicles;
+      return [
+        {
+          // Placeholder
+          id: 'vehicle1',
+          orgId,
+          make: 'Freightliner',
+          model: 'Cascadia',
+          year: 2022,
+          vin: '123XYZ',
+          status: 'active',
+        },
+      ];
+    },
+    [`all-vehicles-${orgId}`],
+    {
+      tags: [`vehicles-${orgId}`],
+      revalidate: 3600,
+    }
+  )();
 }
 
 export async function getVehicleById(vehicleId: string): Promise<Vehicle | null> {
-  return cache(async () => {
-    // const vehicle = await prisma.vehicle.findUnique({
-    //   where: { id: vehicleId },
-    //   // include: { maintenanceLogs: true, assignedDriver: true } // Example includes
-    // });
-    // return vehicle;
-    if (vehicleId === "vehicle1") { // Placeholder
+  return cache(
+    async () => {
+      // const vehicle = await prisma.vehicle.findUnique({
+      //   where: { id: vehicleId },
+      //   // include: { maintenanceLogs: true, assignedDriver: true } // Example includes
+      // });
+      // return vehicle;
+      if (vehicleId === 'vehicle1') {
+        // Placeholder
         return {
-            id: "vehicle1", orgId: "org123", make: "Freightliner", model: "Cascadia", 
-            year: 2022, vin: "123XYZ", status: "active"
+          id: 'vehicle1',
+          orgId: 'org123',
+          make: 'Freightliner',
+          model: 'Cascadia',
+          year: 2022,
+          vin: '123XYZ',
+          status: 'active',
         };
+      }
+      return null;
+    },
+    [`vehicle-${vehicleId}`],
+    {
+      tags: [`vehicle-${vehicleId}`],
+      revalidate: 3600,
     }
-    return null;
-  }, [`vehicle-${vehicleId}`], {
-    tags: [`vehicle-${vehicleId}`],
-    revalidate: 3600,
-  })();
+  )();
 }
 ```
 
 ### 6. Integration
 
 - **Pages (`app/(tenant)/[orgId]/vehicles/`)**: Display vehicle lists and details, using Fetchers.
-- **Feature Components (`features/vehicles/`)**: Manage adding/editing vehicles and logging maintenance.
+- **Feature Components (`features/vehicles/`)**: Manage adding/editing vehicles and logging
+  maintenance.
 - **UI Components (`components/vehicles/`)**: Render vehicle cards, details, form fields.
 - **Server Actions (`lib/actions/vehicleActions.ts`)**: Handle creation and updates of vehicle data.
-- **Fetchers (`lib/fetchers/vehicleFetchers.ts`)**: Provide vehicle data to various parts of the application.
+- **Fetchers (`lib/fetchers/vehicleFetchers.ts`)**: Provide vehicle data to various parts of the
+  application.
 - **Types/Validations**: `types/vehicles.ts`, `validations/vehicles.ts`.
 
 ---
@@ -1761,21 +2077,29 @@ export async function getVehicleById(vehicleId: string): Promise<Vehicle | null>
 
 ### 1. Domain Architecture Overview
 
-The Admin domain is responsible for system-level administration tasks, which could include managing tenants (organizations), platform-wide user management (if applicable beyond Clerk's scope), system settings, and monitoring. This assumes an admin role within a specific tenant or a super-admin for the platform. For this example, we'll focus on tenant-level admin features.
+The Admin domain is responsible for system-level administration tasks, which could include managing
+tenants (organizations), platform-wide user management (if applicable beyond Clerk's scope), system
+settings, and monitoring. This assumes an admin role within a specific tenant or a super-admin for
+the platform. For this example, we'll focus on tenant-level admin features.
 
-- **Frontend**: Routes under `app/(tenant)/[orgId]/admin/` provide interfaces for managing users within the organization, organization settings, and potentially billing/subscription details.
-- **Backend**: Server Actions handle administrative operations like inviting users to an organization, changing user roles, or updating organization-level settings. Fetchers retrieve data for admin dashboards.
+- **Frontend**: Routes under `app/(tenant)/[orgId]/admin/` provide interfaces for managing users
+  within the organization, organization settings, and potentially billing/subscription details.
+- **Backend**: Server Actions handle administrative operations like inviting users to an
+  organization, changing user roles, or updating organization-level settings. Fetchers retrieve data
+  for admin dashboards.
 
 ### 2. UI Components (Dumb Components)
 
 Located in `components/admin/` (if specific) or `components/settings/`, `components/shared/ui/`.
 
-- **Responsibilities**: Displaying tables of users within the organization, forms for inviting users or changing roles, interfaces for managing organization subscriptions.
+- **Responsibilities**: Displaying tables of users within the organization, forms for inviting users
+  or changing roles, interfaces for managing organization subscriptions.
 - **Stateless & Reusable**: Components for user role selection, tables displaying user lists.
 - **Examples**:
-    - `UserManagementTable`: Displays a list of users within the organization with options to edit roles or status.
-    - `InviteUserForm`: Form to send an invitation to a new user to join the organization.
-    - `RoleSelectorDropdown`: A dropdown to assign roles to users.
+  - `UserManagementTable`: Displays a list of users within the organization with options to edit
+    roles or status.
+  - `InviteUserForm`: Form to send an invitation to a new user to join the organization.
+  - `RoleSelectorDropdown`: A dropdown to assign roles to users.
 
 ```tsx
 // Example: components/admin/UserRoleBadge.tsx
@@ -1790,9 +2114,17 @@ export function UserRoleBadge({ role }: UserRoleBadgeProps) {
   let color = 'blue'; // Default
   if (role === 'admin') color = 'purple';
   if (role === 'driver') color = 'green';
-  
+
   return (
-    <span style={{ backgroundColor: color, color: 'white', padding: '2px 6px', borderRadius: '4px', textTransform: 'capitalize' }}>
+    <span
+      style={{
+        backgroundColor: color,
+        color: 'white',
+        padding: '2px 6px',
+        borderRadius: '4px',
+        textTransform: 'capitalize',
+      }}
+    >
       {role}
     </span>
   );
@@ -1801,11 +2133,14 @@ export function UserRoleBadge({ role }: UserRoleBadgeProps) {
 
 ### 3. Business Logic (Features)
 
-Features in `features/admin/` or pages like `app/(tenant)/[orgId]/admin/users/page.tsx` manage administrative tasks.
+Features in `features/admin/` or pages like `app/(tenant)/[orgId]/admin/users/page.tsx` manage
+administrative tasks.
 
-- **Encapsulation**: `ManageOrganizationUsersFeature` could allow admins to invite, remove, and change roles of users within their organization.
+- **Encapsulation**: `ManageOrganizationUsersFeature` could allow admins to invite, remove, and
+  change roles of users within their organization.
 - **Form Handling**: Forms for inviting users or modifying organization settings use Server Actions.
-- **Complex Interactions**: Managing role-based access control (RBAC) configurations, audit logging of admin actions.
+- **Complex Interactions**: Managing role-based access control (RBAC) configurations, audit logging
+  of admin actions.
 
 ```tsx
 // Example: features/admin/InviteUserFeature.tsx
@@ -1840,7 +2175,7 @@ export function InviteUserFeature({ orgId }: InviteUserFeatureProps) {
           <option value="viewer">Viewer</option>
         </select>
       </div>
-      
+
       {state?.error && <p style={{ color: 'red' }}>Error: {state.error}</p>}
       {state?.success && <p style={{ color: 'green' }}>Invitation sent successfully!</p>}
       <SubmitButton buttonText="Send Invitation" />
@@ -1854,9 +2189,13 @@ export function InviteUserFeature({ orgId }: InviteUserFeatureProps) {
 Server Actions in `lib/actions/adminActions.ts` handle administrative operations.
 
 - **`'use server';`**: Standard.
-- **Data Mutations**: Inviting users to an organization (potentially integrating with Clerk invitations), changing user roles within the organization, updating organization-level settings or subscription details.
-- **Business Rule Enforcement**: Validating admin privileges before performing actions, ensuring role assignments are valid.
-- **Integration**: Called from admin interface forms. `revalidatePath` or `revalidateTag` updates user lists or organization settings views.
+- **Data Mutations**: Inviting users to an organization (potentially integrating with Clerk
+  invitations), changing user roles within the organization, updating organization-level settings or
+  subscription details.
+- **Business Rule Enforcement**: Validating admin privileges before performing actions, ensuring
+  role assignments are valid.
+- **Integration**: Called from admin interface forms. `revalidatePath` or `revalidateTag` updates
+  user lists or organization settings views.
 
 ```typescript
 // Example: lib/actions/adminActions.ts
@@ -1874,7 +2213,7 @@ const inviteUserSchema = z.object({
 });
 
 export async function inviteUserToOrgAction(
-  prevState: any, 
+  prevState: any,
   formData: FormData
 ): Promise<{ success: boolean; error?: string; fieldErrors?: any }> {
   // const { userId, orgId: adminOrgId, sessionClaims } = auth(); // Current admin's auth info
@@ -1885,9 +2224,13 @@ export async function inviteUserToOrgAction(
   const validatedFields = inviteUserSchema.safeParse(Object.fromEntries(formData));
 
   if (!validatedFields.success) {
-    return { success: false, error: "Invalid data.", fieldErrors: validatedFields.error.flatten().fieldErrors };
+    return {
+      success: false,
+      error: 'Invalid data.',
+      fieldErrors: validatedFields.error.flatten().fieldErrors,
+    };
   }
-  
+
   const { email, role, orgId } = validatedFields.data;
 
   try {
@@ -1917,7 +2260,8 @@ export async function inviteUserToOrgAction(
 
 Fetchers in `lib/fetchers/adminFetchers.ts` retrieve data for admin interfaces.
 
-- **Data Retrieval**: `getOrganizationUsers(orgId)`, `getOrganizationSubscriptionDetails(orgId)`, `getSystemAuditLogs(orgId, range)`.
+- **Data Retrieval**: `getOrganizationUsers(orgId)`, `getOrganizationSubscriptionDetails(orgId)`,
+  `getSystemAuditLogs(orgId, range)`.
 - **Efficiency**: Queries filter by organization. Data is cached. Access control is critical.
 - **Consistency**: Standardized access to administrative data.
 
@@ -1932,44 +2276,60 @@ export async function getOrganizationUsers(orgId: string): Promise<OrganizationU
   // const { sessionClaims } = auth();
   // if (!sessionClaims?.metadata?.role?.includes('admin')) { // Basic role check
   //   // Or check if current user is admin of the *specific* orgId
-  //   return []; 
+  //   return [];
   // }
 
-  return cache(async () => {
-    // Example: Fetching members from Clerk
-    // const memberships = await clerkClient.organizations.getOrganizationMembershipList({ organizationId: orgId });
-    // const users = memberships.map(mem => ({
-    //   id: mem.publicUserData?.userId || '',
-    //   firstName: mem.publicUserData?.firstName || '',
-    //   lastName: mem.publicUserData?.lastName || '',
-    //   email: mem.publicUserData?.identifier || '', // This might not be email directly
-    //   role: mem.role, 
-    // }));
-    // return users;
+  return cache(
+    async () => {
+      // Example: Fetching members from Clerk
+      // const memberships = await clerkClient.organizations.getOrganizationMembershipList({ organizationId: orgId });
+      // const users = memberships.map(mem => ({
+      //   id: mem.publicUserData?.userId || '',
+      //   firstName: mem.publicUserData?.firstName || '',
+      //   lastName: mem.publicUserData?.lastName || '',
+      //   email: mem.publicUserData?.identifier || '', // This might not be email directly
+      //   role: mem.role,
+      // }));
+      // return users;
 
-    // Placeholder if managing users internally:
-    // const users = await prisma.user.findMany({
-    //   where: { memberships: { some: { orgId: orgId } } },
-    //   select: { id: true, firstName: true, lastName: true, email: true, memberships: { where: { orgId } } }
-    // });
-    // return users.map(u => ({ ...u, role: u.memberships[0].role }));
-    return [{ // Placeholder
-      id: "user123", firstName: "Admin", lastName: "User", email: "admin@example.com", role: "admin", orgId
-    }];
-  }, [`org-users-${orgId}`], {
-    tags: [`org-users-${orgId}`],
-    revalidate: 3600,
-  })();
+      // Placeholder if managing users internally:
+      // const users = await prisma.user.findMany({
+      //   where: { memberships: { some: { orgId: orgId } } },
+      //   select: { id: true, firstName: true, lastName: true, email: true, memberships: { where: { orgId } } }
+      // });
+      // return users.map(u => ({ ...u, role: u.memberships[0].role }));
+      return [
+        {
+          // Placeholder
+          id: 'user123',
+          firstName: 'Admin',
+          lastName: 'User',
+          email: 'admin@example.com',
+          role: 'admin',
+          orgId,
+        },
+      ];
+    },
+    [`org-users-${orgId}`],
+    {
+      tags: [`org-users-${orgId}`],
+      revalidate: 3600,
+    }
+  )();
 }
 ```
 
 ### 6. Integration
 
-- **Pages (`app/(tenant)/[orgId]/admin/`)**: Display admin dashboards and management interfaces, using Fetchers.
-- **Feature Components (`features/admin/`)**: Manage user invitations, role changes, or organization settings updates.
-- **UI Components (`components/admin/`, `components/shared/ui/`)**: Render tables, forms, and selectors for admin tasks.
+- **Pages (`app/(tenant)/[orgId]/admin/`)**: Display admin dashboards and management interfaces,
+  using Fetchers.
+- **Feature Components (`features/admin/`)**: Manage user invitations, role changes, or organization
+  settings updates.
+- **UI Components (`components/admin/`, `components/shared/ui/`)**: Render tables, forms, and
+  selectors for admin tasks.
 - **Server Actions (`lib/actions/adminActions.ts`)**: Handle administrative operations.
 - **Fetchers (`lib/fetchers/adminFetchers.ts`)**: Provide data for admin views.
-- **Types/Validations**: `types/admin.ts`, `validations/admin.ts` (to be created or defined). Clerk types would also be relevant.
+- **Types/Validations**: `types/admin.ts`, `validations/admin.ts` (to be created or defined). Clerk
+  types would also be relevant.
 
 ---

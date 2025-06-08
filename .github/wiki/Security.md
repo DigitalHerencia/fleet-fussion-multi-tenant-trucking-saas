@@ -2,7 +2,9 @@
 
 ## Overview
 
-FleetFusion implements a comprehensive security model combining authentication via Clerk with custom Role-Based Access Control (RBAC) for multi-tenant operations. The system ensures data isolation between organizations while providing fine-grained permissions within each tenant.
+FleetFusion implements a comprehensive security model combining authentication via Clerk with custom
+Role-Based Access Control (RBAC) for multi-tenant operations. The system ensures data isolation
+between organizations while providing fine-grained permissions within each tenant.
 
 ## Authentication Architecture
 
@@ -14,14 +16,14 @@ FleetFusion uses Clerk for user authentication and organization management:
 // Middleware authentication check
 export default clerkMiddleware((auth, req) => {
   const { userId, orgId, sessionClaims } = auth();
-  
+
   if (!userId && !isPublicRoute(req)) {
     return redirectToSignIn();
   }
-  
+
   // Build user context with RBAC permissions
   const userContext = buildUserContext(userId, sessionClaims, orgId);
-  
+
   // Proceed with route protection
   return RouteProtection.checkAccess(req, userContext);
 });
@@ -60,25 +62,25 @@ FleetFusion defines six core roles with distinct permissions:
 
 ```typescript
 export const SystemRoles = {
-  ADMIN: 'admin',                    // Full system access
-  DISPATCHER: 'dispatcher',          // Load and driver management
-  DRIVER: 'driver',                 // Limited self-service access
+  ADMIN: 'admin', // Full system access
+  DISPATCHER: 'dispatcher', // Load and driver management
+  DRIVER: 'driver', // Limited self-service access
   COMPLIANCE_OFFICER: 'compliance_officer', // Compliance and documents
-  ACCOUNTANT: 'accountant',         // Financial and reporting
-  VIEWER: 'viewer'                  // Read-only access
+  ACCOUNTANT: 'accountant', // Financial and reporting
+  VIEWER: 'viewer', // Read-only access
 } as const;
 ```
 
 ### Permission Matrix
 
-| Role | Users | Drivers | Vehicles | Loads | Documents | IFTA | Billing |
-|------|-------|---------|----------|--------|-----------|------|---------|
-| **Admin** | ✓ Manage | ✓ Manage | ✓ Manage | ✓ Manage | ✓ Manage | ✓ Manage | ✓ Manage |
-| **Dispatcher** | ✗ | ✓ Read/Assign | ✓ Read | ✓ Manage | ✓ Read | ✗ | ✗ |
-| **Driver** | ✗ | ✓ Own Profile | ✗ | ✓ Read Assigned | ✓ Own Documents | ✗ | ✗ |
-| **Compliance** | ✗ | ✓ Read | ✓ Read | ✗ | ✓ Manage | ✗ | ✗ |
-| **Accountant** | ✗ | ✗ | ✗ | ✓ Read | ✗ | ✓ Manage | ✓ Read |
-| **Viewer** | ✗ | ✓ Read | ✓ Read | ✓ Read | ✓ Read | ✓ Read | ✗ |
+| Role           | Users    | Drivers       | Vehicles | Loads           | Documents       | IFTA     | Billing  |
+| -------------- | -------- | ------------- | -------- | --------------- | --------------- | -------- | -------- |
+| **Admin**      | ✓ Manage | ✓ Manage      | ✓ Manage | ✓ Manage        | ✓ Manage        | ✓ Manage | ✓ Manage |
+| **Dispatcher** | ✗        | ✓ Read/Assign | ✓ Read   | ✓ Manage        | ✓ Read          | ✗        | ✗        |
+| **Driver**     | ✗        | ✓ Own Profile | ✗        | ✓ Read Assigned | ✓ Own Documents | ✗        | ✗        |
+| **Compliance** | ✗        | ✓ Read        | ✓ Read   | ✗               | ✓ Manage        | ✗        | ✗        |
+| **Accountant** | ✗        | ✗             | ✗        | ✓ Read          | ✗               | ✓ Manage | ✓ Read   |
+| **Viewer**     | ✗        | ✓ Read        | ✓ Read   | ✓ Read          | ✓ Read          | ✓ Read   | ✗        |
 
 ### Permission Structure
 
@@ -87,15 +89,15 @@ Permissions follow an action-resource pattern:
 ```typescript
 export interface Permission {
   action: PermissionAction; // create, read, update, delete, manage, assign, approve
-  resource: ResourceType;   // user, driver, vehicle, load, document, etc.
+  resource: ResourceType; // user, driver, vehicle, load, document, etc.
 }
 
 // Examples
 const permissions = [
-  { action: 'create', resource: 'load' },     // Can create new loads
-  { action: 'assign', resource: 'driver' },   // Can assign drivers to loads
-  { action: 'read', resource: 'vehicle' },    // Can view vehicle information
-  { action: 'manage', resource: 'document' }  // Full document control
+  { action: 'create', resource: 'load' }, // Can create new loads
+  { action: 'assign', resource: 'driver' }, // Can assign drivers to loads
+  { action: 'read', resource: 'vehicle' }, // Can view vehicle information
+  { action: 'manage', resource: 'document' }, // Full document control
 ];
 ```
 
@@ -110,12 +112,12 @@ Every data operation includes organization context for complete tenant isolation
 async function getDrivers(organizationId: string, userId: string) {
   // Verify user belongs to organization
   await verifyUserAccess(userId, organizationId);
-  
+
   return await prisma.driver.findMany({
     where: {
       organizationId, // Tenant isolation
-      isActive: true
-    }
+      isActive: true,
+    },
   });
 }
 ```
@@ -133,18 +135,18 @@ async function getDrivers(organizationId: string, userId: string) {
 export async function createLoad(data: CreateLoadInput) {
   const user = await getCurrentUser();
   if (!user) throw new Error('Unauthorized');
-  
+
   // Verify permission
   if (!hasPermission(user, 'create', 'load')) {
     throw new Error('Insufficient permissions');
   }
-  
+
   // Create with tenant context
   return await prisma.load.create({
     data: {
       ...data,
-      organizationId: user.organizationId // Automatic tenant isolation
-    }
+      organizationId: user.organizationId, // Automatic tenant isolation
+    },
   });
 }
 ```
@@ -159,22 +161,22 @@ import { hasPermission } from '@/lib/auth/permissions';
 // In Server Actions
 export async function updateDriver(id: string, data: UpdateDriverInput) {
   const user = await getCurrentUser();
-  
+
   if (!hasPermission(user, 'update', 'driver')) {
     throw new Error('Permission denied');
   }
-  
+
   // Proceed with update...
 }
 
 // In Server Components
 export default async function DriversPage() {
   const user = await getCurrentUser();
-  
+
   if (!hasPermission(user, 'read', 'driver')) {
     return <AccessDenied />;
   }
-  
+
   // Render component...
 }
 ```
@@ -189,11 +191,11 @@ import { hasPermission } from '@/lib/auth/permissions';
 
 export function CreateDriverButton() {
   const user = useUser();
-  
+
   if (!hasPermission(user, 'create', 'driver')) {
     return null; // Hide button if no permission
   }
-  
+
   return (
     <Button onClick={handleCreateDriver}>
       Create Driver
@@ -212,16 +214,16 @@ The middleware handles route-level protection with organization context:
 export default clerkMiddleware((auth, req) => {
   const { userId, orgId } = auth();
   const { pathname } = req.nextUrl;
-  
+
   // Public routes bypass protection
   if (isPublicRoute(req)) return NextResponse.next();
-  
+
   // Require authentication
   if (!userId) return redirectToSignIn();
-  
+
   // Build user context with RBAC
   const userContext = buildUserContext(userId, sessionClaims, orgId);
-  
+
   // Check route access
   return RouteProtection.checkAccess(req, userContext);
 });
@@ -233,16 +235,16 @@ export default clerkMiddleware((auth, req) => {
 const protectedRoutes = {
   // Admin-only routes
   '/tenant/[orgId]/admin': ['admin'],
-  
+
   // Dispatcher routes
   '/tenant/[orgId]/dispatch': ['admin', 'dispatcher'],
-  
+
   // Driver self-service
   '/tenant/[orgId]/driver/[userId]': ['admin', 'driver'],
-  
+
   // Compliance routes
   '/tenant/[orgId]/compliance': ['admin', 'compliance_officer'],
-  
+
   // Financial routes
   '/tenant/[orgId]/ifta': ['admin', 'accountant'],
 };
@@ -284,8 +286,8 @@ export async function createAuditLog(
       details,
       timestamp: new Date(),
       ipAddress: getClientIP(),
-      userAgent: getUserAgent()
-    }
+      userAgent: getUserAgent(),
+    },
   });
 }
 ```
@@ -358,19 +360,20 @@ ENCRYPTION_KEY=...
 const securityHeaders = [
   {
     key: 'X-Frame-Options',
-    value: 'DENY'
+    value: 'DENY',
   },
   {
     key: 'X-Content-Type-Options',
-    value: 'nosniff'
+    value: 'nosniff',
   },
   {
     key: 'Referrer-Policy',
-    value: 'strict-origin-when-cross-origin'
-  }
+    value: 'strict-origin-when-cross-origin',
+  },
 ];
 ```
 
 ---
 
-*This security model provides enterprise-grade protection while maintaining usability and performance for fleet management operations.*
+_This security model provides enterprise-grade protection while maintaining usability and
+performance for fleet management operations._

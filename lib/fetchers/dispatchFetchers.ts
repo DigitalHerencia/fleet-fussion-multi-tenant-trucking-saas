@@ -1,22 +1,26 @@
-"use server";
+'use server';
 
-import { auth } from "@clerk/nextjs/server";
+import { auth } from '@clerk/nextjs/server';
 
-import prisma from "@/lib/database/db";
-import { loadFilterSchema, type LoadFilterInput } from "@/schemas/dispatch";
-import type { Load, LoadStatus, LoadStatusEvent, TrackingUpdate, LoadAlert } from "@/types/dispatch";
+import prisma from '@/lib/database/db';
+import { loadFilterSchema, type LoadFilterInput } from '@/schemas/dispatch';
+import type {
+  Load,
+  LoadStatus,
+  LoadStatusEvent,
+  TrackingUpdate,
+  LoadAlert,
+} from '@/types/dispatch';
 
 // Helper function to check user permissions
 async function checkUserAccess(orgId: string) {
   const { userId } = await auth();
   if (!userId) {
-    throw new Error("Unauthorized");
+    throw new Error('Unauthorized');
   }
 
-  
-
   if (!userId) {
-    throw new Error("User not found or not member of organization");
+    throw new Error('User not found or not member of organization');
   }
 
   return userId;
@@ -24,10 +28,11 @@ async function checkUserAccess(orgId: string) {
 
 // Get load by ID
 
-
-
 // List loads by organization with filtering and pagination
-export async function listLoadsByOrg(orgId: string, filters: LoadFilterInput = {}) {
+export async function listLoadsByOrg(
+  orgId: string,
+  filters: LoadFilterInput = {}
+) {
   try {
     await checkUserAccess(orgId);
 
@@ -39,7 +44,11 @@ export async function listLoadsByOrg(orgId: string, filters: LoadFilterInput = {
     };
 
     // Status filter
-    if (validatedFilters.status && validatedFilters.status.length > 0 && !validatedFilters.status.includes("all")) {
+    if (
+      validatedFilters.status &&
+      validatedFilters.status.length > 0 &&
+      !validatedFilters.status.includes('all')
+    ) {
       where.status = { in: validatedFilters.status };
     }
 
@@ -61,7 +70,7 @@ export async function listLoadsByOrg(orgId: string, filters: LoadFilterInput = {
     // Customer filter
     if (validatedFilters.customerId) {
       where.customer = {
-        path: ["id"],
+        path: ['id'],
         equals: validatedFilters.customerId,
       };
     }
@@ -102,7 +111,7 @@ export async function listLoadsByOrg(orgId: string, filters: LoadFilterInput = {
     // Origin state filter
     if (validatedFilters.originState) {
       where.origin = {
-        path: ["state"],
+        path: ['state'],
         equals: validatedFilters.originState,
       };
     }
@@ -110,15 +119,18 @@ export async function listLoadsByOrg(orgId: string, filters: LoadFilterInput = {
     // Destination state filter
     if (validatedFilters.destinationState) {
       where.destination = {
-        path: ["state"],
+        path: ['state'],
         equals: validatedFilters.destinationState,
       };
     }
 
     // Equipment type filter
-    if (validatedFilters.equipmentType && validatedFilters.equipmentType.length > 0) {
+    if (
+      validatedFilters.equipmentType &&
+      validatedFilters.equipmentType.length > 0
+    ) {
       where.equipment = {
-        path: ["type"],
+        path: ['type'],
         in: validatedFilters.equipmentType,
       };
     }
@@ -126,7 +138,7 @@ export async function listLoadsByOrg(orgId: string, filters: LoadFilterInput = {
     // Rate range filters
     if (validatedFilters.minRate || validatedFilters.maxRate) {
       where.rate = {
-        path: ["total"],
+        path: ['total'],
       };
       if (validatedFilters.minRate) {
         where.rate.gte = validatedFilters.minRate;
@@ -141,14 +153,22 @@ export async function listLoadsByOrg(orgId: string, filters: LoadFilterInput = {
       where.OR = [
         {
           miles: {
-            ...(validatedFilters.minMiles && { gte: validatedFilters.minMiles }),
-            ...(validatedFilters.maxMiles && { lte: validatedFilters.maxMiles }),
+            ...(validatedFilters.minMiles && {
+              gte: validatedFilters.minMiles,
+            }),
+            ...(validatedFilters.maxMiles && {
+              lte: validatedFilters.maxMiles,
+            }),
           },
         },
         {
           estimatedMiles: {
-            ...(validatedFilters.minMiles && { gte: validatedFilters.minMiles }),
-            ...(validatedFilters.maxMiles && { lte: validatedFilters.maxMiles }),
+            ...(validatedFilters.minMiles && {
+              gte: validatedFilters.minMiles,
+            }),
+            ...(validatedFilters.maxMiles && {
+              lte: validatedFilters.maxMiles,
+            }),
           },
         },
       ];
@@ -165,33 +185,33 @@ export async function listLoadsByOrg(orgId: string, filters: LoadFilterInput = {
     if (validatedFilters.search) {
       const searchTerm = validatedFilters.search;
       where.OR = [
-        { referenceNumber: { contains: searchTerm, mode: "insensitive" } },
-        { customer: { path: ["name"], string_contains: searchTerm } },
-        { origin: { path: ["name"], string_contains: searchTerm } },
-        { origin: { path: ["city"], string_contains: searchTerm } },
-        { origin: { path: ["state"], string_contains: searchTerm } },
-        { destination: { path: ["name"], string_contains: searchTerm } },
-        { destination: { path: ["city"], string_contains: searchTerm } },
-        { destination: { path: ["state"], string_contains: searchTerm } },
-        { cargo: { path: ["description"], string_contains: searchTerm } },
-        { notes: { contains: searchTerm, mode: "insensitive" } },
+        { referenceNumber: { contains: searchTerm, mode: 'insensitive' } },
+        { customer: { path: ['name'], string_contains: searchTerm } },
+        { origin: { path: ['name'], string_contains: searchTerm } },
+        { origin: { path: ['city'], string_contains: searchTerm } },
+        { origin: { path: ['state'], string_contains: searchTerm } },
+        { destination: { path: ['name'], string_contains: searchTerm } },
+        { destination: { path: ['city'], string_contains: searchTerm } },
+        { destination: { path: ['state'], string_contains: searchTerm } },
+        { cargo: { path: ['description'], string_contains: searchTerm } },
+        { notes: { contains: searchTerm, mode: 'insensitive' } },
       ];
     }
 
     // Build order by clause
     const orderBy: any = {};
-    const sortBy = validatedFilters.sortBy || "pickupDate";
-    const sortOrder = validatedFilters.sortOrder || "asc";
+    const sortBy = validatedFilters.sortBy || 'pickupDate';
+    const sortOrder = validatedFilters.sortOrder || 'asc';
 
     // Map UI sort keys to Prisma field names only in orderBy
-    if (sortBy === "pickupDate") {
+    if (sortBy === 'pickupDate') {
       orderBy.scheduledPickupDate = sortOrder;
-    } else if (sortBy === "deliveryDate") {
+    } else if (sortBy === 'deliveryDate') {
       orderBy.scheduledDeliveryDate = sortOrder;
-    } else if (sortBy === "customer") {
-      orderBy.customer = { path: ["name"], sort: sortOrder };
-    } else if (sortBy === "rate") {
-      orderBy.rate = { path: ["total"], sort: sortOrder };
+    } else if (sortBy === 'customer') {
+      orderBy.customer = { path: ['name'], sort: sortOrder };
+    } else if (sortBy === 'rate') {
+      orderBy.rate = { path: ['total'], sort: sortOrder };
     } else {
       orderBy[sortBy] = sortOrder;
     }
@@ -199,7 +219,7 @@ export async function listLoadsByOrg(orgId: string, filters: LoadFilterInput = {
     // Pagination
     const page = validatedFilters.page || 1;
     const limit = validatedFilters.limit || 50;
-    const skip = (page - 1) * limit;    // Execute queries
+    const skip = (page - 1) * limit; // Execute queries
     const [loads, totalCount] = await Promise.all([
       prisma.load.findMany({
         where,
@@ -231,7 +251,7 @@ export async function listLoadsByOrg(orgId: string, filters: LoadFilterInput = {
         skip,
         take: limit,
       }),
-      
+
       prisma.load.count({ where }),
     ]);
 
@@ -248,8 +268,8 @@ export async function listLoadsByOrg(orgId: string, filters: LoadFilterInput = {
       },
     };
   } catch (error) {
-    console.error("Error fetching loads:", error);
-    throw new Error("Failed to fetch loads");
+    console.error('Error fetching loads:', error);
+    throw new Error('Failed to fetch loads');
   }
 }
 
@@ -299,19 +319,22 @@ export async function getActiveLoadsForDispatchBoard(orgId: string) {
       data: loads,
     };
   } catch (error) {
-    console.error("Error fetching dispatch board loads:", error);
-    throw new Error("Failed to fetch dispatch board loads");
+    console.error('Error fetching dispatch board loads:', error);
+    throw new Error('Failed to fetch dispatch board loads');
   }
 }
 
 // Get available drivers for load assignment
-export async function getAvailableDriversForLoad(orgId: string, loadRequirements: any = {}) {
+export async function getAvailableDriversForLoad(
+  orgId: string,
+  loadRequirements: any = {}
+) {
   try {
     await checkUserAccess(orgId);
 
     const where: any = {
       organizationId: orgId,
-      status: "active",
+      status: 'active',
     };
 
     // Add CDL requirements if specified
@@ -343,10 +366,7 @@ export async function getAvailableDriversForLoad(orgId: string, loadRequirements
         licenseExpiration: true,
         status: true,
       },
-      orderBy: [
-        { firstName: 'asc' },
-        { lastName: 'asc' },
-      ],
+      orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }],
     });
 
     return {
@@ -354,19 +374,22 @@ export async function getAvailableDriversForLoad(orgId: string, loadRequirements
       data: drivers,
     };
   } catch (error) {
-    console.error("Error fetching available drivers:", error);
-    throw new Error("Failed to fetch available drivers");
+    console.error('Error fetching available drivers:', error);
+    throw new Error('Failed to fetch available drivers');
   }
 }
 
 // Get available vehicles for load assignment
-export async function getAvailableVehiclesForLoad(orgId: string, loadRequirements: any = {}) {
+export async function getAvailableVehiclesForLoad(
+  orgId: string,
+  loadRequirements: any = {}
+) {
   try {
     await checkUserAccess(orgId);
 
     const where: any = {
       organizationId: orgId,
-      status: "active",
+      status: 'active',
     };
 
     // Add equipment type requirements if specified
@@ -408,20 +431,23 @@ export async function getAvailableVehiclesForLoad(orgId: string, loadRequirement
       data: vehicles,
     };
   } catch (error) {
-    console.error("Error fetching available vehicles:", error);
-    throw new Error("Failed to fetch available vehicles");
+    console.error('Error fetching available vehicles:', error);
+    throw new Error('Failed to fetch available vehicles');
   }
 }
 
 // Get available trailers for load assignment
-export async function getAvailableTrailersForLoad(orgId: string, loadRequirements: any = {}) {
+export async function getAvailableTrailersForLoad(
+  orgId: string,
+  loadRequirements: any = {}
+) {
   try {
     await checkUserAccess(orgId);
 
     const where: any = {
       organizationId: orgId,
-      status: "active",
-      type: { not: "tractor" }, // Only get trailers, not tractors
+      status: 'active',
+      type: { not: 'tractor' }, // Only get trailers, not tractors
     };
 
     // Add trailer type requirements if specified
@@ -462,16 +488,19 @@ export async function getAvailableTrailersForLoad(orgId: string, loadRequirement
       data: trailers,
     };
   } catch (error) {
-    console.error("Error fetching available trailers:", error);
-    throw new Error("Failed to fetch available trailers");
+    console.error('Error fetching available trailers:', error);
+    throw new Error('Failed to fetch available trailers');
   }
 }
 
 // Get load statistics for dashboard
-export async function getLoadStatistics(orgId: string, dateRange: { from: Date; to: Date } = {
-  from: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-  to: new Date(),
-}) {
+export async function getLoadStatistics(
+  orgId: string,
+  dateRange: { from: Date; to: Date } = {
+    from: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+    to: new Date(),
+  }
+) {
   try {
     await checkUserAccess(orgId);
 
@@ -536,11 +565,14 @@ export async function getLoadStatistics(orgId: string, dateRange: { from: Date; 
       deliveredLoads,
       inTransitLoads,
       cancelledLoads,
-      onTimeDeliveryRate: deliveredLoads > 0 ? (onTimeDeliveries / deliveredLoads) * 100 : 0,
+      onTimeDeliveryRate:
+        deliveredLoads > 0 ? (onTimeDeliveries / deliveredLoads) * 100 : 0,
       totalRevenue: totalRevenue._sum.rate || 0,
       totalMiles: totalMiles._sum.actualMiles || 0,
-      averageRevenuePerMile: totalMiles._sum.actualMiles ? 
-        Number(totalRevenue._sum.rate || 0) / Number(totalMiles._sum.actualMiles) : 0,
+      averageRevenuePerMile: totalMiles._sum.actualMiles
+        ? Number(totalRevenue._sum.rate || 0) /
+          Number(totalMiles._sum.actualMiles)
+        : 0,
     };
 
     return {
@@ -548,8 +580,8 @@ export async function getLoadStatistics(orgId: string, dateRange: { from: Date; 
       data: statistics,
     };
   } catch (error) {
-    console.error("Error fetching load statistics:", error);
-    throw new Error("Failed to fetch load statistics");
+    console.error('Error fetching load statistics:', error);
+    throw new Error('Failed to fetch load statistics');
   }
 }
 
@@ -584,20 +616,32 @@ export async function getCustomerStatistics(orgId: string) {
     });
 
     // Get repeat customers (customers with more than one load)
-    const repeatCustomers = customerStats.filter(customer => customer._count.id > 1);
+    const repeatCustomers = customerStats.filter(
+      customer => customer._count.id > 1
+    );
 
     // Calculate additional metrics
     const totalCustomers = customerStats.length;
-    const totalLoads = customerStats.reduce((sum, customer) => sum + customer._count.id, 0);
-    const totalRevenue = customerStats.reduce((sum, customer) => sum + Number(customer._sum.rate || 0), 0);
+    const totalLoads = customerStats.reduce(
+      (sum, customer) => sum + customer._count.id,
+      0
+    );
+    const totalRevenue = customerStats.reduce(
+      (sum, customer) => sum + Number(customer._sum.rate || 0),
+      0
+    );
 
     const statistics = {
       totalCustomers,
       repeatCustomers: repeatCustomers.length,
-      customerRetentionRate: totalCustomers > 0 ? (repeatCustomers.length / totalCustomers) * 100 : 0,
+      customerRetentionRate:
+        totalCustomers > 0
+          ? (repeatCustomers.length / totalCustomers) * 100
+          : 0,
       totalLoads,
       totalRevenue,
-      averageRevenuePerCustomer: totalCustomers > 0 ? totalRevenue / totalCustomers : 0,
+      averageRevenuePerCustomer:
+        totalCustomers > 0 ? totalRevenue / totalCustomers : 0,
       topCustomers: customerStats.map(customer => ({
         name: customer.customerName,
         loadCount: customer._count.id,
@@ -612,8 +656,8 @@ export async function getCustomerStatistics(orgId: string) {
       data: statistics,
     };
   } catch (error) {
-    console.error("Error fetching customer statistics:", error);
-    throw new Error("Failed to fetch customer statistics");
+    console.error('Error fetching customer statistics:', error);
+    throw new Error('Failed to fetch customer statistics');
   }
 }
 
@@ -742,20 +786,25 @@ export async function getLoadAlerts(orgId: string, severity?: string[]) {
     });
 
     // Filter by severity if specified
-    const filteredAlerts = severity && severity.length > 0 
-      ? alerts.filter(alert => severity.includes(alert.severity))
-      : alerts;
+    const filteredAlerts =
+      severity && severity.length > 0
+        ? alerts.filter(alert => severity.includes(alert.severity))
+        : alerts;
 
     return {
       success: true,
       data: filteredAlerts.sort((a, b) => {
-        const severityOrder: { [key: string]: number } = { high: 3, medium: 2, low: 1 };
+        const severityOrder: { [key: string]: number } = {
+          high: 3,
+          medium: 2,
+          low: 1,
+        };
         return severityOrder[b.severity] - severityOrder[a.severity];
       }),
     };
   } catch (error) {
-    console.error("Error fetching load alerts:", error);
-    throw new Error("Failed to fetch load alerts");
+    console.error('Error fetching load alerts:', error);
+    throw new Error('Failed to fetch load alerts');
   }
 }
 

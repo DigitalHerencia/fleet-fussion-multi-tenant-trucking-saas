@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
-import path from "path"
+import path from 'path';
 
-const nextConfig: import( 'next' ).NextConfig = {
+const nextConfig: import('next').NextConfig = {
   reactStrictMode: true,
   images: {
     // Add domains for remote images here if you use them (example below):
@@ -20,7 +20,7 @@ const nextConfig: import( 'next' ).NextConfig = {
   experimental: {
     serverActions: {
       allowedOrigins: [
-        'localhost:3000', 
+        'localhost:3000',
         'fleet-fusion.vercel.app',
         'liberal-gull-quietly.ngrok-free.app:3000',
       ],
@@ -36,14 +36,14 @@ const nextConfig: import( 'next' ).NextConfig = {
   webpack: (config, { isServer }) => {
     config.resolve.alias = {
       ...(config.resolve.alias || {}),
-      "@": path.resolve(__dirname),
-    }
+      '@': path.resolve(__dirname),
+    };
     if (isServer) {
       // Ensure Prisma client is bundled only for the server
-      config.externals = [...(config.externals || []), '@prisma/client']
+      config.externals = [...(config.externals || []), '@prisma/client'];
     }
-    return config
+    return config;
   },
-}
+};
 
-export default nextConfig
+export default nextConfig;

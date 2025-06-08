@@ -1,8 +1,10 @@
 # FleetFusion Environment Configuration
 
-This guide covers all environment variables, configuration management, and secrets handling for FleetFusion across different deployment environments.
+This guide covers all environment variables, configuration management, and secrets handling for
+FleetFusion across different deployment environments.
 
 ## Table of Contents
+
 - [Environment Overview](#environment-overview)
 - [Required Variables](#required-variables)
 - [Optional Variables](#optional-variables)
@@ -16,9 +18,12 @@ This guide covers all environment variables, configuration management, and secre
 
 ## Environment Overview
 
-FleetFusion uses environment variables for configuration management across development, staging, and production environments. All sensitive data is handled through secure environment variables and never committed to version control.
+FleetFusion uses environment variables for configuration management across development, staging, and
+production environments. All sensitive data is handled through secure environment variables and
+never committed to version control.
 
 ### Environment Files Structure
+
 ```
 ├── .env.local                 # Local development (git-ignored)
 ├── .env.example              # Template with dummy values
@@ -27,6 +32,7 @@ FleetFusion uses environment variables for configuration management across devel
 ```
 
 ### Configuration Hierarchy
+
 1. Environment variables (highest priority)
 2. `.env.local` (development)
 3. `.env.production` (production)
@@ -244,11 +250,11 @@ CACHE_TTL=3600
 ```typescript
 // lib/secrets/rotation.ts
 export interface SecretRotationConfig {
-  secretName: string
-  rotationInterval: number // days
-  lastRotated: Date
-  nextRotation: Date
-  autoRotate: boolean
+  secretName: string;
+  rotationInterval: number; // days
+  lastRotated: Date;
+  nextRotation: Date;
+  autoRotate: boolean;
 }
 
 export const secretRotationSchedule: SecretRotationConfig[] = [
@@ -266,35 +272,35 @@ export const secretRotationSchedule: SecretRotationConfig[] = [
     nextRotation: new Date('2024-02-01'),
     autoRotate: true,
   },
-]
+];
 ```
 
 ### Secret Validation
 
 ```typescript
 // lib/env/validation.ts
-import { z } from 'zod'
+import { z } from 'zod';
 
 const environmentSchema = z.object({
   // Required secrets
   DATABASE_URL: z.string().url('Invalid database URL'),
   CLERK_SECRET_KEY: z.string().startsWith('sk_', 'Invalid Clerk secret key'),
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().startsWith('pk_', 'Invalid Clerk publishable key'),
-  
+
   // Optional secrets with defaults
   SESSION_SECRET: z.string().min(32, 'Session secret must be at least 32 characters').optional(),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
-  
+
   // Environment-specific validation
   NODE_ENV: z.enum(['development', 'test', 'staging', 'production']),
-})
+});
 
 export function validateEnvironment() {
   try {
-    return environmentSchema.parse(process.env)
+    return environmentSchema.parse(process.env);
   } catch (error) {
-    console.error('Environment validation failed:', error)
-    process.exit(1)
+    console.error('Environment validation failed:', error);
+    process.exit(1);
   }
 }
 ```
@@ -307,7 +313,7 @@ export function validateEnvironment() {
 
 ```typescript
 // lib/config/index.ts
-import { z } from 'zod'
+import { z } from 'zod';
 
 const configSchema = z.object({
   app: z.object({
@@ -333,9 +339,9 @@ const configSchema = z.object({
     enableDebugMode: z.boolean().default(false),
     enableMockData: z.boolean().default(false),
   }),
-})
+});
 
-export type Config = z.infer<typeof configSchema>
+export type Config = z.infer<typeof configSchema>;
 
 export function loadConfig(): Config {
   const config = {
@@ -362,9 +368,9 @@ export function loadConfig(): Config {
       enableDebugMode: process.env.NEXT_PUBLIC_DEBUG_MODE === 'true',
       enableMockData: process.env.MOCK_EXTERNAL_APIS === 'true',
     },
-  }
+  };
 
-  return configSchema.parse(config)
+  return configSchema.parse(config);
 }
 ```
 
@@ -373,51 +379,47 @@ export function loadConfig(): Config {
 ```typescript
 // lib/health/config-check.ts
 export interface HealthCheck {
-  name: string
-  status: 'healthy' | 'warning' | 'critical'
-  message: string
-  timestamp: Date
+  name: string;
+  status: 'healthy' | 'warning' | 'critical';
+  message: string;
+  timestamp: Date;
 }
 
 export async function checkConfigurationHealth(): Promise<HealthCheck[]> {
-  const checks: HealthCheck[] = []
+  const checks: HealthCheck[] = [];
 
   // Check required environment variables
-  const requiredVars = [
-    'DATABASE_URL',
-    'CLERK_SECRET_KEY',
-    'NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY',
-  ]
+  const requiredVars = ['DATABASE_URL', 'CLERK_SECRET_KEY', 'NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY'];
 
   for (const varName of requiredVars) {
-    const value = process.env[varName]
+    const value = process.env[varName];
     checks.push({
       name: `Environment Variable: ${varName}`,
       status: value ? 'healthy' : 'critical',
       message: value ? 'Present' : 'Missing',
       timestamp: new Date(),
-    })
+    });
   }
 
   // Check database connection
   try {
-    await prisma.$queryRaw`SELECT 1`
+    await prisma.$queryRaw`SELECT 1`;
     checks.push({
       name: 'Database Connection',
       status: 'healthy',
       message: 'Connected successfully',
       timestamp: new Date(),
-    })
+    });
   } catch (error) {
     checks.push({
       name: 'Database Connection',
       status: 'critical',
       message: `Connection failed: ${error.message}`,
       timestamp: new Date(),
-    })
+    });
   }
 
-  return checks
+  return checks;
 }
 ```
 
@@ -428,22 +430,26 @@ export async function checkConfigurationHealth(): Promise<HealthCheck[]> {
 ### Setup Instructions
 
 1. **Copy environment template**
+
 ```bash
 cp .env.example .env.local
 ```
 
 2. **Configure required variables**
+
 ```bash
 # Edit .env.local with your values
 nano .env.local
 ```
 
 3. **Validate configuration**
+
 ```bash
 npm run config:validate
 ```
 
 4. **Start development server**
+
 ```bash
 npm run dev
 ```
@@ -479,9 +485,9 @@ LOG_LEVEL=debug
 NEXT_PUBLIC_DEBUG_MODE=true
 MOCK_EXTERNAL_APIS=true
 SKIP_EMAIL_VERIFICATION=true
-`
+`;
 
-  return template
+  return template;
 }
 ```
 
@@ -509,47 +515,47 @@ vercel env add CLERK_SECRET_KEY preview
 ```typescript
 // lib/env/manager.ts
 export class EnvironmentManager {
-  private static instance: EnvironmentManager
-  private config: Config
+  private static instance: EnvironmentManager;
+  private config: Config;
 
   private constructor() {
-    this.config = loadConfig()
+    this.config = loadConfig();
   }
 
   public static getInstance(): EnvironmentManager {
     if (!EnvironmentManager.instance) {
-      EnvironmentManager.instance = new EnvironmentManager()
+      EnvironmentManager.instance = new EnvironmentManager();
     }
-    return EnvironmentManager.instance
+    return EnvironmentManager.instance;
   }
 
   public get<K extends keyof Config>(key: K): Config[K] {
-    return this.config[key]
+    return this.config[key];
   }
 
   public isDevelopment(): boolean {
-    return this.config.app.environment === 'development'
+    return this.config.app.environment === 'development';
   }
 
   public isProduction(): boolean {
-    return this.config.app.environment === 'production'
+    return this.config.app.environment === 'production';
   }
 
   public isFeatureEnabled(feature: keyof Config['features']): boolean {
-    return this.config.features[feature]
+    return this.config.features[feature];
   }
 
   public getConnectionString(): string {
-    return this.config.database.url
+    return this.config.database.url;
   }
 
   public getAuthConfig() {
-    return this.config.auth
+    return this.config.auth;
   }
 }
 
 // Export singleton instance
-export const env = EnvironmentManager.getInstance()
+export const env = EnvironmentManager.getInstance();
 ```
 
 ### Configuration Monitoring
@@ -557,33 +563,33 @@ export const env = EnvironmentManager.getInstance()
 ```typescript
 // lib/monitoring/config-monitor.ts
 export interface ConfigurationAlert {
-  level: 'info' | 'warn' | 'error'
-  message: string
-  timestamp: Date
-  environment: string
+  level: 'info' | 'warn' | 'error';
+  message: string;
+  timestamp: Date;
+  environment: string;
 }
 
 export class ConfigurationMonitor {
-  private alerts: ConfigurationAlert[] = []
+  private alerts: ConfigurationAlert[] = [];
 
   public checkForIssues(): ConfigurationAlert[] {
-    this.alerts = []
+    this.alerts = [];
 
     // Check for missing critical variables
-    this.checkCriticalVariables()
-    
-    // Check for security issues
-    this.checkSecurityConfiguration()
-    
-    // Check for performance settings
-    this.checkPerformanceConfiguration()
+    this.checkCriticalVariables();
 
-    return this.alerts
+    // Check for security issues
+    this.checkSecurityConfiguration();
+
+    // Check for performance settings
+    this.checkPerformanceConfiguration();
+
+    return this.alerts;
   }
 
   private checkCriticalVariables() {
-    const critical = ['DATABASE_URL', 'CLERK_SECRET_KEY']
-    
+    const critical = ['DATABASE_URL', 'CLERK_SECRET_KEY'];
+
     for (const varName of critical) {
       if (!process.env[varName]) {
         this.alerts.push({
@@ -591,7 +597,7 @@ export class ConfigurationMonitor {
           message: `Critical variable ${varName} is missing`,
           timestamp: new Date(),
           environment: process.env.NODE_ENV || 'unknown',
-        })
+        });
       }
     }
   }
@@ -605,21 +611,21 @@ export class ConfigurationMonitor {
           message: 'Production environment using test Clerk keys',
           timestamp: new Date(),
           environment: 'production',
-        })
+        });
       }
     }
   }
 
   private checkPerformanceConfiguration() {
-    const poolSize = parseInt(process.env.DATABASE_POOL_MAX || '20')
-    
+    const poolSize = parseInt(process.env.DATABASE_POOL_MAX || '20');
+
     if (poolSize > 50) {
       this.alerts.push({
         level: 'warn',
         message: `Database pool size (${poolSize}) may be too large`,
         timestamp: new Date(),
         environment: process.env.NODE_ENV || 'unknown',
-      })
+      });
     }
   }
 }
@@ -712,4 +718,5 @@ LOG_LEVEL=warn
 
 ---
 
-*For security reasons, never share actual production environment variables. Always use secure secret management systems and follow the principle of least privilege for secret access.*
+_For security reasons, never share actual production environment variables. Always use secure secret
+management systems and follow the principle of least privilege for secret access._

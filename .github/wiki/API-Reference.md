@@ -2,7 +2,8 @@
 
 ## Overview
 
-FleetFusion uses a modern server-side architecture with Next.js 15 Server Actions and App Router. The API is organized into two main patterns:
+FleetFusion uses a modern server-side architecture with Next.js 15 Server Actions and App Router.
+The API is organized into two main patterns:
 
 - **Server Actions**: Server-side functions for data mutations (`lib/actions/`)
 - **Data Fetchers**: Server-side functions for data retrieval (`lib/fetchers/`)
@@ -15,12 +16,12 @@ All operations use Clerk.js authentication and multi-tenant organization isolati
 ### Authentication Flow
 
 ```typescript
-import { auth } from "@clerk/nextjs/server";
+import { auth } from '@clerk/nextjs/server';
 
 export async function protectedAction() {
   const { userId, orgId } = await auth();
   if (!userId || !orgId) {
-    return { success: false, error: "Unauthorized" };
+    return { success: false, error: 'Unauthorized' };
   }
   // Continue with authorized operation
 }
@@ -45,7 +46,8 @@ enum UserRole {
 
 ## Server Actions (Mutations)
 
-Server Actions handle all data mutations with built-in validation, authentication, and audit logging.
+Server Actions handle all data mutations with built-in validation, authentication, and audit
+logging.
 
 ### Load Management (`lib/actions/loadActions.ts`)
 
@@ -55,29 +57,31 @@ Updates an existing load with validation and audit logging.
 
 ```typescript
 export async function updateLoadAction(
-  id: string, 
+  id: string,
   data: UpdateLoadInput
-): Promise<ActionResult<Load>>
+): Promise<ActionResult<Load>>;
 
 // Usage
 const result = await updateLoadAction(loadId, {
   status: 'in_transit',
   actualPickupDate: new Date(),
-  notes: 'Load picked up successfully'
+  notes: 'Load picked up successfully',
 });
 ```
 
 **Parameters:**
+
 - `id`: Load UUID
 - `data`: Partial load update data
 
 **Returns:**
+
 ```typescript
 type ActionResult<T> = {
   success: boolean;
   data?: T;
   error?: string;
-}
+};
 ```
 
 #### assignLoadAction
@@ -85,16 +89,14 @@ type ActionResult<T> = {
 Assigns driver and vehicle to a load.
 
 ```typescript
-export async function assignLoadAction(
-  data: LoadAssignmentInput
-): Promise<ActionResult<Load>>
+export async function assignLoadAction(data: LoadAssignmentInput): Promise<ActionResult<Load>>;
 
 // Usage
 const result = await assignLoadAction({
   loadId: 'load-uuid',
   driverId: 'driver-uuid',
   vehicleId: 'vehicle-uuid',
-  trailerId: 'trailer-uuid' // optional
+  trailerId: 'trailer-uuid', // optional
 });
 ```
 
@@ -105,9 +107,7 @@ const result = await assignLoadAction({
 Creates a new vehicle with compliance document setup.
 
 ```typescript
-export async function createVehicleAction(
-  data: CreateVehicleInput
-): Promise<ActionResult<Vehicle>>
+export async function createVehicleAction(data: CreateVehicleInput): Promise<ActionResult<Vehicle>>;
 
 // Usage
 const result = await createVehicleAction({
@@ -118,7 +118,7 @@ const result = await createVehicleAction({
   vin: '1FUJGHDV8NLAA1234',
   unitNumber: 'T001',
   licensePlate: 'ABC123',
-  licensePlateState: 'TX'
+  licensePlateState: 'TX',
 });
 ```
 
@@ -130,7 +130,7 @@ Updates vehicle information with validation.
 export async function updateVehicleAction(
   id: string,
   data: UpdateVehicleInput
-): Promise<ActionResult<Vehicle>>
+): Promise<ActionResult<Vehicle>>;
 ```
 
 #### updateVehicleStatusAction
@@ -160,9 +160,7 @@ enum VehicleStatus {
 Creates a new driver profile with compliance tracking.
 
 ```typescript
-export async function createDriverAction(
-  data: CreateDriverInput
-): Promise<ActionResult<Driver>>
+export async function createDriverAction(data: CreateDriverInput): Promise<ActionResult<Driver>>;
 
 // Usage
 const result = await createDriverAction({
@@ -174,7 +172,7 @@ const result = await createDriverAction({
   licenseState: 'TX',
   licenseClass: 'CDL-A',
   licenseExpiration: '2025-12-31',
-  hireDate: '2024-01-15'
+  hireDate: '2024-01-15',
 });
 ```
 
@@ -186,7 +184,7 @@ Updates driver information and compliance data.
 export async function updateDriverAction(
   id: string,
   data: UpdateDriverInput
-): Promise<ActionResult<Driver>>
+): Promise<ActionResult<Driver>>;
 ```
 
 ### Compliance Management (`lib/actions/complianceActions.ts`)
@@ -198,7 +196,7 @@ Uploads and processes compliance documents.
 ```typescript
 export async function uploadComplianceDocumentAction(
   data: UploadDocumentInput
-): Promise<ActionResult<ComplianceDocument>>
+): Promise<ActionResult<ComplianceDocument>>;
 
 // Usage
 const result = await uploadComplianceDocumentAction({
@@ -207,7 +205,7 @@ const result = await uploadComplianceDocumentAction({
   title: 'DOT Medical Certificate',
   fileUrl: 'https://blob.storage/document.pdf',
   expirationDate: '2025-06-15',
-  documentNumber: 'MC123456'
+  documentNumber: 'MC123456',
 });
 ```
 
@@ -220,7 +218,7 @@ export async function verifyComplianceDocumentAction(
   documentId: string,
   verified: boolean,
   notes?: string
-): Promise<ActionResult<ComplianceDocument>>
+): Promise<ActionResult<ComplianceDocument>>;
 ```
 
 ### IFTA Management (`lib/actions/iftaActions.ts`)
@@ -232,13 +230,13 @@ Generates quarterly IFTA reports.
 ```typescript
 export async function createIftaReportAction(
   data: CreateIftaReportInput
-): Promise<ActionResult<IftaReport>>
+): Promise<ActionResult<IftaReport>>;
 
 // Usage
 const result = await createIftaReportAction({
   quarter: 1,
   year: 2024,
-  dueDate: '2024-04-30'
+  dueDate: '2024-04-30',
 });
 ```
 
@@ -247,9 +245,7 @@ const result = await createIftaReportAction({
 Submits IFTA report for filing.
 
 ```typescript
-export async function submitIftaReportAction(
-  reportId: string
-): Promise<ActionResult<IftaReport>>
+export async function submitIftaReportAction(reportId: string): Promise<ActionResult<IftaReport>>;
 ```
 
 ## Data Fetchers (Queries)
@@ -263,10 +259,7 @@ Data fetchers provide optimized read operations with caching and filtering.
 Retrieves loads with filtering and pagination.
 
 ```typescript
-export async function listLoadsByOrg(
-  orgId: string,
-  filters: LoadFilterInput = {}
-): Promise<Load[]>
+export async function listLoadsByOrg(orgId: string, filters: LoadFilterInput = {}): Promise<Load[]>;
 
 // Usage
 const loads = await listLoadsByOrg(orgId, {
@@ -274,14 +267,15 @@ const loads = await listLoadsByOrg(orgId, {
   driverId: 'driver-uuid',
   dateRange: {
     start: '2024-01-01',
-    end: '2024-01-31'
+    end: '2024-01-31',
   },
   limit: 50,
-  offset: 0
+  offset: 0,
 });
 ```
 
 **Filter Options:**
+
 ```typescript
 interface LoadFilterInput {
   status?: LoadStatus[];
@@ -303,10 +297,7 @@ interface LoadFilterInput {
 Retrieves single load with full details.
 
 ```typescript
-export async function getLoadById(
-  id: string,
-  orgId: string
-): Promise<LoadWithDetails | null>
+export async function getLoadById(id: string, orgId: string): Promise<LoadWithDetails | null>;
 
 // Returns load with related data
 interface LoadWithDetails extends Load {
@@ -327,13 +318,13 @@ Retrieves organization vehicles with filtering.
 export async function listVehiclesByOrg(
   orgId: string,
   filters: VehicleFilterInput = {}
-): Promise<Vehicle[]>
+): Promise<Vehicle[]>;
 
 // Usage
 const vehicles = await listVehiclesByOrg(orgId, {
   type: ['truck'],
   status: ['active'],
-  searchTerm: 'T001'
+  searchTerm: 'T001',
 });
 ```
 
@@ -345,7 +336,7 @@ Retrieves vehicle maintenance and compliance schedules.
 export async function getVehicleMaintenanceSchedule(
   vehicleId: string,
   orgId: string
-): Promise<MaintenanceSchedule[]>
+): Promise<MaintenanceSchedule[]>;
 ```
 
 ### Driver Operations (`lib/fetchers/driverFetchers.ts`)
@@ -358,7 +349,7 @@ Retrieves organization drivers with compliance status.
 export async function listDriversByOrg(
   orgId: string,
   filters: DriverFilterInput = {}
-): Promise<DriverWithCompliance[]>
+): Promise<DriverWithCompliance[]>;
 
 interface DriverWithCompliance extends Driver {
   complianceStatus: {
@@ -379,13 +370,13 @@ Retrieves active compliance alerts and notifications.
 export async function getComplianceAlerts(
   orgId: string,
   filters: AlertFilterInput = {}
-): Promise<ComplianceAlert[]>
+): Promise<ComplianceAlert[]>;
 
 // Usage
 const alerts = await getComplianceAlerts(orgId, {
   severity: ['high', 'critical'],
   entityType: ['driver', 'vehicle'],
-  acknowledged: false
+  acknowledged: false,
 });
 ```
 
@@ -397,7 +388,7 @@ Retrieves documents expiring within specified timeframe.
 export async function getExpiringDocuments(
   orgId: string,
   daysAhead: number = 30
-): Promise<ComplianceDocument[]>
+): Promise<ComplianceDocument[]>;
 ```
 
 ### Analytics & KPIs (`lib/fetchers/analyticsFetchers.ts`)
@@ -410,7 +401,7 @@ Retrieves key performance indicators for dashboard.
 export async function getOrganizationKPIs(
   orgId: string,
   dateRange: DateRange
-): Promise<OrganizationKPIs>
+): Promise<OrganizationKPIs>;
 
 interface OrganizationKPIs {
   totalLoads: number;
@@ -436,18 +427,19 @@ Handles various Clerk events:
 
 ```typescript
 // Supported webhook events
-- user.created
-- user.updated  
-- user.deleted
-- organization.created
-- organization.updated
-- organization.deleted
-- organizationMembership.created
-- organizationMembership.updated
-- organizationMembership.deleted
+-user.created -
+  user.updated -
+  user.deleted -
+  organization.created -
+  organization.updated -
+  organization.deleted -
+  organizationMembership.created -
+  organizationMembership.updated -
+  organizationMembership.deleted;
 ```
 
 **Headers Required:**
+
 ```
 svix-id: <webhook-id>
 svix-timestamp: <timestamp>
@@ -455,6 +447,7 @@ svix-signature: <signature>
 ```
 
 **Response:**
+
 ```typescript
 {
   success: boolean;
@@ -490,7 +483,7 @@ export const loadSchema = z.object({
   pieces: z.number().positive().optional(),
   commodity: z.string().optional(),
   hazmat: z.boolean().default(false),
-  priority: z.enum(['low', 'medium', 'high', 'urgent']).default('medium')
+  priority: z.enum(['low', 'medium', 'high', 'urgent']).default('medium'),
 });
 
 export type LoadInput = z.infer<typeof loadSchema>;
@@ -504,13 +497,18 @@ export const vehicleSchema = z.object({
   type: z.string().min(1),
   make: z.string().optional(),
   model: z.string().optional(),
-  year: z.number().int().min(1900).max(new Date().getFullYear() + 1).optional(),
+  year: z
+    .number()
+    .int()
+    .min(1900)
+    .max(new Date().getFullYear() + 1)
+    .optional(),
   vin: z.string().optional(),
   unitNumber: z.string().min(1),
   licensePlate: z.string().optional(),
   licensePlateState: z.string().length(2).optional(),
   fuelType: z.string().optional(),
-  currentOdometer: z.number().int().positive().optional()
+  currentOdometer: z.number().int().positive().optional(),
 });
 ```
 
@@ -539,9 +537,7 @@ interface ApiError {
 ### Error Handling Pattern
 
 ```typescript
-export async function safeAction<T>(
-  action: () => Promise<T>
-): Promise<ActionResult<T>> {
+export async function safeAction<T>(action: () => Promise<T>): Promise<ActionResult<T>> {
   try {
     const data = await action();
     return { success: true, data };
@@ -549,7 +545,7 @@ export async function safeAction<T>(
     console.error('Action failed:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 }
@@ -575,9 +571,9 @@ const loadWithDetails = await prisma.load.findUnique({
     trailer: true,
     statusEvents: {
       orderBy: { timestamp: 'desc' },
-      take: 10
-    }
-  }
+      take: 10,
+    },
+  },
 });
 
 // Pagination for large datasets
@@ -585,7 +581,7 @@ const loads = await prisma.load.findMany({
   where: { organizationId },
   skip: offset,
   take: limit,
-  orderBy: { createdAt: 'desc' }
+  orderBy: { createdAt: 'desc' },
 });
 ```
 
@@ -600,9 +596,9 @@ describe('updateLoadAction', () => {
   it('should update load successfully', async () => {
     const result = await updateLoadAction('load-id', {
       status: 'completed',
-      actualDeliveryDate: new Date()
+      actualDeliveryDate: new Date(),
     });
-    
+
     expect(result.success).toBe(true);
     expect(result.data?.status).toBe('completed');
   });
@@ -621,14 +617,16 @@ describe('Clerk Webhook Handler', () => {
       headers: {
         'svix-id': 'test-id',
         'svix-timestamp': Date.now().toString(),
-        'svix-signature': 'test-signature'
+        'svix-signature': 'test-signature',
       },
       body: JSON.stringify({
         type: 'user.created',
-        data: { /* user data */ }
-      })
+        data: {
+          /* user data */
+        },
+      }),
     });
-    
+
     const response = await POST(request);
     expect(response.status).toBe(200);
   });

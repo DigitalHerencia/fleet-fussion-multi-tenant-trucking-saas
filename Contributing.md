@@ -1,6 +1,7 @@
 # Contributing Guidelines
 
-Welcome to FleetFusion! We're excited that you want to contribute to this multi-tenant SaaS platform for fleet management. This guide will help you get started with contributing to the codebase.
+Welcome to FleetFusion! We're excited that you want to contribute to this multi-tenant SaaS platform
+for fleet management. This guide will help you get started with contributing to the codebase.
 
 ## Table of Contents
 
@@ -17,22 +18,28 @@ Welcome to FleetFusion! We're excited that you want to contribute to this multi-
 ## GitHub Flow & Branching Best Practices
 
 FleetFusion uses **GitHub Flow** for all development:
+
 - The `main` branch is always deployable and protected by required reviews and CI.
 - All work is done in short-lived feature branches (e.g., `feature/xyz`, `fix/bug`, `docs/update`).
-- Open a pull request from your branch to `main` for review and merge. Use squash merge to keep history linear.
+- Open a pull request from your branch to `main` for review and merge. Use squash merge to keep
+  history linear.
 - After merging, delete your feature branch (auto-deletion is enabled).
 - Avoid long-lived branches like `develop` or `release` unless specifically required.
 
 ### Branch Naming
+
 - Use prefixes: `feature/`, `fix/`, `docs/`, `codex/` (for AI-generated changes).
 - Only use `codex/` for branches created by the Codex AI agent.
 
 ## AI Agent Contribution Rules
+
 - **Codex and Copilot must never commit directly to `main`.**
-- All AI-generated changes must be made in a new branch (preferably `codex/` prefix) and submitted via pull request.
+- All AI-generated changes must be made in a new branch (preferably `codex/` prefix) and submitted
+  via pull request.
 - All AI PRs must pass CI and receive human review before merge.
 - AI-generated PRs should be labeled (e.g., `AI-Generated`) for traceability.
-- Codex should prefer calling well-typed, documented functions and must not bypass branch protection or CI.
+- Codex should prefer calling well-typed, documented functions and must not bypass branch protection
+  or CI.
 
 See `agents.md` for full agent delegation and automation rules.
 
@@ -54,28 +61,33 @@ Before contributing, ensure you have:
 - Node.js 18+ installed
 - Git configured with your GitHub account
 - Access to the development environment
-- Understanding of the [Architecture](./Architecture.md) and [Getting Started](./Getting-Started.md) guides
+- Understanding of the [Architecture](./Architecture.md) and [Getting Started](./Getting-Started.md)
+  guides
 
 ### Initial Setup
 
 1. **Fork and Clone**
+
    ```bash
    git clone https://github.com/your-username/fleetfusion-architecture.git
    cd fleetfusion-architecture
    ```
 
 2. **Install Dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Environment Setup**
+
    ```bash
    cp .env.example .env.local
    # Fill in your environment variables
    ```
 
 4. **Database Setup**
+
    ```bash
    npm run db:push
    npm run db:seed
@@ -91,6 +103,7 @@ Before contributing, ensure you have:
 ### Branch Naming Convention
 
 Use descriptive branch names following this pattern:
+
 - `feature/description-of-feature`
 - `fix/description-of-bug-fix`
 - `docs/description-of-documentation-change`
@@ -98,6 +111,7 @@ Use descriptive branch names following this pattern:
 - `test/description-of-test-addition`
 
 Examples:
+
 - `feature/driver-compliance-dashboard`
 - `fix/load-assignment-validation`
 - `docs/api-reference-updates`
@@ -115,6 +129,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/) specificatio
 ```
 
 **Types:**
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation changes
@@ -124,6 +139,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/) specificatio
 - `chore`: Maintenance tasks
 
 **Examples:**
+
 ```
 feat(auth): add multi-factor authentication support
 
@@ -147,18 +163,20 @@ Fixes #456
 ### TypeScript Guidelines
 
 1. **Strict Type Safety**
+
    ```typescript
    // ✅ Good: Explicit types
    interface DashboardMetrics {
      activeVehicles: number;
      onTimeDeliveryRate: number;
    }
-   
+
    // ❌ Avoid: Any types
    const data: any = fetchData();
    ```
 
 2. **Use Interfaces for Object Shapes**
+
    ```typescript
    // ✅ Good: Interface for component props
    interface LoadCardProps {
@@ -180,13 +198,14 @@ Fixes #456
 ### React Guidelines
 
 1. **Server Components by Default**
+
    ```typescript
    // ✅ Good: Server Component (default)
    export default async function DashboardPage() {
      const data = await fetchDashboardData();
      return <Dashboard data={data} />;
    }
-   
+
    // Only use 'use client' when necessary
    'use client';
    export function InteractiveChart() {
@@ -196,6 +215,7 @@ Fixes #456
    ```
 
 2. **Component Organization**
+
    ```
    components/
    ├── ui/           # Generic, reusable components
@@ -210,7 +230,7 @@ Fixes #456
      // Required props first
      title: string;
      data: DataType[];
-     
+
      // Optional props after
      className?: string;
      onAction?: () => void;
@@ -220,18 +240,20 @@ Fixes #456
 ### Styling Guidelines
 
 1. **Tailwind CSS Conventions**
+
    ```typescript
    // ✅ Good: Logical grouping and responsive design
    <div className="
      flex items-center justify-between
      p-4 rounded-lg border
-     hover:bg-gray-50 
-     md:p-6 
+     hover:bg-gray-50
+     md:p-6
      dark:border-gray-700 dark:hover:bg-gray-800
    ">
    ```
 
 2. **CSS Custom Properties**
+
    ```css
    /* Use design tokens */
    .custom-component {
@@ -244,26 +266,24 @@ Fixes #456
 3. **Component Variants**
    ```typescript
    // Use class-variance-authority for component variants
-   const buttonVariants = cva(
-     "inline-flex items-center justify-center rounded-md",
-     {
-       variants: {
-         variant: {
-           default: "bg-primary text-primary-foreground",
-           destructive: "bg-destructive text-destructive-foreground",
-         },
-         size: {
-           default: "h-10 px-4 py-2",
-           sm: "h-9 rounded-md px-3",
-         },
+   const buttonVariants = cva('inline-flex items-center justify-center rounded-md', {
+     variants: {
+       variant: {
+         default: 'bg-primary text-primary-foreground',
+         destructive: 'bg-destructive text-destructive-foreground',
        },
-     }
-   );
+       size: {
+         default: 'h-10 px-4 py-2',
+         sm: 'h-9 rounded-md px-3',
+       },
+     },
+   });
    ```
 
 ### Database Guidelines
 
 1. **Prisma Schema Conventions**
+
    ```prisma
    model Organization {
      id        String   @id @default(cuid())
@@ -271,16 +291,17 @@ Fixes #456
      name      String
      createdAt DateTime @default(now()) @map("created_at")
      updatedAt DateTime @updatedAt @map("updated_at")
-     
+
      // Relations
      users     User[]
      vehicles  Vehicle[]
-     
+
      @@map("organizations")
    }
    ```
 
 2. **Query Optimization**
+
    ```typescript
    // ✅ Good: Include only necessary relations
    const load = await prisma.load.findUnique({
@@ -290,7 +311,7 @@ Fixes #456
        vehicle: { select: { unitNumber: true } },
      },
    });
-   
+
    // ❌ Avoid: Over-fetching data
    const load = await prisma.load.findUnique({
      where: { id },
@@ -306,6 +327,7 @@ Fixes #456
 ### Test Structure
 
 1. **Test File Organization**
+
    ```
    __tests__/
    ├── components/    # Component tests
@@ -315,11 +337,12 @@ Fixes #456
    ```
 
 2. **Unit Test Example**
+
    ```typescript
    // components/__tests__/MetricCard.test.tsx
    import { render, screen } from '@testing-library/react';
    import { MetricCard } from '../MetricCard';
-   
+
    describe('MetricCard', () => {
      it('displays metric value correctly', () => {
        render(
@@ -329,7 +352,7 @@ Fixes #456
            change={{ value: 5, type: 'increase', timeframe: 'last month' }}
          />
        );
-       
+
        expect(screen.getByText('Active Vehicles')).toBeInTheDocument();
        expect(screen.getByText('42')).toBeInTheDocument();
      });
@@ -337,17 +360,18 @@ Fixes #456
    ```
 
 3. **Integration Test Example**
+
    ```typescript
    // app/__tests__/dashboard.test.tsx
    import { GET } from '../api/dashboard/route';
    import { NextRequest } from 'next/server';
-   
+
    describe('/api/dashboard', () => {
      it('returns dashboard metrics for authenticated user', async () => {
        const request = new NextRequest('http://localhost/api/dashboard');
        const response = await GET(request);
        const data = await response.json();
-       
+
        expect(response.status).toBe(200);
        expect(data).toHaveProperty('activeVehicles');
      });
@@ -366,6 +390,7 @@ Fixes #456
 ### Code Documentation
 
 1. **TSDoc for Functions**
+
    ```typescript
    /**
     * Calculates the on-time delivery rate for an organization
@@ -383,10 +408,10 @@ Fixes #456
    ```
 
 2. **Component Documentation**
-   ```typescript
+   ````typescript
    /**
     * Dashboard metric card component
-    * 
+    *
     * @example
     * ```tsx
     * <MetricCard
@@ -399,11 +424,12 @@ Fixes #456
    export function MetricCard({ title, value, change }: MetricCardProps) {
      // Implementation
    }
-   ```
+   ````
 
 ### README Updates
 
 When adding new features, update relevant documentation:
+
 - Update [API Reference](./API-Reference.md) for new endpoints
 - Update [Component Library](./Component-Library.md) for new components
 - Update [Architecture](./Architecture.md) for architectural changes
@@ -413,12 +439,14 @@ When adding new features, update relevant documentation:
 ### Before Submitting
 
 1. **Run Tests**
+
    ```bash
    npm run test
    npm run test:e2e
    ```
 
 2. **Check Linting**
+
    ```bash
    npm run lint
    npm run type-check
@@ -436,21 +464,26 @@ Use this template for your pull requests:
 
 ```markdown
 ## Description
+
 Brief description of changes made.
 
 ## Type of Change
+
 - [ ] Bug fix (non-breaking change which fixes an issue)
 - [ ] New feature (non-breaking change which adds functionality)
-- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
+- [ ] Breaking change (fix or feature that would cause existing functionality to not work as
+      expected)
 - [ ] Documentation update
 
 ## Testing
+
 - [ ] Unit tests pass
 - [ ] Integration tests pass
 - [ ] E2E tests pass
 - [ ] Manual testing completed
 
 ## Checklist
+
 - [ ] Code follows the style guidelines
 - [ ] Self-review of code completed
 - [ ] Code is commented, particularly in hard-to-understand areas
@@ -458,9 +491,11 @@ Brief description of changes made.
 - [ ] No new warnings or errors introduced
 
 ## Screenshots (if applicable)
+
 Add screenshots for UI changes.
 
 ## Related Issues
+
 Closes #(issue number)
 ```
 
@@ -476,6 +511,7 @@ Closes #(issue number)
 ### Feature Development
 
 1. **Domain-Driven Design**
+
    ```
    features/
    ├── dispatch/
@@ -486,13 +522,12 @@ Closes #(issue number)
    ```
 
 2. **Server Actions Pattern**
+
    ```typescript
    // lib/actions/dispatchActions.ts
    'use server';
-   
-   export async function createLoadAction(
-     formData: FormData
-   ): Promise<ActionResult<Load>> {
+
+   export async function createLoadAction(formData: FormData): Promise<ActionResult<Load>> {
      // Validation, authorization, and business logic
    }
    ```
@@ -500,9 +535,7 @@ Closes #(issue number)
 3. **Data Fetching Pattern**
    ```typescript
    // lib/fetchers/dispatchFetchers.ts
-   export async function getActiveLoads(
-     organizationId: string
-   ): Promise<Load[]> {
+   export async function getActiveLoads(organizationId: string): Promise<Load[]> {
      // Data fetching with proper caching
    }
    ```
@@ -510,9 +543,10 @@ Closes #(issue number)
 ### Performance Considerations
 
 1. **Caching Strategy**
+
    ```typescript
    import { unstable_cache } from 'next/cache';
-   
+
    export const getCachedData = unstable_cache(
      async (id: string) => {
        // Data fetching logic
@@ -544,30 +578,33 @@ Closes #(issue number)
 ### Authentication & Authorization
 
 1. **Always Verify User Context**
+
    ```typescript
    export async function updateLoad(loadId: string, data: UpdateLoadData) {
      const { user } = await getCurrentUser();
-     
+
      // Verify user has permission to update this load
      await verifyLoadAccess(user.organizationId, loadId);
-     
+
      // Proceed with update
    }
    ```
 
 2. **Input Validation**
+
    ```typescript
    // Always validate inputs with Zod
    const validatedData = updateLoadSchema.parse(data);
    ```
 
 3. **SQL Injection Prevention**
+
    ```typescript
    // ✅ Good: Use Prisma ORM (prevents SQL injection)
    const loads = await prisma.load.findMany({
      where: { organizationId },
    });
-   
+
    // ❌ Never: Raw SQL with user input
    const loads = await prisma.$queryRaw`
      SELECT * FROM loads WHERE organization_id = ${organizationId}
@@ -577,6 +614,7 @@ Closes #(issue number)
 ### Data Privacy
 
 1. **Multi-tenant Isolation**
+
    ```typescript
    // Always include organizationId in queries
    const vehicle = await prisma.vehicle.findUnique({
@@ -590,7 +628,7 @@ Closes #(issue number)
 2. **Sensitive Data Handling**
    ```typescript
    // Don't log sensitive information
-   console.log('User action:', { 
+   console.log('User action:', {
      action: 'update_profile',
      userId: user.id,
      // Don't log: password, SSN, etc.

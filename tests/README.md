@@ -1,6 +1,7 @@
 # Playwright Test Setup for FleetFusion
 
 ## Prerequisites
+
 - `npm run dev` (backend on http://localhost:3000)
 - Ngrok endpoint for Clerk webhooks:
   ```
@@ -24,11 +25,13 @@
    ```
 
 ## Test Coverage
+
 - Auth: sign-in, sign-up, sign-out, forgot password
 - Onboarding: onboarding wizard
 - Clerk/Neon: webhook handler and data sync
 
 ## Notes
+
 - Ensure test users exist or are seeded for flows.
 - Webhook tests use a mock payload and signature.
 - Adjust selectors in `tests/auth-onboarding-webhook.spec.ts` if UI changes.

@@ -1,52 +1,72 @@
-import type { LoadStatus, LoadPriority, LoadStatusEvent } from "@prisma/client"
+import type { LoadStatus, LoadPriority, LoadStatusEvent } from '@prisma/client';
 
-import { DispatchBoard } from "@/components/dispatch/dispatch-board"
-import { listLoadsByOrg, getAvailableDriversForLoad, getAvailableVehiclesForLoad } from "@/lib/fetchers/dispatchFetchers"
-import type { Customer, LoadAssignedDriver, LoadAssignedVehicle, LoadAssignedTrailer, EquipmentRequirement, CargoDetails, Rate, LoadDocument, TrackingUpdate, BrokerInfo, FactoringInfo, LoadAlert } from "@/types/dispatch"
+import { DispatchBoard } from '@/components/dispatch/dispatch-board';
+import {
+  listLoadsByOrg,
+  getAvailableDriversForLoad,
+  getAvailableVehiclesForLoad,
+} from '@/lib/fetchers/dispatchFetchers';
+import type {
+  Customer,
+  LoadAssignedDriver,
+  LoadAssignedVehicle,
+  LoadAssignedTrailer,
+  EquipmentRequirement,
+  CargoDetails,
+  Rate,
+  LoadDocument,
+  TrackingUpdate,
+  BrokerInfo,
+  FactoringInfo,
+  LoadAlert,
+} from '@/types/dispatch';
 
-interface loadList {  
-  id: string
-  organizationId: string
-  referenceNumber: string
-  status: LoadStatus
-  priority: LoadPriority
-  customer: Customer
-  origin: string
-  destination: string
-  pickupDate: Date
-  deliveryDate: Date
-  estimatedPickupTime?: string
-  estimatedDeliveryTime?: string
-  actualPickupTime?: Date
-  actualDeliveryTime?: Date
-  driver?: LoadAssignedDriver
-  vehicle?: LoadAssignedVehicle
-  trailer?: LoadAssignedTrailer
-  equipment?: EquipmentRequirement
-  cargo: CargoDetails
-  rate: Rate
-  miles?: number
-  estimatedMiles?: number
-  fuelCost?: number
-  notes?: string
-  internalNotes?: string
-  specialInstructions?: string
-  documents?: LoadDocument[]
-  statusHistory?: LoadStatusEvent[]
-  trackingUpdates?: TrackingUpdate[]
-  brokerInfo?: BrokerInfo
-  factoring?: FactoringInfo
-  alerts?: LoadAlert[]
-  tags?: string[]
-  createdAt: Date
-  updatedAt: Date
+interface loadList {
+  id: string;
+  organizationId: string;
+  referenceNumber: string;
+  status: LoadStatus;
+  priority: LoadPriority;
+  customer: Customer;
+  origin: string;
+  destination: string;
+  pickupDate: Date;
+  deliveryDate: Date;
+  estimatedPickupTime?: string;
+  estimatedDeliveryTime?: string;
+  actualPickupTime?: Date;
+  actualDeliveryTime?: Date;
+  driver?: LoadAssignedDriver;
+  vehicle?: LoadAssignedVehicle;
+  trailer?: LoadAssignedTrailer;
+  equipment?: EquipmentRequirement;
+  cargo: CargoDetails;
+  rate: Rate;
+  miles?: number;
+  estimatedMiles?: number;
+  fuelCost?: number;
+  notes?: string;
+  internalNotes?: string;
+  specialInstructions?: string;
+  documents?: LoadDocument[];
+  statusHistory?: LoadStatusEvent[];
+  trackingUpdates?: TrackingUpdate[];
+  brokerInfo?: BrokerInfo;
+  factoring?: FactoringInfo;
+  alerts?: LoadAlert[];
+  tags?: string[];
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-
-export default async function DispatchPage({ params }: { params: Promise<{ orgId: string; userId: string }> }) {
-  const { orgId } = await params
+export default async function DispatchPage({
+  params,
+}: {
+  params: Promise<{ orgId: string; userId: string }>;
+}) {
+  const { orgId } = await params;
   if (!orgId) {
-    return <div className="text-red-400 p-8">Organization not found.</div>
+    return <div className="p-8 text-red-400">Organization not found.</div>;
   }
 
   // Fetch all required data in parallel
@@ -54,8 +74,11 @@ export default async function DispatchPage({ params }: { params: Promise<{ orgId
     listLoadsByOrg(orgId),
     getAvailableDriversForLoad(orgId),
     getAvailableVehiclesForLoad(orgId, {}),
-  ])
-  const drivers = (driversResult?.data || []).map((d: any) => ({ ...d, email: d.email ?? undefined }))
+  ]);
+  const drivers = (driversResult?.data || []).map((d: any) => ({
+    ...d,
+    email: d.email ?? undefined,
+  }));
   const loadsList: loadList[] = (loads?.data?.loads || []).map((l: any) => ({
     id: l.id,
     organizationId: l.organizationId,
@@ -92,23 +115,27 @@ export default async function DispatchPage({ params }: { params: Promise<{ orgId
     tags: l.tags,
     createdAt: l.createdAt,
     updatedAt: l.updatedAt,
-  }))
-  const vehicleList = vehicles?.data || []
+  }));
+  const vehicleList = vehicles?.data || [];
 
   return (
     <div className="min-h-screen bg-black p-4 md:p-6 lg:p-8">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
+      <div className="mb-8 flex flex-col items-start justify-between sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-1">Dispatch Board</h1>
-          <p className="text-sm text-gray-400">Manage, assign, and track loads in real time</p>
+          <h1 className="mb-1 text-3xl font-bold text-white">Dispatch Board</h1>
+          <p className="text-sm text-gray-400">
+            Manage, assign, and track loads in real time
+          </p>
         </div>
         {/* Add quick actions or filters here if needed */}
       </div>
       <div className="w-full">
-        <DispatchBoard loads={loadsList} drivers={drivers} vehicles={vehicleList} />
+        <DispatchBoard
+          loads={loadsList}
+          drivers={drivers}
+          vehicles={vehicleList}
+        />
       </div>
     </div>
-  )
+  );
 }
-
-

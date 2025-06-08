@@ -5,11 +5,13 @@ desc: ''
 updated: 1748631246076
 created: 1748631044359
 ---
+
 # System Context: Current Codebase
 
 ## I am working on a software system with the following directory structure, architecture, and analyzed files:
 
 ## Directory Structure
+
 ```
 fleetfusion-architecture
 ├── app
@@ -351,6 +353,7 @@ fleetfusion-architecture
 ```
 
 ## Mermaid Diagram
+
 ```mermaid
 graph TD
 
@@ -467,8 +470,3 @@ graph TD
     10180["Data Access &amp; Schema<br>Prisma/TypeScript"] -->|manages| 10186["Database Systems<br>PostgreSQL, etc."]
 
 ```
-
-
-
-
-

@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getOrganizationStatsAction } from "@/lib/actions/adminActions";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { getOrganizationStatsAction } from '@/lib/actions/adminActions';
 
 interface AdminDashboardProps {
   orgId: string;
@@ -14,7 +14,7 @@ export async function AdminDashboard({ orgId }: AdminDashboardProps) {
   if (!result.success || !result.data) {
     return (
       <p className="text-red-500">
-        {result.error || "Failed to load organization stats."}
+        {result.error || 'Failed to load organization stats.'}
       </p>
     );
   }

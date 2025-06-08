@@ -8,14 +8,18 @@ async function main() {
     where: { email: 'admin@fleetfusion.test' },
   });
   if (!adminUser) {
-    throw new Error('Admin user with email admin@fleetfusion.test not found. Please create it first.');
+    throw new Error(
+      'Admin user with email admin@fleetfusion.test not found. Please create it first.'
+    );
   }
 
   const driverUser = await prisma.user.findFirst({
     where: { email: 'driver@fleetfusion.test' },
   });
   if (!driverUser) {
-    throw new Error('Driver user with email driver@fleetfusion.test not found. Please create it first.');
+    throw new Error(
+      'Driver user with email driver@fleetfusion.test not found. Please create it first.'
+    );
   }
 
   // 1. Find existing test org by clerkId
@@ -23,7 +27,9 @@ async function main() {
     where: { clerkId: 'org_2xvBliaRVTLXpaA6Uc5n66Jsw0u' },
   });
   if (!org) {
-    throw new Error('Test org with clerkId org_2xvBliaRVTLXpaA6Uc5n66Jsw0u not found. Please create it first.');
+    throw new Error(
+      'Test org with clerkId org_2xvBliaRVTLXpaA6Uc5n66Jsw0u not found. Please create it first.'
+    );
   }
 
   // 2. Generate lots of realistic data for this org (no test users)
@@ -49,7 +55,7 @@ async function main() {
       insuranceExpiration: new Date('2025-04-01'),
       notes: 'Main fleet tractor',
       customFields: {},
-    }
+    },
   });
 
   const trailer = await prisma.vehicle.create({
@@ -73,7 +79,7 @@ async function main() {
       insuranceExpiration: new Date('2025-06-01'),
       notes: 'Main trailer',
       customFields: {},
-    }
+    },
   });
 
   // 4. Create Driver (linked to driverUser)
@@ -102,7 +108,7 @@ async function main() {
       emergencyContact1: 'Jane Doe, 555-555-9999',
       notes: 'No incidents',
       customFields: {},
-    }
+    },
   });
 
   // 5. Create Load (assigned to driver, tractor, trailer)
@@ -129,9 +135,9 @@ async function main() {
       destinationCity: 'Boulder',
       destinationState: 'CO',
       destinationZip: '80301',
-      destinationLat: 40.0150,
+      destinationLat: 40.015,
       destinationLng: -105.2705,
-      rate: 2500.00,
+      rate: 2500.0,
       currency: 'USD',
       scheduledPickupDate: new Date('2025-05-28T08:00:00Z'),
       actualPickupDate: new Date('2025-05-28T08:30:00Z'),
@@ -146,7 +152,7 @@ async function main() {
       notes: 'Handle with care',
       instructions: 'Call on arrival',
       customFields: {},
-    }
+    },
   });
 
   // 6. Compliance Documents (for driver, vehicle)
@@ -193,8 +199,8 @@ async function main() {
         verifiedAt: new Date(),
         notes: 'Verified by admin',
         tags: ['vehicle', 'registration'],
-      }
-    ]
+      },
+    ],
   });
 
   // 7. IFTA Report
@@ -206,8 +212,8 @@ async function main() {
       status: 'filed',
       totalMiles: 5000,
       totalGallons: 800.123,
-      totalTaxOwed: 1200.50,
-      totalTaxPaid: 1200.50,
+      totalTaxOwed: 1200.5,
+      totalTaxPaid: 1200.5,
       submittedAt: new Date('2025-04-15'),
       submittedBy: adminUser.id,
       dueDate: new Date('2025-04-30'),
@@ -216,7 +222,7 @@ async function main() {
       supportingDocs: 'https://placehold.co/200x200',
       notes: 'Filed on time',
       calculationData: {},
-    }
+    },
   });
 
   // 8. Audit Logs
@@ -251,8 +257,8 @@ async function main() {
         changes: { after: { ...driver } },
         metadata: { ip: '127.0.0.1', userAgent: 'seed-script' },
         timestamp: new Date(),
-      }
-    ]
+      },
+    ],
   });
 
   // 9. Webhook Event
@@ -267,7 +273,7 @@ async function main() {
       processingError: null,
       processedAt: new Date(),
       retryCount: 0,
-    }
+    },
   });
 
   console.log('Seed complete. Admin user: admin@fleetfusion.test');

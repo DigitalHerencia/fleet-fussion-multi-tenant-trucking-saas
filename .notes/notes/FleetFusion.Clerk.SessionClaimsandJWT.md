@@ -16,10 +16,10 @@ created: 1748309991987
 - First and last name: Enabled. Users can set their first and last name.
 - Require first and last name: Disabled. Not required at sign-up.
 
-
 ## Roles and Permissions
 
 **Admin** (`org:admin`)
+
 - org:sys_domains:read
 - org:sys_domains:manage
 - org:sys_profile:manage
@@ -35,6 +35,7 @@ created: 1748309991987
 - org:sys_billing:read
 
 **Compliance** (`org:compliance`)
+
 - org:sys_memberships:read
 - org:compliance:view_compliance_dashboard
 - org:compliance:access_audit_logs
@@ -42,6 +43,7 @@ created: 1748309991987
 - org:compliance:upload_review_compliance
 
 **Dispatcher** (`org:dispatcher`)
+
 - org:sys_memberships:read
 - org:dispatcher:create_edit_loads
 - org:dispatcher:assign_drivers
@@ -49,72 +51,40 @@ created: 1748309991987
 - org:dispatcher:access_dispatch_dashboard
 
 **Driver** (`org:driver`)
+
 - org:sys_memberships:read
 - org:driver:view_assigned_loads
 - org:driver:update_load_status
 - org:driver:upload_documents
 - org:driver:log_hos
 
-**Member** (`org:member`) *(Default role)*
+**Member** (`org:member`) _(Default role)_
+
 - org:sys_memberships:read
 
 ## Session Claims
 
-{
-	"org.id": "{{org.id}}",
-	"user.id": "{{user.id}}",
-	"org.name": "{{org.name}}",
-	"org.role": "{{org.role}}",
-	"publicMetadata": {
-		"onboardingComplete": "{{user.public_metadata.onboardingComplete}}"
-	},
-	"user.organizations": "{{user.organizations}}",
-	"org_membership.permissions": "{{org_membership.permissions}}"
-}
+{ "org.id": "{{org.id}}", "user.id": "{{user.id}}", "org.name": "{{org.name}}", "org.role":
+"{{org.role}}", "publicMetadata": { "onboardingComplete":
+"{{user.public_metadata.onboardingComplete}}" }, "user.organizations": "{{user.organizations}}",
+"org_membership.permissions": "{{org_membership.permissions}}" }
 
 ## Custom JWT - Neon:
 
-{
-	"org.id": "{{org.id}}",
-	"user.id": "{{user.id}}",
-	"org.name": "{{org.name}}",
-	"org.role": "{{org.role}}",
-	"publicMetadata": {
-		"onboardingComplete": "{{user.public_metadata.onboardingComplete}}"
-	},
-	"user.organizations": "{{user.organizations}}",
-	"org_membership.permissions": "{{org_membership.permissions}}"
-}
+{ "org.id": "{{org.id}}", "user.id": "{{user.id}}", "org.name": "{{org.name}}", "org.role":
+"{{org.role}}", "publicMetadata": { "onboardingComplete":
+"{{user.public_metadata.onboardingComplete}}" }, "user.organizations": "{{user.organizations}}",
+"org_membership.permissions": "{{org_membership.permissions}}" }
 
 ## Webhook Subcribed Events:
 
-email.created
-organization.created
-organization.deleted
-organization.updated
-organizationDomain.created
-organizationDomain.deleted
-organizationDomain.updated
-organizationInvitation.accepted
-organizationInvitation.created
-organizationInvitation.revoked
-organizationMembership.created
-organizationMembership.deleted
-organizationMembership.updated
-permission.created
-permission.deleted
-permission.updated
-role.created
-role.deleted
-role.updated
-session.created
-session.ended
-session.pending
-session.removed
-session.revoked
-user.created
-user.deleted
-user.updated
+email.created organization.created organization.deleted organization.updated
+organizationDomain.created organizationDomain.deleted organizationDomain.updated
+organizationInvitation.accepted organizationInvitation.created organizationInvitation.revoked
+organizationMembership.created organizationMembership.deleted organizationMembership.updated
+permission.created permission.deleted permission.updated role.created role.deleted role.updated
+session.created session.ended session.pending session.removed session.revoked user.created
+user.deleted user.updated
 
 ## Clerk Webhook URL
 
@@ -133,5 +103,3 @@ NEXT_PUBLIC_APP_URL=http://fleet-fusion.vercel.app
 NEXT_PUBLIC_CLERK_FRONTEND_API=driving-gelding-14.clerk.accounts.dev
 
 NEXT_PUBLIC_CLERK_WEBHOOK_ENDPOINT=https://fleet-fusion.vercel.app/api/clerk/webhook-handler
-
-

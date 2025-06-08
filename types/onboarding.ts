@@ -52,7 +52,10 @@ export interface PreferencesData {
   theme: 'light' | 'dark' | 'system';
 }
 
-export type OnboardingStepData = ProfileSetupData | CompanySetupData | PreferencesData;
+export type OnboardingStepData =
+  | ProfileSetupData
+  | CompanySetupData
+  | PreferencesData;
 
 export interface OnboardingStepProps {
   onNext: (data: OnboardingStepData) => void;

@@ -8,31 +8,44 @@ created: 1748914795938
 
 # FleetFusion RBAC Tables
 
-This document provides a detailed overview of the RBAC (Role-Based Access Control) implementation in your FleetFusion application, specifically focusing on the tenant pages and their access control mechanisms.
+This document provides a detailed overview of the RBAC (Role-Based Access Control) implementation in
+your FleetFusion application, specifically focusing on the tenant pages and their access control
+mechanisms.
 
 ## RBAC Implementation in the Codebase
 
 ### **1. Centralized Role/Permission Logic:**
+
 - All RBAC logic is centralized in permissions.ts.
 - Roles and permissions are imported from abac.ts and auth.ts.
 
 ### **2. Route Protection:**
-- The `RouteProtection` class defines a `PROTECTED_ROUTES` map, matching real route patterns (e.g. `/tenant/:orgId/dashboard/:userId`).
-- Each route pattern is mapped to an array of allowed roles (e.g. `SystemRoles.ADMIN`, `SystemRoles.DRIVER`).
-- The static method `canAccessRoute(user, path)` checks if a user’s role matches the allowed roles for a given route.
+
+- The `RouteProtection` class defines a `PROTECTED_ROUTES` map, matching real route patterns (e.g.
+  `/tenant/:orgId/dashboard/:userId`).
+- Each route pattern is mapped to an array of allowed roles (e.g. `SystemRoles.ADMIN`,
+  `SystemRoles.DRIVER`).
+- The static method `canAccessRoute(user, path)` checks if a user’s role matches the allowed roles
+  for a given route.
 
 ### **3. Permission Checks:**
+
 - `hasPermission(user, action, resource)` checks if a user has a specific permission.
 - `hasRole(user, role)` checks if a user has a specific role.
-- `PermissionChecks` provides resource-specific permission helpers (e.g. `canViewVehicles`, `canCreateDrivers`).
-- `ResourcePermissions` provides context-aware checks (e.g. a driver can only access their own data).
+- `PermissionChecks` provides resource-specific permission helpers (e.g. `canViewVehicles`,
+  `canCreateDrivers`).
+- `ResourcePermissions` provides context-aware checks (e.g. a driver can only access their own
+  data).
 
 ### **4. Usage:**
+
 - In middleware.ts, `RouteProtection.canAccessRoute` is called to enforce route-level RBAC.
 - If a user is not allowed, they are redirected or denied.
 
 ### **5. Session Claims:**
-- Clerk session claims and JWTs include role and permission info, which is used to build the `UserContext` for RBAC checks.
+
+- Clerk session claims and JWTs include role and permission info, which is used to build the
+  `UserContext` for RBAC checks.
 
 ---
 
@@ -113,23 +126,25 @@ Here are the route paths for all the files in your app directory, following Next
 ---
 
 ### **(auth) Routes**
+
 - `/accept-invitation`
 - `/forgot-password`
-- `/onboarding`  
+- `/onboarding`
   - `/onboarding`
-- `/sign-in`  
-  - `/sign-in`  
-  - `/sign-in/*` 
-- `/sign-up`  
-  - `/sign-up`  
-  - `/sign-up/*` 
+- `/sign-in`
+  - `/sign-in`
+  - `/sign-in/*`
+- `/sign-up`
+  - `/sign-up`
+  - `/sign-up/*`
 - `/sign-out`
 - `/error`
-- `/loading` 
+- `/loading`
 
 ---
 
 ### **(funnel) Public/Marketing Routes**
+
 - `/about`
 - `/contact`
 - `/features`
@@ -138,12 +153,13 @@ Here are the route paths for all the files in your app directory, following Next
 - `/refund`
 - `/services`
 - `/terms`
-- `/error` 
-- `/loading` 
+- `/error`
+- `/loading`
 
 ---
 
 ### **(tenant) Multi-tenant Org Routes**
+
 - `/[orgId]/analytics`
 - `/[orgId]/compliance`
 - `/[orgId]/compliance/[userId]`
@@ -156,51 +172,56 @@ Here are the route paths for all the files in your app directory, following Next
 - `/[orgId]/ifta`
 - `/[orgId]/settings`
 - `/[orgId]/vehicles`
-- `/[orgId]/error` 
-- `/[orgId]/loading` 
+- `/[orgId]/error`
+- `/[orgId]/loading`
 
 ---
 
 ### **API Route**
+
 - `/api/clerk/webhook-handler`
 
 ---
 
 ### **Root App Routes**
+
 - `/` (root landing page)
 - `/layout` (root layout)
 
 ---
 
 **Notes:**
+
 - Dynamic segments: `[orgId]`, `[userId]` are replaced by actual IDs at runtime.
 - Catch-all routes: `/sign-in/*`, `/sign-up/*` match any subpath.
-- Layout, error, and loading files are used by Next.js for their respective boundaries and do not create direct routes.
+- Layout, error, and loading files are used by Next.js for their respective boundaries and do not
+  create direct routes.
 
 ---
 
 ## RBAC Table for Tenant Routes
 
-| Page Route                                      | RBAC Steps Followed?                                                                                          | Notes                                                                                                 |
-|-------------------------------------------------|---------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------|
-| `/[orgId]/analytics`                            | ✅ Middleware handles user/org/role checks. No explicit RBAC in page.                                         | Pure UI; access enforced by middleware.                                                              |
-| `/[orgId]/compliance`                           | ✅ Middleware handles RBAC. No explicit RBAC in page.                                                         | Pure UI; access enforced by middleware.                                                              |
-| `/[orgId]/compliance/[userId]`                  | ✅ Explicit RBAC: checks user and role in page.                                                               | Page-level check for compliance officer role.                                                        |
-| `/[orgId]/compliance/[userId]/hos-logs`         | ✅ Middleware handles RBAC. No explicit RBAC in page.                                                         | Simple component render; relies on middleware.                                                       |
-| `/[orgId]/dashboard/[userId]`                   | ✅ Middleware handles RBAC. No explicit RBAC in page.                                                         | Pure UI; access enforced by middleware.                                                              |
-| `/[orgId]/dispatch/[userId]`                    | ✅ Middleware handles RBAC. May check user/org in page.                                                       | Page may check user/org, but role-based access enforced by middleware.                               |
-| `/[orgId]/dispatch/[userId]/edit`               | ✅ Middleware handles RBAC. No explicit RBAC in page.                                                         | Edit form; access enforced by middleware.                                                            |
-| `/[orgId]/dispatch/[userId]/new`                | ✅ Middleware handles RBAC. No explicit RBAC in page.                                                         | New dispatch form; access enforced by middleware.                                                    |
-| `/[orgId]/drivers/[userId]`                     | ✅ Explicit RBAC: checks user and role in page.                                                               | Page-level check for driver role.                                                                    |
-| `/[orgId]/ifta`                                 | ✅ Middleware handles RBAC. No explicit RBAC in page.                                                         | Pure UI; access enforced by middleware.                                                              |
-| `/[orgId]/settings`                             | ✅ Middleware handles RBAC. No explicit RBAC in page.                                                         | Pure UI; access enforced by middleware.                                                              |
-| `/[orgId]/vehicles`                             | ✅ Middleware handles RBAC. No explicit RBAC in page.                                                         | Client component; access enforced by middleware.                                                     |
+| Page Route                              | RBAC Steps Followed?                                                  | Notes                                                                  |
+| --------------------------------------- | --------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `/[orgId]/analytics`                    | ✅ Middleware handles user/org/role checks. No explicit RBAC in page. | Pure UI; access enforced by middleware.                                |
+| `/[orgId]/compliance`                   | ✅ Middleware handles RBAC. No explicit RBAC in page.                 | Pure UI; access enforced by middleware.                                |
+| `/[orgId]/compliance/[userId]`          | ✅ Explicit RBAC: checks user and role in page.                       | Page-level check for compliance officer role.                          |
+| `/[orgId]/compliance/[userId]/hos-logs` | ✅ Middleware handles RBAC. No explicit RBAC in page.                 | Simple component render; relies on middleware.                         |
+| `/[orgId]/dashboard/[userId]`           | ✅ Middleware handles RBAC. No explicit RBAC in page.                 | Pure UI; access enforced by middleware.                                |
+| `/[orgId]/dispatch/[userId]`            | ✅ Middleware handles RBAC. May check user/org in page.               | Page may check user/org, but role-based access enforced by middleware. |
+| `/[orgId]/dispatch/[userId]/edit`       | ✅ Middleware handles RBAC. No explicit RBAC in page.                 | Edit form; access enforced by middleware.                              |
+| `/[orgId]/dispatch/[userId]/new`        | ✅ Middleware handles RBAC. No explicit RBAC in page.                 | New dispatch form; access enforced by middleware.                      |
+| `/[orgId]/drivers/[userId]`             | ✅ Explicit RBAC: checks user and role in page.                       | Page-level check for driver role.                                      |
+| `/[orgId]/ifta`                         | ✅ Middleware handles RBAC. No explicit RBAC in page.                 | Pure UI; access enforced by middleware.                                |
+| `/[orgId]/settings`                     | ✅ Middleware handles RBAC. No explicit RBAC in page.                 | Pure UI; access enforced by middleware.                                |
+| `/[orgId]/vehicles`                     | ✅ Middleware handles RBAC. No explicit RBAC in page.                 | Client component; access enforced by middleware.                       |
 
 ---
 
 ## RBAC Gap Analysis
 
-Here’s a summary of the RBAC implementation in your tenant routes, focusing on gaps and areas for improvement:
+Here’s a summary of the RBAC implementation in your tenant routes, focusing on gaps and areas for
+improvement:
 
 ---
 
@@ -220,51 +241,67 @@ Here’s a summary of the RBAC implementation in your tenant routes, focusing on
 
 ### Flow Steps
 
-Here’s the step-by-step flow for what should happen when a tenant route (e.g. `/tenant/[orgId]/dashboard/[userId]`) is accessed, and which file is responsible for each step in the codebase:
+Here’s the step-by-step flow for what should happen when a tenant route (e.g.
+`/tenant/[orgId]/dashboard/[userId]`) is accessed, and which file is responsible for each step in
+the codebase:
 
 ---
 
 #### 1. **Request Intercepted by Middleware**
+
 - **File:** middleware.ts
-- **Logic:** All requests are intercepted before reaching the app. The middleware is responsible for authentication and authorization checks.
+- **Logic:** All requests are intercepted before reaching the app. The middleware is responsible for
+  authentication and authorization checks.
 
 ---
 
 #### 2. **Check User Authentication (User ID)**
+
 - **File:** middleware.ts
-- **Logic:** The middleware calls Clerk’s `auth()` to get the current session. If `userId` is missing, the user is redirected to `/sign-in`.
+- **Logic:** The middleware calls Clerk’s `auth()` to get the current session. If `userId` is
+  missing, the user is redirected to `/sign-in`.
 
 ---
 
 #### 3. **Check Organization Context (Org ID)**
+
 - **File:** middleware.ts
-- **Logic:** The middleware extracts `orgId` from the session and the route. If the user’s organization does not match the route’s org, redirect to the correct org dashboard.
+- **Logic:** The middleware extracts `orgId` from the session and the route. If the user’s
+  organization does not match the route’s org, redirect to the correct org dashboard.
 
 ---
 
 #### 4. **Build User Context (Roles & Permissions)**
+
 - **File:** middleware.ts (function: `buildUserContext`)
-- **Logic:** The middleware builds a `UserContext` object from session claims, including role, permissions, and org info.
+- **Logic:** The middleware builds a `UserContext` object from session claims, including role,
+  permissions, and org info.
 
 ---
 
 #### 5. **Check Route Permissions (RBAC)**
+
 - **File:** middleware.ts (calls into permissions.ts)
-- **Logic:** The middleware uses `RouteProtection.canAccessRoute(userContext, req.nextUrl.pathname)` to check if the user’s role is allowed for the route, based on the patterns and roles in permissions.ts.
+- **Logic:** The middleware uses `RouteProtection.canAccessRoute(userContext, req.nextUrl.pathname)`
+  to check if the user’s role is allowed for the route, based on the patterns and roles in
+  permissions.ts.
 
 ---
 
 #### 6. **Render or Redirect**
+
 - **File:** middleware.ts
-- **Logic:** 
+- **Logic:**
   - If the user is allowed, the request proceeds (`NextResponse.next()`).
   - If not, the user is redirected (e.g., to `/sign-in` or their allowed dashboard).
 
 ---
 
 #### 7. **App Renders Page**
+
 - **File:** `app/(tenant)/[orgId]/...`
-- **Logic:** If the request passes all checks, the appropriate page is rendered by the Next.js app router.
+- **Logic:** If the request passes all checks, the appropriate page is rendered by the Next.js app
+  router.
 
 ---
 
@@ -289,16 +326,20 @@ Here’s the step-by-step flow for what should happen when a tenant route (e.g. 
 ### **Gaps**
 
 - **Clerk SDK Initialization:**  
-  The actual Clerk client initialization (e.g., `clerkClient`) is referenced but not shown. Ensure this is present and properly configured in auth or a dedicated `lib/clerk.ts`.
+  The actual Clerk client initialization (e.g., `clerkClient`) is referenced but not shown. Ensure
+  this is present and properly configured in auth or a dedicated `lib/clerk.ts`.
 
 - **Feature-Driven Structure:**  
-  While your structure is solid, consider moving domain logic/UI into a features directory for better scalability (see your instructions).
+  While your structure is solid, consider moving domain logic/UI into a features directory for
+  better scalability (see your instructions).
 
 - **Onboarding/Org Sync:**  
-  The webhook handler is present, but the actual DB sync logic is not visible. Ensure robust error handling, idempotency, and logging in webhook processing.
+  The webhook handler is present, but the actual DB sync logic is not visible. Ensure robust error
+  handling, idempotency, and logging in webhook processing.
 
 - **Testing:**  
-  No test files are shown. Add unit/integration tests for all critical logic, especially onboarding, RBAC checks, and webhook handlers.
+  No test files are shown. Add unit/integration tests for all critical logic, especially onboarding,
+  RBAC checks, and webhook handlers.
 
 - **Documentation:**  
   Minimal inline comments are present. Add more documentation for complex flows and configuration.
@@ -309,7 +350,7 @@ Here’s the step-by-step flow for what should happen when a tenant route (e.g. 
 - **Strict TypeScript:**  
   Confirm `strict` mode is enabled in tsconfig.json and avoid `any` types.
 
-- **Production Readiness:**  
+- **Production Readiness:**
   - Ensure all error handling is robust.
   - Validate all inputs with Zod before mutations.
   - Use environment variables securely.
@@ -336,21 +377,23 @@ Here’s a recap and details about your routing and RBAC (role-based access cont
 
 ### Key Findings
 
-- **RBAC Steps:**  
+- **RBAC Steps:**
+
   - All pages rely on the middleware for user/org/role checks, as per your RBAC flow.
-  - Some pages (notably `/compliance/[userId]` and `/drivers/[userId]`) add an extra layer of RBAC by checking the user and role in the page itself.
-  - Most pages do not duplicate resource fetching or permission logic; they rely on the centralized checks.
+  - Some pages (notably `/compliance/[userId]` and `/drivers/[userId]`) add an extra layer of RBAC
+    by checking the user and role in the page itself.
+  - Most pages do not duplicate resource fetching or permission logic; they rely on the centralized
+    checks.
 
-- **Resource Duplication/Conflict:**  
-  - No resource duplication or conflict was found. Data fetching and permission checks are not repeated unnecessarily.
+- **Resource Duplication/Conflict:**
 
-- **Potential Improvements:**  
-  - For consistency, you could add explicit user/role checks in all sensitive pages, but this is not strictly necessary if your middleware is robust.
-  - Ensure that all sensitive data fetchers (in fetchers) also validate permissions as a defense-in-depth measure.
+  - No resource duplication or conflict was found. Data fetching and permission checks are not
+    repeated unnecessarily.
+
+- **Potential Improvements:**
+  - For consistency, you could add explicit user/role checks in all sensitive pages, but this is not
+    strictly necessary if your middleware is robust.
+  - Ensure that all sensitive data fetchers (in fetchers) also validate permissions as a
+    defense-in-depth measure.
 
 ---
-
-
-
-
-

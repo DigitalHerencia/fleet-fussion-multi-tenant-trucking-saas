@@ -15,8 +15,8 @@ test.describe('Webhook Handler', () => {
         public_metadata: {
           role: 'admin',
           isActive: true,
-          onboardingComplete: false
-        }
+          onboardingComplete: false,
+        },
       },
     };
 
@@ -29,7 +29,9 @@ test.describe('Webhook Handler', () => {
       data: payloadString,
       headers: {
         'content-type': 'application/json',
-        ...(headers && typeof headers === 'object' && !Array.isArray(headers) ? headers : {}),
+        ...(headers && typeof headers === 'object' && !Array.isArray(headers)
+          ? headers
+          : {}),
       },
     });
 
@@ -38,7 +40,7 @@ test.describe('Webhook Handler', () => {
     console.log('Webhook response:', responseText);
 
     expect(response.ok()).toBeTruthy();
-    
+
     const responseJson = await response.json();
     expect(responseJson.message).toBe('Webhook processed successfully');
   });
@@ -58,7 +60,7 @@ test.describe('Webhook Handler', () => {
     });
 
     expect(response.status()).toBe(400);
-    
+
     const responseJson = await response.json();
     expect(responseJson.error).toBe('Invalid webhook signature');
   });

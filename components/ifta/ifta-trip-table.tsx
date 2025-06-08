@@ -1,33 +1,46 @@
-"use client"
+'use client';
 
-import { SearchIcon, UploadIcon, DownloadIcon, FilterIcon, FileTextIcon, FileWarningIcon, FileCheckIcon } from "lucide-react"
-import React, { useState } from "react"
+import {
+  SearchIcon,
+  UploadIcon,
+  DownloadIcon,
+  FilterIcon,
+  FileTextIcon,
+  FileWarningIcon,
+  FileCheckIcon,
+} from 'lucide-react';
+import React, { useState } from 'react';
 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import type { TripReport } from "@/types/ifta"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import type { TripReport } from '@/types/ifta';
 
 interface IftaTripTableProps {
   trips: TripReport[];
 }
 
 export function IftaTripTable({ trips }: IftaTripTableProps) {
-  const [searchTerm, setSearchTerm] = useState("")
-
-
+  const [searchTerm, setSearchTerm] = useState('');
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <SearchIcon className="h-5 w-5 text-muted-foreground" />
+          <SearchIcon className="text-muted-foreground h-5 w-5" />
           <Input
             type="search"
             placeholder="Search trips..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={e => setSearchTerm(e.target.value)}
           />
         </div>
         <div className="flex items-center gap-2">
@@ -50,15 +63,31 @@ export function IftaTripTable({ trips }: IftaTripTableProps) {
       <div className="rounded-md border">
         <Table className="w-full">
           <TableHeader>
-            <TableRow className="border-b bg-muted/50">
-              <TableHead className="p-2 text-left text-sm font-medium">Date</TableHead>
-              <TableHead className="p-2 text-left text-sm font-medium">Driver</TableHead>
-              <TableHead className="p-2 text-left text-sm font-medium">Vehicle</TableHead>
-              <TableHead className="p-2 text-left text-sm font-medium">Origin</TableHead>
-              <TableHead className="p-2 text-left text-sm font-medium">Destination</TableHead>
-              <TableHead className="p-2 text-right text-sm font-medium">Miles</TableHead>
-              <TableHead className="p-2 text-left text-sm font-medium">Jurisdictions</TableHead>
-              <TableHead className="p-2 text-left text-sm font-medium">Actions</TableHead>
+            <TableRow className="bg-muted/50 border-b">
+              <TableHead className="p-2 text-left text-sm font-medium">
+                Date
+              </TableHead>
+              <TableHead className="p-2 text-left text-sm font-medium">
+                Driver
+              </TableHead>
+              <TableHead className="p-2 text-left text-sm font-medium">
+                Vehicle
+              </TableHead>
+              <TableHead className="p-2 text-left text-sm font-medium">
+                Origin
+              </TableHead>
+              <TableHead className="p-2 text-left text-sm font-medium">
+                Destination
+              </TableHead>
+              <TableHead className="p-2 text-right text-sm font-medium">
+                Miles
+              </TableHead>
+              <TableHead className="p-2 text-left text-sm font-medium">
+                Jurisdictions
+              </TableHead>
+              <TableHead className="p-2 text-left text-sm font-medium">
+                Actions
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -66,7 +95,9 @@ export function IftaTripTable({ trips }: IftaTripTableProps) {
               <TableRow key={trip.id} className="border-b">
                 <TableCell className="p-2 text-sm">{trip.driverId}</TableCell>
                 <TableCell className="p-2 text-sm">{trip.vehicleId}</TableCell>
-                <TableCell className="p-2 text-sm">{trip.jurisdictions.map(j => j.jurisdiction).join(", ")}</TableCell>
+                <TableCell className="p-2 text-sm">
+                  {trip.jurisdictions.map(j => j.jurisdiction).join(', ')}
+                </TableCell>
                 <TableCell className="p-2 text-sm">
                   <div className="flex gap-2">
                     <Button variant="ghost" size="icon">
@@ -94,5 +125,5 @@ export function IftaTripTable({ trips }: IftaTripTableProps) {
         </Button>
       </div>
     </div>
-  )
+  );
 }

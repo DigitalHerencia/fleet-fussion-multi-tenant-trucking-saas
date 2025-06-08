@@ -1,8 +1,10 @@
 # FleetFusion Troubleshooting Guide
 
-This guide provides solutions to common issues encountered during development, deployment, and operation of FleetFusion.
+This guide provides solutions to common issues encountered during development, deployment, and
+operation of FleetFusion.
 
 ## Table of Contents
+
 - [Quick Diagnostics](#quick-diagnostics)
 - [Development Issues](#development-issues)
 - [Database Problems](#database-problems)
@@ -64,6 +66,7 @@ lsof -i :5432  # PostgreSQL
 **Common Causes & Solutions**:
 
 1. **Port Already in Use**
+
 ```bash
 # Find process using port 3000
 lsof -i :3000
@@ -76,6 +79,7 @@ npm run dev -- -p 3001
 ```
 
 2. **Missing Environment Variables**
+
 ```bash
 # Copy template and configure
 cp .env.example .env.local
@@ -85,6 +89,7 @@ npm run config:validate
 ```
 
 3. **Dependencies Not Installed**
+
 ```bash
 # Clean install
 rm -rf node_modules package-lock.json
@@ -99,6 +104,7 @@ npm ls
 **Problem**: `npm run build` fails
 
 **Solution Steps**:
+
 ```bash
 # 1. Clear Next.js cache
 rm -rf .next
@@ -122,6 +128,7 @@ npm run lint
 **Problem**: Changes not reflecting in browser
 
 **Solutions**:
+
 ```bash
 # 1. Check file system limits (Linux/Mac)
 echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
@@ -145,6 +152,7 @@ npm run dev
 **Problem**: "Can't connect to database"
 
 **Diagnostic Steps**:
+
 ```bash
 # 1. Test connection string
 echo $DATABASE_URL
@@ -160,6 +168,7 @@ psql "$DATABASE_URL?sslmode=require" -c "SELECT 1;"
 ```
 
 **Common Solutions**:
+
 ```bash
 # Update connection string format
 DATABASE_URL="postgresql://user:pass@host:5432/db?sslmode=require"
@@ -173,6 +182,7 @@ DATABASE_URL="postgresql://postgres:password@localhost:5432/fleetfusion_dev"
 **Problem**: Prisma migrations fail
 
 **Solution Process**:
+
 ```bash
 # 1. Check migration status
 npx prisma migrate status
@@ -195,6 +205,7 @@ npx prisma generate
 **Problem**: Database schema doesn't match Prisma schema
 
 **Resolution**:
+
 ```bash
 # 1. Pull current database schema
 npx prisma db pull
@@ -218,28 +229,30 @@ npx prisma migrate deploy
 **Problem**: Authentication not working
 
 **Debugging Steps**:
+
 ```typescript
 // 1. Check environment variables
 console.log({
   publishableKey: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
   hasSecretKey: !!process.env.CLERK_SECRET_KEY,
   webhookSecret: !!process.env.CLERK_WEBHOOK_SECRET,
-})
+});
 
 // 2. Verify Clerk configuration
-import { clerkClient } from '@clerk/nextjs/server'
+import { clerkClient } from '@clerk/nextjs/server';
 
 export async function testClerkConnection() {
   try {
-    const users = await clerkClient.users.getUserList({ limit: 1 })
-    console.log('Clerk connection successful:', users.length)
+    const users = await clerkClient.users.getUserList({ limit: 1 });
+    console.log('Clerk connection successful:', users.length);
   } catch (error) {
-    console.error('Clerk connection failed:', error)
+    console.error('Clerk connection failed:', error);
   }
 }
 ```
 
 **Common Solutions**:
+
 ```bash
 # 1. Verify API keys match environment
 # Check Clerk Dashboard > API Keys
@@ -256,10 +269,11 @@ export async function testClerkConnection() {
 **Problem**: User sessions not persisting
 
 **Troubleshooting**:
+
 ```typescript
 // 1. Check session in middleware
 export default function middleware(req: NextRequest) {
-  console.log('Session data:', req.headers.get('authorization'))
+  console.log('Session data:', req.headers.get('authorization'));
   // ... rest of middleware
 }
 
@@ -269,7 +283,7 @@ export default function middleware(req: NextRequest) {
 // 3. Test session endpoints
 fetch('/api/auth/session')
   .then(res => res.json())
-  .then(console.log)
+  .then(console.log);
 ```
 
 ### Permission Errors
@@ -277,25 +291,26 @@ fetch('/api/auth/session')
 **Problem**: RBAC permissions not working
 
 **Debug Process**:
+
 ```typescript
 // 1. Check user context
-import { auth } from '@/lib/auth'
+import { auth } from '@/lib/auth';
 
 export async function debugUserContext() {
-  const context = await auth()
+  const context = await auth();
   console.log('User context:', {
     userId: context?.user?.id,
     orgId: context?.organization?.id,
     role: context?.organization?.role,
     permissions: context?.organization?.permissions,
-  })
+  });
 }
 
 // 2. Verify permission definitions
-import { hasPermission } from '@/lib/auth/permissions'
+import { hasPermission } from '@/lib/auth/permissions';
 
-const canEditVehicles = hasPermission(userContext, 'vehicles', 'write')
-console.log('Can edit vehicles:', canEditVehicles)
+const canEditVehicles = hasPermission(userContext, 'vehicles', 'write');
+console.log('Can edit vehicles:', canEditVehicles);
 ```
 
 ---
@@ -309,6 +324,7 @@ console.log('Can edit vehicles:', canEditVehicles)
 **Common Issues & Solutions**:
 
 1. **Environment Variables Missing**
+
 ```bash
 # Check Vercel environment variables
 vercel env ls
@@ -318,6 +334,7 @@ vercel env add VARIABLE_NAME
 ```
 
 2. **Build Command Issues**
+
 ```json
 // vercel.json
 {
@@ -328,6 +345,7 @@ vercel env add VARIABLE_NAME
 ```
 
 3. **Memory/Timeout Issues**
+
 ```json
 // vercel.json
 {
@@ -344,6 +362,7 @@ vercel env add VARIABLE_NAME
 **Problem**: Migrations not running in production
 
 **Solution**:
+
 ```bash
 # 1. Set up deploy script
 echo 'npx prisma migrate deploy' > scripts/deploy.sh
@@ -365,6 +384,7 @@ npx prisma migrate deploy --preview-feature
 **Problem**: SSL certificate errors
 
 **Resolution**:
+
 ```bash
 # 1. Check domain configuration
 dig your-domain.com
@@ -386,6 +406,7 @@ dig your-domain.com
 **Problem**: Pages loading slowly
 
 **Optimization Steps**:
+
 ```typescript
 // 1. Add loading states
 import { Suspense } from 'react'
@@ -405,7 +426,7 @@ export async function getData() {
     getUsers(),
     getVehicles(),
   ])
-  
+
   return { users, vehicles }
 }
 
@@ -422,24 +443,26 @@ export const getCachedData = cache(async (id: string) => {
 **Problem**: Slow database queries
 
 **Debugging**:
+
 ```sql
 -- 1. Enable query logging
-EXPLAIN (ANALYZE, BUFFERS) 
+EXPLAIN (ANALYZE, BUFFERS)
 SELECT * FROM vehicles WHERE organization_id = $1;
 
 -- 2. Check for missing indexes
-SELECT schemaname, tablename, indexname 
-FROM pg_indexes 
+SELECT schemaname, tablename, indexname
+FROM pg_indexes
 WHERE tablename = 'vehicles';
 
 -- 3. Analyze query patterns
-SELECT query, calls, total_time, mean_time 
-FROM pg_stat_statements 
+SELECT query, calls, total_time, mean_time
+FROM pg_stat_statements
 WHERE query LIKE '%vehicles%'
 ORDER BY total_time DESC;
 ```
 
 **Solutions**:
+
 ```typescript
 // 1. Add database indexes
 // In Prisma schema
@@ -452,10 +475,10 @@ model Vehicle {
 // 2. Optimize Prisma queries
 const vehicles = await prisma.vehicle.findMany({
   where: { organizationId },
-  select: { 
-    id: true, 
-    make: true, 
-    model: true 
+  select: {
+    id: true,
+    make: true,
+    model: true
   }, // Only select needed fields
   take: 20, // Limit results
 })
@@ -470,6 +493,7 @@ postgresql://user:pass@host:5432/db?connection_limit=20
 **Problem**: Large JavaScript bundles
 
 **Analysis & Solutions**:
+
 ```bash
 # 1. Analyze bundle size
 npm run analyze
@@ -495,35 +519,36 @@ import { Dialog } from '@radix-ui/react-dialog'
 **Problem**: Server actions throwing errors
 
 **Debugging**:
+
 ```typescript
 // 1. Add error logging
 export async function createVehicle(data: CreateVehicleData) {
   try {
-    console.log('Creating vehicle:', data)
-    const result = await prisma.vehicle.create({ data })
-    return { success: true, data: result }
+    console.log('Creating vehicle:', data);
+    const result = await prisma.vehicle.create({ data });
+    return { success: true, data: result };
   } catch (error) {
-    console.error('Vehicle creation failed:', error)
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error' 
-    }
+    console.error('Vehicle creation failed:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
   }
 }
 
 // 2. Validate inputs
-import { z } from 'zod'
+import { z } from 'zod';
 
 const vehicleSchema = z.object({
   vin: z.string().length(17),
   make: z.string().min(1),
   // ... other fields
-})
+});
 
 export async function createVehicle(rawData: unknown) {
-  const validationResult = vehicleSchema.safeParse(rawData)
+  const validationResult = vehicleSchema.safeParse(rawData);
   if (!validationResult.success) {
-    return { success: false, errors: validationResult.error.flatten() }
+    return { success: false, errors: validationResult.error.flatten() };
   }
   // ... proceed with valid data
 }
@@ -534,26 +559,24 @@ export async function createVehicle(rawData: unknown) {
 **Problem**: API routes returning errors
 
 **Common Solutions**:
+
 ```typescript
 // 1. Proper error handling
 export async function GET(request: Request) {
   try {
-    const data = await fetchData()
-    return Response.json({ success: true, data })
+    const data = await fetchData();
+    return Response.json({ success: true, data });
   } catch (error) {
-    console.error('API error:', error)
-    return Response.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error('API error:', error);
+    return Response.json({ success: false, error: 'Internal server error' }, { status: 500 });
   }
 }
 
 // 2. CORS issues
 export async function GET(request: Request) {
-  const response = Response.json({ data: 'test' })
-  response.headers.set('Access-Control-Allow-Origin', '*')
-  return response
+  const response = Response.json({ data: 'test' });
+  response.headers.set('Access-Control-Allow-Origin', '*');
+  return response;
 }
 
 // 3. Method not allowed
@@ -562,7 +585,7 @@ export async function POST(request: Request) {
 }
 
 export async function GET() {
-  return Response.json({ error: 'Method not allowed' }, { status: 405 })
+  return Response.json({ error: 'Method not allowed' }, { status: 405 });
 }
 ```
 
@@ -575,6 +598,7 @@ export async function GET() {
 **Problem**: Components not rendering correctly
 
 **Debugging**:
+
 ```typescript
 // 1. Check for hydration mismatches
 'use client'
@@ -582,15 +606,15 @@ import { useState, useEffect } from 'react'
 
 export function ClientComponent() {
   const [mounted, setMounted] = useState(false)
-  
+
   useEffect(() => {
     setMounted(true)
   }, [])
-  
+
   if (!mounted) {
     return <div>Loading...</div>
   }
-  
+
   return <div>Client-only content</div>
 }
 
@@ -622,6 +646,7 @@ export function ComponentWithErrorBoundary() {
 **Problem**: CSS styles not applying
 
 **Solutions**:
+
 ```css
 /* 1. Check CSS specificity */
 .component {
@@ -646,27 +671,28 @@ export function ComponentWithErrorBoundary() {
 **Problem**: State not updating correctly
 
 **Debugging**:
+
 ```typescript
 // 1. Check for stale closures
-const [count, setCount] = useState(0)
+const [count, setCount] = useState(0);
 
 const handleClick = useCallback(() => {
-  setCount(prev => prev + 1) // Use functional update
-}, [])
+  setCount(prev => prev + 1); // Use functional update
+}, []);
 
 // 2. Multiple state updates
 const handleMultipleUpdates = () => {
-  setCount(c => c + 1)
-  setName(n => n + '!')
+  setCount(c => c + 1);
+  setName(n => n + '!');
   // Use useTransition for better UX
-}
+};
 
 // 3. State debugging
-import { useEffect } from 'react'
+import { useEffect } from 'react';
 
 useEffect(() => {
-  console.log('State changed:', { count, name })
-}, [count, name])
+  console.log('State changed:', { count, name });
+}, [count, name]);
 ```
 
 ---
@@ -675,31 +701,31 @@ useEffect(() => {
 
 ### Common Error Codes
 
-| Error Code | Description | Solution |
-|------------|-------------|----------|
-| `AUTH_001` | Invalid Clerk configuration | Check API keys in environment |
-| `DB_001` | Database connection failed | Verify DATABASE_URL and network |
-| `DB_002` | Migration failed | Run `prisma migrate reset` |
-| `API_001` | Server action validation failed | Check input validation schemas |
-| `API_002` | Permission denied | Verify user permissions and RBAC |
-| `BUILD_001` | TypeScript compilation error | Run `npm run type-check` |
-| `BUILD_002` | Missing environment variable | Add to `.env.local` or Vercel |
-| `DEPLOY_001` | Vercel build timeout | Optimize build or increase timeout |
-| `PERF_001` | Slow database query | Add indexes or optimize queries |
+| Error Code   | Description                     | Solution                           |
+| ------------ | ------------------------------- | ---------------------------------- |
+| `AUTH_001`   | Invalid Clerk configuration     | Check API keys in environment      |
+| `DB_001`     | Database connection failed      | Verify DATABASE_URL and network    |
+| `DB_002`     | Migration failed                | Run `prisma migrate reset`         |
+| `API_001`    | Server action validation failed | Check input validation schemas     |
+| `API_002`    | Permission denied               | Verify user permissions and RBAC   |
+| `BUILD_001`  | TypeScript compilation error    | Run `npm run type-check`           |
+| `BUILD_002`  | Missing environment variable    | Add to `.env.local` or Vercel      |
+| `DEPLOY_001` | Vercel build timeout            | Optimize build or increase timeout |
+| `PERF_001`   | Slow database query             | Add indexes or optimize queries    |
 
 ### Error Logging
 
 ```typescript
 // lib/error-logging.ts
 export interface ErrorLog {
-  id: string
-  timestamp: Date
-  level: 'error' | 'warn' | 'info'
-  message: string
-  stack?: string
-  context?: Record<string, unknown>
-  userId?: string
-  organizationId?: string
+  id: string;
+  timestamp: Date;
+  level: 'error' | 'warn' | 'info';
+  message: string;
+  stack?: string;
+  context?: Record<string, unknown>;
+  userId?: string;
+  organizationId?: string;
 }
 
 export function logError(error: Error, context?: Record<string, unknown>) {
@@ -710,13 +736,13 @@ export function logError(error: Error, context?: Record<string, unknown>) {
     message: error.message,
     stack: error.stack,
     context,
-  }
-  
+  };
+
   // Log to console in development
   if (process.env.NODE_ENV === 'development') {
-    console.error('Error logged:', errorLog)
+    console.error('Error logged:', errorLog);
   }
-  
+
   // Send to monitoring service in production
   if (process.env.NODE_ENV === 'production') {
     // Send to Sentry, LogRocket, etc.
@@ -739,6 +765,7 @@ export function logError(error: Error, context?: Record<string, unknown>) {
 ### Information to Include
 
 When reporting issues, include:
+
 - Error message and stack trace
 - Environment (development/staging/production)
 - Node.js and npm versions
@@ -756,4 +783,5 @@ When reporting issues, include:
 
 ---
 
-*This troubleshooting guide is continuously updated as new issues and solutions are identified. If you encounter an issue not covered here, please document the solution and update this guide.*
+_This troubleshooting guide is continuously updated as new issues and solutions are identified. If
+you encounter an issue not covered here, please document the solution and update this guide._

@@ -20,7 +20,9 @@
 
 ---
 
-> **FleetFusion** is a next-gen SaaS platform for trucking companies to manage vehicles, drivers, loads, compliance, and analytics. Built with the latest Next.js, React Server Components, Drizzle ORM, and Neon Postgres. 🚀
+> **FleetFusion** is a next-gen SaaS platform for trucking companies to manage vehicles, drivers,
+> loads, compliance, and analytics. Built with the latest Next.js, React Server Components, Drizzle
+> ORM, and Neon Postgres. 🚀
 
 ---
 
@@ -53,12 +55,14 @@
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js 18+
 - npm 9+
 - Neon.tech Postgres or compatible
 - Clerk account
 
 ### Quickstart
+
 ```bash
 git clone https://github.com/your-username/fleet-fusion.git
 cd fleet-fusion
@@ -66,6 +70,7 @@ npm install
 cp .env.example .env.local # Edit with your config
 npm run dev
 ```
+
 Open [http://localhost:3000](http://localhost:3000)
 
 ---
@@ -80,7 +85,8 @@ Open [http://localhost:3000](http://localhost:3000)
 
 - **Branch Names**: `feature/xyz`, `fix/abc`, `docs/doc-change`
 - **PR Titles**: `[type]: short description` (e.g., `feat: add driver dashboard`)
-- **Project Board**: All issues/PRs are tracked on the [Project Board](https://github.com/users/DigitalHerencia/projects/4).
+- **Project Board**: All issues/PRs are tracked on the
+  [Project Board](https://github.com/users/DigitalHerencia/projects/4).
 - **Milestones**: Features are grouped by release milestones (e.g., Q3 2025).
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for full guidelines.

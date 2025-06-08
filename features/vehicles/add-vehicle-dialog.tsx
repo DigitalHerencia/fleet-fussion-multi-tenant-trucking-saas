@@ -1,29 +1,42 @@
-"use client"
+'use client';
 
-import { useState } from "react"
+import { useState } from 'react';
 
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import type { VehicleFormData, Vehicle } from "@/types/vehicles"
-import { createVehicleAction } from "@/lib/actions/vehicleActions"
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import type { VehicleFormData, Vehicle } from '@/types/vehicles';
+import { createVehicleAction } from '@/lib/actions/vehicleActions';
 
 interface Props {
-  orgId: string
-  onSuccess: (vehicle: Vehicle) => void
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  orgId: string;
+  onSuccess: (vehicle: Vehicle) => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 const initialState: VehicleFormData = {
-  unitNumber: "",  type: "tractor",
-  make: "",
-  model: "",
+  unitNumber: '',
+  type: 'tractor',
+  make: '',
+  model: '',
   year: new Date().getFullYear(),
-  vin: "",
-  licensePlate: "",
+  vin: '',
+  licensePlate: '',
   fuelType: undefined,
   engineType: undefined,
   registrationNumber: undefined,
@@ -35,30 +48,35 @@ const initialState: VehicleFormData = {
   totalMileage: undefined,
   nextMaintenanceDate: undefined,
   nextMaintenanceMileage: undefined,
-}
+};
 
-export default function AddVehicleDialog({ orgId, onSuccess, open, onOpenChange }: Props) {
-  const [form, setForm] = useState<VehicleFormData>(initialState)
-  const [loading, setLoading] = useState(false)
+export default function AddVehicleDialog({
+  orgId,
+  onSuccess,
+  open,
+  onOpenChange,
+}: Props) {
+  const [form, setForm] = useState<VehicleFormData>(initialState);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setForm(prev => ({ ...prev, [name]: value }))
-  }
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
+  };
 
   const handleSubmit = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const result = await createVehicleAction(orgId, { ...form })
+      const result = await createVehicleAction(orgId, { ...form });
       if (result.success && result.data) {
-        onSuccess(result.data as Vehicle)
-        onOpenChange(false)
-        setForm(initialState)
+        onSuccess(result.data as Vehicle);
+        onOpenChange(false);
+        setForm(initialState);
       }
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -70,11 +88,24 @@ export default function AddVehicleDialog({ orgId, onSuccess, open, onOpenChange 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="unitNumber">Unit Number</Label>
-              <Input id="unitNumber" name="unitNumber" value={form.unitNumber} onChange={handleChange} />
+              <Input
+                id="unitNumber"
+                name="unitNumber"
+                value={form.unitNumber}
+                onChange={handleChange}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="type">Vehicle Type</Label>
-              <Select value={form.type} onValueChange={val => setForm(prev => ({ ...prev, type: val as VehicleFormData["type"] }))}>
+              <Select
+                value={form.type}
+                onValueChange={val =>
+                  setForm(prev => ({
+                    ...prev,
+                    type: val as VehicleFormData['type'],
+                  }))
+                }
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
@@ -90,34 +121,66 @@ export default function AddVehicleDialog({ orgId, onSuccess, open, onOpenChange 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="make">Make</Label>
-              <Input id="make" name="make" value={form.make} onChange={handleChange} />
+              <Input
+                id="make"
+                name="make"
+                value={form.make}
+                onChange={handleChange}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="model">Model</Label>
-              <Input id="model" name="model" value={form.model} onChange={handleChange} />
+              <Input
+                id="model"
+                name="model"
+                value={form.model}
+                onChange={handleChange}
+              />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="year">Year</Label>
-              <Input id="year" name="year" type="number" value={form.year} onChange={handleChange} />
+              <Input
+                id="year"
+                name="year"
+                type="number"
+                value={form.year}
+                onChange={handleChange}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="vin">VIN</Label>
-              <Input id="vin" name="vin" value={form.vin} onChange={handleChange} />
+              <Input
+                id="vin"
+                name="vin"
+                value={form.vin}
+                onChange={handleChange}
+              />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">            <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-4">
+            {' '}
+            <div className="space-y-2">
               <Label htmlFor="licensePlate">License Plate</Label>
-              <Input id="licensePlate" name="licensePlate" value={form.licensePlate} onChange={handleChange} />
+              <Input
+                id="licensePlate"
+                name="licensePlate"
+                value={form.licensePlate}
+                onChange={handleChange}
+              />
             </div>
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={handleSubmit} disabled={loading}>Add Vehicle</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handleSubmit} disabled={loading}>
+            Add Vehicle
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

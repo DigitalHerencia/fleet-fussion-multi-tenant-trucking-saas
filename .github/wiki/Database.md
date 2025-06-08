@@ -2,7 +2,9 @@
 
 ## Overview
 
-FleetFusion uses a PostgreSQL database with Prisma ORM for type-safe database access. The schema supports multi-tenant architecture with comprehensive fleet management capabilities including vehicles, drivers, loads, compliance tracking, and IFTA reporting.
+FleetFusion uses a PostgreSQL database with Prisma ORM for type-safe database access. The schema
+supports multi-tenant architecture with comprehensive fleet management capabilities including
+vehicles, drivers, loads, compliance tracking, and IFTA reporting.
 
 ## Database Configuration
 
@@ -45,13 +47,16 @@ model Organization {
 ```
 
 **Key Features:**
+
 - Multi-tenant isolation via `organizationId` foreign keys
 - Subscription management with tiers and status
 - Configurable settings (timezone, units, formats)
 - Integration with Clerk.js for authentication
 
 **Relationships:**
-- Has many: `users`, `vehicles`, `drivers`, `loads`, `complianceDocuments`, `iftaReports`, `auditLogs`
+
+- Has many: `users`, `vehicles`, `drivers`, `loads`, `complianceDocuments`, `iftaReports`,
+  `auditLogs`
 
 ### User (`users`)
 
@@ -78,6 +83,7 @@ model User {
 ```
 
 **User Roles:**
+
 ```typescript
 enum UserRole {
   admin        // Full system access
@@ -123,6 +129,7 @@ model Vehicle {
 ```
 
 **Vehicle Status:**
+
 ```typescript
 enum VehicleStatus {
   active
@@ -188,7 +195,7 @@ model Load {
   customerContact       String?
   customerPhone         String?
   customerEmail         String?
-  
+
   // Origin Details
   originAddress         String
   originCity            String
@@ -196,7 +203,7 @@ model Load {
   originZip             String
   originLat             Decimal?     @db.Decimal(10, 6)
   originLng             Decimal?     @db.Decimal(10, 6)
-  
+
   // Destination Details
   destinationAddress    String
   destinationCity       String
@@ -204,17 +211,17 @@ model Load {
   destinationZip        String
   destinationLat        Decimal?     @db.Decimal(10, 6)
   destinationLng        Decimal?     @db.Decimal(10, 6)
-  
+
   // Financial
   rate                  Decimal?     @db.Decimal(10, 2)
   currency              String?      @default("USD")
-  
+
   // Scheduling
   scheduledPickupDate   DateTime?
   actualPickupDate      DateTime?
   scheduledDeliveryDate DateTime?
   actualDeliveryDate    DateTime?
-  
+
   // Load Details
   weight                Int?
   pieces                Int?
@@ -224,7 +231,7 @@ model Load {
   actualMiles           Int?
   priority              LoadPriority @default(medium)
   tags                  String[]     @default([])
-  
+
   notes                 String?
   instructions          String?
   customFields          Json?        @default("{}")
@@ -236,6 +243,7 @@ model Load {
 ```
 
 **Load Status Workflow:**
+
 ```typescript
 enum LoadStatus {
   draft          // Initial creation
@@ -506,20 +514,20 @@ erDiagram
     Organization ||--o{ Load : "manages"
     Organization ||--o{ ComplianceDocument : "maintains"
     Organization ||--o{ IftaReport : "files"
-    
+
     User ||--o| Driver : "can be"
     User ||--o{ AuditLog : "creates"
-    
+
     Driver ||--o{ Load : "assigned to"
     Driver ||--o{ ComplianceDocument : "has documents"
-    
+
     Vehicle ||--o{ Load : "pulls"
     Vehicle ||--o{ ComplianceDocument : "has documents"
     Vehicle ||--o{ IftaTrip : "records"
     Vehicle ||--o{ IftaFuelPurchase : "tracks"
-    
+
     Load ||--o{ LoadStatusEvent : "has events"
-    
+
     ComplianceDocument ||--o{ ComplianceAlert : "triggers"
 ```
 
@@ -560,124 +568,126 @@ npx prisma migrate reset
 
 #### compliance_documents
 
-| Field             | Type         | Nullable | Description |
-|-------------------|--------------|----------|-------------|
-| id                | text         | not null | Primary key |
-| organization_id   | text         | not null | Tenant isolation |
-| driver_id         | text         | null     | Associated driver (optional) |
-| vehicle_id        | text         | null     | Associated vehicle (optional) |
-| type              | text         | not null | Document type (license, insurance, etc.) |
-| title             | text         | not null | Document title/name |
-| document_number   | text         | null     | Official document number |
-| issuing_authority | text         | null     | Authority that issued document |
-| file_url          | text         | null     | Storage URL for document file |
-| file_name         | text         | null     | Original filename |
-| file_size         | int4         | null     | File size in bytes |
-| mime_type         | text         | null     | File MIME type |
-| issue_date        | date         | null     | Date document was issued |
-| expiration_date   | date         | null     | Document expiration date |
-| status            | text         | not null | Document status (active, expired, etc.) |
-| is_verified       | bool         | null     | Verification status |
-| verified_by       | text         | null     | User who verified document |
-| verified_at       | timestamp    | null     | Verification timestamp |
-| notes             | text         | null     | Additional notes |
-| tags              | jsonb        | null     | Flexible tagging system |
-| created_at        | timestamp    | not null | Record creation timestamp |
-| updated_at        | timestamp    | not null | Last update timestamp |
+| Field             | Type      | Nullable | Description                              |
+| ----------------- | --------- | -------- | ---------------------------------------- |
+| id                | text      | not null | Primary key                              |
+| organization_id   | text      | not null | Tenant isolation                         |
+| driver_id         | text      | null     | Associated driver (optional)             |
+| vehicle_id        | text      | null     | Associated vehicle (optional)            |
+| type              | text      | not null | Document type (license, insurance, etc.) |
+| title             | text      | not null | Document title/name                      |
+| document_number   | text      | null     | Official document number                 |
+| issuing_authority | text      | null     | Authority that issued document           |
+| file_url          | text      | null     | Storage URL for document file            |
+| file_name         | text      | null     | Original filename                        |
+| file_size         | int4      | null     | File size in bytes                       |
+| mime_type         | text      | null     | File MIME type                           |
+| issue_date        | date      | null     | Date document was issued                 |
+| expiration_date   | date      | null     | Document expiration date                 |
+| status            | text      | not null | Document status (active, expired, etc.)  |
+| is_verified       | bool      | null     | Verification status                      |
+| verified_by       | text      | null     | User who verified document               |
+| verified_at       | timestamp | null     | Verification timestamp                   |
+| notes             | text      | null     | Additional notes                         |
+| tags              | jsonb     | null     | Flexible tagging system                  |
+| created_at        | timestamp | not null | Record creation timestamp                |
+| updated_at        | timestamp | not null | Last update timestamp                    |
 
 #### loads
 
-| Field                | Type            | Nullable | Description |
-|----------------------|-----------------|----------|-------------|
-| id                   | text            | not null | Primary key |
-| organization_id      | text            | not null | Tenant isolation |
-| driver_id            | text            | null     | Assigned driver |
-| vehicle_id           | text            | null     | Assigned vehicle |
-| trailer_id           | text            | null     | Assigned trailer |
-| load_number          | text            | not null | Unique load identifier |
-| reference_number     | text            | null     | Customer reference |
-| status               | LoadStatus      | not null | Current load status |
-| customer_name        | text            | null     | Customer/shipper name |
-| customer_contact     | text            | null     | Primary contact |
-| customer_phone       | text            | null     | Contact phone |
-| customer_email       | text            | null     | Contact email |
-| origin_address       | text            | not null | Pickup address |
-| origin_city          | text            | not null | Pickup city |
-| origin_state         | text            | not null | Pickup state |
-| origin_zip           | text            | not null | Pickup ZIP code |
-| origin_lat           | numeric(10,6)   | null     | Pickup latitude |
-| origin_lng           | numeric(10,6)   | null     | Pickup longitude |
-| destination_address  | text            | not null | Delivery address |
-| destination_city     | text            | not null | Delivery city |
-| destination_state    | text            | not null | Delivery state |
-| destination_zip      | text            | not null | Delivery ZIP code |
-| destination_lat      | numeric(10,6)   | null     | Delivery latitude |
-| destination_lng      | numeric(10,6)   | null     | Delivery longitude |
-| rate                 | numeric(10,2)   | null     | Load payment rate |
-| currency             | text            | null     | Currency code |
-| scheduled_pickup_date| timestamp       | null     | Planned pickup time |
-| actual_pickup_date   | timestamp       | null     | Actual pickup time |
-| scheduled_delivery_date| timestamp     | null     | Planned delivery time |
-| actual_delivery_date | timestamp       | null     | Actual delivery time |
-| weight               | int4            | null     | Load weight (lbs) |
-| pieces               | int4            | null     | Number of pieces |
-| commodity            | text            | null     | Commodity description |
-| hazmat               | bool            | null     | Hazardous materials flag |
-| estimated_miles      | int4            | null     | Estimated distance |
-| actual_miles         | int4            | null     | Actual distance traveled |
-| notes                | text            | null     | Additional notes |
-| instructions         | text            | null     | Special instructions |
-| custom_fields        | jsonb           | null     | Flexible custom data |
-| created_at           | timestamp       | not null | Record creation timestamp |
-| updated_at           | timestamp       | not null | Last update timestamp |
+| Field                   | Type          | Nullable | Description               |
+| ----------------------- | ------------- | -------- | ------------------------- |
+| id                      | text          | not null | Primary key               |
+| organization_id         | text          | not null | Tenant isolation          |
+| driver_id               | text          | null     | Assigned driver           |
+| vehicle_id              | text          | null     | Assigned vehicle          |
+| trailer_id              | text          | null     | Assigned trailer          |
+| load_number             | text          | not null | Unique load identifier    |
+| reference_number        | text          | null     | Customer reference        |
+| status                  | LoadStatus    | not null | Current load status       |
+| customer_name           | text          | null     | Customer/shipper name     |
+| customer_contact        | text          | null     | Primary contact           |
+| customer_phone          | text          | null     | Contact phone             |
+| customer_email          | text          | null     | Contact email             |
+| origin_address          | text          | not null | Pickup address            |
+| origin_city             | text          | not null | Pickup city               |
+| origin_state            | text          | not null | Pickup state              |
+| origin_zip              | text          | not null | Pickup ZIP code           |
+| origin_lat              | numeric(10,6) | null     | Pickup latitude           |
+| origin_lng              | numeric(10,6) | null     | Pickup longitude          |
+| destination_address     | text          | not null | Delivery address          |
+| destination_city        | text          | not null | Delivery city             |
+| destination_state       | text          | not null | Delivery state            |
+| destination_zip         | text          | not null | Delivery ZIP code         |
+| destination_lat         | numeric(10,6) | null     | Delivery latitude         |
+| destination_lng         | numeric(10,6) | null     | Delivery longitude        |
+| rate                    | numeric(10,2) | null     | Load payment rate         |
+| currency                | text          | null     | Currency code             |
+| scheduled_pickup_date   | timestamp     | null     | Planned pickup time       |
+| actual_pickup_date      | timestamp     | null     | Actual pickup time        |
+| scheduled_delivery_date | timestamp     | null     | Planned delivery time     |
+| actual_delivery_date    | timestamp     | null     | Actual delivery time      |
+| weight                  | int4          | null     | Load weight (lbs)         |
+| pieces                  | int4          | null     | Number of pieces          |
+| commodity               | text          | null     | Commodity description     |
+| hazmat                  | bool          | null     | Hazardous materials flag  |
+| estimated_miles         | int4          | null     | Estimated distance        |
+| actual_miles            | int4          | null     | Actual distance traveled  |
+| notes                   | text          | null     | Additional notes          |
+| instructions            | text          | null     | Special instructions      |
+| custom_fields           | jsonb         | null     | Flexible custom data      |
+| created_at              | timestamp     | not null | Record creation timestamp |
+| updated_at              | timestamp     | not null | Last update timestamp     |
 
 #### audit_logs
 
-| Field           | Type      | Nullable | Description |
-|-----------------|-----------|----------|-------------|
-| id              | text      | not null | Primary key |
-| organization_id | text      | not null | Tenant isolation |
+| Field           | Type      | Nullable | Description               |
+| --------------- | --------- | -------- | ------------------------- |
+| id              | text      | not null | Primary key               |
+| organization_id | text      | not null | Tenant isolation          |
 | user_id         | text      | null     | User who performed action |
-| entity_type     | text      | not null | Type of entity affected |
-| entity_id       | text      | not null | ID of affected entity |
-| action          | text      | not null | Action performed |
-| changes         | jsonb     | null     | Before/after data |
-| metadata        | jsonb     | null     | Additional context |
-| timestamp       | timestamp | not null | Action timestamp |
+| entity_type     | text      | not null | Type of entity affected   |
+| entity_id       | text      | not null | ID of affected entity     |
+| action          | text      | not null | Action performed          |
+| changes         | jsonb     | null     | Before/after data         |
+| metadata        | jsonb     | null     | Additional context        |
+| timestamp       | timestamp | not null | Action timestamp          |
 
 #### drivers
 
-| Field                | Type         | Nullable | Description |
-|----------------------|--------------|----------|-------------|
-| id                   | text         | not null | Primary key |
-| organization_id      | text         | not null | Tenant isolation |
-| clerk_user_id        | text         | null     | Linked Clerk user |
-| employee_id          | text         | null     | Company employee ID |
-| name                 | text         | not null | Driver full name |
-| email                | text         | null     | Email address |
-| phone                | text         | null     | Phone number |
-| license_number       | text         | null     | CDL number |
-| license_state        | text         | null     | License issuing state |
-| license_expiry       | date         | null     | License expiration |
-| dob                  | date         | null     | Date of birth |
-| hire_date            | date         | null     | Employment start date |
-| status               | DriverStatus | not null | Employment status |
-| address              | text         | null     | Home address |
-| emergency_contact    | jsonb        | null     | Emergency contact info |
-| medical_cert_expiry  | date         | null     | Medical certificate expiry |
-| hazmat_expiry        | date         | null     | Hazmat endorsement expiry |
-| drug_test_date       | date         | null     | Last drug test date |
-| background_check_date| date         | null     | Background check date |
-| notes                | text         | null     | Additional notes |
-| custom_fields        | jsonb        | null     | Flexible custom data |
-| created_at           | timestamp    | not null | Record creation timestamp |
-| updated_at           | timestamp    | not null | Last update timestamp |
+| Field                 | Type         | Nullable | Description                |
+| --------------------- | ------------ | -------- | -------------------------- |
+| id                    | text         | not null | Primary key                |
+| organization_id       | text         | not null | Tenant isolation           |
+| clerk_user_id         | text         | null     | Linked Clerk user          |
+| employee_id           | text         | null     | Company employee ID        |
+| name                  | text         | not null | Driver full name           |
+| email                 | text         | null     | Email address              |
+| phone                 | text         | null     | Phone number               |
+| license_number        | text         | null     | CDL number                 |
+| license_state         | text         | null     | License issuing state      |
+| license_expiry        | date         | null     | License expiration         |
+| dob                   | date         | null     | Date of birth              |
+| hire_date             | date         | null     | Employment start date      |
+| status                | DriverStatus | not null | Employment status          |
+| address               | text         | null     | Home address               |
+| emergency_contact     | jsonb        | null     | Emergency contact info     |
+| medical_cert_expiry   | date         | null     | Medical certificate expiry |
+| hazmat_expiry         | date         | null     | Hazmat endorsement expiry  |
+| drug_test_date        | date         | null     | Last drug test date        |
+| background_check_date | date         | null     | Background check date      |
+| notes                 | text         | null     | Additional notes           |
+| custom_fields         | jsonb        | null     | Flexible custom data       |
+| created_at            | timestamp    | not null | Record creation timestamp  |
+| updated_at            | timestamp    | not null | Last update timestamp      |
 
 ### Compliance Document Schema Changes
 
-The `compliance_documents` table has been enhanced with additional fields for better tracking and management of compliance documents.
+The `compliance_documents` table has been enhanced with additional fields for better tracking and
+management of compliance documents.
 
 #### New Fields:
+
 - `issuing_authority`: Authority that issued the document
 - `file_url`: Storage URL for the document file
 - `file_name`: Original filename of the document
@@ -693,7 +703,9 @@ The `compliance_documents` table has been enhanced with additional fields for be
 - `metadata`: Additional metadata in JSON format
 
 #### Updated Fields:
-- `status`: Now uses a string type with a default value of "active". This can be extended in the future without schema changes.
+
+- `status`: Now uses a string type with a default value of "active". This can be extended in the
+  future without schema changes.
 - `created_at` and `updated_at`: Timestamps are now automatically managed by the system.
 
 ### Load Table Enhancements
@@ -701,8 +713,10 @@ The `compliance_documents` table has been enhanced with additional fields for be
 The `loads` table has been optimized for better performance and additional tracking capabilities.
 
 #### New Fields:
+
 - `reference_number`: Customer reference number for the load
-- `customer_name`, `customer_contact`, `customer_phone`, `customer_email`: Additional fields for customer contact information
+- `customer_name`, `customer_contact`, `customer_phone`, `customer_email`: Additional fields for
+  customer contact information
 - `hazmat`: Boolean flag to indicate if the load contains hazardous materials
 - `priority`: Load priority level
 - `tags`: Flexible tagging system for categorizing loads
@@ -711,9 +725,12 @@ The `loads` table has been optimized for better performance and additional track
 - `created_by` and `last_modified_by`: Track who created and last modified the load
 
 #### Updated Fields:
+
 - `status`: Now uses the `LoadStatus` enum for better clarity and control.
-- `scheduled_pickup_date`, `actual_pickup_date`, `scheduled_delivery_date`, `actual_delivery_date`: Changed to timestamp type for precise tracking.
-- `origin_lat`, `origin_lng`, `destination_lat`, `destination_lng`: Changed to numeric(10,6) type for better precision.
+- `scheduled_pickup_date`, `actual_pickup_date`, `scheduled_delivery_date`, `actual_delivery_date`:
+  Changed to timestamp type for precise tracking.
+- `origin_lat`, `origin_lng`, `destination_lat`, `destination_lng`: Changed to numeric(10,6) type
+  for better precision.
 - `rate`: Changed to numeric(10,2) type for consistent financial data handling.
 - `notes`: Expanded to text type to allow more detailed notes.
 
@@ -722,17 +739,21 @@ The `loads` table has been optimized for better performance and additional track
 The `audit_logs` table structure has been simplified and optimized.
 
 #### New Fields:
+
 - `metadata`: Additional metadata in JSON format for more context about the change.
 
 #### Updated Fields:
+
 - `changes`: Now uses JSONB type to store before/after data for changes.
 - `timestamp`: Automatically set to the current timestamp when the row is created.
 
 ### Driver Table Updates
 
-The `drivers` table has been updated to streamline driver management and enhance compliance tracking.
+The `drivers` table has been updated to streamline driver management and enhance compliance
+tracking.
 
 #### New Fields:
+
 - `clerk_user_id`: Link to the associated Clerk user account
 - `employee_id`: Company-specific employee ID for the driver
 - `dob`: Date of birth of the driver
@@ -747,6 +768,7 @@ The `drivers` table has been updated to streamline driver management and enhance
 - `custom_fields`: Flexible custom data in JSON format
 
 #### Updated Fields:
+
 - `status`: Now uses the `DriverStatus` enum for better clarity.
 - `license_expiry`: Changed to date type to accurately reflect expiration date.
 - `created_at` and `updated_at`: Timestamps are now automatically managed by the system.

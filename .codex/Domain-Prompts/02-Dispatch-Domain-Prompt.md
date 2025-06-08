@@ -2,9 +2,13 @@
 
 ## Context & Overview
 
-You are an expert full-stack developer working on the **Dispatch Domain** of FleetFusion, a modern multi-tenant SaaS fleet management platform. The dispatch domain is the operational heart of the system, handling load creation, assignment, tracking, and management throughout the delivery lifecycle.
+You are an expert full-stack developer working on the **Dispatch Domain** of FleetFusion, a modern
+multi-tenant SaaS fleet management platform. The dispatch domain is the operational heart of the
+system, handling load creation, assignment, tracking, and management throughout the delivery
+lifecycle.
 
 **Technology Stack:**
+
 - Next.js 15 (App Router) + React 19 (Server Components)
 - TypeScript 5 with strict typing
 - PostgreSQL (Neon) + Prisma ORM
@@ -17,6 +21,7 @@ You are an expert full-stack developer working on the **Dispatch Domain** of Fle
 The Dispatch Domain encompasses:
 
 ### Core Features
+
 - **Load Management**: Create, edit, update, and track shipment loads
 - **Driver/Vehicle Assignment**: Assign drivers and vehicles to loads
 - **Dispatch Board**: Drag-and-drop interface for load management
@@ -27,14 +32,17 @@ The Dispatch Domain encompasses:
 - **Factoring Integration**: Support for factoring company workflows
 
 ### Load Lifecycle States
+
 From `prisma/schema.prisma` LoadStatus enum:
+
 ```
-draft → pending → posted → booked → confirmed → assigned → dispatched → 
-in_transit → at_pickup → picked_up → en_route → at_delivery → 
+draft → pending → posted → booked → confirmed → assigned → dispatched →
+in_transit → at_pickup → picked_up → en_route → at_delivery →
 delivered → pod_required → completed → invoiced → paid → cancelled → problem
 ```
 
 ### Tenant Routes
+
 - `app/(tenant)/[orgId]/dispatch/[userId]/page.tsx` - Main dispatch board
 - `app/(tenant)/[orgId]/dispatch/[userId]/edit/page.tsx` - Load edit form
 - `app/(tenant)/[orgId]/dispatch/[userId]/new/page.tsx` - Create new load
@@ -42,6 +50,7 @@ delivered → pod_required → completed → invoiced → paid → cancelled →
 ## Current State Analysis
 
 ### Existing Implementation ✅
+
 - **Page Components**: All tenant routes exist with basic structure
 - **Actions**: `lib/actions/dispatchActions.ts` (385 lines, well-implemented)
 - **Fetchers**: `lib/fetchers/dispatchFetchers.ts` (needs audit)
@@ -51,14 +60,16 @@ delivered → pod_required → completed → invoiced → paid → cancelled →
 - **Features**: `features/dispatch/recent-activity.tsx`
 
 ### Database Schema (Prisma Models)
+
 - ✅ **Load**: Primary load entity with comprehensive fields
 - ✅ **LoadStatusEvent**: Track status changes with history
 - ✅ **Driver**: Assignable resources
-- ✅ **Vehicle**: Assignable resources  
+- ✅ **Vehicle**: Assignable resources
 - ✅ **Organization**: Multi-tenant isolation
 - ✅ **AuditLog**: Change tracking
 
 ### Key Strengths
+
 - Comprehensive load model with origin/destination coordinates
 - Status event tracking for full audit trail
 - Multi-reference support (customer, broker info)
@@ -66,6 +77,7 @@ delivered → pod_required → completed → invoiced → paid → cancelled →
 - RBAC permissions already defined
 
 ### Areas Needing Development
+
 1. **Real-time Updates**: WebSocket or polling for live status updates
 2. **Advanced Dispatch Board**: Drag-and-drop functionality needs enhancement
 3. **Route Optimization**: Basic route planning algorithms
@@ -77,17 +89,20 @@ delivered → pod_required → completed → invoiced → paid → cancelled →
 ## GitHub Issue/PR Requirements
 
 ### Issue Template
+
 ```markdown
 ## Domain: Dispatch
-**Epic**: [Dispatch MVP] | [Dispatch Enhancement] | [Dispatch Integration]
-**Priority**: High/Medium/Low
-**Load Status Impact**: [which load statuses affected]
-**Estimated Effort**: S/M/L/XL
+
+**Epic**: [Dispatch MVP] | [Dispatch Enhancement] | [Dispatch Integration] **Priority**:
+High/Medium/Low **Load Status Impact**: [which load statuses affected] **Estimated Effort**:
+S/M/L/XL
 
 ### Description
+
 Detailed description of dispatch feature/improvement
 
 ### Acceptance Criteria
+
 - [ ] Multi-tenant org isolation enforced (organizationId filter)
 - [ ] RBAC permissions for DISPATCHER/ADMIN roles
 - [ ] Load status transitions follow business rules
@@ -97,6 +112,7 @@ Detailed description of dispatch feature/improvement
 - [ ] Mobile responsive design
 
 ### Technical Requirements
+
 - [ ] Server actions use 'use server' directive
 - [ ] Prisma queries properly scoped by organizationId
 - [ ] Zod schema validation for all inputs
@@ -105,6 +121,7 @@ Detailed description of dispatch feature/improvement
 - [ ] Status event logging
 
 ### Definition of Done
+
 - [ ] Code reviewed and approved
 - [ ] Tests passing (unit + integration)
 - [ ] Load status transitions tested
@@ -112,6 +129,7 @@ Detailed description of dispatch feature/improvement
 - [ ] Deployed to staging
 
 ### Related Load Statuses
+
 - [ ] Affects load creation (draft/pending)
 - [ ] Affects assignment (assigned/dispatched)
 - [ ] Affects tracking (in_transit/delivered)
@@ -119,6 +137,7 @@ Detailed description of dispatch feature/improvement
 ```
 
 ### PR Guidelines
+
 - **Branch naming**: `feature/dispatch-[feature-name]` or `fix/dispatch-[issue]`
 - **Required labels**: `domain:dispatch`, priority level, status impact
 - **Screenshots**: Include for any UI changes, especially dispatch board
@@ -127,6 +146,7 @@ Detailed description of dispatch feature/improvement
 ## Authentication & RBAC Implementation
 
 ### Permission Requirements
+
 From `lib/auth/permissions.ts`:
 
 ```typescript
@@ -155,47 +175,49 @@ From `lib/auth/permissions.ts`:
 ```
 
 ### Security Implementation
+
 ```typescript
 // Server action pattern from existing dispatchActions.ts
 async function checkUserPermissions(orgId: string, requiredPermissions: string[]) {
   const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-  
+  if (!userId) throw new Error('Unauthorized');
+
   const user = await prisma.user.findFirst({
     where: {
       clerkId: userId,
       organizationId: orgId,
     },
   });
-  
+
   if (!user || !user.isActive) {
-    throw new Error("User not found or inactive");
+    throw new Error('User not found or inactive');
   }
-  
+
   // Additional permission checks
   return user;
 }
 ```
 
 ### Data Access Patterns
+
 ```typescript
 // ALWAYS scope by organizationId for multi-tenant isolation
 export async function getLoads(orgId: string, filters?: LoadFilters) {
   const user = await checkUserPermissions(orgId, ['dispatch:view']);
-  
+
   return await prisma.load.findMany({
     where: {
       organizationId: orgId, // ⚡ Critical for tenant isolation
-      ...filters
+      ...filters,
     },
     include: {
       driver: true,
       vehicle: true,
       statusEvents: {
         orderBy: { timestamp: 'desc' },
-        take: 5
-      }
-    }
+        take: 5,
+      },
+    },
   });
 }
 ```
@@ -203,6 +225,7 @@ export async function getLoads(orgId: string, filters?: LoadFilters) {
 ## Database & Prisma Implementation
 
 ### Load Model Structure
+
 From `prisma/schema.prisma`:
 
 ```prisma
@@ -214,7 +237,7 @@ model Load {
   trailerId             String?      @map("trailer_id")
   loadNumber            String       @map("load_number")
   status                LoadStatus   @default(pending)
-  
+
   // Origin/Destination with coordinates
   originAddress         String       @map("origin_address")
   originLat             Decimal?     @map("origin_lat") @db.Decimal(10, 6)
@@ -222,17 +245,17 @@ model Load {
   destinationAddress    String       @map("destination_address")
   destinationLat        Decimal?     @map("destination_lat") @db.Decimal(10, 6)
   destinationLng        Decimal?     @map("destination_lng") @db.Decimal(10, 6)
-  
+
   // Financial
   rate                  Decimal?     @db.Decimal(10, 2)
   currency              String?      @default("USD")
-  
+
   // Dates
   scheduledPickupDate   DateTime?    @map("scheduled_pickup_date")
   actualPickupDate      DateTime?    @map("actual_pickup_date")
   scheduledDeliveryDate DateTime?    @map("scheduled_delivery_date")
   actualDeliveryDate    DateTime?    @map("actual_delivery_date")
-  
+
   // Relationships
   statusEvents          LoadStatusEvent[]
   driver                Driver?      @relation(fields: [driverId], references: [id])
@@ -244,28 +267,31 @@ model Load {
 ### Critical Queries
 
 #### Load Assignment Query
+
 ```typescript
 export async function assignLoadToDriver(
   orgId: string,
-  loadId: string, 
+  loadId: string,
   driverId: string,
   vehicleId?: string
 ) {
   // Validate all entities belong to same org
   const [load, driver, vehicle] = await Promise.all([
     prisma.load.findFirst({
-      where: { id: loadId, organizationId: orgId }
+      where: { id: loadId, organizationId: orgId },
     }),
     prisma.driver.findFirst({
-      where: { id: driverId, organizationId: orgId, status: 'active' }
+      where: { id: driverId, organizationId: orgId, status: 'active' },
     }),
-    vehicleId ? prisma.vehicle.findFirst({
-      where: { id: vehicleId, organizationId: orgId, status: 'active' }
-    }) : null
+    vehicleId
+      ? prisma.vehicle.findFirst({
+          where: { id: vehicleId, organizationId: orgId, status: 'active' },
+        })
+      : null,
   ]);
-  
-  if (!load || !driver) throw new Error("Invalid assignment");
-  
+
+  if (!load || !driver) throw new Error('Invalid assignment');
+
   // Update load and create status event
   const updatedLoad = await prisma.load.update({
     where: { id: loadId },
@@ -279,22 +305,23 @@ export async function assignLoadToDriver(
           status: 'assigned',
           timestamp: new Date(),
           source: 'dispatcher',
-          notes: `Assigned to driver ${driver.firstName} ${driver.lastName}`
-        }
-      }
+          notes: `Assigned to driver ${driver.firstName} ${driver.lastName}`,
+        },
+      },
     },
     include: {
       driver: true,
       vehicle: true,
-      statusEvents: true
-    }
+      statusEvents: true,
+    },
   });
-  
+
   return updatedLoad;
 }
 ```
 
 ### Performance Optimization
+
 - **Pagination**: Implement cursor-based pagination for load lists
 - **Indexes**: Ensure proper indexing on organizationId, status, dates
 - **Caching**: Use `unstable_cache` for frequently accessed data
@@ -303,30 +330,31 @@ export async function assignLoadToDriver(
 ## Fetchers & Actions Architecture
 
 ### Enhanced Dispatch Fetchers
+
 File: `lib/fetchers/dispatchFetchers.ts`
 
 ```typescript
-import { unstable_cache } from "next/cache";
+import { unstable_cache } from 'next/cache';
 
 export const getDispatchBoardData = unstable_cache(
   async (orgId: string, filters?: DispatchFilters) => {
     const [loads, availableDrivers, availableVehicles] = await Promise.all([
       getActiveLoads(orgId, filters),
       getAvailableDrivers(orgId),
-      getAvailableVehicles(orgId)
+      getAvailableVehicles(orgId),
     ]);
-    
+
     return {
       loads: loads.map(formatLoadForBoard),
       drivers: availableDrivers,
       vehicles: availableVehicles,
-      statistics: calculateDispatchMetrics(loads)
+      statistics: calculateDispatchMetrics(loads),
     };
   },
   ['dispatch-board'],
   {
     revalidate: 300, // 5 minutes
-    tags: [`dispatch-${orgId}`, `loads-${orgId}`]
+    tags: [`dispatch-${orgId}`, `loads-${orgId}`],
   }
 );
 
@@ -339,28 +367,30 @@ export const getLoadDetails = unstable_cache(
         vehicle: true,
         trailer: true,
         statusEvents: {
-          orderBy: { timestamp: 'desc' }
+          orderBy: { timestamp: 'desc' },
         },
         organization: {
-          select: { name: true, settings: true }
-        }
-      }
+          select: { name: true, settings: true },
+        },
+      },
     });
   },
   ['load-details'],
   {
     revalidate: 60, // 1 minute for active loads
-    tags: [`load-${loadId}`, `loads-${orgId}`]
+    tags: [`load-${loadId}`, `loads-${orgId}`],
   }
 );
 ```
 
 ### Dispatch Actions Enhancement
+
 File: `lib/actions/dispatchActions.ts` (existing, needs enhancement)
 
 Priority actions to implement/improve:
+
 ```typescript
-"use server";
+'use server';
 
 // Status transition with business rules
 export async function updateLoadStatus(
@@ -390,10 +420,7 @@ export async function updateLoadLocation(
 }
 
 // Bulk operations for efficiency
-export async function bulkAssignLoads(
-  orgId: string,
-  assignments: LoadAssignment[]
-) {
+export async function bulkAssignLoads(orgId: string, assignments: LoadAssignment[]) {
   // Validate all assignments
   // Batch update loads
   // Create status events
@@ -404,6 +431,7 @@ export async function bulkAssignLoads(
 ## Issues & Misconfigurations to Address
 
 ### High Priority Issues
+
 1. **Incomplete Real-time Updates**: Dispatch board needs live status updates
 2. **Missing Route Optimization**: No route planning or optimization logic
 3. **Limited Mobile Support**: Driver mobile interface needs development
@@ -412,6 +440,7 @@ export async function bulkAssignLoads(
 6. **Performance Issues**: Dispatch board may be slow with large datasets
 
 ### Common Misconfigurations
+
 1. **Status Transition Bugs**: Invalid status changes allowed
 2. **Assignment Validation**: Missing checks for driver/vehicle availability
 3. **Cross-tenant Data**: Queries missing organizationId filters
@@ -420,6 +449,7 @@ export async function bulkAssignLoads(
 6. **Coordinate Validation**: Invalid lat/lng values causing map issues
 
 ### Integration Issues
+
 1. **Third-party APIs**: Load board integrations not implemented
 2. **Factoring Company**: Incomplete factoring workflows
 3. **Mobile App**: Driver mobile app API endpoints missing
@@ -429,6 +459,7 @@ export async function bulkAssignLoads(
 ## Development Roadmap
 
 ### Phase 1: Core Dispatch (MVP Ready)
+
 - [x] Load CRUD operations
 - [x] Basic assignment functionality
 - [ ] Status transition validation
@@ -437,6 +468,7 @@ export async function bulkAssignLoads(
 - [ ] Document upload/management
 
 ### Phase 2: Advanced Features
+
 - [ ] Drag-and-drop dispatch board
 - [ ] Route optimization algorithms
 - [ ] Advanced filtering/search
@@ -445,6 +477,7 @@ export async function bulkAssignLoads(
 - [ ] Load board integrations
 
 ### Phase 3: Enterprise Features
+
 - [ ] AI-powered load matching
 - [ ] Predictive analytics
 - [ ] Advanced reporting
@@ -455,6 +488,7 @@ export async function bulkAssignLoads(
 ## Testing Requirements
 
 ### Unit Tests
+
 - Load creation and validation
 - Status transition logic
 - Assignment validation rules
@@ -462,6 +496,7 @@ export async function bulkAssignLoads(
 - Permission checking
 
 ### Integration Tests
+
 - End-to-end load lifecycle
 - Multi-tenant data isolation
 - Real-time update functionality
@@ -469,6 +504,7 @@ export async function bulkAssignLoads(
 - Mobile API endpoints
 
 ### Performance Tests
+
 - Dispatch board with 1000+ loads
 - Concurrent load assignments
 - Real-time update scalability
@@ -486,12 +522,13 @@ export async function bulkAssignLoads(
 ## Success Criteria
 
 ### Definition of "Shippable"
+
 The Dispatch Domain is ready for production when:
 
 1. **✅ Load Lifecycle Management**: Complete load lifecycle from creation to completion
 2. **✅ Assignment System**: Robust driver/vehicle assignment with validation
 3. **✅ Real-time Updates**: Live status updates on dispatch board
-4. **✅ Multi-tenant Security**: Complete org isolation and RBAC enforcement  
+4. **✅ Multi-tenant Security**: Complete org isolation and RBAC enforcement
 5. **✅ Mobile Responsive**: Fully functional on mobile devices
 6. **✅ Status Validation**: Business rules enforced for status transitions
 7. **✅ Document Management**: Load documents properly stored and accessible
@@ -500,6 +537,7 @@ The Dispatch Domain is ready for production when:
 10. **✅ Audit Trail**: Complete tracking of all load changes
 
 ### Key Performance Indicators
+
 - Load assignment time < 30 seconds
 - Dispatch board load time < 3 seconds
 - Status update propagation < 5 seconds
@@ -507,6 +545,7 @@ The Dispatch Domain is ready for production when:
 - Zero cross-tenant data leaks
 
 ### Business Rules Validation
+
 - Driver can only be assigned to one active load at a time
 - Vehicle availability checked before assignment
 - Status transitions follow defined workflow
@@ -525,15 +564,18 @@ The Dispatch Domain is ready for production when:
 ## Architecture Considerations
 
 ### Real-time Architecture
+
 - **Server-Sent Events**: For dispatch board updates
 - **WebSocket**: For driver mobile app communication
 - **Optimistic Updates**: For better UX during load operations
 - **Conflict Resolution**: Handle concurrent load assignments
 
 ### Scalability Planning
+
 - **Database Partitioning**: Consider partitioning by organization
 - **Caching Strategy**: Multi-layer caching for dispatch board data
 - **Background Jobs**: Process heavy operations asynchronously
 - **Load Balancing**: Distribute dispatch operations across servers
 
-Focus on building a robust, efficient dispatch system that can handle high-volume operations while maintaining data integrity and providing excellent user experience for dispatchers and drivers.
+Focus on building a robust, efficient dispatch system that can handle high-volume operations while
+maintaining data integrity and providing excellent user experience for dispatchers and drivers.

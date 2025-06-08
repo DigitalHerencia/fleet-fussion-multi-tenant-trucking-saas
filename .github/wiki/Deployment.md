@@ -1,8 +1,10 @@
 # FleetFusion Deployment Guide
 
-This guide covers deploying FleetFusion to production environments, including Vercel deployment, environment configuration, CI/CD setup, and monitoring.
+This guide covers deploying FleetFusion to production environments, including Vercel deployment,
+environment configuration, CI/CD setup, and monitoring.
 
 ## Table of Contents
+
 - [Prerequisites](#prerequisites)
 - [Vercel Deployment](#vercel-deployment)
 - [Environment Configuration](#environment-configuration)
@@ -20,12 +22,14 @@ This guide covers deploying FleetFusion to production environments, including Ve
 Before deploying FleetFusion, ensure you have:
 
 ### Required Services
+
 - **Vercel Account** with Pro plan (for team features)
 - **Neon PostgreSQL** database (production branch)
 - **Clerk Authentication** project configured
 - **GitHub Repository** with proper access permissions
 
 ### Required Tools
+
 ```bash
 # Install Vercel CLI
 npm i -g vercel
@@ -38,6 +42,7 @@ npm run build
 ```
 
 ### Domain & SSL
+
 - Custom domain purchased and configured
 - SSL certificate (handled automatically by Vercel)
 
@@ -48,6 +53,7 @@ npm run build
 ### Initial Setup
 
 1. **Connect Repository**
+
 ```bash
 # Connect to Vercel
 vercel --yes
@@ -59,6 +65,7 @@ vercel env add DATABASE_URL
 ```
 
 2. **Configure Build Settings**
+
 ```json
 // vercel.json
 {
@@ -95,6 +102,7 @@ vercel env add DATABASE_URL
 ```
 
 3. **Deploy to Production**
+
 ```bash
 # Deploy main branch
 vercel --prod
@@ -143,7 +151,7 @@ vercel env add STRIPE_WEBHOOK_SECRET
 
 ```typescript
 // lib/env.ts
-import { z } from 'zod'
+import { z } from 'zod';
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']),
@@ -152,9 +160,9 @@ const envSchema = z.object({
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string(),
   CLERK_SECRET_KEY: z.string(),
   // ... other variables
-})
+});
 
-export const env = envSchema.parse(process.env)
+export const env = envSchema.parse(process.env);
 ```
 
 ---
@@ -164,6 +172,7 @@ export const env = envSchema.parse(process.env)
 ### Production Database Setup
 
 1. **Create Production Branch**
+
 ```bash
 # Create production branch in Neon
 npx neonctl branches create --name=production
@@ -173,6 +182,7 @@ npx neonctl connection-string --branch=production
 ```
 
 2. **Run Migrations**
+
 ```bash
 # Deploy schema to production
 npx prisma migrate deploy
@@ -182,12 +192,14 @@ npx prisma generate
 ```
 
 3. **Seed Production Data**
+
 ```bash
 # Run production seeds
 npm run seed:production
 ```
 
 ### Migration Strategy
+
 - Use Prisma migrations for schema changes
 - Test migrations on staging branch first
 - Backup database before major migrations
@@ -218,16 +230,16 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-      
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Run tests
         run: npm run test
-      
+
       - name: Run type check
         run: npm run type-check
-      
+
       - name: Run linting
         run: npm run lint
 
@@ -237,7 +249,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v25
         with:
@@ -260,6 +272,7 @@ jobs:
 ### Custom Domain Setup
 
 1. **Add Domain in Vercel**
+
 ```bash
 # Add custom domain
 vercel domains add fleetfusion.com
@@ -269,22 +282,25 @@ vercel domains inspect fleetfusion.com
 ```
 
 2. **DNS Configuration**
+
 ```
 Type: CNAME
 Name: @
 Value: cname.vercel-dns.com
 
-Type: CNAME  
+Type: CNAME
 Name: www
 Value: cname.vercel-dns.com
 ```
 
 3. **SSL Certificate**
+
 - Automatically provisioned by Vercel
 - Includes www and apex domain
 - Auto-renewal handled by Vercel
 
 ### Subdomain Strategy
+
 - `app.fleetfusion.com` - Main application
 - `api.fleetfusion.com` - API endpoints
 - `docs.fleetfusion.com` - Documentation
@@ -295,6 +311,7 @@ Value: cname.vercel-dns.com
 ## Monitoring & Logging
 
 ### Vercel Analytics
+
 ```typescript
 // app/layout.tsx
 import { Analytics } from '@vercel/analytics/react'
@@ -316,9 +333,10 @@ export default function RootLayout({
 ```
 
 ### Error Monitoring with Sentry
+
 ```typescript
 // lib/sentry.ts
-import * as Sentry from '@sentry/nextjs'
+import * as Sentry from '@sentry/nextjs';
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
@@ -326,15 +344,16 @@ Sentry.init({
   tracesSampleRate: 1.0,
   beforeSend(event) {
     // Filter out sensitive data
-    return event
+    return event;
   },
-})
+});
 ```
 
 ### Custom Logging
+
 ```typescript
 // lib/logger.ts
-import winston from 'winston'
+import winston from 'winston';
 
 export const logger = winston.createLogger({
   level: 'info',
@@ -343,7 +362,7 @@ export const logger = winston.createLogger({
     new winston.transports.Console(),
     // Add external logging service
   ],
-})
+});
 ```
 
 ---
@@ -365,10 +384,11 @@ const nextConfig = {
   },
   poweredByHeader: false,
   compress: true,
-}
+};
 ```
 
 ### Bundle Analysis
+
 ```bash
 # Analyze bundle size
 npm run analyze
@@ -378,6 +398,7 @@ npx duplicate-package-checker-webpack-plugin
 ```
 
 ### Caching Strategy
+
 - API responses cached with appropriate headers
 - Static assets cached with long TTL
 - Database queries cached with Redis
@@ -390,6 +411,7 @@ npx duplicate-package-checker-webpack-plugin
 ### Common Deployment Issues
 
 #### Build Failures
+
 ```bash
 # Check build logs
 vercel logs
@@ -403,6 +425,7 @@ npm run build
 ```
 
 #### Environment Variable Issues
+
 ```bash
 # List environment variables
 vercel env ls
@@ -415,6 +438,7 @@ npm run dev
 ```
 
 #### Database Connection Issues
+
 ```bash
 # Test database connection
 npx prisma db pull
@@ -429,11 +453,13 @@ npx prisma migrate status
 ### Performance Issues
 
 #### Slow Cold Starts
+
 - Optimize bundle size
 - Use edge runtime where possible
 - Implement proper caching
 
 #### Database Performance
+
 - Add database indexes
 - Optimize queries with explain plans
 - Use connection pooling
@@ -469,17 +495,18 @@ npx prisma migrate rollback
 - [ ] Backup strategy implemented
 
 ### Security Headers
+
 ```typescript
 // middleware.ts
 export function middleware(request: NextRequest) {
-  const response = NextResponse.next()
-  
-  response.headers.set('X-Frame-Options', 'DENY')
-  response.headers.set('X-Content-Type-Options', 'nosniff')
-  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
-  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
-  
-  return response
+  const response = NextResponse.next();
+
+  response.headers.set('X-Frame-Options', 'DENY');
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+
+  return response;
 }
 ```
 
@@ -488,28 +515,27 @@ export function middleware(request: NextRequest) {
 ## Post-Deployment
 
 ### Health Checks
+
 ```typescript
 // app/api/health/route.ts
 export async function GET() {
   try {
     // Check database connection
-    await prisma.$queryRaw`SELECT 1`
-    
-    return Response.json({ 
+    await prisma.$queryRaw`SELECT 1`;
+
+    return Response.json({
       status: 'healthy',
       timestamp: new Date().toISOString(),
-      version: process.env.npm_package_version 
-    })
+      version: process.env.npm_package_version,
+    });
   } catch (error) {
-    return Response.json(
-      { status: 'unhealthy', error: error.message },
-      { status: 500 }
-    )
+    return Response.json({ status: 'unhealthy', error: error.message }, { status: 500 });
   }
 }
 ```
 
 ### Monitoring Checklist
+
 - [ ] Uptime monitoring configured
 - [ ] Error rate alerts setup
 - [ ] Performance monitoring active
@@ -519,7 +545,8 @@ export async function GET() {
 
 ---
 
-*For additional support, consult the [Troubleshooting Guide](./Troubleshooting.md) or contact the DevOps team.*
+_For additional support, consult the [Troubleshooting Guide](./Troubleshooting.md) or contact the
+DevOps team._
 
 ## Vercel Deployment Analysis
 
@@ -528,12 +555,15 @@ export async function GET() {
 #### ✅ What's Working Well
 
 1. **Authentication Architecture**
+
    - Proper Clerk middleware implementation with ABAC support
-   - Comprehensive role-based access control (8 roles: admin, manager, user, dispatcher, driver, compliance, accountant, viewer)
+   - Comprehensive role-based access control (8 roles: admin, manager, user, dispatcher, driver,
+     compliance, accountant, viewer)
    - Multi-tenant organization structure
    - Proper session claim management
 
 2. **Database Integration**
+
    - Neon PostgreSQL integration for multi-tenancy
    - Webhook handlers for Clerk-to-database synchronization
    - Proper user metadata and organization metadata handling
@@ -546,8 +576,8 @@ export async function GET() {
 
 #### 🚨 Environment Variables Configuration
 
-**Issue**: Missing or incorrect environment variables in Vercel
-**Solution**: Ensure these are set in Vercel dashboard:
+**Issue**: Missing or incorrect environment variables in Vercel **Solution**: Ensure these are set
+in Vercel dashboard:
 
 ```bash
 # Clerk Configuration
@@ -573,12 +603,13 @@ NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
 
 #### 🔧 Webhook Configuration Issues
 
-**Issue**: Clerk webhooks failing to reach Vercel deployment
-**Solutions**:
+**Issue**: Clerk webhooks failing to reach Vercel deployment **Solutions**:
 
 1. **Update Clerk Dashboard**:
+
    - Webhook URL: `https://your-app.vercel.app/api/clerk/webhook-handler`
-   - Events to listen for: user.created, user.updated, user.deleted, organization.*, organizationMembership.*
+   - Events to listen for: user.created, user.updated, user.deleted, organization._,
+     organizationMembership._
 
 2. **Verify Webhook Secret**:
    - Copy webhook secret from Clerk dashboard
@@ -586,35 +617,33 @@ NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
 
 #### 🗄️ Database Connection Issues
 
-**Issue**: Neon database connection timeouts or connection limits
-**Solutions**:
+**Issue**: Neon database connection timeouts or connection limits **Solutions**:
 
 1. **Connection Pooling**:
+
    - Use `@neondatabase/serverless` for optimal connection management
    - Implement proper connection management in Prisma client
 
 2. **Database URL Configuration**:
+
    ```typescript
    // lib/database/connection.ts
    import { neon } from '@neondatabase/serverless';
-   
+
    export const sql = neon(process.env.DATABASE_URL!);
    ```
 
 #### ⚡ Middleware Edge Runtime Issues
 
-**Issue**: Middleware not working properly on Vercel Edge Runtime
-**Current Status**: Your middleware.ts implementation is correct ✅
+**Issue**: Middleware not working properly on Vercel Edge Runtime **Current Status**: Your
+middleware.ts implementation is correct ✅
 
 **Potential Enhancement**:
+
 ```typescript
 // Add to middleware.ts if experiencing issues
 export const config = {
-  matcher: [
-    '/((?!.+\\.[\\w]+$|_next).*)',
-    '/',
-    '/(api|trpc)(.*)',
-  ],
+  matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
   runtime: 'nodejs', // Add this if edge runtime causes issues
 };
 ```
@@ -622,6 +651,7 @@ export const config = {
 #### 🚀 Performance Optimization for Vercel
 
 1. **Bundle Size Optimization**:
+
    ```javascript
    // next.config.ts
    const nextConfig = {
@@ -635,10 +665,11 @@ export const config = {
    ```
 
 2. **Caching Strategy**:
+
    ```typescript
    // Optimize for Vercel's caching
    import { unstable_cache } from 'next/cache';
-   
+
    export const getCachedData = unstable_cache(
      async (orgId: string) => {
        // Your data fetching logic

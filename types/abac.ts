@@ -1,6 +1,6 @@
 /**
  * FleetFusion ABAC (Attribute-Based Access Control) Type Definitions
- * 
+ *
  * This file defines all role types, permissions, and attributes used for
  * authorization throughout the application. These types are used by Clerk
  * for custom session claims and by our middleware for access control.
@@ -19,7 +19,7 @@ export const SystemRoles = {
   VIEWER: 'viewer',
 } as const;
 
-export type SystemRole = typeof SystemRoles[keyof typeof SystemRoles];
+export type SystemRole = (typeof SystemRoles)[keyof typeof SystemRoles];
 
 /**
  * Resource Types - Entities that can be accessed/modified in the system
@@ -35,7 +35,7 @@ export const ResourceTypes = {
   BILLING: 'billing',
 } as const;
 
-export type ResourceType = typeof ResourceTypes[keyof typeof ResourceTypes];
+export type ResourceType = (typeof ResourceTypes)[keyof typeof ResourceTypes];
 
 /**
  * Permission Actions - Operations that can be performed on resources
@@ -51,7 +51,8 @@ export const PermissionActions = {
   REPORT: 'report', // Special action for generating reports
 } as const;
 
-export type PermissionAction = typeof PermissionActions[keyof typeof PermissionActions];
+export type PermissionAction =
+  (typeof PermissionActions)[keyof typeof PermissionActions];
 
 /**
  * Permission - Represents a single permission (action + resource)
@@ -68,14 +69,14 @@ export interface Permission {
 export const RolePermissions: Record<SystemRole, Permission[]> = {
   [SystemRoles.ADMIN]: [
     // Admin has full access to everything
-    ...Object.values(ResourceTypes).flatMap((resource) => 
-      Object.values(PermissionActions).map((action) => ({
+    ...Object.values(ResourceTypes).flatMap(resource =>
+      Object.values(PermissionActions).map(action => ({
         action,
         resource: resource as ResourceType,
       }))
-    )
+    ),
   ],
-  
+
   [SystemRoles.DISPATCHER]: [
     // Dispatcher permissions
     { action: PermissionActions.CREATE, resource: ResourceTypes.LOAD },
@@ -88,7 +89,7 @@ export const RolePermissions: Record<SystemRole, Permission[]> = {
     { action: PermissionActions.READ, resource: ResourceTypes.VEHICLE },
     { action: PermissionActions.READ, resource: ResourceTypes.DOCUMENT },
   ],
-  
+
   [SystemRoles.DRIVER]: [
     // Driver permissions
     { action: PermissionActions.READ, resource: ResourceTypes.LOAD },
@@ -96,7 +97,7 @@ export const RolePermissions: Record<SystemRole, Permission[]> = {
     { action: PermissionActions.CREATE, resource: ResourceTypes.DOCUMENT }, // Upload their documents
     { action: PermissionActions.READ, resource: ResourceTypes.DOCUMENT }, // View their documents
   ],
-  
+
   [SystemRoles.COMPLIANCE_OFFICER]: [
     // Compliance officer permissions
     { action: PermissionActions.READ, resource: ResourceTypes.DRIVER },
@@ -107,7 +108,7 @@ export const RolePermissions: Record<SystemRole, Permission[]> = {
     { action: PermissionActions.APPROVE, resource: ResourceTypes.DOCUMENT },
     { action: PermissionActions.REPORT, resource: ResourceTypes.DOCUMENT },
   ],
-  
+
   [SystemRoles.ACCOUNTANT]: [
     // Accountant permissions
     { action: PermissionActions.READ, resource: ResourceTypes.LOAD },
@@ -119,7 +120,7 @@ export const RolePermissions: Record<SystemRole, Permission[]> = {
     { action: PermissionActions.REPORT, resource: ResourceTypes.IFTA },
     { action: PermissionActions.READ, resource: ResourceTypes.BILLING },
   ],
-  
+
   [SystemRoles.VIEWER]: [
     // Viewer permissions (read-only access)
     { action: PermissionActions.READ, resource: ResourceTypes.LOAD },
@@ -127,7 +128,7 @@ export const RolePermissions: Record<SystemRole, Permission[]> = {
     { action: PermissionActions.READ, resource: ResourceTypes.VEHICLE },
     { action: PermissionActions.READ, resource: ResourceTypes.DOCUMENT },
     { action: PermissionActions.READ, resource: ResourceTypes.IFTA },
-  ]
+  ],
 };
 
 /**
@@ -149,8 +150,9 @@ export function hasPermission(
   resource: ResourceType
 ): boolean {
   return userPermissions.some(
-    (permission) => 
-      (permission.action === action || permission.action === PermissionActions.MANAGE) && 
+    permission =>
+      (permission.action === action ||
+        permission.action === PermissionActions.MANAGE) &&
       permission.resource === resource
   );
 }

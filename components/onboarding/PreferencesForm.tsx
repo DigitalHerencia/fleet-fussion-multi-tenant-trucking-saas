@@ -1,16 +1,31 @@
-"use client";
+'use client';
 
-import React from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Bell, Globe, Monitor } from "lucide-react";
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Bell, Globe, Monitor } from 'lucide-react';
 
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PreferencesSchema, type PreferencesFormData } from "@/schemas/onboarding";
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  PreferencesSchema,
+  type PreferencesFormData,
+} from '@/schemas/onboarding';
 
 interface PreferencesFormProps {
   onSubmit: (data: PreferencesFormData) => void;
@@ -20,62 +35,67 @@ interface PreferencesFormProps {
 }
 
 const LANGUAGES = [
-  { value: "en", label: "English" },
-  { value: "es", label: "Español" },
-  { value: "fr", label: "Français" }
+  { value: 'en', label: 'English' },
+  { value: 'es', label: 'Español' },
+  { value: 'fr', label: 'Français' },
 ];
 
 const THEMES = [
-  { 
-    value: "light", 
-    label: "Light", 
-    description: "Use light theme",
-    icon: "☀️"
+  {
+    value: 'light',
+    label: 'Light',
+    description: 'Use light theme',
+    icon: '☀️',
   },
-  { 
-    value: "dark", 
-    label: "Dark", 
-    description: "Use dark theme",
-    icon: "🌙"
+  {
+    value: 'dark',
+    label: 'Dark',
+    description: 'Use dark theme',
+    icon: '🌙',
   },
-  { 
-    value: "system", 
-    label: "System", 
-    description: "Follow system preference",
-    icon: "💻"
-  }
+  {
+    value: 'system',
+    label: 'System',
+    description: 'Follow system preference',
+    icon: '💻',
+  },
 ];
 
-export function PreferencesForm({ onSubmit, onPrevious, isLoading, initialData }: PreferencesFormProps) {
+export function PreferencesForm({
+  onSubmit,
+  onPrevious,
+  isLoading,
+  initialData,
+}: PreferencesFormProps) {
   const {
     handleSubmit,
     formState: { errors },
     setValue,
-    watch
+    watch,
   } = useForm<PreferencesFormData>({
     defaultValues: {
       notifications: {
         email: true,
-        push: true
+        push: true,
       },
-      language: "en",
-      theme: "system",
-      ...initialData
+      language: 'en',
+      theme: 'system',
+      ...initialData,
     },
-    mode: "onChange"
+    mode: 'onChange',
   });
 
-  const watchedNotifications = watch("notifications");
-  const watchedLanguage = watch("language");
-  const watchedTheme = watch("theme");
+  const watchedNotifications = watch('notifications');
+  const watchedLanguage = watch('language');
+  const watchedTheme = watch('theme');
 
-  const handleNotificationChange = (type: "email" | "push", value: boolean) => {
+  const handleNotificationChange = (type: 'email' | 'push', value: boolean) => {
     setValue(`notifications.${type}`, value);
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <div className="text-center mb-6">
+      <div className="mb-6 text-center">
         <h2 className="text-2xl font-semibold">Preferences</h2>
         <p className="text-muted-foreground">
           Customize your experience and notification settings
@@ -97,26 +117,28 @@ export function PreferencesForm({ onSubmit, onPrevious, isLoading, initialData }
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label className="text-base">Email Notifications</Label>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 Receive important updates via email
               </p>
             </div>
             <Switch
               checked={watchedNotifications?.email || false}
-              onCheckedChange={(value) => handleNotificationChange("email", value)}
+              onCheckedChange={value =>
+                handleNotificationChange('email', value)
+              }
             />
           </div>
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label className="text-base">Push Notifications</Label>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 Get real-time alerts in the browser
               </p>
             </div>
             <Switch
               checked={watchedNotifications?.push || false}
-              onCheckedChange={(value) => handleNotificationChange("push", value)}
+              onCheckedChange={value => handleNotificationChange('push', value)}
             />
           </div>
         </CardContent>
@@ -138,13 +160,15 @@ export function PreferencesForm({ onSubmit, onPrevious, isLoading, initialData }
             <Label>Interface Language</Label>
             <Select
               value={watchedLanguage}
-              onValueChange={(value) => setValue("language", value)}
+              onValueChange={value => setValue('language', value)}
             >
-              <SelectTrigger className={errors.language ? "border-red-500" : ""}>
+              <SelectTrigger
+                className={errors.language ? 'border-red-500' : ''}
+              >
                 <SelectValue placeholder="Select language" />
               </SelectTrigger>
               <SelectContent>
-                {LANGUAGES.map((language) => (
+                {LANGUAGES.map(language => (
                   <SelectItem key={language.value} value={language.value}>
                     {language.label}
                   </SelectItem>
@@ -172,28 +196,31 @@ export function PreferencesForm({ onSubmit, onPrevious, isLoading, initialData }
         <CardContent>
           <div className="space-y-3">
             <Label>Theme</Label>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {THEMES.map((theme) => (
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+              {THEMES.map(theme => (
                 <div
                   key={theme.value}
-                  className={`
-                    relative cursor-pointer rounded-lg border-2 p-4 transition-all
-                    ${watchedTheme === theme.value 
-                      ? "border-primary bg-primary/5" 
-                      : "border-muted hover:border-primary/50"
-                    }
-                  `}
-                  onClick={() => setValue("theme", theme.value as "light" | "dark" | "system")}
+                  className={`relative cursor-pointer rounded-lg border-2 p-4 transition-all ${
+                    watchedTheme === theme.value
+                      ? 'border-primary bg-primary/5'
+                      : 'border-muted hover:border-primary/50'
+                  } `}
+                  onClick={() =>
+                    setValue(
+                      'theme',
+                      theme.value as 'light' | 'dark' | 'system'
+                    )
+                  }
                 >
-                  <div className="text-center space-y-2">
+                  <div className="space-y-2 text-center">
                     <div className="text-2xl">{theme.icon}</div>
                     <div className="font-medium">{theme.label}</div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-muted-foreground text-sm">
                       {theme.description}
                     </div>
                   </div>
                   {watchedTheme === theme.value && (
-                    <div className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary" />
+                    <div className="bg-primary absolute top-2 right-2 h-2 w-2 rounded-full" />
                   )}
                 </div>
               ))}
@@ -208,9 +235,9 @@ export function PreferencesForm({ onSubmit, onPrevious, isLoading, initialData }
       {/* Navigation Buttons */}
       <div className="flex justify-between pt-4">
         {onPrevious && (
-          <Button 
-            type="button" 
-            variant="outline" 
+          <Button
+            type="button"
+            variant="outline"
             onClick={onPrevious}
             disabled={isLoading}
           >
@@ -218,12 +245,8 @@ export function PreferencesForm({ onSubmit, onPrevious, isLoading, initialData }
           </Button>
         )}
         <div className="flex-1" />
-        <Button 
-          type="submit" 
-          disabled={isLoading}
-          className="px-8"
-        >
-          {isLoading ? "Completing Setup..." : "Complete Setup"}
+        <Button type="submit" disabled={isLoading} className="px-8">
+          {isLoading ? 'Completing Setup...' : 'Complete Setup'}
         </Button>
       </div>
     </form>
