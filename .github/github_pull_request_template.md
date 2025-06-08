@@ -3,14 +3,14 @@
 
 ## Type of Change
 <!-- Please select the appropriate type from the list below by replacing [ ] with [x] -->
-- [ ] feat: New feature
-- [ ] fix: Bug fix
-- [ ] docs: Documentation only changes
-- [ ] style: Changes that do not affect the meaning of the code
-- [ ] refactor: Code change that neither fixes a bug nor adds a feature
-- [ ] perf: Code change that improves performance
-- [ ] test: Adding missing tests or correcting existing tests
-- [ ] chore: Changes to the build process or auxiliary tools
+- [ ] Feature – New functionality or modules
+- [ ] Bug – Defects to be fixed
+- [ ] Docs – Documentation tasks
+- [ ] Has-PR – Issue has an associated pull request
+- [ ] Blocked – Work is blocked
+- [ ] Priority-High – Highest priority
+- [ ] Priority-Medium – Medium priority
+- [ ] Priority-Low – Lowest priority
 
 ## Related Issues
 <!-- List any related issues using the GitHub issue reference format (#123) -->

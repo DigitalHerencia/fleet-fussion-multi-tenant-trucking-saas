@@ -1,7 +1,7 @@
 name: Documentation Request
 description: Request new or updated documentation
 title: "[Docs]: "
-labels: ["documentation"]
+labels: ["Docs"]
 body:
   - type: textarea
     id: description

@@ -15,7 +15,7 @@ jobs:
       - name: Add or Move Card on Project Board
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GH_TOKEN }}
           script: |
             // Project and column IDs
             const projectId = "P4_kwDOA2w7OM4";

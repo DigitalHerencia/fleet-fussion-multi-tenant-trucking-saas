@@ -36,11 +36,11 @@ jobs:
             let label = '';
             
             if (branch.startsWith('feature/')) {
-              label = 'feature';
+              label = 'Feature';
             } else if (branch.startsWith('fix/')) {
-              label = 'bug';
+              label = 'Bug';
             } else if (branch.startsWith('docs/')) {
-              label = 'documentation';
+              label = 'Docs';
             }
             
             if (label) {
@@ -66,6 +66,6 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: parseInt(issueNumber),
-                labels: ['has-pr']
+                labels: ['Has-PR']
               });
             }

@@ -20,5 +20,5 @@
   "block_creations": false,
   "required_conversation_resolution": true,
   "name_pattern": "main",
-  "branch_name_pattern": "^(main|feature\\/.*|fix\\/.*|docs\\/.*)$"
+  "branch_name_pattern": "^(feature\\/.*|fix\\/.*|docs\\/.*|codex\\/.*)$"
 }
