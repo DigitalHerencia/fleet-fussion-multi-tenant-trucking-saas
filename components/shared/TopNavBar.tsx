@@ -1,10 +1,12 @@
 'use client';
 
-import { Bell, MapPinned, Menu, Moon, User } from 'lucide-react';
+import { MapPinned, Menu, Moon, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 import { useAuth } from '@/components/auth/context';
+import { GlobalSearchBar } from '@/components/shared/GlobalSearchBar';
+import { NotificationCenter } from '@/components/shared/NotificationCenter';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -57,20 +59,9 @@ export function TopNavBar({ className }: TopNavBarProps) {
           <span className="hidden text-xl font-medium text-zinc-200 sm:block">
             {organization.name || ' '}
           </span>
+          <GlobalSearchBar />
           {/* Notifications */}
-          <div className="flex items-center gap-2">
-            <Button
-              variant="default"
-              size="sm"
-              className="relative h-7 w-7 rounded-4xl border border-zinc-400 p-0 hover:bg-zinc-900"
-            >
-              <Bell className="h-4 w-4 text-zinc-400" />
-              <Badge
-                variant="destructive"
-                className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center p-0 text-xs"
-              ></Badge>
-            </Button>
-          </div>
+          <NotificationCenter />
           {/* User Profile */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
