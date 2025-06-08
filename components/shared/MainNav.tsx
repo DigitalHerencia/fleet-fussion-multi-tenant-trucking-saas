@@ -80,6 +80,12 @@ export function MainNav({
       icon: <BarChart2 className="h-5 w-5" />,
     },
     {
+      key: 'admin',
+      href: `/${orgId}/admin`,
+      label: 'Admin',
+      icon: <Settings className="h-5 w-5" />,
+    },
+    {
       key: 'settings',
       href: `/${orgId}/settings`,
       label: 'Settings',

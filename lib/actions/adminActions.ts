@@ -208,3 +208,69 @@ export async function getOrganizationStatsAction(
     };
   }
 }
+
+/**
+ * Bulk invite users (placeholder implementation)
+ */
+export async function inviteUsersAction(orgId: string) {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    // Implementation would send invitations via Clerk or email provider
+    console.log('Inviting users for org', orgId);
+    revalidatePath(`/${orgId}/admin`);
+    return { success: true };
+  } catch (error) {
+    console.error('Invite users error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to invite users',
+    };
+  }
+}
+
+export async function activateUsersAction(orgId: string) {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+    await prisma.user.updateMany({
+      where: { organizationId: orgId },
+      data: { isActive: true },
+    });
+    revalidatePath(`/${orgId}/admin`);
+    return { success: true };
+  } catch (error) {
+    console.error('Activate users error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to activate users',
+    };
+  }
+}
+
+export async function deactivateUsersAction(orgId: string) {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+    await prisma.user.updateMany({
+      where: { organizationId: orgId },
+      data: { isActive: false },
+    });
+    revalidatePath(`/${orgId}/admin`);
+    return { success: true };
+  } catch (error) {
+    console.error('Deactivate users error:', error);
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : 'Failed to deactivate users',
+    };
+  }
+}
