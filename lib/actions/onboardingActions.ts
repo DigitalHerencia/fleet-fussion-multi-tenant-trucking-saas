@@ -1,10 +1,10 @@
 "use server";
 
-import { currentUser } from '@clerk/nextjs/server';
-import { clerkClient } from '@clerk/nextjs/server';
-import { db, handleDatabaseError } from '@/lib/database/db';
+import { currentUser , clerkClient } from '@clerk/nextjs/server';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+
+import { db, handleDatabaseError } from '@/lib/database/db';
 import type { 
   OnboardingStepData, 
   CompanySetupData, 
@@ -177,7 +177,7 @@ export async function setClerkMetadata(data: OnboardingData): Promise<SetClerkMe
     }
 
     let organization;
-    let baseSlug = data.orgSlug;
+    const baseSlug = data.orgSlug;
 
     try {
         // Reverted to using query for initial check as well.

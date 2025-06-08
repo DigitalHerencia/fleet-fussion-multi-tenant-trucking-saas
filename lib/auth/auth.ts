@@ -1,9 +1,10 @@
 "use server"
 
 import { auth, currentUser } from "@clerk/nextjs/server"
+import { redirect } from "next/navigation"
+
 import { DatabaseQueries } from "@/lib/database/db"
 import { ClerkUserMetadata, ClerkOrganizationMetadata, UserContext } from "@/types/auth"
-import { redirect } from "next/navigation"
 
 // NOTE: UserContext, ClerkUserMetadata, ClerkOrganizationMetadata, etc. should be imported from '@/types/auth'
 

@@ -1,16 +1,19 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { BarChart, Calendar, Download, FileText, TrendingUp } from "lucide-react"
+import { useParams } from "next/navigation"
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Progress } from "@/components/ui/progress"
+import { getIftaDataForPeriod, getIftaTripData, getIftaFuelPurchases } from "@/lib/fetchers/iftaFetchers"
+
 import { IftaReportTable } from "./ifta-report-table"
 import { IftaTripTable } from "./ifta-trip-table"
-import { BarChart, Calendar, Download, FileText, TrendingUp } from "lucide-react"
-import { getIftaDataForPeriod, getIftaTripData, getIftaFuelPurchases } from "@/lib/fetchers/iftaFetchers"
-import { useParams } from "next/navigation"
+
 
 interface IftaData {
   summary: {

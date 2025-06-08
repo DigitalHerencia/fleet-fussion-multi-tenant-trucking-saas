@@ -1,12 +1,14 @@
 "use client"
 
 import { useState } from "react"
+import { AlertTriangle, CheckCircle, Clock, FileText, TrendingUp } from "lucide-react"
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { AlertTriangle, CheckCircle, Clock, FileText, TrendingUp } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
+
 import { DriverComplianceTable } from "./driver-compliance-table"
 import { VehicleComplianceTable } from "./vehicle-compliance-table"
 import { ComplianceDocuments } from "./compliance-documents"

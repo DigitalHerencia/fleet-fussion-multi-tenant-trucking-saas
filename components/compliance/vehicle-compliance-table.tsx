@@ -1,11 +1,12 @@
 "use client"
 
 import { useState, type JSX } from "react"
+import { MoreHorizontal, AlertCircle, CheckCircle, Clock } from "lucide-react"
+import type { ColumnDef } from "@tanstack/react-table"
+
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { MoreHorizontal, AlertCircle, CheckCircle, Clock } from "lucide-react"
-import type { ColumnDef } from "@tanstack/react-table"
 
 // Define the Vehicle type
 export interface Vehicle {

@@ -57,7 +57,7 @@ function toPublicVehicle(prismaVehicle: any): Vehicle {
   }
 
   // Map Prisma type to VehicleType (ensure fallback)
-  let type: VehicleType = ["tractor", "trailer", "straight_truck", "other"].includes(prismaVehicle.type)
+  const type: VehicleType = ["tractor", "trailer", "straight_truck", "other"].includes(prismaVehicle.type)
     ? prismaVehicle.type
     : "other";
 

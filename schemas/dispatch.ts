@@ -4,6 +4,7 @@
  */
 
 import { z } from "zod"
+
 import { addressSchema, contactSchema } from "./shared"
 
 // Location validation schema

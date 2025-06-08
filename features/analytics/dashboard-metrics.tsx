@@ -4,7 +4,6 @@
  * Displays key performance indicators and metrics cards
  */
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { 
   Truck, 
   Users, 
@@ -15,8 +14,11 @@ import {
   AlertTriangle,
   CheckCircle
 } from 'lucide-react'
-import { getDashboardSummary, type DashboardSummary } from "@/lib/fetchers/analyticsFetchers";
 import { FC } from 'react';
+
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { getDashboardSummary, type DashboardSummary } from "@/lib/fetchers/analyticsFetchers";
+
 
 interface MetricCardProps {
   title: string

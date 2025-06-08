@@ -2,8 +2,9 @@
 
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
-import db from "@/lib/database/db";
 import { z } from "zod";
+
+import db from "@/lib/database/db";
 
 const tripDataSchema = z.object({
   date: z.string(),

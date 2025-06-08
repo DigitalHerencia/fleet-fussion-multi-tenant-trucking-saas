@@ -3,13 +3,14 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Bell, Globe, Monitor } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PreferencesSchema, type PreferencesFormData } from "@/schemas/onboarding";
-import { Bell, Globe, Monitor } from "lucide-react";
 
 interface PreferencesFormProps {
   onSubmit: (data: PreferencesFormData) => void;

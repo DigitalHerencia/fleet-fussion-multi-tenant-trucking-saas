@@ -1,4 +1,5 @@
 import { Page, expect } from '@playwright/test';
+
 import type { TestUser } from './test-data';
 
 export class AuthHelpers {

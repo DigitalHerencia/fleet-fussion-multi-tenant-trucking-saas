@@ -1,6 +1,7 @@
 "use client"
 
 import type { ColumnDef } from "@tanstack/react-table"
+
 import { Button } from "@/components/ui/button"
 
 // Types must be duplicated or imported from a shared types file

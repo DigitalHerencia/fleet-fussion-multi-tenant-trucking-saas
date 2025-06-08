@@ -5,8 +5,9 @@ import { useEffect, useRef, useState } from "react";
 import { useSignIn, useUser, useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { MapPinned } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import Image from "next/image";
+
+import { Button } from "@/components/ui/button";
 
 // Add this at the top of the file, before any usage of window.Clerk
 declare global {

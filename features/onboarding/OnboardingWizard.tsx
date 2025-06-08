@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { CheckCircle } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -13,7 +15,6 @@ import type { OnboardingStatus, OnboardingStepData } from "@/types/onboarding";
 import { ProfileSetupForm } from "@/components/onboarding/ProfileSetupForm";
 import { CompanySetupForm } from "@/components/onboarding/CompanySetupForm";
 import { PreferencesForm } from "@/components/onboarding/PreferencesForm";
-import { CheckCircle } from "lucide-react";
 
 interface OnboardingWizardProps {
   initialStatus?: OnboardingStatus | null;

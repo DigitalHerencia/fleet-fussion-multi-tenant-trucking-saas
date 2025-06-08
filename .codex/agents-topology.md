@@ -1,4 +1,7 @@
-# FleetFusion Agent Topology
+
+---
+
+### 3. `agents-topology.md`
 
 ```mermaid
 graph TD
@@ -63,19 +66,3 @@ graph TD
   class codex,copilot,ghAI agent
   class workflows,project,milestones automation
   class webapp,api,db fleet
-```
-
-### Legend
-- 🚛 **FleetFusion Platform**: Core application components
-- 🤖 **AI Agents**: Automated code assistance and generation
-- ⚡ **GitHub Automation**: Workflow and project management
-- 🛠 **MCP Servers**: Tool integrations and data sources
-
-### Workflow Integration
-1. **Code Changes**: Agents create feature branches with proper naming
-2. **Pull Requests**: Auto-labeled, assigned, and linked to issues
-3. **Project Board**: Cards move automatically based on labels and state
-4. **Milestones**: Issues auto-assigned based on priority and type
-5. **Deployment**: Vercel deploys on merge to main
-
-> **Every commit flows through this topology to ensure quality and traceability.**

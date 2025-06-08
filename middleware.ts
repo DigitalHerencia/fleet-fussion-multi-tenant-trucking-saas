@@ -1,6 +1,7 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+
 import { RouteProtection } from "@/lib/auth/permissions";
 import type { UserContext, ClerkOrganizationMetadata } from "@/types/auth";
 import { SystemRoles, getPermissionsForRole, type SystemRole } from "@/types/abac";

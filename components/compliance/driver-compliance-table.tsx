@@ -1,8 +1,9 @@
+import { MoreHorizontal } from "lucide-react";
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal } from "lucide-react";
 import { getDriverComplianceStatuses, type DriverComplianceRow } from "@/lib/fetchers/complianceFetchers";
 
 interface DriverComplianceTableProps {

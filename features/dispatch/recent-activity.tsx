@@ -1,5 +1,6 @@
-import { getRecentDispatchActivity } from "@/lib/fetchers/dispatchFetchers";
 import { Activity, Clock } from "lucide-react";
+
+import { getRecentDispatchActivity } from "@/lib/fetchers/dispatchFetchers";
 
 interface ActivityItem {
   id: string;

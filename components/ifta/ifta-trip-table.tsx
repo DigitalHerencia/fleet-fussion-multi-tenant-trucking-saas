@@ -1,11 +1,12 @@
 "use client"
 
+import { SearchIcon, UploadIcon, DownloadIcon, FilterIcon, FileTextIcon, FileWarningIcon, FileCheckIcon } from "lucide-react"
+import React, { useState } from "react"
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { SearchIcon, UploadIcon, DownloadIcon, FilterIcon, FileTextIcon, FileWarningIcon, FileCheckIcon } from "lucide-react"
-import React, { useState } from "react"
 import type { TripReport } from "@/types/ifta"
 
 interface IftaTripTableProps {

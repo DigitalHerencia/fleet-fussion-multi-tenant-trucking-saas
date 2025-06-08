@@ -1,8 +1,9 @@
 import { Suspense } from "react"
+import { CalendarIcon, ClipboardCheck, FileText, TruckIcon, UserIcon } from "lucide-react"
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { CalendarIcon, ClipboardCheck, FileText, TruckIcon, UserIcon } from "lucide-react"
 import { DriverComplianceTable } from "@/components/compliance/driver-compliance-table"
 import { VehicleComplianceTable } from "@/components/compliance/vehicle-compliance-table"
 import { ComplianceDocuments } from "@/components/compliance/compliance-documents"

@@ -1,6 +1,10 @@
 "use client"
 
 import { useState, type ReactNode } from "react"
+import { MapPin, Calendar, DollarSign, Package, FileText, Truck, User, Weight, Route } from "lucide-react"
+import Link from "next/link"
+import type { LoadStatus, LoadPriority, LoadStatusEvent } from "@prisma/client"
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -8,12 +12,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
-import { MapPin, Calendar, DollarSign, Package, FileText, Truck, User, Weight, Route } from "lucide-react"
 import { formatDate, formatCurrency } from "@/lib/utils/utils"
-import Link from "next/link"
 import { DocumentUpload, DocumentListEmpty } from "@/components/shared/DocumentUpload"
 import type { Customer, LoadAssignedDriver, LoadAssignedVehicle, LoadAssignedTrailer, EquipmentRequirement, CargoDetails, Rate, LoadDocument, TrackingUpdate, BrokerInfo, FactoringInfo, LoadAlert } from "@/types/dispatch"
-import type { LoadStatus, LoadPriority, LoadStatusEvent } from "@prisma/client"
+
 
 interface Driver {
   id: string

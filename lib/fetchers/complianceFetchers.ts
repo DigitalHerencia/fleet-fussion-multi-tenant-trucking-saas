@@ -1,8 +1,11 @@
 import { HosLog } from "./../../types/compliance";
+
 'use server';
 
-import prisma from '@/lib/database/db';
 import { auth } from '@clerk/nextjs/server';
+import { z } from 'zod';
+
+import { parsePermission } from '@/lib/auth/permissions';
 import {
   complianceDocumentFilterSchema,
   hosFilterSchema,
@@ -10,8 +13,7 @@ import {
   maintenanceFilterSchema,
   safetyEventFilterSchema
 } from '@/schemas/compliance';
-import { parsePermission } from '@/lib/auth/permissions';
-import { z } from 'zod';
+import prisma from '@/lib/database/db';
 import { handleError } from "@/lib/errors/handleError";
 import { getCachedData, setCachedData, CACHE_TTL } from "@/lib/cache/auth-cache";
 import { calculateHosStatus } from '@/lib/utils/hos';
@@ -590,7 +592,7 @@ export async function getHOSLogs(
     const logs = hosDocs.map(doc => {
       let totalDriveTime = 0;
       let totalOnDutyTime = 0;
-      let violations: any[] = [];
+      const violations: any[] = [];
       let meta = doc.metadata;
       if (typeof meta === 'string') {
         try { meta = JSON.parse(meta); } catch { meta = {}; }

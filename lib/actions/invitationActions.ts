@@ -1,8 +1,7 @@
 
 'use server';
 
-import { auth } from '@clerk/nextjs/server';
-import { clerkClient } from '@clerk/nextjs/server';
+import { auth , clerkClient } from '@clerk/nextjs/server';
 import { revalidatePath } from 'next/cache';
 
 export interface InvitationData {

@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+
 import { calculateHosStatus } from '../lib/utils/hos'
 import { HosLog, HosEntry } from '../types/compliance'
 

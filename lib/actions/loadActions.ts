@@ -1,15 +1,17 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-import { db } from "@/lib/database/db";
 import { revalidatePath } from "next/cache";
+import { LoadStatus as PrismaLoadStatus } from '@prisma/client';
+
+import { db } from "@/lib/database/db";
 import {
   updateLoadSchema,
   loadAssignmentSchema,
   type UpdateLoadInput,
   type LoadAssignmentInput,
 } from "@/schemas/dispatch";
-import { LoadStatus as PrismaLoadStatus } from '@prisma/client';
+
 
 /**
  * Update an existing load with the provided fields.

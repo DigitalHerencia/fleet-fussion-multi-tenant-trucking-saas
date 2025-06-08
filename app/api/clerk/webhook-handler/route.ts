@@ -2,14 +2,15 @@
 
 import { Webhook } from 'svix';
 import { NextRequest, NextResponse } from 'next/server';
-import { DatabaseQueries, db } from '@/lib/database/db';
-// Clerk backend types
 import type {
   DeletedObjectJSON,
   OrganizationJSON,
   OrganizationMembershipJSON,
   UserJSON,
 } from '@clerk/backend';
+
+import { DatabaseQueries, db } from '@/lib/database/db';
+// Clerk backend types
 
 const CLERK_WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET ?? '';
 if (!CLERK_WEBHOOK_SECRET) {

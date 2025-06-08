@@ -1,7 +1,8 @@
 import Link from "next/link"
-import { cn } from "@/lib/utils/utils"
 import { Home, Truck, Users, ClipboardList, FileText, BarChart2, Settings, ChevronLeft, ChevronRight, Activity, LogOut } from "lucide-react"
 import { useClerk } from '@clerk/nextjs'
+
+import { cn } from "@/lib/utils/utils"
 
 // MainNavProps interface: defines props for MainNav component
 interface MainNavProps {

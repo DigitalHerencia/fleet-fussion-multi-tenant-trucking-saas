@@ -1,7 +1,8 @@
 // Shared DocumentUpload component for document upload UI/logic reuse
-import { Button } from "@/components/ui/button"
 import { FileText } from "lucide-react"
 import React from "react"
+
+import { Button } from "@/components/ui/button"
 
 interface DocumentUploadProps {
   label?: string

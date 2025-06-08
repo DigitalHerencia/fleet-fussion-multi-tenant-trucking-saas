@@ -1,9 +1,11 @@
 "use client"
 
 import type React from "react"
+import { CreditCard, HelpCircle } from "lucide-react"
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { CreditCard, HelpCircle } from "lucide-react"
+
 import { CompanySettings } from "./company-settings"
 import { UserSettings } from "./user-settings"
 import { NotificationSettings } from "./notification-settings"

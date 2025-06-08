@@ -1,5 +1,9 @@
 "use client"
 
+import { Bell, MapPinned, Menu, Moon, User } from "lucide-react"
+import { useRouter } from "next/navigation"
+import Link from "next/link"
+
 import { useAuth } from "@/components/auth/context"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -12,9 +16,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Bell, MapPinned, Menu, Moon, User } from "lucide-react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
 
 interface TopNavBarProps {
   className?: string

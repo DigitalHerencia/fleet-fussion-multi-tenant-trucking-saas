@@ -5,12 +5,6 @@
  */
 
 import { Suspense } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
-import { DriverComplianceTable } from '@/components/compliance/driver-compliance-table'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
 import { 
   AlertTriangle, 
   CheckCircle, 
@@ -22,6 +16,13 @@ import {
   Users,
   Truck
 } from 'lucide-react'
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
+import { DriverComplianceTable } from '@/components/compliance/driver-compliance-table'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
 
 
 export default async function ComplianceDashboardPage({ params }: { params: Promise<{ orgId: string }> }) {

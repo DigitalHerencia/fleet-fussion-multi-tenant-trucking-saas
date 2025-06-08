@@ -1,7 +1,8 @@
+import Link from "next/link";
+
 import { listDriversByOrg } from "@/lib/fetchers/driverFetchers";
 import { DriverCard } from "@/components/drivers/driver-card";
 import { DriverFormFeature } from "@/features/drivers/DriverFormFeature";
-import Link from "next/link";
 import type { DriverFilters } from "@/types/drivers";
 
 interface DriverListPageProps {

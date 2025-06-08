@@ -1,11 +1,12 @@
 "use client"
 
+import { useState } from "react"
+
 import { useIsMobile } from "@/hooks/use-mobile"
 import { TopNavBar } from "@/components/shared/TopNavBar"
 import { MainNav } from "@/components/shared/MainNav"
 import { MobileNav } from "@/components/shared/MobileNav"
 import { useUserContext } from "@/components/auth/context"
-import { useState } from "react"
 
 export default function ProtectedLayout({
   children,

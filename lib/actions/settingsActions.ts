@@ -1,5 +1,6 @@
 "use server";
 import { z } from "zod";
+
 import { CompanyProfileSchema } from "@/schemas/settings";
 
 export async function updateCompanyProfileAction(orgId: string, data: unknown) {

@@ -1,11 +1,13 @@
 import type React from "react"
+
 import "@/app/globals.css"
-import { AuthProvider } from "@/components/auth/context"
-import { ThemeProvider } from "@/components/shared/ThemeProvider"
 import { ClerkProvider } from "@clerk/nextjs"
 import type { Metadata } from "next"
 // Import Next.js font utilities
 import { Inter, Playfair_Display } from "next/font/google"
+
+import { ThemeProvider } from "@/components/shared/ThemeProvider"
+import { AuthProvider } from "@/components/auth/context"
 
 // Choose Inter for body (clean, modern, highly readable)
 // Choose Playfair Display for headers (elegant, strong contrast)

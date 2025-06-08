@@ -5,12 +5,7 @@
     "neon": {
       "type": "stdio",
       "command": "npx",
-      "args": [
-        "-y",
-        "@neondatabase/mcp-server-neon",
-        "start",
-        "${NEON_API_KEY}"
-      ],
+      "args": ["-y", "@neondatabase/mcp-server-neon", "start", "${NEON_API_KEY}"],
       "env": {
         "DATABASE_URL": "${DATABASE_URL}"
       }
@@ -18,14 +13,7 @@
     "clerk": {
       "type": "stdio",
       "command": "npx",
-      "args": [
-        "-y",
-        "@clerk/agent-toolkit",
-        "-p",
-        "local-mcp",
-        "--secret-key",
-        "${CLERK_SECRET_KEY}"
-      ],
+      "args": ["-y", "@clerk/agent-toolkit", "-p", "local-mcp", "--secret-key", "${CLERK_SECRET_KEY}"],
       "env": {
         "CLERK_API_KEY": "${CLERK_SECRET_KEY}",
         "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": "${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}"
@@ -34,10 +22,7 @@
     "git": {
       "type": "stdio",
       "command": "npx",
-      "args": [
-        "-y",
-        "@cyanheads/git-mcp-server"
-      ],
+      "args": ["-y", "@cyanheads/git-mcp-server"],
       "env": {
         "GIT_WORKING_DIRECTORY": "./"
       }
@@ -45,10 +30,7 @@
     "github": {
       "type": "stdio",
       "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-github"
-      ],
+      "args": ["-y", "@modelcontextprotocol/server-github"],
       "env": {
         "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}",
         "GITHUB_WORKING_DIRECTORY": "./"
@@ -57,18 +39,12 @@
     "filesystem": {
       "type": "stdio",
       "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-filesystem",
-        "./"
-      ]
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "./"]
     },
     "playwright": {
       "type": "stdio",
       "command": "npx",
-      "args": [
-        "@playwright/mcp@latest"
-      ]
+      "args": ["@playwright/mcp@latest"]
     }
   }
 }

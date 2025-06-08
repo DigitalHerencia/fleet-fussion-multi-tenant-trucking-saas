@@ -1,7 +1,8 @@
 // features/dashboard/fleet-overview-header.tsx
+import { RefreshCcw } from "lucide-react";
+
 import { getDashboardSummary } from "@/lib/fetchers/kpiFetchers";
 import type { DashboardSummary } from "@/types/kpi";
-import { RefreshCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface FleetOverviewHeaderProps {

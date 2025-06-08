@@ -1,10 +1,11 @@
 "use client"
 
+import { FileText, Download, Eye, MoreHorizontal } from "lucide-react"
+import { ColumnDef } from "@tanstack/react-table"
+
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
-import { FileText, Download, Eye, MoreHorizontal } from "lucide-react"
-import { ColumnDef } from "@tanstack/react-table"
 import { ComplianceDocument } from "@/types/compliance"
 import { DocumentUpload, DocumentListEmpty } from "@/components/shared/DocumentUpload"
 

@@ -2,10 +2,12 @@
 
 import { useState } from "react"
 import { Plus, Search } from "lucide-react"
+
 import type { Vehicle } from "@/types/vehicles"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { VehicleCard } from "@/components/vehicles/vehicle-card"
+
 import AddVehicleDialog from "./add-vehicle-dialog"
 
 interface Props {

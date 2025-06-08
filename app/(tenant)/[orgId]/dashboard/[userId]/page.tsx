@@ -5,6 +5,7 @@
  */
 
 import { Suspense } from 'react'
+
 import FleetOverviewHeader from '@/features/dashboard/fleet-overview-header'
 import KpiGrid from '@/features/dashboard/kpi-grid'
 import QuickActionsWidget from '@/features/dashboard/quick-actions-widget'

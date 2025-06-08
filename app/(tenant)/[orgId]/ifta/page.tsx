@@ -1,14 +1,14 @@
 import type React from "react"
-import { Suspense } from "react"
+import { Suspense , cache } from "react"
+import { BarChart3, CalendarIcon, FileText, MapPin } from "lucide-react"
+import { notFound } from "next/navigation"
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { BarChart3, CalendarIcon, FileText, MapPin } from "lucide-react"
 import { PageHeader } from "@/components/shared/PageHeader"
 import { IftaReportTableClient, IftaTripTableClient } from "@/components/ifta/ifta-tables"
 import { getIftaDataForPeriod, getIftaReports } from "@/lib/fetchers/iftaFetchers"
-import { notFound } from "next/navigation"
-import { cache } from "react"
 import type { IFTAReport, IFTATrip } from "@/components/ifta/ifta-columns"
 
 

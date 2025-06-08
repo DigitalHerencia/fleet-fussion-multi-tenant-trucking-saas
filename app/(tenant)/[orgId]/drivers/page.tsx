@@ -1,7 +1,8 @@
-import { listDriversByOrg } from "@/lib/fetchers/driverFetchers";
-import DriverListPage from "@/features/drivers/DriverListPage";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
+
+import { listDriversByOrg } from "@/lib/fetchers/driverFetchers";
+import DriverListPage from "@/features/drivers/DriverListPage";
 
 export default async function DriversPage({
   params,

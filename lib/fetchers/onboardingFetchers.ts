@@ -1,6 +1,7 @@
-import { SystemRole } from "./../../types/abac";
 import { db, handleDatabaseError } from '@/lib/database/db';
 import type { OnboardingStatus } from '@/types/onboarding';
+
+import { SystemRole } from "./../../types/abac";
 
 export async function getOnboardingStatus(userId: string, orgId?: string): Promise<OnboardingStatus | null> {
   try {

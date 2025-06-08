@@ -1,5 +1,6 @@
 import { Suspense } from "react"
 import { DollarSign, Truck, BarChart3, User, CalendarIcon, Download } from "lucide-react"
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"

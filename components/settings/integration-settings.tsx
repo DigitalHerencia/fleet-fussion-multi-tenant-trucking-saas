@@ -1,12 +1,13 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
+import { AlertCircle, CheckCircle, ExternalLink, Clock } from "lucide-react"
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
-import Image from "next/image"
-import { AlertCircle, CheckCircle, ExternalLink, Clock } from "lucide-react"
 
 // Add 'comingSoon' as an optional property to the integration type
 interface Integration {

@@ -5,6 +5,10 @@
  */
 
 import { Suspense, type JSX } from "react";
+import { Clock } from "lucide-react";
+import { notFound } from "next/navigation";
+import { use } from "react";
+
 import {
   Card,
   CardContent,
@@ -15,15 +19,12 @@ import {
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock } from "lucide-react";
 import { getDriverById } from "@/lib/fetchers/driverFetchers";
-import { notFound } from "next/navigation";
 import { DriverFormFeature } from "@/features/drivers/DriverFormFeature";
 import { DriverPerformance } from "@/components/analytics/driver-performance";
 import { getDriverAnalytics } from "@/lib/fetchers/analyticsFetchers";
 import { DocumentUploadForm } from "@/components/compliance/DocumentUploadForm";
 import { getDriverHOSStatus } from "@/lib/fetchers/complianceFetchers";
-import { use } from "react";
 import { AssignmentDialogButton } from "@/features/drivers/AssignmentDialogButton"; // new client component
 
 // Helper to safely extract assignment info

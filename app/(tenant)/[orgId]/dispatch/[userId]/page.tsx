@@ -1,7 +1,8 @@
+import type { LoadStatus, LoadPriority, LoadStatusEvent } from "@prisma/client"
+
 import { DispatchBoard } from "@/components/dispatch/dispatch-board"
 import { listLoadsByOrg, getAvailableDriversForLoad, getAvailableVehiclesForLoad } from "@/lib/fetchers/dispatchFetchers"
 import type { Customer, LoadAssignedDriver, LoadAssignedVehicle, LoadAssignedTrailer, EquipmentRequirement, CargoDetails, Rate, LoadDocument, TrackingUpdate, BrokerInfo, FactoringInfo, LoadAlert } from "@/types/dispatch"
-import type { LoadStatus, LoadPriority, LoadStatusEvent } from "@prisma/client"
 
 interface loadList {  
   id: string

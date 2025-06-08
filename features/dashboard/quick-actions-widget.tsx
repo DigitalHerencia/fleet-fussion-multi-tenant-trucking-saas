@@ -2,9 +2,10 @@
 // features/dashboard/quick-actions-widget.tsx
 "use client"; // Keep as client component if actions involve client-side routing or state
 
-import { Button } from "@/components/ui/button"; // Assuming this exists
 import { PlusCircle, CalendarClock, AlertTriangle, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
+
+import { Button } from "@/components/ui/button"; // Assuming this exists
 
 export default function QuickActionsWidget() {
   const router = useRouter();

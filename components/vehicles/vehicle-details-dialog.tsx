@@ -1,15 +1,17 @@
 "use client"
 
 import { useState } from "react"
+import { Truck, Gauge, FileText, PenToolIcon as Tool, AlertTriangle, MapPin } from "lucide-react"
+import Link from "next/link"
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
-import { Truck, Gauge, FileText, PenToolIcon as Tool, AlertTriangle, MapPin } from "lucide-react"
 import { formatDate, formatCurrency } from "@/lib/utils/utils"
-import Link from "next/link"
+
 
 interface Vehicle {
   id: string

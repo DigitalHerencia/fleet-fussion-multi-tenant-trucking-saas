@@ -1,15 +1,16 @@
 "use client"
 
 import { useState } from "react"
+import { Phone, Mail, Calendar, FileText, Truck, MapPin, AlertTriangle } from "lucide-react"
+import Link from "next/link"
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Phone, Mail, Calendar, FileText, Truck, MapPin, AlertTriangle } from "lucide-react"
 import { formatDate } from "@/lib/utils/utils"
-import Link from "next/link"
 import { DocumentUpload, DocumentListEmpty } from "@/components/shared/DocumentUpload"
 
 interface Driver {

@@ -1,5 +1,8 @@
 "use client"
 
+import { User } from "lucide-react"
+import { useRouter } from "next/navigation"
+
 import { useAuth } from "@/components/auth/context"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -11,8 +14,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { User } from "lucide-react"
-import { useRouter } from "next/navigation"
 
 export function UserNav() {
   const { user, organization } = useAuth()

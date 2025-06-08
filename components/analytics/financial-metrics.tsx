@@ -1,6 +1,7 @@
 "use client"
 
 import { Line, LineChart, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer, Bar, BarChart } from "recharts"
+
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { ExpenseMetrics, ProfitabilityMetrics } from "@/types/analytics" // Assuming types are defined in @/types
 

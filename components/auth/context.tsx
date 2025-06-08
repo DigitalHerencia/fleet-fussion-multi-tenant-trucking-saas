@@ -10,6 +10,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react'
 import { useUser, useOrganization } from '@clerk/nextjs'
+
 import type { ClerkUserMetadata, ClerkOrganizationMetadata } from '@/types/auth'
 import { 
   AuthState, 

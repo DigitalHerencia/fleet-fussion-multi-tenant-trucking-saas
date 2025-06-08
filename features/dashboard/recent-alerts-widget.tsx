@@ -1,7 +1,8 @@
 // features/dashboard/recent-alerts-widget.tsx
+import { AlertTriangle, Clock } from "lucide-react";
+
 import { getDashboardAlertsAction } from "@/lib/actions/dashboardActions";
 import type { DashboardAlert } from "@/lib/actions/dashboardActions";
-import { AlertTriangle, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface Alert extends DashboardAlert {}
