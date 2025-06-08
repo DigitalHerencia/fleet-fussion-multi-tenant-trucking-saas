@@ -78,7 +78,7 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ## Development Workflow
 
-- **Branch Names**: `feature/xyz`, `fix/abc`, `docs/doc-change`
+- **Branch Names**: `feature/xyz`, `fix/abc`, `docs/doc-change`, `config/setup`
 - **PR Titles**: `[type]: short description` (e.g., `feat: add driver dashboard`)
 - **Project Board**: All issues/PRs are tracked on the [Project Board](https://github.com/users/DigitalHerencia/projects/4).
 - **Milestones**: Features are grouped by release milestones (e.g., Q3 2025).

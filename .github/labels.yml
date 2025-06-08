@@ -1,0 +1,29 @@
+labels:
+  - name: Bug
+    color: d73a4a
+  - name: Feature
+    color: 0e8a16
+  - name: Documentation
+    color: 0075ca
+  - name: Code-Quality
+    color: cfd3d7
+  - name: Testing
+    color: fbca04
+  - name: Configuration
+    color: f9d0c4
+  - name: Priority-High
+    color: b60205
+  - name: Priority-Medium
+    color: d876e3
+  - name: Priority-Low
+    color: a2eeef
+  - name: Has-PR
+    color: 5319e7
+  - name: Blocked
+    color: e4e669
+  - name: Technical-Debt
+    color: 8a2be2
+  - name: Codex
+    color: a371f7
+  - name: Copilot
+    color: 33aa55

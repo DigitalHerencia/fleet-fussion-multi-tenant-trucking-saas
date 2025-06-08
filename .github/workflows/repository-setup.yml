@@ -1,0 +1,57 @@
+name: "Repository Setup"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  configure:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+      administration: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure labels
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const YAML = require('yaml');
+            const labels = YAML.parse(fs.readFileSync('.github/labels.yml', 'utf8')).labels;
+            for (const label of labels) {
+              try {
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label.name,
+                  color: label.color.replace('#',''),
+                });
+                console.log(`Created label ${label.name}`);
+              } catch (error) {
+                if (error.status === 422) {
+                  await github.rest.issues.updateLabel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    name: label.name,
+                    color: label.color.replace('#',''),
+                  });
+                  console.log(`Updated label ${label.name}`);
+                } else {
+                  core.warning(`Label ${label.name} error: ${error.message}`);
+                }
+              }
+            }
+      - name: Ensure branch protection
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'branch-protection.yml',
+              ref: context.ref
+            });
+

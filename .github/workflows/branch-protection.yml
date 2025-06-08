@@ -1,0 +1,51 @@
+name: "Apply Branch Protection"
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/branch-protection-rules.json"
+
+jobs:
+  enforce:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      administration: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply rules via GitHub GraphQL API
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const rules = JSON.parse(fs.readFileSync('.github/branch-protection-rules.json', 'utf8'));
+            const { repository } = await github.graphql(`query($owner:String!, $repo:String!){ repository(owner:$owner, name:$repo){ id } }`, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            const repoId = repository.id;
+            for (const rule of rules) {
+              try {
+                await github.graphql(`mutation($input:CreateBranchProtectionRuleInput!){ createBranchProtectionRule(input:$input){ branchProtectionRule { id } } }`, {
+                  input: {
+                    repositoryId: repoId,
+                    pattern: rule.name_pattern,
+                    requiresStrictStatusChecks: rule.required_status_checks.strict,
+                    requiredStatusCheckContexts: rule.required_status_checks.contexts,
+                    dismissesStaleReviews: rule.required_pull_request_reviews.dismiss_stale_reviews,
+                    requiredApprovingReviewCount: rule.required_pull_request_reviews.required_approving_review_count,
+                    requiresCodeOwnerReviews: rule.required_pull_request_reviews.require_code_owner_reviews,
+                    requiresConversationResolution: rule.required_conversation_resolution,
+                    requiresLinearHistory: rule.required_linear_history,
+                    isAdminEnforced: rule.enforce_admins,
+                    allowsForcePushes: rule.allow_force_pushes,
+                    allowsDeletions: rule.allow_deletions,
+                  }
+                });
+                console.log(`Applied rule for pattern ${rule.name_pattern}`);
+              } catch (error) {
+                core.warning(`Failed to apply rule for ${rule.name_pattern}: ${error.message}`);
+              }
+            }

@@ -78,6 +78,9 @@ body:
   - type: dropdown
     id: user_type
     attributes:
+  - type: dropdown
+    id: user_type
+    attributes:
       label: "Primary User"
       description: "Who will primarily use this feature?"
       options:
@@ -86,5 +89,13 @@ body:
         - "Admin"
         - "Dispatcher"
         - "All Users"
+    validations:
+      required: false
+  - type: textarea
+    id: related
+    attributes:
+      label: "Related Issues/PRs"
+      description: "Reference any related issues or pull requests"
+      placeholder: "Related to #123"
     validations:
       required: false

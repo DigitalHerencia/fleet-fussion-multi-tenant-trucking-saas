@@ -98,3 +98,11 @@ body:
         - URL: https://fleet-fusion.vercel.app/dashboard
     validations:
       required: false
+  - type: textarea
+    id: related
+    attributes:
+      label: "Related Issues/PRs"
+      description: "Reference any related issues or pull requests"
+      placeholder: "Related to #123"
+    validations:
+      required: false

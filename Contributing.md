@@ -96,11 +96,13 @@ Use descriptive branch names following this pattern:
 - `docs/description-of-documentation-change`
 - `refactor/description-of-refactor`
 - `test/description-of-test-addition`
+- `config/description-of-config-change`
 
 Examples:
 - `feature/driver-compliance-dashboard`
 - `fix/load-assignment-validation`
 - `docs/api-reference-updates`
+- `config/update-deployment-scripts`
 
 ### Commit Message Guidelines
 
