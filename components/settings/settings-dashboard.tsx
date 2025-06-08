@@ -16,7 +16,9 @@ import { CompanySettings } from './company-settings';
 import { UserSettings } from './user-settings';
 import { NotificationSettings } from './notification-settings';
 import { IntegrationSettings } from './integration-settings';
+import { BillingSettingsForm } from './billing-settings';
 import { Button } from '../ui/button';
+import { useUserContext } from '@/components/auth/context';
 
 // Loading component for Settings page
 function SettingsLoading() {
@@ -240,13 +242,36 @@ function SupportSettings() {
 
 // Main Settings Dashboard
 export function SettingsDashboard() {
+  const user = useUserContext();
+  const role = user?.role ?? 'viewer';
+  const tabsByRole: Record<string, string[]> = {
+    admin: ['user', 'company', 'notifications', 'integrations', 'billing'],
+    dispatcher: ['user', 'company', 'notifications'],
+    driver: ['user', 'notifications'],
+    compliance_officer: ['company', 'notifications'],
+    accountant: ['company', 'billing'],
+    viewer: ['user'],
+  };
+  const allowedTabs = tabsByRole[role] || ['user'];
+
   return (
-    <Tabs defaultValue="user" className="w-full">
-      <TabsList className="grid w-full grid-cols-2 md:w-auto md:grid-cols-4">
-        <TabsTrigger value="user">User Profile</TabsTrigger>
-        <TabsTrigger value="company">Company</TabsTrigger>
-        <TabsTrigger value="notifications">Notifications</TabsTrigger>
-        <TabsTrigger value="integrations">Integrations</TabsTrigger>
+    <Tabs defaultValue={allowedTabs[0]} className="w-full">
+      <TabsList className="grid w-full grid-cols-2 md:w-auto md:grid-cols-5">
+        {allowedTabs.includes('user') && (
+          <TabsTrigger value="user">User Profile</TabsTrigger>
+        )}
+        {allowedTabs.includes('company') && (
+          <TabsTrigger value="company">Company</TabsTrigger>
+        )}
+        {allowedTabs.includes('notifications') && (
+          <TabsTrigger value="notifications">Notifications</TabsTrigger>
+        )}
+        {allowedTabs.includes('integrations') && (
+          <TabsTrigger value="integrations">Integrations</TabsTrigger>
+        )}
+        {allowedTabs.includes('billing') && (
+          <TabsTrigger value="billing">Billing</TabsTrigger>
+        )}
       </TabsList>
       <TabsContent value="user" className="mt-4">
         <Card>
@@ -297,6 +322,26 @@ export function SettingsDashboard() {
           </CardHeader>
           <CardContent>
             <IntegrationSettings />
+          </CardContent>
+        </Card>
+      </TabsContent>
+      <TabsContent value="billing" className="mt-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Billing</CardTitle>
+            <CardDescription>
+              Manage subscription and payment methods.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <BillingSettingsForm
+              initial={{
+                orgId: user?.organizationId || '',
+                paymentMethod: '',
+                subscriptionPlan: '',
+                billingEmail: user?.email || '',
+              }}
+            />
           </CardContent>
         </Card>
       </TabsContent>
