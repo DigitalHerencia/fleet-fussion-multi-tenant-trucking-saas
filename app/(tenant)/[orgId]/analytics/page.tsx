@@ -15,6 +15,7 @@ import { PerformanceMetrics } from '@/components/analytics/performance-metrics';
 import { FinancialMetrics } from '@/components/analytics/financial-metrics';
 import { DriverPerformance } from '@/components/analytics/driver-performance';
 import { VehicleUtilization } from '@/components/analytics/vehicle-utilization';
+import { RealtimeDashboard } from '@/components/analytics/realtime-dashboard';
 import {
   getDashboardSummary,
   getPerformanceAnalytics,
@@ -22,28 +23,52 @@ import {
   getDriverAnalytics,
   getVehicleAnalytics,
 } from '@/lib/fetchers/analyticsFetchers';
+import { listDriversByOrg } from '@/lib/fetchers/driverFetchers';
+import { exportAnalyticsReport } from '@/lib/actions/analyticsReportActions';
 
 export default async function AnalyticsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ orgId: string }>;
+  searchParams?: { start?: string; end?: string; driver?: string };
 }) {
   const { orgId } = await params;
-  const timeRange = '30d';
+
+  const start = searchParams?.start;
+  const end = searchParams?.end;
+  const driver = searchParams?.driver;
+
+  let timeRange = '30d';
+  if (start && end) {
+    timeRange = `custom:${start}_to_${end}`;
+  }
+
+  const today = new Date();
+  const defaultEnd = end ?? today.toISOString().split('T')[0];
+  const defaultStart =
+    start ??
+    new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split('T')[0];
 
   // Fetch all analytics data in parallel
+  const filters = driver ? { driverId: driver } : {};
+
   const [
     summary,
     performanceDataRaw,
     financialDataRaw,
     driverPerformanceMetricsRaw,
     vehicleDataRaw,
+    driversList
   ] = await Promise.all([
-    getDashboardSummary(orgId, timeRange),
-    getPerformanceAnalytics(orgId, timeRange),
-    getFinancialAnalytics(orgId, timeRange),
-    getDriverAnalytics(orgId, timeRange),
-    getVehicleAnalytics(orgId, timeRange),
+    getDashboardSummary(orgId, timeRange, filters),
+    getPerformanceAnalytics(orgId, timeRange, filters),
+    getFinancialAnalytics(orgId, timeRange, filters),
+    getDriverAnalytics(orgId, timeRange, filters),
+    getVehicleAnalytics(orgId, timeRange, filters),
+    listDriversByOrg(orgId, { limit: 100 })
   ]);
 
   // Defensive: ensure arrays/objects for all analytics data
@@ -54,6 +79,7 @@ export default async function AnalyticsPage({
     ? driverPerformanceMetricsRaw
     : [];
   const vehicleData = Array.isArray(vehicleDataRaw) ? vehicleDataRaw : [];
+  const drivers = Array.isArray(driversList?.drivers) ? driversList.drivers : [];
   const financialData =
     financialDataRaw &&
     typeof financialDataRaw === 'object' &&
@@ -117,46 +143,68 @@ export default async function AnalyticsPage({
             Track and analyze fleet performance metrics
           </p>
         </div>
-        <div className="mt-4 flex flex-row gap-2 md:mt-0">
+        <div className="mt-4 flex flex-col gap-2 md:mt-0 md:flex-row">
+          <form className="flex items-center gap-2" method="get">
+            <input
+              type="date"
+              name="start"
+              defaultValue={defaultStart}
+              className="rounded-md border border-gray-200 bg-transparent px-2 py-1 text-sm text-white"
+            />
+          <input
+            type="date"
+            name="end"
+            defaultValue={defaultEnd}
+            className="rounded-md border border-gray-200 bg-transparent px-2 py-1 text-sm text-white"
+          />
+          <select
+            name="driver"
+            defaultValue={driver ?? ''}
+            className="rounded-md border border-gray-200 bg-transparent px-2 py-1 text-sm text-white"
+          >
+            <option value="">All Drivers</option>
+            {drivers.map(d => (
+              <option key={d.id} value={d.id}>
+                {d.firstName} {d.lastName}
+              </option>
+            ))}
+          </select>
           <Button
+            type="submit"
             variant="outline"
             size="sm"
             className="border-gray-200 text-white"
-          >
-            <CalendarIcon className="mr-2 h-4 w-4" />
-            Last 30 Days
-          </Button>
-          <Button size="sm" className="bg-blue-500 font-semibold text-white">
-            <Download className="mr-2 h-4 w-4" />
-            Export Report
-          </Button>
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              Apply
+            </Button>
+          </form>
+          <form action={exportAnalyticsReport} method="post">
+            <input type="hidden" name="orgId" value={orgId} />
+            <input type="hidden" name="timeRange" value={timeRange} />
+            {driver && <input type="hidden" name="driver" value={driver} />}
+            <select
+              name="format"
+              className="rounded-md border border-gray-200 bg-transparent px-2 py-1 text-sm text-white"
+              defaultValue="csv"
+            >
+              <option value="csv">CSV</option>
+              <option value="pdf">PDF</option>
+            </select>
+            <Button size="sm" className="bg-blue-500 font-semibold text-white">
+              <Download className="mr-2 h-4 w-4" />
+              Export Report
+            </Button>
+          </form>
         </div>
       </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {metrics.map((m, i) => (
-          <Card
-            className="flex min-h-[120px] flex-col justify-between rounded-md border border-gray-200 bg-black"
-            key={i}
-          >
-            <CardHeader className="flex flex-row items-center justify-between pt-4 pb-0">
-              <div className="flex items-center gap-2">
-                {m.icon}
-                <span className="text-sm font-medium text-white">
-                  {m.label}
-                </span>
-              </div>
-            </CardHeader>
-            <CardContent className="flex flex-1 flex-col justify-end pt-2 pb-4">
-              <span className="text-4xl leading-tight font-extrabold text-white">
-                {m.value}
-              </span>
-              <span className="text-muted-foreground mt-1 text-xs">
-                {m.change}
-              </span>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <RealtimeDashboard
+        orgId={orgId}
+        initial={summary}
+        timeRange={timeRange}
+        driver={driver ?? undefined}
+        metrics={metrics}
+      />
       <Tabs defaultValue="performance" className="w-full">
         <TabsList className="grid w-full grid-cols-2 md:w-auto md:grid-cols-4">
           <TabsTrigger value="performance">Performance</TabsTrigger>

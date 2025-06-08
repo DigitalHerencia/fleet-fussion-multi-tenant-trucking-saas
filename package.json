@@ -5,7 +5,8 @@
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0"
-  },  "scripts": {
+  },
+  "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -70,6 +71,7 @@
     "lucide-react": "^0.511.0",
     "next": "15.3.3",
     "next-themes": "0.4.6",
+    "pdf-lib": "^1.17.1",
     "prisma": "^6.8.2",
     "react": "^19.1.0",
     "react-datepicker": "^8.3.0",
@@ -84,7 +86,8 @@
     "uuid": "^11.1.0",
     "vaul": "^1.1.2",
     "zod": "3.25.28"
-  },  "devDependencies": {
+  },
+  "devDependencies": {
     "@faker-js/faker": "^9.8.0",
     "@playwright/test": "^1.52.0",
     "@testing-library/jest-dom": "^6.1.5",
