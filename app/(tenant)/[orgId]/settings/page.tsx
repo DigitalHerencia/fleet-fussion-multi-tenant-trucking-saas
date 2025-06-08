@@ -1,7 +1,14 @@
 import { SettingsDashboard } from '@/components/settings/settings-dashboard';
 import { PageHeader } from '@/components/shared/PageHeader';
+import { getOrganizationSettings } from '@/lib/fetchers/settingsFetchers';
 
-export default function SettingsPage() {
+export default async function SettingsPage({
+  params,
+}: {
+  params: Promise<{ orgId: string }>;
+}) {
+  const { orgId } = await params;
+  await getOrganizationSettings(orgId); // prime cache
   return (
     <div className="settings-page mx-auto flex w-full max-w-4xl flex-col gap-8">
       <div className="mt-2 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
