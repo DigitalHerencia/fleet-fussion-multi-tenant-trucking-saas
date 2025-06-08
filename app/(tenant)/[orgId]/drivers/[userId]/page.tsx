@@ -165,7 +165,11 @@ export default async function DriverDashboardPage({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <DocumentUploadForm onUpload={() => {}} />
+            <DocumentUploadForm
+              onUpload={() => {}}
+              entityType="driver"
+              entityId={driverData.id}
+            />
           </CardContent>
         </Card>
       </div>
