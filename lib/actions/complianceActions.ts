@@ -455,3 +455,79 @@ export async function bulkUpdateComplianceDocuments(
 //     });
 //   }
 // }
+
+export async function generateExpirationAlertsAction(daysAhead = 30) {
+  try {
+    const user = await getCurrentUser();
+    const userId = user?.userId;
+    const orgId = user?.organizationId;
+    if (!userId || !orgId) {
+      throw new Error('Unauthorized');
+    }
+
+    const today = new Date();
+    const dueDate = new Date(today.getTime() + daysAhead * 24 * 60 * 60 * 1000);
+
+    const documents = await db.complianceDocument.findMany({
+      where: {
+        organizationId: orgId,
+        expirationDate: {
+          gte: today,
+          lte: dueDate,
+        },
+      },
+      select: {
+        id: true,
+        driverId: true,
+        vehicleId: true,
+        title: true,
+        expirationDate: true,
+      },
+    });
+
+    await Promise.all(
+      documents.map(async doc => {
+        const existing = await db.complianceAlert.findFirst({
+          where: {
+            organizationId: orgId,
+            entityId: doc.id,
+            type: 'expiring_document',
+            resolved: false,
+          },
+        });
+        if (existing) return;
+
+        const daysLeft = Math.ceil(
+          (doc.expirationDate!.getTime() - today.getTime()) /
+            (24 * 60 * 60 * 1000)
+        );
+        await db.complianceAlert.create({
+          data: {
+            organizationId: orgId,
+            userId,
+            driverId: doc.driverId ?? undefined,
+            vehicleId: doc.vehicleId ?? undefined,
+            type: 'expiring_document',
+            severity: daysLeft <= 7 ? 'high' : 'medium',
+            title: 'Document Expiring Soon',
+            message: `${doc.title} expires in ${daysLeft} days`,
+            entityType: doc.driverId
+              ? 'driver'
+              : doc.vehicleId
+                ? 'vehicle'
+                : 'company',
+            entityId: doc.id,
+            dueDate: doc.expirationDate!,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        });
+      })
+    );
+
+    return { success: true, count: documents.length };
+  } catch (error) {
+    console.error('Error generating expiration alerts:', error);
+    return handleError(error, 'Generate Expiration Alerts');
+  }
+}
