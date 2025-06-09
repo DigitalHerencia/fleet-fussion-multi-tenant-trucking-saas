@@ -14,6 +14,7 @@ import {
   createSafetyEventSchema,
   bulkComplianceOperationSchema,
 } from '@/schemas/compliance';
+import type { UpdateComplianceDocumentInput } from '@/schemas/compliance';
 import { getCurrentUser } from '@/lib/auth/auth';
 import { handleError } from '@/lib/errors/handleError';
 
@@ -161,7 +162,10 @@ export async function updateComplianceDocument(
     }
 
     // Map name to title if present
-    const updateData: any = { ...validatedData, updatedAt: new Date() };
+    const updateData: Partial<UpdateComplianceDocumentInput> & { updatedAt: Date } = {
+      ...validatedData,
+      updatedAt: new Date(),
+    };
     if (validatedData.name) {
       updateData.title = validatedData.name;
       delete updateData.name;

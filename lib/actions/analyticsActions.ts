@@ -5,11 +5,31 @@ import { getCurrentUser } from '@/lib/auth/auth';
 
 import prisma from '@/lib/database/db';
 import { hasPermission } from '@/lib/auth/permissions';
-import { PermissionActions, ResourceTypes } from '@/types/abac';
+import { PermissionActions, ResourceTypes, SystemRoles } from '@/types/abac';
+import { ClerkOrganizationMetadata } from '@/types/auth';
+import type { AnalyticsActionResult } from '@/types/actions';
 
-export interface AnalyticsActionResult {
-  success: boolean;
-  data?: any;
+interface FleetMetrics {
+  vehicleCount: number;
+  activeVehicleCount: number;
+  maintenanceVehicleCount: number;
+  fleetUtilization: number;
+  totalMiles: number;
+}
+
+interface LoadAnalytics {
+  totalLoads: number;
+  deliveredLoads: number;
+  inTransitLoads: number;
+  pendingLoads: number;
+  completionRate: number;
+}
+
+interface ComplianceAnalytics {
+  totalDocuments: number;
+  expiredDocuments: number;
+  expiringDocuments: number;
+  complianceRate: number;
 }
 
 /**
@@ -17,7 +37,7 @@ export interface AnalyticsActionResult {
  */
 export async function getFleetMetricsAction(
   orgId: string
-): Promise<AnalyticsActionResult> {
+): Promise<AnalyticsActionResult<FleetMetrics>> {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -79,7 +99,7 @@ export async function getFleetMetricsAction(
  */
 export async function getLoadAnalyticsAction(
   orgId: string
-): Promise<AnalyticsActionResult> {
+): Promise<AnalyticsActionResult<LoadAnalytics>> {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -143,7 +163,7 @@ export async function getLoadAnalyticsAction(
  */
 export async function getFinancialMetricsAction(
   orgId: string
-): Promise<AnalyticsActionResult> {
+): Promise<AnalyticsActionResult<void>> {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -187,7 +207,7 @@ export async function getFinancialMetricsAction(
  */
 export async function getComplianceAnalyticsAction(
   orgId: string
-): Promise<AnalyticsActionResult> {
+): Promise<AnalyticsActionResult<ComplianceAnalytics>> {
   try {
     const { userId } = await auth();
     if (!userId) {
