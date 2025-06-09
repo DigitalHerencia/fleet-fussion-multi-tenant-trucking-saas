@@ -43,7 +43,7 @@ export default async function DriverDashboardPage({
 }): Promise<JSX.Element> {
   const { userId, orgId } = await params;
   // Fetch driver data by ID
-  const driverData = await getDriverById(userId);
+  const driverData = await getDriverById(userId, orgId);
   if (!driverData) return notFound();
 
   // Real-time status: poll HOS status and assignment every 10s
