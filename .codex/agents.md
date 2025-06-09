@@ -1,107 +1,141 @@
-# FleetFusion ▸ AI‑Assisted DevOps Schema
+Here’s a **strictly enforced GitHub automation standards doc** for FleetFusion, incorporating all your required conventions, project management flows, PR/issue automation, and referencing the correct standards from your repo context and personal instructions. This version is clear, actionable, and immediately implementable for solo/automated DevOps:
 
-## 1️⃣ Environment Snapshot
+---
+
+# FleetFusion ▸ AI-Assisted DevOps Automation Standards
+
+## 1️⃣ Environment & Tooling
 
 | Tool       | Version                 | Remarks                                |
 | ---------- | ----------------------- | -------------------------------------- |
 | Next.js    | 15                      | App Router · RSC first                 |
 | React      | 19                      | Zero‑bundle hydration                  |
-| TypeScript | 5.x                     | strict + noUncheckedIndexedAccess      |
+| TypeScript | 5.x                     | `strict` + `noUncheckedIndexedAccess`  |
 | Clerk      | RBAC                    | Multi‑tenant · org + role claims       |
-| Postgres   | Neon                    | Serverless, row‑level security enabled |
-| CI/CD      | GitHub Actions → Vercel | Preview → Prod promotes via tag        |
+| Postgres   | Neon                    | Serverless, row‑level security         |
+| CI/CD      | GitHub Actions → Vercel | Preview → Prod via tag                 |
 
-## 2️⃣ Agents & Scopes
+---
 
-| Agent               | Allowed Scope                   | Commit Branch Prefix         | Merge Strategy             |
-| ------------------- | ------------------------------- | ---------------------------- | -------------------------- |
-| Codex               | Server functions, infra scripts | feature/codex/_, fix/codex/_ | PR (squash) + human review |
-| Copilot             | Local code suggestions          | Author‑controlled            | N/A                        |
-| GitHub Copilot Chat | PR comment reviews              | Comments only                | N/A                        |
+## 2️⃣ Branching & Commit Rules
 
-### Ground Rules
+- **NEVER commit directly to `main`.**
+- **All work must occur in a branch** named with these prefixes:
+  - `feature/<scope>` ― new features
+  - `fix/<scope>` ― bugfixes
+  - `docs/<scope>` ― docs/README
+  - `test/<scope>` ― tests
+  - `refactor/<scope>` ― code quality
+  - `config/<scope>` ― config/env setup
+- **All PRs:** Title must be `[type]: description` (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `config:`).
+- **PR Descriptions:** Must include:
+  - Linked issues using closing keywords (e.g., `Closes #42`)
+  - Short summary of scope and impact
+  - Checklist: [ ] Passes CI, [ ] Updates docs (if needed), [ ] Notifies project board/milestone
+- **Labels:** PRs auto-labeled by branch prefix and must include one of: `Feature`, `Bug`, `Documentation`, `Testing`, `Code-Quality`, `Configuration`.
+- **Milestones:** All PRs must be assigned to an active milestone if related to a release.
 
-1. ❌ Never commit directly to main.
-2. ✅ Follow Conventional Commits (feat:, fix:, docs:, test:, refactor:, config:).
-3. 🏷 Auto‑label PRs by branch prefix (see PR automation).
-4. 🧪 Must pass CI (ci/test, ci/lint, ci/typecheck) before merge.
-5. 🗂 Codex must call existing, typed utils where possible.
-6. 🔍 Copilot suggestions require author review before commit.
+---
 
-## 3️⃣ FleetFusion Milestones & Release Strategy
+## 3️⃣ Issue Management & Templates
 
-| Milestone                      | Due Date      | Focus                                    | Labels                      |
-| ------------------------------ | ------------- | ---------------------------------------- | --------------------------- |
-| MVP Launch                     | June 16, 2025 | Core multi-tenant RBAC, fleet management | Priority-High               |
-| Q3 2025 Release                | July 1, 2025  | Major features, compliance, analytics    | Feature, Priority-Medium    |
-| Testing & Automation Hardening | July 15, 2025 | Full test coverage, E2E scripts          | Testing, Code-Quality       |
-| Post-Launch Enhancements       | Aug 30, 2025  | Customer feedback, UX improvements       | Documentation, Priority-Low |
+- **Labels:** Every issue must be labeled with:
+  - Type (`Feature`, `Bug`, `Documentation`, `Testing`, `Code-Quality`, `Configuration`)
+  - Priority (`Priority-High`, `Priority-Medium`, `Priority-Low`)
+  - Assignment (`Codex`, `Copilot`)
+  - Workflow (`Has-PR`, `Blocked`, `Technical-Debt`)
+- **Templates:** Use or extend `.github/ISSUE_TEMPLATE/` for:
+  - Bug report
+  - Feature request
+  - Docs/Chore
+- **Dependencies:** Link related issues/PRs via GitHub keywords (`blocked by #X`, `closes #Y`).
+- **Project Board:** All issues must be moved to the correct board column (`Todo`, `In Progress`, `Review`, `Done`) as soon as status changes.  
+  **Reminder:** Update the project board and milestone on every status change.
 
-## 4️⃣ Label Strategy
+---
 
-### Priority Labels
+## 4️⃣ Pull Request Automation
 
-- Priority-High: Blocking issues (missing .env, no tests)
-- Priority-Medium: Feature completion and bug fixes
-- Priority-Low: Code quality improvements
+- **Auto-label PRs** based on branch prefix.
+- **Auto-assign reviewers** (for solo dev, self-assignment is valid).
+- **All PRs run CI:** Must pass `ci/test`, `ci/lint`, `ci/typecheck` before merge.
+- **Auto-move** PRs/issues on the project board per status (see board flow below).
+- **Merge Rule:** Only squash merge allowed, never rebase or merge commits.
+- **No direct pushes to main.**
+- **PR merges:** Only after human (your) review and CI passes.
 
-### Type Labels
+---
 
-- Bug, Feature, Documentation, Code-Quality, Testing, Configuration
-
-### Workflow Labels
-
-- Has-PR, Blocked, Technical-Debt
-
-### Assignment Labels
-
-- Codex, Copilot
-
-## 5️⃣ Branch Naming Convention
-
-| Prefix    | Purpose           | Label         |
-| --------- | ----------------- | ------------- |
-| feature/  | New functionality | Feature       |
-| fix/      | Bug fixes         | Bug           |
-| docs/     | Documentation     | Documentation |
-| test/     | Test improvements | Testing       |
-| refactor/ | Code quality      | Code-Quality  |
-| config/   | Environment setup | Configuration |
-
-## 6️⃣ Project Board Flow
+## 5️⃣ Project Board & Milestone Flow
 
 ```mermaid
 graph LR
-  subgraph "FleetFusion Project #4"
+  subgraph "Project Board"
     A[📋 Todo] -->|Start Work| B[🔄 In Progress]
     B -->|Create PR| C[👀 Review]
     C -->|Merge| D[✅ Done]
   end
-
-  subgraph "Auto-Movement Triggers"
+  subgraph "Auto-Movement"
     E[New Issue] --> A
     F[Add Feature/Bug Label] --> B
     G[Has-PR Label] --> C
     H[Close Issue/PR] --> D
   end
 ```
+- **Milestone closure:** Only after all assigned issues/PRs are closed and released.
 
-## 7️⃣ Secrets Matrix
+---
 
-- GITHUB_TOKEN (automatic)
-- VERCEL_TOKEN
-- CLERK_SECRET_KEY
-- NEON_API_KEY
-
-## 8️⃣ Deployment Flow (GitHub Flow)
+## 6️⃣ Release & Deployment
 
 ```mermaid
 graph TD
   A[feature/* branch] -->|PR created| B[GitHub Actions CI]
-  B -->|✅ Tests pass| C[Vercel Preview Deploy]
-  C -->|✅ Review approved| D[Squash merge to main]
+  B -->|Tests pass| C[Vercel Preview Deploy]
+  C -->|Review approved| D[Squash merge to main]
   D -->|Auto-deploy| E[Production: fleet-fusion.vercel.app]
-
   F[main branch] -->|Tag release| G[Production Release]
   G --> H[Close milestone]
 ```
+- **Production deploys:** Only from tagged commits on `main`.
+- **CI/CD:** Automated via GitHub Actions → Vercel.
+- **Secrets:** All environment secrets must be managed via repository/environment settings (NEVER in code).
+
+---
+
+## 7️⃣ Automation & Workflow Suggestions
+
+- **Issue templates:** Use `.github/ISSUE_TEMPLATE` for feature, bug, docs.
+- **PR template:** Create `.github/pull_request_template.md` enforcing:
+  - `[type]: description` title
+  - Linked issues
+  - Checklist (CI, docs, board, milestone)
+- **Auto-label action:** Use `actions/labeler` to tag PRs by branch prefix.
+- **Project automation:** Use GitHub Projects (beta/next) for auto-move on status update.
+- **Branch protection:** Enable required status checks, require PR review, disable force-pushes.
+- **Dependency tracking:** Always refer to issue/PR numbers in descriptions with closing/blocked keywords.
+- **Reminder:** Update project board and milestones with every PR/issue update.
+
+---
+
+## 8️⃣ Secrets & Security
+
+- **Required:** `GITHUB_TOKEN`, `VERCEL_TOKEN`, `CLERK_SECRET_KEY`, `NEON_API_KEY`
+- **Never commit secrets.** Use GitHub Actions secrets and Vercel dashboard for env vars.
+
+---
+
+## 9️⃣ Summary — Non-Negotiables
+
+1. **No direct commits to main.**
+2. **All work on prefixed branches, PRs must follow `[type]: description`.**
+3. **Labels, project, milestone, and automation must be maintained for every PR/issue.**
+4. **PRs: squash merge only, after passing CI and review.**
+5. **Update board and milestones with every status change.**
+6. **All releases and deployments strictly follow CI flow.**
+
+---
+
+**Strictly follow these standards for all automation, PRs, issues, and releases. Deviations break project automation and release integrity.**
+
+---

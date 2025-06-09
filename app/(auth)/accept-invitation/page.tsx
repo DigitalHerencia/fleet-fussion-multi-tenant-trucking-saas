@@ -91,7 +91,7 @@ export default function AcceptInvitationPage() {
       case SystemRoles.DISPATCHER:
         return `/${orgId}/dispatcher/${userId}`;
       case SystemRoles.DRIVER:
-        return `/${orgId}/driver/${userId}`;
+        return `/${orgId}/drivers/${userId}`;
       case SystemRoles.COMPLIANCE_OFFICER:
         return `/${orgId}/compliance/${userId}`;
       case SystemRoles.ACCOUNTANT:

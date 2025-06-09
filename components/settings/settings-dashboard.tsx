@@ -19,6 +19,7 @@ import { IntegrationSettings } from './integration-settings';
 import { BillingSettingsForm } from './billing-settings';
 import { Button } from '../ui/button';
 import { useUserContext } from '@/components/auth/context';
+import { SystemRoles, type SystemRole } from '@/types/abac';
 
 // Loading component for Settings page
 function SettingsLoading() {
@@ -243,14 +244,20 @@ function SupportSettings() {
 // Main Settings Dashboard
 export function SettingsDashboard() {
   const user = useUserContext();
-  const role = user?.role ?? 'viewer';
-  const tabsByRole: Record<string, string[]> = {
-    admin: ['user', 'company', 'notifications', 'integrations', 'billing'],
-    dispatcher: ['user', 'company', 'notifications'],
-    driver: ['user', 'notifications'],
-    compliance_officer: ['company', 'notifications'],
-    accountant: ['company', 'billing'],
-    viewer: ['user'],
+  const role = user?.role ?? SystemRoles.VIEWER;
+  const tabsByRole: Record<SystemRole, string[]> = {
+    [SystemRoles.ADMIN]: [
+      'user',
+      'company',
+      'notifications',
+      'integrations',
+      'billing',
+    ],
+    [SystemRoles.DISPATCHER]: ['user', 'company', 'notifications'],
+    [SystemRoles.DRIVER]: ['user', 'notifications'],
+    [SystemRoles.COMPLIANCE_OFFICER]: ['company', 'notifications'],
+    [SystemRoles.ACCOUNTANT]: ['company', 'billing'],
+    [SystemRoles.VIEWER]: ['user'],
   };
   const allowedTabs = tabsByRole[role] || ['user'];
 

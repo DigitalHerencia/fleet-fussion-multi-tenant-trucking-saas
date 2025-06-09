@@ -56,30 +56,31 @@ function setCachedUserContext(
 // 3. Utility: Build user context from session claims
 function buildUserContext(
   userId: string,
-  sessionClaims: Record<string, any>,
+  sessionClaims: Record<string, unknown>,
   orgId: string | null
 ): UserContext {
+  const claims = sessionClaims as any;
   // Extract role and permissions from session claims
   const userRole =
-    sessionClaims?.abac?.role ||
-    sessionClaims?.publicMetadata?.role ||
-    sessionClaims?.metadata?.role ||
+    claims?.abac?.role ||
+    claims?.publicMetadata?.role ||
+    claims?.metadata?.role ||
     SystemRoles.VIEWER;
   const userPermissions =
-    sessionClaims?.abac?.permissions ||
+    claims?.abac?.permissions ||
     getPermissionsForRole(userRole as SystemRole);
   const organizationId =
-    sessionClaims?.abac?.organizationId ||
+    claims?.abac?.organizationId ||
     orgId ||
-    sessionClaims?.publicMetadata?.organizationId ||
-    sessionClaims?.metadata?.organizationId ||
+    claims?.publicMetadata?.organizationId ||
+    claims?.metadata?.organizationId ||
     '';
   const onboardingComplete =
-    sessionClaims?.publicMetadata?.onboardingComplete ||
-    sessionClaims?.metadata?.onboardingComplete ||
+    claims?.publicMetadata?.onboardingComplete ||
+    claims?.metadata?.onboardingComplete ||
     false;
-  const isActive = sessionClaims?.metadata?.isActive !== false;
-  const orgMetadata = sessionClaims?.org_public_metadata as
+  const isActive = claims?.metadata?.isActive !== false;
+  const orgMetadata = claims?.org_public_metadata as
     | ClerkOrganizationMetadata
     | undefined;
 
@@ -90,10 +91,10 @@ function buildUserContext(
     permissions: userPermissions,
     isActive,
     name:
-      sessionClaims?.firstName || sessionClaims?.fullName?.split(' ')[0] || '',
-    email: sessionClaims?.primaryEmail || '',
-    firstName: sessionClaims?.firstName || '',
-    lastName: sessionClaims?.lastName || '',
+      claims?.firstName || claims?.fullName?.split(' ')[0] || '',
+    email: claims?.primaryEmail || '',
+    firstName: claims?.firstName || '',
+    lastName: claims?.lastName || '',
     onboardingComplete,
     organizationMetadata: orgMetadata || {
       subscriptionTier: 'free',

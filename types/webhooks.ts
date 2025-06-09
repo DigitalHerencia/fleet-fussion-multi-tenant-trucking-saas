@@ -8,6 +8,7 @@ import type {
   ClerkOrganizationMetadata,
   UserRole,
 } from './auth';
+import type { WebhookMetadata } from './metadata';
 
 // Webhook event types
 export type WebhookEventType =
@@ -40,8 +41,8 @@ export type WebhookEventType =
   | 'user.updated';
 
 // Generic webhook payload structure
-export interface WebhookPayload<T = any> {
-  [x: string]: any;
+export interface WebhookPayload<T = unknown> {
+  [x: string]: unknown;
   data: T;
   type: WebhookEventType;
   object: string;
@@ -61,7 +62,7 @@ export interface UserWebhookData {
   last_name?: string;
   profile_image_url?: string;
   public_metadata: Partial<ClerkUserMetadata>;
-  private_metadata?: Record<string, any>;
+  private_metadata?: WebhookMetadata;
   organization_memberships?: Array<{
     id: string;
     organization: {
@@ -83,7 +84,7 @@ export interface OrganizationWebhookData {
   name: string;
   slug: string;
   public_metadata: Partial<ClerkOrganizationMetadata>;
-  private_metadata?: Record<string, any>;
+  private_metadata?: WebhookMetadata;
   members_count?: number;
   created_at: number;
   updated_at: number;
@@ -107,7 +108,7 @@ export interface OrganizationMembershipWebhookData {
   };
   role: string;
   public_metadata: Partial<ClerkUserMetadata>;
-  private_metadata?: Record<string, any>;
+  private_metadata?: WebhookMetadata;
   created_at: number;
   updated_at: number;
 }

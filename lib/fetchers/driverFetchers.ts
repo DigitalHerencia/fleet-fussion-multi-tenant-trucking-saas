@@ -1,3 +1,5 @@
+'use server';
+
 import { auth } from '@clerk/nextjs/server';
 
 import prisma from '@/lib/database/db';
@@ -65,15 +67,20 @@ type DriverListWithAssignmentResponse = Omit<DriverListResponse, 'drivers'> & {
  * Get driver by ID with permission check
  */
 export const getDriverById = async (
-  driverId: string
+  driverId: string,
+  orgId: string
 ): Promise<Driver | null> => {
   try {
-    const { userId } = await auth();
+    const { userId, orgId: sessionOrgId } = await auth();
     if (!userId) return null;
+    if (!sessionOrgId || sessionOrgId !== orgId) {
+      throw new Error('Invalid organization');
+    }
 
     const driver = await prisma.driver.findFirst({
       where: {
         id: driverId,
+        organizationId: orgId,
         status: 'active',
       },
       include: {
@@ -131,9 +138,12 @@ export const listDriversByOrg = async (
   filters: DriverFilters = {}
 ): Promise<DriverListWithAssignmentResponse> => {
   try {
-    const { userId } = await auth();
+    const { userId, orgId: sessionOrgId } = await auth();
     if (!userId) {
       return { drivers: [], total: 0, page: 1, limit: 20, totalPages: 0 };
+    }
+    if (!sessionOrgId || sessionOrgId !== orgId) {
+      throw new Error('Invalid organization');
     }
 
     // Build Prisma where filter
@@ -329,6 +339,11 @@ export const getDriverStats = async (
   orgId: string
 ): Promise<DriverStatsResponse> => {
   try {
+    const { userId, orgId: sessionOrgId } = await auth();
+    if (!userId) throw new Error('Authentication required');
+    if (!sessionOrgId || sessionOrgId !== orgId) {
+      throw new Error('Invalid organization');
+    }
     // Example stats: total, active, inactive, expiring licenses, etc.
     const total = await prisma.driver.count({
       where: { organizationId: orgId },

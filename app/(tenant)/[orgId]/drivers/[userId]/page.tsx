@@ -42,12 +42,11 @@ export default async function DriverDashboardPage({
   params: { orgId: string; userId?: string };
 }): Promise<JSX.Element> {
   const { orgId, userId } = params;
-  // Fetch driver data by ID
-  const driverData = await getDriverById(userId!);
+  // Fetch driver data by ID and org for multitenancy support
+  const driverData = await getDriverById(userId, orgId);
   if (!driverData) return notFound();
 
   // Real-time status: poll HOS status and assignment every 10s
-  // Pass revalidate option to fetcher if supported
   const hosStatus = await getDriverHOSStatus(userId!, { revalidate: 10 });
   let currentStatus: string = driverData.status;
   if (hosStatus && typeof hosStatus === 'object') {

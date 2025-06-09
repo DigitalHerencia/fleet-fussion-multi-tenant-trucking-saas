@@ -1,11 +1,12 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
-
+import { notFound } from 'next/navigation';
 import { LoadForm } from '@/components/dispatch/load-form';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useAuth } from '@/components/auth/context';
+import {
+  getLoadDetails,
+  getAvailableDriversForLoad,
+  getAvailableVehiclesForLoad,
+  getAvailableTrailersForLoad,
+} from '@/lib/fetchers/dispatchFetchers';
+import { getCurrentCompany } from '@/lib/auth/auth';
 
 // Add index signature to allow string indexing
 export type Dispatches = Record<
@@ -23,56 +24,41 @@ export type Dispatches = Record<
   }
 >;
 
-export default function EditLoadPage() {
-  const { id } = useParams();
-  const [isLoading, setIsLoading] = useState(true);
-  const [load, setLoad] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
-  const { company } = useAuth();
+interface PageProps {
+  params: Promise<{ orgId: string; userId: string }>;
+  searchParams: { id?: string };
+}
 
-  useEffect(() => {
-    if (!id) return;
-    setIsLoading(true);
-    setError(null);
-    setLoad(null);
-    // Replace with your actual API endpoint
-    fetch(`/api/dispatch/${id}`)
-      .then(async res => {
-        if (!res.ok) throw new Error('Failed to fetch load');
-        const data = await res.json();
-        setLoad(data);
-      })
-      .catch(err => {
-        setError(err.message);
-      })
-      .finally(() => setIsLoading(false));
-  }, [id]);
+  const { orgId } = await params;
+  const loadId = searchParams?.id;
 
+  const company = await getCurrentCompany();
   if (!company) {
     return <div>Company not found. Please create a company first.</div>;
   }
 
-  if (isLoading) {
-    return (
-      <div className="mt-6 space-y-4">
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-64 w-full" />
-        <Skeleton className="h-64 w-full" />
-      </div>
-    );
+  if (!loadId) {
+    return notFound();
   }
 
-  if (error) {
-    return <div className="mt-6 text-red-500">Error: {error}</div>;
-  }
+  const [load, driversRes, vehiclesRes, trailersRes] = await Promise.all([
+    getLoadDetails(orgId, loadId),
+    getAvailableDriversForLoad(orgId),
+    getAvailableVehiclesForLoad(orgId, {}),
+    getAvailableTrailersForLoad(orgId, {}),
+  ]);
 
-  if (!load) {
-    return <div className="mt-6">Load not found</div>;
-  }
+  if (!load) return notFound();
+
+  const drivers = driversRes?.data || [];
+  const vehicles = [
+    ...(vehiclesRes?.data || []),
+    ...(trailersRes?.data || []),
+  ];
 
   return (
     <div className="mt-6">
-      <LoadForm drivers={[]} vehicles={[]} load={load} />
+      <LoadForm drivers={drivers} vehicles={vehicles} load={load} />
     </div>
   );
 }

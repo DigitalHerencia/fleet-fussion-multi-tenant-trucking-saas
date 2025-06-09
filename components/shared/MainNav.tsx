@@ -16,6 +16,7 @@ import { useClerk } from '@clerk/nextjs';
 
 import { cn } from '@/lib/utils/utils';
 import { useUserContext } from '@/components/auth/context';
+import { SystemRoles, type SystemRole } from '@/types/abac';
 
 // MainNavProps interface: defines props for MainNav component
 interface MainNavProps {
@@ -36,7 +37,7 @@ export function MainNav({
 }: MainNavProps) {
   const { signOut } = useClerk();
   const user = useUserContext();
-  const userRole = user?.role || 'viewer';
+  const userRole: SystemRole = user?.role || SystemRoles.VIEWER;
 
   // navLinks: array of navigation link objects for the sidebar
   const navLinks = [
@@ -45,49 +46,66 @@ export function MainNav({
       href: `/${orgId}/dashboard/${userId}`,
       label: 'Dashboard',
       icon: <Home className="h-5 w-5" />,
-      roles: ['admin', 'dispatcher', 'driver', 'compliance_officer', 'accountant', 'viewer'],
+      roles: [
+        SystemRoles.ADMIN,
+        SystemRoles.DISPATCHER,
+        SystemRoles.DRIVER,
+        SystemRoles.COMPLIANCE_OFFICER,
+        SystemRoles.ACCOUNTANT,
+        SystemRoles.VIEWER,
+      ],
     },
     {
       key: 'dispatch',
       href: `/${orgId}/dispatch/${userId}`,
       label: 'Dispatch',
       icon: <ClipboardList className="h-5 w-5" />,
-      roles: ['admin', 'dispatcher'],
+      roles: [SystemRoles.ADMIN, SystemRoles.DISPATCHER],
     },
     {
       key: 'drivers',
       href: `/${orgId}/drivers/${userId}`,
       label: 'Drivers',
       icon: <Users className="h-5 w-5" />,
-      roles: ['admin', 'dispatcher', 'compliance_officer', 'accountant'],
+      roles: [
+        SystemRoles.ADMIN,
+        SystemRoles.DISPATCHER,
+        SystemRoles.COMPLIANCE_OFFICER,
+        SystemRoles.ACCOUNTANT,
+      ],
     },
     {
       key: 'vehicles',
       href: `/${orgId}/vehicles`,
       label: 'Vehicles',
       icon: <Truck className="h-5 w-5" />,
-      roles: ['admin', 'dispatcher', 'compliance_officer', 'accountant'],
+      roles: [
+        SystemRoles.ADMIN,
+        SystemRoles.DISPATCHER,
+        SystemRoles.COMPLIANCE_OFFICER,
+        SystemRoles.ACCOUNTANT,
+      ],
     },
     {
       key: 'compliance',
       href: `/${orgId}/compliance/${userId}`,
       label: 'Compliance',
       icon: <FileText className="h-5 w-5" />,
-      roles: ['admin', 'compliance_officer'],
+      roles: [SystemRoles.ADMIN, SystemRoles.COMPLIANCE_OFFICER],
     },
     {
       key: 'ifta',
       href: `/${orgId}/ifta`,
       label: 'IFTA',
       icon: <Activity className="h-5 w-5" />,
-      roles: ['admin', 'accountant'],
+      roles: [SystemRoles.ADMIN, SystemRoles.ACCOUNTANT],
     },
     {
       key: 'analytics',
       href: `/${orgId}/analytics`,
       label: 'Analytics',
       icon: <BarChart2 className="h-5 w-5" />,
-      roles: ['admin', 'accountant'],
+      roles: [SystemRoles.ADMIN, SystemRoles.ACCOUNTANT],
     },
     {
       key: 'admin',
@@ -100,7 +118,7 @@ export function MainNav({
       href: `/${orgId}/settings`,
       label: 'Settings',
       icon: <Settings className="h-5 w-5" />,
-      roles: ['admin'],
+      roles: [SystemRoles.ADMIN],
     },
     {
       key: 'signout',

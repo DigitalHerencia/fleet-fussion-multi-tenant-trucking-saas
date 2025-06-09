@@ -1,7 +1,6 @@
-/** @type {import('next').NextConfig} */
 import path from 'path';
 
-const nextConfig: import('next').NextConfig = {
+const nextConfig = {
   reactStrictMode: true,
   images: {
     domains: [
@@ -46,6 +45,6 @@ const nextConfig: import('next').NextConfig = {
     }
     return config;
   },
-};
+} satisfies import('next').NextConfig;
 
 export default nextConfig;

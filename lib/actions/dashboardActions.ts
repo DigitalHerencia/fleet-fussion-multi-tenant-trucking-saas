@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 
 import prisma from '@/lib/database/db';
 import { hasPermission } from '@/lib/auth/permissions';
+import { handleError } from '@/lib/errors/handleError';
 import { getOrganizationKPIs } from '@/lib/fetchers/kpiFetchers';
 import type { OrganizationKPIs } from '@/types/kpi';
 
@@ -43,14 +44,7 @@ export async function getDashboardOverviewAction(): Promise<
 
     return { success: true, data: overview };
   } catch (error) {
-    console.error('Get dashboard overview error:', error);
-    return {
-      success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : 'Failed to get dashboard overview',
-    };
+    return handleError(error, 'Get Dashboard Overview');
   }
 }
 
@@ -273,8 +267,7 @@ export async function getDashboardAlertsAction(
 
     return { success: true, data: typedAlerts }; // Return top 10 alerts
   } catch (error) {
-    console.error('Error fetching dashboard alerts:', error);
-    return { success: false, error: 'Failed to fetch alerts.' };
+    return handleError(error, 'Get Dashboard Alerts');
   }
 }
 
@@ -418,8 +411,7 @@ export async function getTodaysScheduleAction(
 
     return { success: true, data: scheduleItems };
   } catch (error) {
-    console.error("Error fetching today's schedule:", error);
-    return { success: false, error: 'Failed to fetch schedule.' };
+    return handleError(error, "Get Today's Schedule");
   }
 }
 
@@ -445,11 +437,6 @@ export async function refreshDashboardAction(): Promise<
 
     return { success: true, data: { message: 'Dashboard data refreshed' } };
   } catch (error) {
-    console.error('Refresh dashboard error:', error);
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : 'Failed to refresh dashboard',
-    };
+    return handleError(error, 'Refresh Dashboard');
   }
 }

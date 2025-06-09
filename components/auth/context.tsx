@@ -29,6 +29,7 @@ import {
   Permission,
   ROLE_PERMISSIONS,
 } from '@/types/auth';
+import { SystemRoles } from '@/types/abac';
 import { authCache } from '@/lib/cache/auth-cache';
 
 // Create the auth context
@@ -44,6 +45,16 @@ const authStateCache = new Map<
 >();
 
 const AUTH_STATE_CACHE_TTL = 60 * 1000; // 1 minute cache for auth state
+
+// Remove expired cache entries
+function cleanupAuthStateCache() {
+  const now = Date.now();
+  for (const [key, value] of authStateCache) {
+    if (now - value.timestamp >= AUTH_STATE_CACHE_TTL) {
+      authStateCache.delete(key);
+    }
+  }
+}
 
 /**
  * Auth Provider Component
@@ -62,6 +73,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     company: null,
   });
 
+  // Periodic cleanup of stale cache entries
+  useEffect(() => {
+    const interval = setInterval(
+      cleanupAuthStateCache,
+      AUTH_STATE_CACHE_TTL
+    );
+    return () => clearInterval(interval);
+  }, []);
+
   // Memoized user context builder
   const buildUserContext = useCallback(
     (
@@ -70,7 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       userMetadata: ClerkUserMetadata,
       orgMetadata: ClerkOrganizationMetadata
     ): UserContext => {
-      const role: UserRole = userMetadata?.role || 'viewer';
+      const role: UserRole = userMetadata?.role || SystemRoles.VIEWER;
       const permissions: Permission[] =
         userMetadata?.permissions || ROLE_PERMISSIONS[role] || [];
 
@@ -135,11 +155,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     try {
       // Try to get cached state first
+      cleanupAuthStateCache();
       if (cacheKey) {
         const cached = authStateCache.get(cacheKey);
-        if (cached && Date.now() - cached.timestamp < AUTH_STATE_CACHE_TTL) {
-          setAuthState(cached.state);
-          return;
+        if (cached) {
+          if (Date.now() - cached.timestamp < AUTH_STATE_CACHE_TTL) {
+            setAuthState(cached.state);
+            return;
+          }
+          authStateCache.delete(cacheKey);
         }
       }
 
@@ -316,7 +340,7 @@ export function useAllPermissions(permissions: Permission[]): boolean {
  * Hook to check if user is admin
  */
 export function useIsAdmin(): boolean {
-  return useRole('admin');
+  return useRole(SystemRoles.ADMIN);
 }
 
 /**

@@ -7,25 +7,40 @@
 
 import { auth, clerkClient } from '@clerk/nextjs/server';
 import { revalidatePath } from 'next/cache';
-
 import prisma from '@/lib/database/db';
+import { handleError } from '@/lib/errors/handleError';
 import { SystemRoles } from '@/types/abac';
+import type { AdminActionResult } from '@/types/actions';
+import type { DatabaseUser } from '@/types/auth';
+import type { AuditLogEntry, OrganizationStats } from '@/types/admin';
 
-export interface AdminActionResult {
-  success: boolean;
-  error?: string;
-  data?: any;
+async function verifyAdminAccess(userId: string, orgId: string) {
+  const user = await db.user.findUnique({
+    where: { clerkId: userId },
+    select: { organizationId: true, role: true },
+  });
+  return (
+    user?.organizationId === orgId && user.role === SystemRoles.ADMIN
+  );
 }
 
 /**
  * Get all users in an organization (Admin only)
  */
+type OrgUser =
+  Pick<DatabaseUser, 'id' | 'email' | 'firstName' | 'lastName' | 'role' | 'isActive' | 'createdAt' | 'lastLogin'> &
+  { clerkId: string };
+
 export async function getOrganizationUsersAction(
   orgId: string
-): Promise<AdminActionResult> {
+): Promise<AdminActionResult<OrgUser[]>> {
   try {
     const { userId } = await auth();
     if (!userId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+    const isAdmin = await verifyAdminAccess(userId, orgId);
+    if (!isAdmin) {
       return { success: false, error: 'Unauthorized' };
     }
 
@@ -48,11 +63,7 @@ export async function getOrganizationUsersAction(
 
     return { success: true, data: users };
   } catch (error) {
-    console.error('Get organization users error:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to get users',
-    };
+    return handleError(error, 'Get Organization Users');
   }
 }
 
@@ -63,10 +74,14 @@ export async function updateUserRoleAction(
   orgId: string,
   targetUserId: string,
   newRole: string
-): Promise<AdminActionResult> {
+): Promise<AdminActionResult<void>> {
   try {
     const { userId } = await auth();
     if (!userId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+    const isAdmin = await verifyAdminAccess(userId, orgId);
+    if (!isAdmin) {
       return { success: false, error: 'Unauthorized' };
     }
 
@@ -84,12 +99,7 @@ export async function updateUserRoleAction(
     revalidatePath(`/dashboard/${orgId}/admin`);
     return { success: true };
   } catch (error) {
-    console.error('Update user role error:', error);
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : 'Failed to update user role',
-    };
+    return handleError(error, 'Update User Role');
   }
 }
 
@@ -99,10 +109,14 @@ export async function updateUserRoleAction(
 export async function deactivateUserAction(
   orgId: string,
   targetUserId: string
-): Promise<AdminActionResult> {
+): Promise<AdminActionResult<void>> {
   try {
     const { userId } = await auth();
     if (!userId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+    const isAdmin = await verifyAdminAccess(userId, orgId);
+    if (!isAdmin) {
       return { success: false, error: 'Unauthorized' };
     }
 
@@ -118,12 +132,7 @@ export async function deactivateUserAction(
     revalidatePath(`/dashboard/${orgId}/admin`);
     return { success: true };
   } catch (error) {
-    console.error('Deactivate user error:', error);
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : 'Failed to deactivate user',
-    };
+    return handleError(error, 'Deactivate User');
   }
 }
 
@@ -132,10 +141,14 @@ export async function deactivateUserAction(
  */
 export async function getAuditLogsAction(
   orgId: string
-): Promise<AdminActionResult> {
+): Promise<AdminActionResult<AuditLogEntry[]>> {
   try {
     const { userId } = await auth();
     if (!userId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+    const isAdmin = await verifyAdminAccess(userId, orgId);
+    if (!isAdmin) {
       return { success: false, error: 'Unauthorized' };
     }
 
@@ -155,12 +168,7 @@ export async function getAuditLogsAction(
 
     return { success: true, data: auditLogs };
   } catch (error) {
-    console.error('Get audit logs error:', error);
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : 'Failed to get audit logs',
-    };
+    return handleError(error, 'Get Audit Logs');
   }
 }
 
@@ -169,10 +177,14 @@ export async function getAuditLogsAction(
  */
 export async function getOrganizationStatsAction(
   orgId: string
-): Promise<AdminActionResult> {
+): Promise<AdminActionResult<OrganizationStats>> {
   try {
     const { userId } = await auth();
     if (!userId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+    const isAdmin = await verifyAdminAccess(userId, orgId);
+    if (!isAdmin) {
       return { success: false, error: 'Unauthorized' };
     }
 
@@ -198,24 +210,24 @@ export async function getOrganizationStatsAction(
 
     return { success: true, data: stats };
   } catch (error) {
-    console.error('Get organization stats error:', error);
-    return {
-      success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : 'Failed to get organization stats',
-    };
+    return handleError(error, 'Get Organization Stats');
   }
 }
 
 /**
  * Bulk invite users (placeholder implementation)
  */
-export async function inviteUsersAction(orgId: string, formData: FormData) {
+export async function inviteUsersAction(
+  orgId: string,
+  formData: FormData
+): Promise<AdminActionResult<void>> {
   try {
     const { userId } = await auth();
     if (!userId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+    const isAdmin = await verifyAdminAccess(userId, orgId);
+    if (!isAdmin) {
       return { success: false, error: 'Unauthorized' };
     }
 
@@ -224,18 +236,21 @@ export async function inviteUsersAction(orgId: string, formData: FormData) {
     revalidatePath(`/${orgId}/admin`);
     return { success: true };
   } catch (error) {
-    console.error('Invite users error:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to invite users',
-    };
+    return handleError(error, 'Invite Users');
   }
 }
 
-export async function activateUsersAction(orgId: string, formData: FormData) {
+export async function activateUsersAction(
+  orgId: string,
+  formData: FormData
+): Promise<AdminActionResult<void>> {
   try {
     const { userId } = await auth();
     if (!userId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+    const isAdmin = await verifyAdminAccess(userId, orgId);
+    if (!isAdmin) {
       return { success: false, error: 'Unauthorized' };
     }
     await prisma.user.updateMany({
@@ -245,18 +260,21 @@ export async function activateUsersAction(orgId: string, formData: FormData) {
     revalidatePath(`/${orgId}/admin`);
     return { success: true };
   } catch (error) {
-    console.error('Activate users error:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to activate users',
-    };
+    return handleError(error, 'Activate Users');
   }
 }
 
-export async function deactivateUsersAction(orgId: string, formData: FormData) {
+export async function deactivateUsersAction(
+  orgId: string,
+  formData: FormData
+): Promise<AdminActionResult<void>> {
   try {
     const { userId } = await auth();
     if (!userId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+    const isAdmin = await verifyAdminAccess(userId, orgId);
+    if (!isAdmin) {
       return { success: false, error: 'Unauthorized' };
     }
     await prisma.user.updateMany({
@@ -266,11 +284,6 @@ export async function deactivateUsersAction(orgId: string, formData: FormData) {
     revalidatePath(`/${orgId}/admin`);
     return { success: true };
   } catch (error) {
-    console.error('Deactivate users error:', error);
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : 'Failed to deactivate users',
-    };
+    return handleError(error, 'Deactivate Users');
   }
 }

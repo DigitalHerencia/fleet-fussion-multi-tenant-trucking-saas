@@ -3,6 +3,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
+import { handleError } from '@/lib/errors/handleError';
 
 import type {
   Driver,
@@ -130,13 +131,7 @@ export async function createDriverAction(
       data: newDriver as unknown as Driver,
     };
   } catch (error) {
-    console.error('Error creating driver:', error);
-
-    return {
-      success: false,
-      error: 'Failed to create driver',
-      code: 'INTERNAL_ERROR',
-    };
+    return handleError(error, 'Create Driver');
   }
 }
 
@@ -176,7 +171,10 @@ export async function updateDriverAction(
     const validatedData = driverUpdateSchema.parse(data);
 
     // Prepare update object
-    const updateData: any = {
+    const updateData: Partial<DriverUpdateData> & {
+      updatedAt: string;
+      updatedBy: string;
+    } = {
       updatedAt: new Date().toISOString(),
       updatedBy: userId,
     };
@@ -245,13 +243,7 @@ export async function updateDriverAction(
       data: updatedDriver as unknown as Driver,
     };
   } catch (error) {
-    console.error('Error updating driver:', error);
-
-    return {
-      success: false,
-      error: 'Failed to update driver',
-      code: 'INTERNAL_ERROR',
-    };
+    return handleError(error, 'Update Driver');
   }
 }
 
@@ -304,12 +296,7 @@ export async function deleteDriverAction(
 
     return { success: true };
   } catch (error) {
-    console.error('Error deleting driver:', error);
-    return {
-      success: false,
-      error: 'Failed to delete driver',
-      code: 'INTERNAL_ERROR',
-    };
+    return handleError(error, 'Delete Driver');
   }
 }
 
@@ -351,7 +338,10 @@ export async function updateDriverStatusAction(
     const validatedData = driverStatusUpdateSchema.parse(statusUpdate);
 
     // Update driver status
-    const updateData: any = {
+    const updateData: Partial<DriverUpdateData> & {
+      updatedAt: string;
+      updatedBy: string;
+    } = {
       status: validatedData.status,
       updatedAt: new Date().toISOString(),
       updatedBy: userId,
@@ -379,12 +369,7 @@ export async function updateDriverStatusAction(
       data: updatedDriver as unknown as Driver,
     };
   } catch (error) {
-    console.error('Error updating driver status:', error);
-    return {
-      success: false,
-      error: 'Failed to update driver status',
-      code: 'INTERNAL_ERROR',
-    };
+    return handleError(error, 'Update Driver Status');
   }
 }
 
@@ -435,7 +420,10 @@ export async function bulkUpdateDriversAction(
         // Check permissions
 
         // Prepare update
-        const updateData: any = {
+        const updateData: Partial<DriverUpdateData> & {
+          updatedAt: string;
+          updatedBy: string;
+        } = {
           updatedAt: new Date().toISOString(),
           updatedBy: userId,
         };
@@ -458,7 +446,7 @@ export async function bulkUpdateDriversAction(
 
         succeeded++;
       } catch (error) {
-        console.error(`Error updating driver ${driverId}:`, error);
+        handleError(error, `Bulk Update Driver ${driverId}`);
         errors.push({ driverId, error: 'Update failed' });
         failed++;
       }
@@ -474,7 +462,7 @@ export async function bulkUpdateDriversAction(
       errors,
     };
   } catch (error) {
-    console.error('Error in bulk update:', error);
+    handleError(error, 'Bulk Update Drivers');
     return {
       success: false,
       processed: bulkUpdate.driverIds.length,
@@ -563,7 +551,7 @@ export async function unassignDriverAction(
 
     // Start database transaction for unassignment
     await db.$transaction(async tx => {
-      const updates: any[] = [];
+      const updates: Promise<unknown>[] = [];
 
       // Unassign from all active loads
       for (const load of driver.loads) {
@@ -618,11 +606,6 @@ export async function unassignDriverAction(
 
     return { success: true };
   } catch (error) {
-    console.error('Error unassigning driver:', error);
-    return {
-      success: false,
-      error: 'Failed to unassign driver',
-      code: 'INTERNAL_ERROR',
-    };
+    return handleError(error, 'Unassign Driver');
   }
 }

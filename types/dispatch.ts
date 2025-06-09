@@ -3,6 +3,7 @@
  */
 
 import type { User } from './index';
+import type { Metadata } from './metadata';
 
 export interface Load {
   id: string;
@@ -260,7 +261,7 @@ export interface LoadDocument {
   uploadedAt: Date;
   uploadedBy: string;
   description?: string;
-  metadata?: Record<string, any>;
+  metadata?: Metadata;
 }
 
 export interface Location {

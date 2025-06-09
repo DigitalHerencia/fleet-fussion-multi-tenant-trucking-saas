@@ -2,8 +2,9 @@
 'use server';
 
 import { auth } from '@clerk/nextjs/server';
-
 import { db } from '@/lib/database/db';
+import { handleError } from '@/lib/errors/handleError';
+
 
 export interface AuditLogEntry {
   id: string;
@@ -12,7 +13,7 @@ export interface AuditLogEntry {
   action: string;
   resource: string;
   resourceId?: string;
-  metadata: Record<string, any>;
+  metadata: Metadata;
   ipAddress?: string;
   userAgent?: string;
   timestamp: Date;
@@ -25,7 +26,7 @@ export async function logAuditEvent(
   action: string,
   resource: string,
   resourceId?: string,
-  metadata: Record<string, any> = {},
+  metadata: Metadata = {},
   ipAddress?: string,
   userAgent?: string
 ) {
@@ -36,12 +37,7 @@ export async function logAuditEvent(
       throw new Error('User must be authenticated');
     }
   } catch (error) {
-    console.error('Failed to log audit event:', error);
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : 'Failed to log audit event',
-    };
+    return handleError(error, 'Log Audit Event');
   }
 }
 
@@ -118,12 +114,7 @@ export async function getAuditLogs(
       },
     };
   } catch (error) {
-    console.error('Failed to get audit logs:', error);
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : 'Failed to get audit logs',
-    };
+    return handleError(error, 'Get Audit Logs');
   }
 }
 
@@ -133,7 +124,7 @@ export async function getAuditLogs(
 export async function logDriverAction(
   action: string,
   driverId: string,
-  metadata: Record<string, any> = {},
+  metadata: Metadata = {},
   p0: string,
   entityType: any,
   p1: string,
@@ -151,7 +142,7 @@ export async function logDriverAction(
 export async function logVehicleAction(
   action: string,
   vehicleId: string,
-  metadata: Record<string, any> = {}
+  metadata: Metadata = {}
 ) {
   return logAuditEvent(action, 'vehicle', vehicleId, metadata);
 }
@@ -162,7 +153,7 @@ export async function logVehicleAction(
 export async function logDispatchAction(
   action: string,
   loadId: string,
-  metadata: Record<string, any> = {}
+  metadata: Metadata = {}
 ) {
   return logAuditEvent(action, 'dispatch', loadId, metadata);
 }
@@ -173,7 +164,7 @@ export async function logDispatchAction(
 export async function logComplianceAction(
   action: string,
   resourceId: string,
-  metadata: Record<string, any> = {}
+  metadata: Metadata = {}
 ) {
   return logAuditEvent(action, 'compliance', resourceId, metadata);
 }
@@ -184,7 +175,7 @@ export async function logComplianceAction(
 export async function logIftaAction(
   action: string,
   reportId: string,
-  metadata: Record<string, any> = {}
+  metadata: Metadata = {}
 ) {
   return logAuditEvent(action, 'ifta', reportId, metadata);
 }
@@ -217,12 +208,7 @@ export async function cleanupAuditLogs(daysToKeep: number = 365) {
       deletedCount: deletedCount.count,
     };
   } catch (error) {
-    console.error('Failed to cleanup audit logs:', error);
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : 'Failed to cleanup audit logs',
-    };
+    return handleError(error, 'Cleanup Audit Logs');
   }
 }
 
@@ -291,11 +277,6 @@ export async function exportAuditLogs(
       filename: `audit-logs-${new Date().toISOString().split('T')[0]}.csv`,
     };
   } catch (error) {
-    console.error('Failed to export audit logs:', error);
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : 'Failed to export audit logs',
-    };
+    return handleError(error, 'Export Audit Logs');
   }
 }
