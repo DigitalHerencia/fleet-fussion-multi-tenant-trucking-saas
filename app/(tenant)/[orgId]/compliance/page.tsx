@@ -22,13 +22,11 @@ import { ComplianceDocuments } from '@/components/compliance/compliance-document
 import { PageHeader } from '@/components/shared/PageHeader';
 
 interface CompliancePageProps {
-  params: Promise<{
-    orgId: string;
-  }>;
+  params: { orgId: string; userId?: string };
 }
 
 export default async function CompliancePage({ params }: CompliancePageProps) {
-  const { orgId } = await params;
+  const { orgId, userId } = params;
   return (
     <div className="compliance-page flex flex-col gap-6 p-4 md:p-6">
       <div className="mt-14 mb-2 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">

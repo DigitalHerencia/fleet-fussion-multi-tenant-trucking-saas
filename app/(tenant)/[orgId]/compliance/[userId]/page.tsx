@@ -33,9 +33,9 @@ import { Progress } from '@/components/ui/progress';
 export default async function ComplianceDashboardPage({
   params,
 }: {
-  params: Promise<{ orgId: string }>;
+  params: { orgId: string; userId?: string };
 }) {
-  const { orgId } = await params;
+  const { orgId, userId } = params;
   return (
     <>
       <div className="space-y-6 p-6 pt-8">
