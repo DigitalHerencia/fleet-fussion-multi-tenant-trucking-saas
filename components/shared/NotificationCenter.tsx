@@ -18,15 +18,20 @@ export function NotificationCenter() {
   useEffect(() => {
     if (!org) return;
     startTransition(async () => {
-      const data = await fetchNotifications(org.id);
-      setNotifications(data);
+      const result = await fetchNotifications(org.id);
+      if (result.success && result.data) {
+        setNotifications(result.data);
+      }
     });
   }, [org]);
 
   const handleRead = (id: string) => {
     startTransition(async () => {
-      await readNotification(id);
-      setNotifications(n => n.filter(notif => notif.id !== id));
+      if (!org) return;
+      const result = await readNotification(id, org.id);
+      if (result.success) {
+        setNotifications(n => n.filter(notif => notif.id !== id));
+      }
     });
   };
 

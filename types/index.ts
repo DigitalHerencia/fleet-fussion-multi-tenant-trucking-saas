@@ -91,4 +91,4 @@ export interface ApiResponse<T> {
 }
 
 export type { GlobalSearchResultItem } from './search';
-export type { Notification } from './notifications';
+export type { Notification, NotificationActionResult } from './notifications';
