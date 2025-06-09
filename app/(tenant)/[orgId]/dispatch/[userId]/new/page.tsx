@@ -1,38 +1,37 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-
 import { LoadForm } from '@/components/dispatch/load-form';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useAuth } from '@/components/auth/context';
+import {
+  getAvailableDriversForLoad,
+  getAvailableVehiclesForLoad,
+  getAvailableTrailersForLoad,
+} from '@/lib/fetchers/dispatchFetchers';
+import { getCurrentCompany } from '@/lib/auth/auth';
 
-export default function NewLoadPage() {
-  const [isLoading, setIsLoading] = useState(true);
-  const { company } = useAuth();
+interface PageProps {
+  params: Promise<{ orgId: string; userId: string }>;
+}
 
-  useEffect(() => {
-    // Simulate loading data
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
+export default async function NewLoadPage({ params }: PageProps) {
+  const { orgId } = await params;
+  const company = await getCurrentCompany();
   if (!company) {
     return <div>Company not found. Please create a company first.</div>;
   }
 
+  const [driversRes, vehiclesRes, trailersRes] = await Promise.all([
+    getAvailableDriversForLoad(orgId),
+    getAvailableVehiclesForLoad(orgId, {}),
+    getAvailableTrailersForLoad(orgId, {}),
+  ]);
+
+  const drivers = driversRes?.data || [];
+  const vehicles = [
+    ...(vehiclesRes?.data || []),
+    ...(trailersRes?.data || []),
+  ];
+
   return (
-    <>
-      <div className="mt-6 space-y-4">
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-64 w-full" />
-        <Skeleton className="h-64 w-full" />
-      </div>
-      <div className="mt-6">
-        <LoadForm drivers={[]} vehicles={[]} />
-      </div>
-    </>
+    <div className="mt-6">
+      <LoadForm drivers={drivers} vehicles={vehicles} />
+    </div>
   );
 }
