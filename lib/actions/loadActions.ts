@@ -36,7 +36,7 @@ export async function updateLoadAction(id: string, data: UpdateLoadInput) {
       trailer,
       ...rest
     } = validated;
-    const updateData: any = {
+    const updateData: Partial<UpdateLoadInput> & { updatedAt: Date } = {
       ...rest,
       updatedAt: new Date(),
     };

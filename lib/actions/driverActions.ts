@@ -176,7 +176,10 @@ export async function updateDriverAction(
     const validatedData = driverUpdateSchema.parse(data);
 
     // Prepare update object
-    const updateData: any = {
+    const updateData: Partial<DriverUpdateData> & {
+      updatedAt: string;
+      updatedBy: string;
+    } = {
       updatedAt: new Date().toISOString(),
       updatedBy: userId,
     };
@@ -351,7 +354,10 @@ export async function updateDriverStatusAction(
     const validatedData = driverStatusUpdateSchema.parse(statusUpdate);
 
     // Update driver status
-    const updateData: any = {
+    const updateData: Partial<DriverUpdateData> & {
+      updatedAt: string;
+      updatedBy: string;
+    } = {
       status: validatedData.status,
       updatedAt: new Date().toISOString(),
       updatedBy: userId,
@@ -435,7 +441,10 @@ export async function bulkUpdateDriversAction(
         // Check permissions
 
         // Prepare update
-        const updateData: any = {
+        const updateData: Partial<DriverUpdateData> & {
+          updatedAt: string;
+          updatedBy: string;
+        } = {
           updatedAt: new Date().toISOString(),
           updatedBy: userId,
         };
@@ -563,7 +572,7 @@ export async function unassignDriverAction(
 
     // Start database transaction for unassignment
     await db.$transaction(async tx => {
-      const updates: any[] = [];
+      const updates: Promise<unknown>[] = [];
 
       // Unassign from all active loads
       for (const load of driver.loads) {
