@@ -9,9 +9,9 @@ import { AuditLogViewer } from '@/components/admin/AuditLogViewer';
 export default async function AdminPage({
   params,
 }: {
-  params: Promise<{ orgId: string }>;
+  params: { orgId: string; userId?: string };
 }) {
-  const { orgId } = await params;
+  const { orgId, userId } = params;
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-3xl font-bold">Admin Dashboard</h1>

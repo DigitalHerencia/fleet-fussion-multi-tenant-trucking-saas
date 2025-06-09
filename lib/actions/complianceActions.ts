@@ -14,6 +14,7 @@ import {
   createSafetyEventSchema,
   bulkComplianceOperationSchema,
 } from '@/schemas/compliance';
+import type { UpdateComplianceDocumentInput } from '@/schemas/compliance';
 import { getCurrentUser } from '@/lib/auth/auth';
 import { handleError } from '@/lib/errors/handleError';
 
@@ -133,7 +134,6 @@ export async function createComplianceDocument(
 
     return { success: true, data: document };
   } catch (error) {
-    console.error('Error creating compliance document:', error);
     return handleError(error, 'Compliance Action');
   }
 }
@@ -161,7 +161,10 @@ export async function updateComplianceDocument(
     }
 
     // Map name to title if present
-    const updateData: any = { ...validatedData, updatedAt: new Date() };
+    const updateData: Partial<UpdateComplianceDocumentInput> & { updatedAt: Date } = {
+      ...validatedData,
+      updatedAt: new Date(),
+    };
     if (validatedData.name) {
       updateData.title = validatedData.name;
       delete updateData.name;
@@ -222,7 +225,6 @@ export async function updateComplianceDocument(
 
     return { success: true, data: updatedDocument };
   } catch (error) {
-    console.error('Error updating compliance document:', error);
     return handleError(error, 'Compliance Action');
   }
 }
@@ -261,7 +263,6 @@ export async function deleteComplianceDocument(id: string) {
 
     return { success: true };
   } catch (error) {
-    console.error('Error deleting compliance document:', error);
     return handleError(error, 'Compliance Action');
   }
 }
@@ -295,7 +296,6 @@ export async function createDVIRReport(data: z.infer<typeof createDvirSchema>) {
 
     // revalidatePath('/[orgId]/compliance/dvir');
   } catch (error) {
-    console.error('Error creating DVIR report:', error);
     return handleError(error, 'Compliance Action');
   }
 }
@@ -387,7 +387,6 @@ export async function bulkUpdateComplianceDocuments(
       data: { successful, failed, total: validatedData.ids.length },
     };
   } catch (error) {
-    console.error('Error bulk updating compliance documents:', error);
     return handleError(error, 'Compliance Action');
   }
 }
@@ -527,7 +526,6 @@ export async function generateExpirationAlertsAction(daysAhead = 30) {
 
     return { success: true, count: documents.length };
   } catch (error) {
-    console.error('Error generating expiration alerts:', error);
     return handleError(error, 'Generate Expiration Alerts');
   }
 }

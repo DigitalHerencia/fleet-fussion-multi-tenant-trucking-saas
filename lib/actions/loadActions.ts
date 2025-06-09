@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { LoadStatus as PrismaLoadStatus } from '@prisma/client';
 
 import { db } from '@/lib/database/db';
+import { handleError } from '@/lib/errors/handleError';
 import {
   updateLoadSchema,
   loadAssignmentSchema,
@@ -36,7 +37,7 @@ export async function updateLoadAction(id: string, data: UpdateLoadInput) {
       trailer,
       ...rest
     } = validated;
-    const updateData: any = {
+    const updateData: Partial<UpdateLoadInput> & { updatedAt: Date } = {
       ...rest,
       updatedAt: new Date(),
     };
@@ -80,8 +81,7 @@ export async function updateLoadAction(id: string, data: UpdateLoadInput) {
     revalidatePath(`/[orgId]/dispatch/${id}`, 'page');
     return { success: true, data: load };
   } catch (error) {
-    console.error('Error updating load:', error);
-    return { success: false, error: 'Failed to update load' };
+    return handleError(error, 'Update Load');
   }
 }
 
@@ -104,8 +104,7 @@ export async function updateLoadStatus(id: string, status: string) {
     revalidatePath('/[orgId]/dispatch', 'page');
     return { success: true, data: load };
   } catch (error) {
-    console.error('Error updating load status:', error);
-    return { success: false, error: 'Failed to update load status' };
+    return handleError(error, 'Update Load Status');
   }
 }
 
@@ -124,8 +123,7 @@ export async function deleteLoadAction(id: string) {
     revalidatePath('/[orgId]/dispatch', 'page');
     return { success: true };
   } catch (error) {
-    console.error('Error deleting load:', error);
-    return { success: false, error: 'Failed to delete load' };
+    return handleError(error, 'Delete Load');
   }
 }
 
@@ -151,7 +149,6 @@ export async function assignLoadAction(data: LoadAssignmentInput) {
     revalidatePath('/[orgId]/dispatch', 'page');
     return { success: true, data: load };
   } catch (error) {
-    console.error('Error assigning load:', error);
-    return { success: false, error: 'Failed to assign load' };
+    return handleError(error, 'Assign Load');
   }
 }

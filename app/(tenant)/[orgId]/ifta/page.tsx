@@ -75,9 +75,9 @@ interface IftaData {
 export default async function IFTAPage({
   params,
 }: {
-  params: Promise<{ orgId: string }>;
+  params: { orgId: string; userId?: string };
 }) {
-  const { orgId } = await params;
+  const { orgId, userId } = params;
   // Default to current quarter/year, but allow query param override in the future
   const { quarter, year } = getCurrentQuarterAndYear();
   const period = `Q${quarter}`;

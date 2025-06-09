@@ -14,9 +14,9 @@ import { DashboardSkeleton } from '@/components/dashboard/dashboard-skeleton';
 export default async function DashboardPage({
   params,
 }: {
-  params: Promise<{ orgId: string }>;
+  params: { orgId: string; userId?: string };
 }) {
-  const { orgId } = await params;
+  const { orgId, userId } = params;
 
   return (
     <div className="min-h-screen space-y-6 bg-neutral-900 p-6 pt-8">

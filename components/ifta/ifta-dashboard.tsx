@@ -28,11 +28,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
-import {
-  getIftaDataForPeriod,
-  getIftaTripData,
-  getIftaFuelPurchases,
-} from '@/lib/fetchers/iftaFetchers';
+import { fetchIftaDataAction } from '@/lib/actions/iftaActions';
 
 import { IftaReportTable } from './ifta-report-table';
 import { IftaTripTable } from './ifta-trip-table';
@@ -59,10 +55,12 @@ export function IftaDashboard() {
       try {
         setLoading(true);
         const [quarterPart, yearPart] = quarter.split('-');
+
         const data = await getIftaDataForPeriod(orgId, quarterPart, yearPart);
         if (validateIftaPeriodData(data)) {
           setIftaData(data);
           setError(null);
+
         } else {
           throw new Error('Invalid IFTA data structure');
         }
