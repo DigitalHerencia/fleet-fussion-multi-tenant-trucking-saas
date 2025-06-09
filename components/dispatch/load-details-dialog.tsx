@@ -41,10 +41,7 @@ import {
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { formatDate, formatCurrency } from '@/lib/utils/utils';
-import {
-  DocumentUpload,
-  DocumentListEmpty,
-} from '@/components/shared/DocumentUpload';
+import { LoadDocumentUpload } from '@/components/dispatch/load-document-upload';
 import type {
   Customer,
   LoadAssignedDriver,
@@ -473,21 +470,14 @@ export function LoadDetailsDialog({
             </TabsContent>
 
             <TabsContent value="documents" className="mt-4 space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Load Documents</CardTitle>
-                  <CardDescription>
-                    Manage documents related to this load
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <DocumentUpload
-                    label="Upload Document"
-                    description="Add BOL, POD, or other documents"
-                  />
-                  <DocumentListEmpty />
-                </CardContent>
-              </Card>
+              <LoadDocumentUpload
+                loadId={load.id}
+                documents={load.documents}
+                onDocumentUploaded={() => {
+                  // Optionally refresh the load data here
+                  // This could trigger a refetch of the load details
+                }}
+              />
             </TabsContent>
 
             <TabsContent value="history" className="mt-4 space-y-4">

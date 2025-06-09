@@ -128,12 +128,12 @@ export default async function DispatchPage({
           </p>
         </div>
         {/* Add quick actions or filters here if needed */}
-      </div>
-      <div className="w-full">
+      </div>      <div className="w-full">
         <DispatchBoard
           loads={loadsList}
           drivers={drivers}
           vehicles={vehicleList}
+          orgId={orgId}
         />
       </div>
     </div>

@@ -112,6 +112,8 @@ model Vehicle {
   currentOdometer        Int?                 @map("current_odometer")
   lastOdometerUpdate     DateTime?            @map("last_odometer_update")
   fuelType               String?              @map("fuel_type")
+  maxWeight              Int?                 @map("max_weight")
+  maxLength              Decimal?             @map("max_length") @db.Decimal(8, 2)
   lastInspectionDate     DateTime?            @map("last_inspection_date") @db.Date
   insuranceExpiration    DateTime?            @map("insurance_expiration") @db.Date
   notes                  String?
@@ -211,6 +213,13 @@ model Load {
   actualPickupDate      DateTime?         @map("actual_pickup_date")
   scheduledDeliveryDate DateTime?         @map("scheduled_delivery_date")
   actualDeliveryDate    DateTime?         @map("actual_delivery_date")
+  // Alias fields for code compatibility
+  pickupDate            DateTime?         @map("pickup_date")
+  deliveryDate          DateTime?         @map("delivery_date")
+  origin                Json?             @map("origin_json")
+  destination           Json?             @map("destination_json")
+  cargo                 Json?             @map("cargo_json")
+  equipment             Json?             @map("equipment_json")
   weight                Int?
   pieces                Int?
   commodity             String?
@@ -227,6 +236,7 @@ model Load {
   createdBy             String?           @map("created_by")
   lastModifiedBy        String?           @map("last_modified_by")
   statusEvents          LoadStatusEvent[]
+  documents             LoadDocument[]
   driver                Driver?           @relation(fields: [driverId], references: [id])
   organization          Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   trailer               Vehicle?          @relation("TrailerLoads", fields: [trailerId], references: [id])
@@ -257,6 +267,29 @@ model LoadStatusEvent {
 
   @@index([loadId])
   @@map("load_status_events")
+}
+
+model LoadDocument {
+  id           String   @id @default(uuid())
+  loadId       String   @map("load_id")
+  name         String
+  type         String
+  category     String?
+  description  String?
+  isRequired   Boolean  @default(false) @map("is_required")
+  url          String?
+  fileSize     Int?     @map("file_size")
+  mimeType     String?  @map("mime_type")
+  isReceived   Boolean  @default(false) @map("is_received")
+  receivedAt   DateTime? @map("received_at")
+  uploadedAt   DateTime? @map("uploaded_at")
+  uploadedBy   String?  @map("uploaded_by")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  load         Load     @relation(fields: [loadId], references: [id], onDelete: Cascade)
+
+  @@index([loadId])
+  @@map("load_documents")
 }
 
 model ComplianceDocument {

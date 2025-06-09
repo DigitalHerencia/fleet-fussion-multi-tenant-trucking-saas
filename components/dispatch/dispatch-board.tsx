@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { PlusCircle, Filter } from 'lucide-react';
+import { PlusCircle, Filter, Wifi, WifiOff, Activity, RefreshCw, ChevronLeft, ChevronRight, Eye, BarChart3 } from 'lucide-react';
+import { useDispatchRealtime } from '@/hooks/use-dispatch-realtime';
 import { string } from 'zod';
 import type { $Enums, LoadPriority, LoadStatusEvent } from '@prisma/client';
 
@@ -108,12 +109,14 @@ interface DispatchBoardProps {
   loads: Load[];
   drivers: Driver[];
   vehicles: Vehicle[];
+  orgId: string;
 }
 
 export function DispatchBoard({
   loads,
   drivers,
   vehicles,
+  orgId,
 }: DispatchBoardProps) {
   const router = useRouter();
   const [selectedLoad, setSelectedLoad] = useState<Load | null>(null);
@@ -121,7 +124,18 @@ export function DispatchBoard({
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
-
+  // Real-time updates
+  const {
+    isConnected,
+    connectionStatus,
+    updateCount,
+    lastUpdate,
+    reconnect
+  } = useDispatchRealtime({
+    orgId,
+    pollingInterval: 30000, // 30 seconds
+    enableSSE: true
+  });
   // Filter states
   const [filters, setFilters] = useState({
     status: '',
@@ -133,6 +147,11 @@ export function DispatchBoard({
 
   // Loading states for status updates
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+  // Pagination state for performance with large datasets
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(50); // Configurable page size
+  const [viewMode, setViewMode] = useState<'paginated' | 'all'>('paginated');
 
   const pendingLoads = loads.filter(load => load.status === 'pending');
   const assignedLoads = loads.filter(load => load.status === 'assigned');
@@ -207,7 +226,6 @@ export function DispatchBoard({
       setUpdatingId(null);
     }
   };
-
   // Apply filters to loads
   const filterLoads = (loadsToFilter: Load[]) => {
     return loadsToFilter.filter(load => {
@@ -229,12 +247,37 @@ export function DispatchBoard({
     });
   };
 
+  // Pagination helper
+  const paginateLoads = (loadsToPage: Load[]) => {
+    if (viewMode === 'all' || loadsToPage.length <= itemsPerPage) {
+      return loadsToPage;
+    }
+    
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return loadsToPage.slice(startIndex, endIndex);
+  };
+
+  // Get total pages for a load array
+  const getTotalPages = (totalItems: number) => {
+    return Math.ceil(totalItems / itemsPerPage);
+  };
   // Apply filters to each load category
   const filteredLoads = filterLoads(loads);
   const filteredPendingLoads = filterLoads(pendingLoads);
   const filteredAssignedLoads = filterLoads(assignedLoads);
   const filteredInTransitLoads = filterLoads(inTransitLoads);
   const filteredCompletedLoads = filterLoads(completedLoads);
+
+  // Apply pagination to filtered results
+  const paginatedLoads = paginateLoads(filteredLoads);
+  const paginatedPendingLoads = paginateLoads(filteredPendingLoads);
+  const paginatedAssignedLoads = paginateLoads(filteredAssignedLoads);
+  const paginatedInTransitLoads = paginateLoads(filteredInTransitLoads);
+  const paginatedCompletedLoads = paginateLoads(filteredCompletedLoads);
+
+  // Performance indicator
+  const shouldShowPagination = loads.length > itemsPerPage;
 
   // Map vehicles to match LoadDetailsDialog expected type
   const mappedVehicles = vehicles.map(v => ({
@@ -250,9 +293,61 @@ export function DispatchBoard({
       </div>
     );
   }
-
   return (
-    <div className="mt-6 space-y-6">
+    <div className="mt-6 space-y-6">      {/* Real-time status indicator */}
+      <Card className="border-zinc-800 bg-zinc-900">
+        <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+            <div className="flex items-center gap-2">
+              {isConnected ? (
+                <div className="relative">
+                  <Wifi className="h-4 w-4 text-green-500" />
+                  {connectionStatus === 'connected' && (
+                    <div className="absolute -right-1 -top-1 h-2 w-2 animate-pulse rounded-full bg-green-400"></div>
+                  )}
+                </div>
+              ) : (
+                <WifiOff className="h-4 w-4 text-red-500" />
+              )}
+              <span className="text-sm font-medium">
+                {connectionStatus === 'connected' ? 'Live Updates' : 
+                 connectionStatus === 'connecting' ? 'Connecting...' : 'Disconnected'}
+              </span>
+            </div>
+            {updateCount > 0 && (
+              <div className="flex items-center gap-2 text-sm text-gray-400">
+                <Activity className="h-3 w-3 text-blue-400" />
+                <span className="hidden sm:inline">{updateCount} updates received</span>
+                <span className="sm:hidden">{updateCount} updates</span>
+                {lastUpdate && (
+                  <span className="hidden sm:inline">• Last: {lastUpdate.toLocaleTimeString()}</span>
+                )}
+              </div>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            {connectionStatus === 'connected' && (
+              <Badge variant="outline" className="border-green-500/30 bg-green-500/10 text-green-400">
+                <span className="hidden sm:inline">Real-time</span>
+                <span className="sm:hidden">Live</span>
+              </Badge>
+            )}
+            {!isConnected && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={reconnect}
+                className="text-xs"
+              >
+                <RefreshCw className="mr-1 h-3 w-3" />
+                <span className="hidden sm:inline">Reconnect</span>
+                <span className="sm:hidden">Retry</span>
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Header with actions */}
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex w-full flex-col gap-2 md:w-auto">
@@ -274,14 +369,93 @@ export function DispatchBoard({
               <Filter className="mr-2 h-4 w-4" />
               Filter
             </Button>
-          </div>
-
-          {/* Quick stats */}
+          </div>          {/* Quick stats */}
           <div className="text-muted-foreground text-sm">
-            {filteredLoads.length} loads total • {filteredPendingLoads.length}{' '}
-            pending • {filteredInTransitLoads.length} in transit
+            <span className="hidden sm:inline">
+              {filteredLoads.length} loads total • {filteredPendingLoads.length} pending • {filteredInTransitLoads.length} in transit
+            </span>
+            <span className="sm:hidden">
+              {filteredLoads.length} total • {filteredPendingLoads.length} pending • {filteredInTransitLoads.length} transit
+            </span>
           </div>
         </div>
+
+        {/* Pagination and view controls */}
+        {shouldShowPagination && (
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+            {/* View mode toggle */}
+            <div className="flex items-center gap-2">
+              <Label htmlFor="view-mode" className="text-sm text-muted-foreground">
+                View:
+              </Label>
+              <Select
+                value={viewMode}
+                onValueChange={(value: 'paginated' | 'all') => {
+                  setViewMode(value);
+                  setCurrentPage(1);
+                }}
+              >
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="paginated">
+                    <div className="flex items-center gap-2">
+                      <BarChart3 className="h-4 w-4" />
+                      Paginated
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="all">
+                    <div className="flex items-center gap-2">
+                      <Eye className="h-4 w-4" />
+                      Show All
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Pagination controls */}
+            {viewMode === 'paginated' && (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="h-8 w-8 p-0"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                
+                <span className="text-sm text-muted-foreground">
+                  Page {currentPage} of {getTotalPages(filteredLoads.length)}
+                </span>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(getTotalPages(filteredLoads.length), prev + 1))}
+                  disabled={currentPage === getTotalPages(filteredLoads.length)}
+                  className="h-8 w-8 p-0"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+
+            {/* Performance indicator */}
+            <div className="text-xs text-muted-foreground">
+              {viewMode === 'all' ? (
+                <span className="text-amber-400">⚠ Showing all {filteredLoads.length} loads</span>
+              ) : (
+                <span>
+                  Showing {((currentPage - 1) * itemsPerPage) + 1}-{Math.min(currentPage * itemsPerPage, filteredLoads.length)} of {filteredLoads.length}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       <Tabs
@@ -368,12 +542,10 @@ export function DispatchBoard({
               </Badge>
             </TabsTrigger>
           </TabsList>
-        </div>
-
-        <TabsContent value="all" className="mt-4">
+        </div>        <TabsContent value="all" className="mt-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {filteredLoads.length > 0 ? (
-              filteredLoads.map(load => (
+            {paginatedLoads.length > 0 ? (
+              paginatedLoads.map(load => (
                 <Card
                   key={load.id}
                   className="flex h-full flex-col border border-gray-700 bg-neutral-900 shadow-lg"
@@ -401,12 +573,10 @@ export function DispatchBoard({
               </div>
             )}
           </div>
-        </TabsContent>
-
-        <TabsContent value="pending" className="mt-4">
+        </TabsContent>        <TabsContent value="pending" className="mt-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {filteredPendingLoads.length > 0 ? (
-              filteredPendingLoads.map(load => (
+            {paginatedPendingLoads.length > 0 ? (
+              paginatedPendingLoads.map(load => (
                 <Card
                   key={load.id}
                   className="flex h-full flex-col border border-gray-700 bg-neutral-900 shadow-lg"
@@ -434,12 +604,10 @@ export function DispatchBoard({
               </div>
             )}
           </div>
-        </TabsContent>
-
-        <TabsContent value="assigned" className="mt-4">
+        </TabsContent>        <TabsContent value="assigned" className="mt-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {filteredAssignedLoads.length > 0 ? (
-              filteredAssignedLoads.map(load => (
+            {paginatedAssignedLoads.length > 0 ? (
+              paginatedAssignedLoads.map(load => (
                 <Card
                   key={load.id}
                   className="flex h-full flex-col border border-gray-700 bg-neutral-900 shadow-lg"
@@ -469,12 +637,10 @@ export function DispatchBoard({
               </div>
             )}
           </div>
-        </TabsContent>
-
-        <TabsContent value="in_transit" className="mt-4">
+        </TabsContent>        <TabsContent value="in_transit" className="mt-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {filteredInTransitLoads.length > 0 ? (
-              filteredInTransitLoads.map(load => (
+            {paginatedInTransitLoads.length > 0 ? (
+              paginatedInTransitLoads.map(load => (
                 <Card
                   key={load.id}
                   className="flex h-full flex-col border border-gray-700 bg-neutral-900 shadow-lg"
@@ -504,12 +670,10 @@ export function DispatchBoard({
               </div>
             )}
           </div>
-        </TabsContent>
-
-        <TabsContent value="completed" className="mt-4">
+        </TabsContent>        <TabsContent value="completed" className="mt-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {filteredCompletedLoads.length > 0 ? (
-              filteredCompletedLoads.map(load => (
+            {paginatedCompletedLoads.length > 0 ? (
+              paginatedCompletedLoads.map(load => (
                 <Card
                   key={load.id}
                   className="flex h-full flex-col border border-gray-700 bg-neutral-900 shadow-lg"
