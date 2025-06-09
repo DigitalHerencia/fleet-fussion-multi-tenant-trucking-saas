@@ -59,7 +59,7 @@ export async function submitOnboardingStepAction(
 
       case 'company':
         { const companyData = data as CompanySetupData;
-        if (dbUser.role === 'admin' || dbUser.role === 'manager') {
+        if (dbUser.role === SystemRoles.ADMIN) {
           if (dbUser.organizationId) {
             // Ensure organizationId is not null
             await db.organization.update({
