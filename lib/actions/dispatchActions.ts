@@ -4,6 +4,7 @@ import { auth } from '@clerk/nextjs/server';
 import { revalidatePath } from 'next/cache';
 
 import prisma from '@/lib/database/db';
+import { handleError } from '@/lib/errors/handleError';
 import {
   createLoadSchema,
   updateLoadSchema,
@@ -205,11 +206,7 @@ export async function createLoadAction(orgId: string, data: CreateLoadInput) {
       data: createdLoad,
     };
   } catch (error) {
-    console.error('Error creating load:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to create load',
-    };
+    return handleError(error, 'Create Load');
   }
 }
 
@@ -318,11 +315,7 @@ export async function updateLoadAction(loadId: string, data: UpdateLoadInput) {
       data: updatedLoad,
     };
   } catch (error) {
-    console.error('Error updating load:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to update load',
-    };
+    return handleError(error, 'Update Load');
   }
 }
 
@@ -370,11 +363,7 @@ export async function deleteLoadAction(loadId: string) {
       success: true,
     };
   } catch (error) {
-    console.error('Error deleting load:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to delete load',
-    };
+    return handleError(error, 'Delete Load');
   }
 }
 
@@ -445,11 +434,7 @@ export async function assignDriverAction(input: LoadAssignmentInput) {
 
     return { success: true };
   } catch (error) {
-    console.error('Error assigning driver:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to assign driver',
-    };
+    return handleError(error, 'Assign Driver');
   }
 }
 

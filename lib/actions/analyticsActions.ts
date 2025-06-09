@@ -5,6 +5,7 @@ import { getCurrentUser } from '@/lib/auth/auth';
 
 import prisma from '@/lib/database/db';
 import { hasPermission } from '@/lib/auth/permissions';
+import { handleError } from '@/lib/errors/handleError';
 import { PermissionActions, ResourceTypes, SystemRoles } from '@/types/abac';
 import { ClerkOrganizationMetadata } from '@/types/auth';
 import type { AnalyticsActionResult } from '@/types/actions';
@@ -89,8 +90,7 @@ export async function getFleetMetricsAction(
 
     return { success: true, data: metrics };
   } catch (error) {
-    console.error('Get fleet metrics error:', error);
-    return { success: false };
+    return handleError(error, 'Get Fleet Metrics');
   }
 }
 
@@ -149,8 +149,7 @@ export async function getLoadAnalyticsAction(
 
     return { success: true, data: analytics };
   } catch (error) {
-    console.error('Get load analytics error:', error);
-    return { success: false };
+    return handleError(error, 'Get Load Analytics');
   }
 }
 
@@ -197,8 +196,7 @@ export async function getFinancialMetricsAction(
 
     return { success: true };
   } catch (error) {
-    console.error('Get financial metrics error:', error);
-    return { success: false };
+    return handleError(error, 'Get Financial Metrics');
   }
 }
 
@@ -254,7 +252,6 @@ export async function getComplianceAnalyticsAction(
 
     return { success: true, data: analytics };
   } catch (error) {
-    console.error('Get compliance analytics error:', error);
-    return { success: false };
+    return handleError(error, 'Get Compliance Analytics');
   }
 }

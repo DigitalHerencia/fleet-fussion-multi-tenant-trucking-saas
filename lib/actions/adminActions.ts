@@ -7,8 +7,8 @@
 
 import { auth, clerkClient } from '@clerk/nextjs/server';
 import { revalidatePath } from 'next/cache';
-
-import prisma, { db } from '@/lib/database/db';
+import prisma from '@/lib/database/db';
+import { handleError } from '@/lib/errors/handleError';
 import { SystemRoles } from '@/types/abac';
 import type { AdminActionResult } from '@/types/actions';
 import type { DatabaseUser } from '@/types/auth';
@@ -63,11 +63,7 @@ export async function getOrganizationUsersAction(
 
     return { success: true, data: users };
   } catch (error) {
-    console.error('Get organization users error:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to get users',
-    };
+    return handleError(error, 'Get Organization Users');
   }
 }
 
@@ -103,12 +99,7 @@ export async function updateUserRoleAction(
     revalidatePath(`/dashboard/${orgId}/admin`);
     return { success: true };
   } catch (error) {
-    console.error('Update user role error:', error);
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : 'Failed to update user role',
-    };
+    return handleError(error, 'Update User Role');
   }
 }
 
@@ -141,12 +132,7 @@ export async function deactivateUserAction(
     revalidatePath(`/dashboard/${orgId}/admin`);
     return { success: true };
   } catch (error) {
-    console.error('Deactivate user error:', error);
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : 'Failed to deactivate user',
-    };
+    return handleError(error, 'Deactivate User');
   }
 }
 
@@ -182,12 +168,7 @@ export async function getAuditLogsAction(
 
     return { success: true, data: auditLogs };
   } catch (error) {
-    console.error('Get audit logs error:', error);
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : 'Failed to get audit logs',
-    };
+    return handleError(error, 'Get Audit Logs');
   }
 }
 
@@ -229,14 +210,7 @@ export async function getOrganizationStatsAction(
 
     return { success: true, data: stats };
   } catch (error) {
-    console.error('Get organization stats error:', error);
-    return {
-      success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : 'Failed to get organization stats',
-    };
+    return handleError(error, 'Get Organization Stats');
   }
 }
 
@@ -262,11 +236,7 @@ export async function inviteUsersAction(
     revalidatePath(`/${orgId}/admin`);
     return { success: true };
   } catch (error) {
-    console.error('Invite users error:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to invite users',
-    };
+    return handleError(error, 'Invite Users');
   }
 }
 
@@ -290,11 +260,7 @@ export async function activateUsersAction(
     revalidatePath(`/${orgId}/admin`);
     return { success: true };
   } catch (error) {
-    console.error('Activate users error:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to activate users',
-    };
+    return handleError(error, 'Activate Users');
   }
 }
 
@@ -318,11 +284,6 @@ export async function deactivateUsersAction(
     revalidatePath(`/${orgId}/admin`);
     return { success: true };
   } catch (error) {
-    console.error('Deactivate users error:', error);
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : 'Failed to deactivate users',
-    };
+    return handleError(error, 'Deactivate Users');
   }
 }

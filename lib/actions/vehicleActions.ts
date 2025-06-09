@@ -10,6 +10,7 @@ import { auth } from '@clerk/nextjs/server';
 import { VehicleStatus as PrismaVehicleStatus } from '@prisma/client';
 
 import { db } from '@/lib/database/db';
+import { handleError } from '@/lib/errors/handleError';
 import { hasPermission } from '@/lib/auth/permissions';
 import {
   VehicleFormSchema,
@@ -224,12 +225,7 @@ export async function createVehicleAction(
     revalidatePath(`/dashboard/${organizationId}/vehicles`);
     return { success: true, data: toPublicVehicle(vehicle) };
   } catch (error) {
-    console.error('Create vehicle error:', error);
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : 'Failed to create vehicle',
-    };
+    return handleError(error, 'Create Vehicle');
   }
 }
 
@@ -300,12 +296,7 @@ export async function updateVehicleAction(
     );
     return { success: true, data: toPublicVehicle(vehicle) };
   } catch (error) {
-    console.error('Update vehicle error:', error);
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : 'Failed to update vehicle',
-    };
+    return handleError(error, 'Update Vehicle');
   }
 }
 
@@ -354,14 +345,7 @@ export async function updateVehicleStatusAction(
     );
     return { success: true, data: toPublicVehicle(updatedVehicle) };
   } catch (error) {
-    console.error('Update vehicle status error:', error);
-    return {
-      success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : 'Failed to update vehicle status',
-    };
+    return handleError(error, 'Update Vehicle Status');
   }
 }
 
@@ -391,12 +375,7 @@ export async function deleteVehicleAction(
     revalidatePath(`/dashboard/${vehicle.organizationId}/vehicles`);
     return { success: true };
   } catch (error) {
-    console.error('Delete vehicle error:', error);
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : 'Failed to delete vehicle',
-    };
+    return handleError(error, 'Delete Vehicle');
   }
 }
 
@@ -454,13 +433,6 @@ export async function assignVehicleToDriverAction(
       data: updatedVehicle ? toPublicVehicle(updatedVehicle) : undefined,
     };
   } catch (error) {
-    console.error('Assign vehicle to driver error:', error);
-    return {
-      success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : 'Failed to assign vehicle to driver',
-    };
+    return handleError(error, 'Assign Vehicle To Driver');
   }
 }

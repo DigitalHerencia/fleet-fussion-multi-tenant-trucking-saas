@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 import { db, handleDatabaseError } from '@/lib/database/db';
+import { handleError } from '@/lib/errors/handleError';
 import type {
   OnboardingStepData,
   CompanySetupData,
@@ -13,7 +14,6 @@ import type {
 } from '@/types/onboarding';
 import { SystemRoles } from '@/types/abac';
 import type { OnboardingData, SetClerkMetadataResult } from '@/types/auth';
-import { handleError } from '@/lib/errors/handleError';
 
 // Infer the resolved client type
 type ResolvedClerkClient = Awaited<ReturnType<typeof clerkClient>>;
@@ -99,11 +99,7 @@ export async function submitOnboardingStepAction(
     revalidatePath('/onboarding');
     return { success: true };
   } catch (error) {
-    console.error('Onboarding step submission error:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error occurred',
-    };
+    return handleError(error, 'Submit Onboarding Step');
   }
 }
 
@@ -137,14 +133,7 @@ export async function completeOnboardingAction() {
     revalidatePath('/onboarding');
     redirect(`/app/${dbUser.organizationId}/dashboard`);
   } catch (error) {
-    console.error('Complete onboarding error:', error);
-    return {
-      success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : 'Failed to complete onboarding',
-    };
+    return handleError(error, 'Complete Onboarding');
   }
 }
 
@@ -235,14 +224,10 @@ export async function setClerkMetadata(
           slug: organization.slug,
         });
       } catch (creationError: any) {
-        console.error(
-          '❌ Error creating organization:',
-          creationError.errors || creationError.message
+        return handleError(
+          creationError,
+          'Create Organization'
         );
-        return {
-          success: false,
-          error: `Failed to create organization '${data.orgName}': ${creationError.message}`,
-        };
       }
     } else {
       createdOrgId = organization.id;
@@ -257,13 +242,10 @@ export async function setClerkMetadata(
     }
 
     if (!organization) {
-      console.error(
-        '❌ Organization object is undefined after creation/retrieval attempt.'
+      return handleError(
+        new Error('Failed to obtain organization details.'),
+        'Create Organization'
       );
-      return {
-        success: false,
-        error: 'Failed to obtain organization details.',
-      };
     }
     createdOrgId = organization.id;
 
@@ -303,14 +285,9 @@ export async function setClerkMetadata(
     );
     return { success: true, organizationId: createdOrgId, userId: data.userId };
   } catch (error: any) {
-    console.error(
-      '❌ Onboarding process failed:',
-      error.errors || error.message
+    return handleError(
+      error,
+      'Onboarding Process'
     );
-    return {
-      success: false,
-      error: error.message || 'An unexpected error occurred during onboarding.',
-      organizationId: createdOrgId,
-    };
   }
 }
