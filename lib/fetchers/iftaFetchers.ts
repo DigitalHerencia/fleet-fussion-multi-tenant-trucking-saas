@@ -2,7 +2,7 @@
 
 import { auth } from '@clerk/nextjs/server';
 
-import prisma from '@/lib/database/db';
+import db from '@/lib/database/db';
 import {
   getCachedData,
   setCachedData,
@@ -19,7 +19,7 @@ async function checkUserAccess(organizationId: string) {
     throw new Error('Unauthorized');
   }
 
-  const user = await prisma.user.findUnique({
+  const user = await db.user.findUnique({
     where: { clerkId: userId },
     select: { organizationId: true, role: true },
   });
@@ -76,7 +76,7 @@ export async function getIftaDataForPeriod(
     const endDate = new Date(yearNum, startMonth + 3, 0, 23, 59, 59);
 
     // Get trip data for the period
-    const trips = await prisma.iftaTrip.findMany({
+    const trips = await db.iftaTrip.findMany({
       where: {
         organizationId: orgId,
         date: {
@@ -100,7 +100,7 @@ export async function getIftaDataForPeriod(
     });
 
     // Get fuel purchase data for the period
-    const fuelPurchases = await prisma.iftaFuelPurchase.findMany({
+    const fuelPurchases = await db.iftaFuelPurchase.findMany({
       where: {
         organizationId: orgId,
         date: {
@@ -170,7 +170,7 @@ export async function getIftaDataForPeriod(
     });
 
     // Check for existing IFTA report for this period
-    const existingReport = await prisma.iftaReport.findFirst({
+    const existingReport = await db.iftaReport.findFirst({
       where: {
         organizationId: orgId,
         quarter: quarterNum,
@@ -282,7 +282,7 @@ export async function getIftaTripData(
       }
     }
 
-    const trips = await prisma.iftaTrip.findMany({
+    const trips = await db.iftaTrip.findMany({
       where,
       include: {
         vehicle: {
@@ -357,7 +357,7 @@ export async function getIftaFuelPurchases(
       }
     }
 
-    const purchases = await prisma.iftaFuelPurchase.findMany({
+    const purchases = await db.iftaFuelPurchase.findMany({
       where,
       include: {
         vehicle: {
@@ -412,7 +412,7 @@ export async function getIftaReports(orgId: string, year?: number) {
       where.year = year;
     }
 
-    const reports = await prisma.iftaReport.findMany({
+    const reports = await db.iftaReport.findMany({
       where,
       include: {
         submittedByUser: {
@@ -466,7 +466,7 @@ export async function getJurisdictionRates(orgId?: string): Promise<Record<strin
 
     // Try to get rates from database
     const currentDate = new Date();
-    const dbRates = await prisma.jurisdictionTaxRate.findMany({
+    const dbRates = await db.jurisdictionTaxRate.findMany({
       where: {
         OR: [
           {
@@ -593,6 +593,109 @@ export async function getJurisdictionRates(orgId?: string): Promise<Record<strin
 }
 
 /**
+ * Get current tax rates for all jurisdictions
+ */
+export async function getJurisdictionTaxRates(orgId: string): Promise<Record<string, number>> {
+  try {
+    const currentDate = new Date();
+    
+    const taxRates = await db.jurisdictionTaxRate.findMany({
+      where: {
+        organizationId: orgId,
+        isActive: true,
+        effectiveDate: { lte: currentDate },
+        OR: [
+          { endDate: null },
+          { endDate: { gte: currentDate } },
+        ],
+      },
+      orderBy: {
+        effectiveDate: 'desc',
+      },
+    });
+
+    // Convert to jurisdiction -> rate mapping
+    const rateMap: Record<string, number> = {};
+    taxRates.forEach(rate => {
+      if (!rateMap[rate.jurisdiction]) {
+        rateMap[rate.jurisdiction] = Number(rate.taxRate);
+      }
+    });
+
+    // Add default rates for common jurisdictions if not present
+    const defaultRates = {
+      'AL': 0.19, 'AK': 0.08, 'AZ': 0.18, 'AR': 0.225, 'CA': 0.40,
+      'CO': 0.205, 'CT': 0.40, 'DE': 0.22, 'FL': 0.06, 'GA': 0.074,
+      'HI': 0.17, 'ID': 0.25, 'IL': 0.216, 'IN': 0.16, 'IA': 0.31,
+      'KS': 0.26, 'KY': 0.024, 'LA': 0.16, 'ME': 0.301, 'MD': 0.243,
+      'MA': 0.21, 'MI': 0.15, 'MN': 0.20, 'MS': 0.177, 'MO': 0.17,
+      'MT': 0.2775, 'NE': 0.246, 'NV': 0.27, 'NH': 0.223, 'NJ': 0.105,
+      'NM': 0.17, 'NY': 0.08, 'NC': 0.06, 'ND': 0.23, 'OH': 0.28,
+      'OK': 0.16, 'OR': 0.01, 'PA': 0.074, 'RI': 0.32, 'SC': 0.16,
+      'SD': 0.22, 'TN': 0.17, 'TX': 0.20, 'UT': 0.295, 'VT': 0.26,
+      'VA': 0.162, 'WA': 0.375, 'WV': 0.205, 'WI': 0.309, 'WY': 0.24,
+    };
+
+    Object.entries(defaultRates).forEach(([jurisdiction, rate]) => {
+      if (!rateMap[jurisdiction]) {
+        rateMap[jurisdiction] = rate;
+      }
+    });
+
+    return rateMap;
+  } catch (error) {
+    console.error('Error getting jurisdiction tax rates:', error);
+    return {};
+  }
+}
+
+/**
+ * Update jurisdiction tax rate
+ */
+export async function updateJurisdictionTaxRate(
+  orgId: string,
+  jurisdiction: string,
+  taxRate: number,
+  effectiveDate: Date,
+  userId: string
+) {
+  try {
+    // Deactivate existing rates for this jurisdiction
+    await db.jurisdictionTaxRate.updateMany({
+      where: {
+        organizationId: orgId,
+        jurisdiction,
+        isActive: true,
+      },
+      data: {
+        isActive: false,
+        endDate: new Date(effectiveDate.getTime() - 1), // End one day before new rate
+      },
+    });
+
+    // Create new rate
+    const newRate = await db.jurisdictionTaxRate.create({
+      data: {
+        organizationId: orgId,
+        jurisdiction,
+        taxRate,
+        effectiveDate,
+        source: 'MANUAL',
+        verifiedDate: new Date(),
+        isActive: true,
+        createdBy: userId,
+        notes: `Tax rate updated manually by user`,
+      },
+    });
+
+    return newRate;
+  } catch (error) {
+    console.error('Error updating tax rate:', error);
+    throw new Error(`Failed to update tax rate: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/**
  * Calculate quarterly taxes with advanced calculations
  */
 export async function calculateQuarterlyTaxes(
@@ -695,7 +798,7 @@ export async function validateTaxCalculations(
     const data = await getIftaDataForPeriod(orgId, quarter, year);
     
     // Get existing report if available
-    const report = await prisma.iftaReport.findFirst({
+    const report = await db.iftaReport.findFirst({
       where: {
         organizationId: orgId,
         quarter: parseInt(quarter.replace('Q', '')),
@@ -854,7 +957,7 @@ export async function getTaxAdjustments(orgId: string, year?: number) {
     const where: any = { organizationId: orgId };
     if (year) where.year = year;
     
-    const reports = await prisma.iftaReport.findMany({ 
+    const reports = await db.iftaReport.findMany({ 
       where,
       include: {
         submittedByUser: {
@@ -973,3 +1076,46 @@ function generateEfficiencyRecommendations(metrics: any): string[] {
   
   return recommendations;
 }
+
+/**
+ * Calculate quarterly taxes for IFTA reporting
+ */
+export async function getIftaFuelData(
+  orgId: string,
+  startDate: Date,
+  endDate: Date,
+  vehicleId?: string
+) {
+  try {
+    const fuelPurchases = await db.iftaFuelPurchase.findMany({
+      where: {
+        organizationId: orgId,
+        date: {
+          gte: startDate,
+          lte: endDate,
+        },
+        ...(vehicleId && { vehicleId }),
+      },
+      include: {
+        vehicle: {
+          select: {
+            id: true,
+            unitNumber: true,
+            make: true,
+            model: true,
+          },
+        },
+      },
+      orderBy: {
+        date: 'desc',
+      },
+    });
+
+    return fuelPurchases;
+  } catch (error) {
+    console.error('Error fetching IFTA fuel data:', error);
+    throw new Error('Failed to fetch IFTA fuel data');
+  }
+}
+
+

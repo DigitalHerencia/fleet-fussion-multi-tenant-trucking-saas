@@ -88,6 +88,7 @@ model User {
   taxValidations         IftaTaxCalculation[]     @relation("TaxValidatedBy")
   iftaAuditLogs          IftaAuditLog[]           @relation("IftaAuditUser")
   iftaPDFGenerationLogs  IftaPDFGenerationLog[]
+  preferences             UserPreferences?
 
   @@index([clerkId])
   @@index([organizationId])
@@ -715,4 +716,15 @@ model IftaPDFGenerationLog {
   @@index([status])
   @@index([startedAt])
   @@map("ifta_pdf_generation_logs")
+}
+
+model UserPreferences {
+  id                  String    @id @default(cuid())
+  userId              String    @unique
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dashboardPreferences Json?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([userId])
 }

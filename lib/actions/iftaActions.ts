@@ -127,35 +127,149 @@ export async function generateIftaReportAction(
   year: string
 ) {
   try {
-    await checkIftaPermissions(orgId);
-    // Use IftaReport model for summary/reporting
+    const user = await checkIftaPermissions(orgId);
     const q = parseInt(quarter);
     const y = parseInt(year);
-    if (isNaN(q) || isNaN(y) || q < 1 || q > 4)
+    
+    if (isNaN(q) || isNaN(y) || q < 1 || q > 4) {
       throw new Error('Invalid quarter or year');
-    const report = await db.iftaReport.findFirst({
+    }
+
+    // Get IFTA data for the period
+    const { getIftaDataForPeriod, calculateQuarterlyTaxes } = await import('@/lib/fetchers/iftaFetchers');
+    const iftaData = await getIftaDataForPeriod(orgId, `Q${q}`, year);
+    const taxCalculations = await calculateQuarterlyTaxes(orgId, `Q${q}`, year);
+
+    // Check if report already exists
+    let report = await db.iftaReport.findFirst({
       where: {
         organizationId: orgId,
         quarter: q,
         year: y,
       },
     });
-    if (!report) {
-      return { success: false, error: 'No IFTA report found for this period' };
+
+    // Create or update the report
+    const reportData = {
+      organizationId: orgId,
+      quarter: q,
+      year: y,
+      status: 'draft',
+      totalMiles: iftaData.summary.totalMiles,
+      totalGallons: iftaData.summary.totalGallons,
+      totalTaxOwed: taxCalculations.summary.totalTaxDue,
+      totalTaxPaid: taxCalculations.summary.totalCredits,
+      calculationData: {
+        summary: taxCalculations.summary,
+        jurisdictions: taxCalculations.jurisdictions,
+        period: taxCalculations.period,
+        calculatedAt: taxCalculations.calculatedAt,
+      },
+      submittedBy: user.id,
+      dueDate: calculateQuarterDueDate(q, y),
+      notes: `Auto-generated report for Q${q} ${y}`,
+      updatedAt: new Date(),
+    };
+
+    if (report) {
+      report = await db.iftaReport.update({
+        where: { id: report.id },
+        data: reportData,
+      });
+    } else {
+      report = await db.iftaReport.create({
+        data: {
+          ...reportData,
+          createdAt: new Date(),
+        },
+      });
     }
+
+    // Create tax calculations records
+    await Promise.all(
+      taxCalculations.jurisdictions.map(async (jurisdiction: any) => {
+        await db.iftaTaxCalculation.upsert({
+          where: {
+            report_jurisdiction_unique: {
+              reportId: report.id,
+              jurisdiction: jurisdiction.jurisdiction
+            }
+          },
+          create: {
+            organizationId: orgId,
+            reportId: report.id,
+            jurisdiction: jurisdiction.jurisdiction,
+            totalMiles: jurisdiction.miles,
+            taxableMiles: jurisdiction.miles,
+            fuelPurchased: jurisdiction.fuelPurchased,
+            fuelConsumed: jurisdiction.fuelConsumed,
+            taxRate: jurisdiction.taxRate,
+            taxDue: jurisdiction.taxDue,
+            taxPaid: jurisdiction.credits,
+            taxCredits: jurisdiction.credits,
+            adjustments: 0,
+            netTaxDue: jurisdiction.netTax,
+            calculatedBy: user.id,
+            isValidated: false,
+          },
+          update: {
+            totalMiles: jurisdiction.miles,
+            taxableMiles: jurisdiction.miles,
+            fuelPurchased: jurisdiction.fuelPurchased,
+            fuelConsumed: jurisdiction.fuelConsumed,
+            taxRate: jurisdiction.taxRate,
+            taxDue: jurisdiction.taxDue,
+            taxPaid: jurisdiction.credits,
+            taxCredits: jurisdiction.credits,
+            netTaxDue: jurisdiction.netTax,
+            calculatedBy: user.id,
+          },
+        });
+      })
+    );
+
+    // Create audit log
+    await db.iftaAuditLog.create({
+      data: {
+        organizationId: orgId,
+        entityType: 'REPORT',
+        entityId: report.id,
+        action: report ? 'UPDATE' : 'CREATE',
+        newValues: reportData,
+        userId: user.id,
+        notes: `IFTA report ${report ? 'updated' : 'created'} for Q${q} ${y}`,
+      },
+    });
+
+    revalidatePath(`/dashboard/${orgId}/ifta`);
+    
     return {
       success: true,
-      data: report,
+      data: {
+        ...report,
+        taxCalculations: taxCalculations.jurisdictions,
+        summary: taxCalculations.summary,
+      },
     };
   } catch (error) {
+    console.error('Error generating IFTA report:', error);
     return {
       success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : 'Failed to generate IFTA report',
+      error: error instanceof Error ? error.message : 'Failed to generate IFTA report',
     };
   }
+}
+
+// Helper function to calculate quarter due dates
+function calculateQuarterDueDate(quarter: number, year: number): Date {
+  // IFTA quarter due dates: Q1=April 30, Q2=July 31, Q3=October 31, Q4=January 31 (next year)
+  const dueDateMap = {
+    1: new Date(year, 3, 30), // April 30
+    2: new Date(year, 6, 31), // July 31
+    3: new Date(year, 9, 31), // October 31
+    4: new Date(year + 1, 0, 31), // January 31 next year
+  };
+  return dueDateMap[quarter as keyof typeof dueDateMap];
 }
 
 // -------------------- PDF Generation Actions --------------------
@@ -645,6 +759,333 @@ export async function deletePDFReport(
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred',
+    };
+  }
+}
+
+/**
+ * Submit IFTA Report for Filing
+ */
+export async function submitIftaReportAction(
+  orgId: string,
+  reportId: string
+) {
+  try {
+    const user = await checkIftaPermissions(orgId);
+    
+    // Get the report with calculations
+    const report = await db.iftaReport.findFirst({
+      where: {
+        id: reportId,
+        organizationId: orgId,
+      },
+      include: {
+        taxCalculations: true,
+      },
+    });
+
+    if (!report) {
+      return { success: false, error: 'Report not found' };
+    }
+
+    if (report.status === 'submitted') {
+      return { success: false, error: 'Report already submitted' };
+    }
+
+    // Validate all tax calculations
+    const validationErrors = [];
+    for (const calc of report.taxCalculations) {
+      if (!calc.isValidated) {
+        validationErrors.push(`${calc.jurisdiction} tax calculation not validated`);
+      }
+    }
+
+    if (validationErrors.length > 0) {
+      return {
+        success: false,
+        error: `Validation required: ${validationErrors.join(', ')}`,
+      };
+    }
+
+    // Update report status
+    const submittedReport = await db.iftaReport.update({
+      where: { id: reportId },
+      data: {
+        status: 'submitted',
+        submittedAt: new Date(),
+        submittedBy: user.id,
+        filedDate: new Date(),
+      },
+    });
+
+    // Create submission audit log
+    await db.iftaAuditLog.create({
+      data: {
+        organizationId: orgId,
+        entityType: 'REPORT',
+        entityId: reportId,
+        action: 'SUBMIT',
+        oldValues: { status: 'draft' },
+        newValues: { status: 'submitted', submittedAt: new Date() },
+        userId: user.id,
+        notes: 'IFTA report submitted for filing',
+      },
+    });
+
+    revalidatePath(`/dashboard/${orgId}/ifta`);
+
+    return {
+      success: true,
+      data: submittedReport,
+    };
+  } catch (error) {
+    console.error('Error submitting IFTA report:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to submit report',
+    };
+  }
+}
+
+/**
+ * Validate Tax Calculation
+ */
+export async function validateTaxCalculationAction(
+  orgId: string,
+  calculationId: string
+) {
+  try {
+    const user = await checkIftaPermissions(orgId);
+    
+    const calculation = await db.iftaTaxCalculation.findFirst({
+      where: {
+        id: calculationId,
+        organizationId: orgId,
+      },
+    });
+
+    if (!calculation) {
+      return { success: false, error: 'Tax calculation not found' };
+    }
+
+    // Perform validation checks
+    const validationErrors = [];
+    
+    // Check for reasonable fuel efficiency (3-12 MPG for commercial vehicles)
+    const mpg = calculation.totalMiles / Number(calculation.fuelConsumed);
+    if (mpg < 3 || mpg > 12) {
+      validationErrors.push(`Unusual fuel efficiency: ${mpg.toFixed(2)} MPG`);
+    }
+
+    // Check for negative values
+    if (Number(calculation.fuelPurchased) < 0 || Number(calculation.fuelConsumed) < 0) {
+      validationErrors.push('Negative fuel values detected');
+    }
+
+    // Check if tax rate is reasonable (0.05 to 0.60 per gallon)
+    const taxRate = Number(calculation.taxRate);
+    if (taxRate < 0.05 || taxRate > 0.60) {
+      validationErrors.push(`Unusual tax rate: $${taxRate.toFixed(4)} per gallon`);
+    }
+
+    if (validationErrors.length > 0) {
+      return {
+        success: false,
+        error: `Validation failed: ${validationErrors.join(', ')}`,
+        warnings: validationErrors,
+      };
+    }
+
+    // Mark as validated
+    const validatedCalculation = await db.iftaTaxCalculation.update({
+      where: { id: calculationId },
+      data: {
+        isValidated: true,
+        validatedAt: new Date(),
+        validatedBy: user.id,
+      },
+    });
+
+    // Create validation audit log
+    await db.iftaAuditLog.create({
+      data: {
+        organizationId: orgId,
+        entityType: 'TAX_CALCULATION',
+        entityId: calculationId,
+        action: 'APPROVE',
+        oldValues: { isValidated: false },
+        newValues: { isValidated: true, validatedAt: new Date() },
+        userId: user.id,
+        notes: `Tax calculation validated for ${calculation.jurisdiction}`,
+      },
+    });
+
+    return {
+      success: true,
+      data: validatedCalculation,
+    };
+  } catch (error) {
+    console.error('Error validating tax calculation:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to validate calculation',
+    };
+  }
+}
+
+/**
+ * Update Tax Calculation with Manual Adjustments
+ */
+export async function updateTaxCalculationAction(
+  orgId: string,
+  calculationId: string,
+  adjustments: {
+    adjustments?: number;
+    taxCredits?: number;
+    notes?: string;
+  }
+) {
+  try {
+    const user = await checkIftaPermissions(orgId);
+    
+    const calculation = await db.iftaTaxCalculation.findFirst({
+      where: {
+        id: calculationId,
+        organizationId: orgId,
+      },
+    });
+
+    if (!calculation) {
+      return { success: false, error: 'Tax calculation not found' };
+    }
+
+    // Calculate new net tax due
+    const adjustmentAmount = adjustments.adjustments || 0;
+    const newCredits = adjustments.taxCredits !== undefined 
+      ? adjustments.taxCredits 
+      : Number(calculation.taxCredits);
+    const newNetTaxDue = Number(calculation.taxDue) + adjustmentAmount - newCredits;
+
+    const updatedCalculation = await db.iftaTaxCalculation.update({
+      where: { id: calculationId },
+      data: {
+        adjustments: adjustmentAmount,
+        taxCredits: newCredits,
+        netTaxDue: newNetTaxDue,
+        isValidated: false, // Reset validation when manually adjusted
+        calculatedBy: user.id,
+      },
+    });
+
+    // Create adjustment audit log
+    await db.iftaAuditLog.create({
+      data: {
+        organizationId: orgId,
+        entityType: 'TAX_CALCULATION',
+        entityId: calculationId,
+        action: 'UPDATE',
+        oldValues: {
+          adjustments: Number(calculation.adjustments),
+          taxCredits: Number(calculation.taxCredits),
+          netTaxDue: Number(calculation.netTaxDue),
+        },
+        newValues: {
+          adjustments: adjustmentAmount,
+          taxCredits: newCredits,
+          netTaxDue: newNetTaxDue,
+        },
+        userId: user.id,
+        notes: adjustments.notes || 'Manual tax calculation adjustment',
+      },
+    });
+
+    return {
+      success: true,
+      data: updatedCalculation,
+    };
+  } catch (error) {
+    console.error('Error updating tax calculation:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to update calculation',
+    };
+  }
+}
+
+/**
+ * Get IFTA Report Status and Summary
+ */
+export async function getIftaReportStatusAction(
+  orgId: string,
+  reportId: string
+) {
+  try {
+    await checkIftaPermissions(orgId);
+    
+    const report = await db.iftaReport.findFirst({
+      where: {
+        id: reportId,
+        organizationId: orgId,
+      },
+      include: {
+        taxCalculations: {
+          include: {
+            calculatedByUser: {
+              select: { firstName: true, lastName: true },
+            },
+            validatedByUser: {
+              select: { firstName: true, lastName: true },
+            },
+          },
+        },
+        submittedByUser: {
+          select: { firstName: true, lastName: true },
+        },
+      },
+    });
+
+    if (!report) {
+      return { success: false, error: 'Report not found' };
+    }
+
+    // Calculate summary statistics
+    const totalJurisdictions = report.taxCalculations.length;
+    const validatedJurisdictions = report.taxCalculations.filter(calc => calc.isValidated).length;
+    const totalNetTaxDue = report.taxCalculations.reduce(
+      (sum, calc) => sum + Number(calc.netTaxDue), 
+      0
+    );
+
+    const summary = {
+      reportId: report.id,
+      quarter: report.quarter,
+      year: report.year,
+      status: report.status,
+      totalJurisdictions,
+      validatedJurisdictions,
+      validationProgress: (validatedJurisdictions / totalJurisdictions) * 100,
+      totalMiles: report.totalMiles,
+      totalGallons: Number(report.totalGallons),
+      totalNetTaxDue,
+      dueDate: report.dueDate,
+      submittedAt: report.submittedAt,
+      submittedBy: report.submittedByUser ? 
+        `${report.submittedByUser.firstName} ${report.submittedByUser.lastName}` : null,
+      canSubmit: validatedJurisdictions === totalJurisdictions && report.status === 'draft',
+    };
+
+    return {
+      success: true,
+      data: {
+        report: summary,
+        taxCalculations: report.taxCalculations,
+      },
+    };
+  } catch (error) {
+    console.error('Error getting report status:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to get report status',
     };
   }
 }

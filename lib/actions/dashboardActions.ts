@@ -4,10 +4,10 @@ import { auth } from '@clerk/nextjs/server';
 import { revalidatePath } from 'next/cache';
 
 import prisma from '@/lib/database/db';
-import { hasPermission } from '@/lib/auth/permissions';
 import { handleError } from '@/lib/errors/handleError';
 import { getOrganizationKPIs } from '@/lib/fetchers/kpiFetchers';
 import type { OrganizationKPIs } from '@/types/kpi';
+import { db } from '@/lib/database/db';
 
 export interface DashboardActionResult<T = unknown> {
   success: boolean;
@@ -47,10 +47,6 @@ export async function getDashboardOverviewAction(): Promise<
     return handleError(error, 'Get Dashboard Overview');
   }
 }
-
-/**
- * Get recent activities for dashboard
- */
 
 /**
  * Get dashboard alerts and notifications
@@ -416,10 +412,6 @@ export async function getTodaysScheduleAction(
 }
 
 /**
- * Get dashboard performance metrics
- */
-
-/**
  * Refresh dashboard data
  */
 export async function refreshDashboardAction(): Promise<
@@ -438,5 +430,111 @@ export async function refreshDashboardAction(): Promise<
     return { success: true, data: { message: 'Dashboard data refreshed' } };
   } catch (error) {
     return handleError(error, 'Refresh Dashboard');
+  }
+}
+
+/**
+ * Get dashboard performance metrics
+ */
+export async function getDashboardPerformanceAction(
+  organizationId: string
+): Promise<DashboardActionResult<{
+  onTimeDeliveryRate: number;
+  fuelEfficiency: number;
+  utilizationRate: number;
+  customerSatisfaction: number;
+}>> {
+  if (!organizationId) {
+    return { success: false, error: 'Organization ID is required.' };
+  }
+  
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    // Calculate on-time delivery rate
+    const totalDeliveries = await prisma.load.count({
+      where: {
+        organizationId,
+        status: 'delivered',
+        actualDeliveryDate: { gte: thirtyDaysAgo },
+      },
+    });
+
+    const onTimeDeliveries = await prisma.load.count({
+      where: {
+        organizationId,
+        status: 'delivered',
+        actualDeliveryDate: { 
+          gte: thirtyDaysAgo,
+          lte: prisma.load.fields.scheduledDeliveryDate,
+        },
+      },
+    });
+
+    const onTimeDeliveryRate = totalDeliveries > 0 ? (onTimeDeliveries / totalDeliveries) * 100 : 0;
+
+    // Mock other metrics for MVP
+    const performanceMetrics = {
+      onTimeDeliveryRate: Math.round(onTimeDeliveryRate),
+      fuelEfficiency: 85, // Mock: miles per gallon average
+      utilizationRate: 78, // Mock: vehicle utilization percentage
+      customerSatisfaction: 92, // Mock: customer satisfaction score
+    };
+
+    return { success: true, data: performanceMetrics };
+  } catch (error) {
+    return handleError(error, 'Get Dashboard Performance');
+  }
+}
+
+/**
+ * Mark alert as read
+ */
+export async function markAlertAsRead(
+  orgId: string,
+  alertId: string
+) {
+  const { userId } = await auth();
+  if (!userId) throw new Error('Unauthorized');
+
+  const user = await db.user.findFirst({
+    where: { clerkId: userId, organizationId: orgId },
+  });
+  if (!user) throw new Error('User not found or unauthorized');
+
+  // Check if alert belongs to organization
+  const alert = await db.complianceAlert.findFirst({
+    where: { 
+      id: alertId,
+      organizationId: orgId,
+    },
+  });
+  if (!alert) throw new Error('Alert not found');
+
+  await db.complianceAlert.update({
+    where: { id: alertId },
+    data: {
+      isAcknowledged: true,
+      acknowledgedAt: new Date(),
+    },
+  });
+
+  revalidatePath(`/${orgId}/dashboard`);
+  return { success: true };
+}
+
+export async function refreshDashboardData(orgId: string, formData: FormData): Promise<void> {
+  try {
+    // Revalidate relevant paths
+    revalidatePath(`/${orgId}/dashboard`);
+    revalidatePath('/');
+  } catch (error) {
+    console.error('Error refreshing dashboard:', error);
   }
 }
