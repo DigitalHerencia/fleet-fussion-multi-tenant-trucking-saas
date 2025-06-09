@@ -1,4 +1,3 @@
-import { Suspense } from 'react';
 import {
   DollarSign,
   Truck,
@@ -24,20 +23,20 @@ import {
   getVehicleAnalytics,
 } from '@/lib/fetchers/analyticsFetchers';
 import { listDriversByOrg } from '@/lib/fetchers/driverFetchers';
-import { exportAnalyticsReport } from '@/lib/actions/analyticsReportActions';
 
 export default async function AnalyticsPage({
   params,
   searchParams,
 }: {
   params: Promise<{ orgId: string }>;
-  searchParams?: { start?: string; end?: string; driver?: string };
+  searchParams?: Promise<{ start?: string; end?: string; driver?: string }>;
 }) {
   const { orgId } = await params;
+  const sp = searchParams ? await searchParams : undefined;
 
-  const start = searchParams?.start;
-  const end = searchParams?.end;
-  const driver = searchParams?.driver;
+  const start = sp?.start;
+  const end = sp?.end;
+  const driver = sp?.driver;
 
   let timeRange = '30d';
   if (start && end) {
@@ -179,7 +178,7 @@ export default async function AnalyticsPage({
               Apply
             </Button>
           </form>
-          <form action={exportAnalyticsReport} method="post">
+          <form action="/api/analytics/export" method="post">
             <input type="hidden" name="orgId" value={orgId} />
             <input type="hidden" name="timeRange" value={timeRange} />
             {driver && <input type="hidden" name="driver" value={driver} />}

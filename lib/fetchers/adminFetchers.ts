@@ -35,7 +35,7 @@ export async function getOrganizationStats(orgId: string): Promise<OrganizationS
     driverCount,
     loadCount,
   };
-  setCachedData(cacheKey, stats, CACHE_TTL);
+  setCachedData(cacheKey, stats, CACHE_TTL.DATA);
   return stats;
 }
 
@@ -53,13 +53,12 @@ export async function getOrganizationUsers(orgId: string): Promise<UserManagemen
       isActive: true,
     },
     orderBy: { createdAt: 'desc' },
-  });
-  return {
+  });  return {
     users: users.map(u => ({
       id: u.id,
-      email: u.email,
+      email: u.email || '',
       name: `${u.firstName ?? ''} ${u.lastName ?? ''}`.trim(),
-      role: u.role,
+      role: u.role as string,
       isActive: u.isActive,
     })),
   };
@@ -68,30 +67,48 @@ export async function getOrganizationUsers(orgId: string): Promise<UserManagemen
 export async function getAuditLogs(orgId: string): Promise<AuditLogEntry[]> {
   const { userId } = await auth();
   if (!userId) throw new Error('Unauthorized');
-  const logs = await prisma.auditLog.findMany({
-    where: { organizationId: orgId },
-    orderBy: { createdAt: 'desc' },
-  });
-  return logs.map(l => ({
-    id: l.id,
-    userId: l.userId,
-    action: l.action,
-    target: l.target,
-    createdAt: l.createdAt.toISOString(),
-  }));
+  
+  // TODO: AuditLog model not yet implemented in schema
+  // const logs = await prisma.auditLog.findMany({
+  //   where: { organizationId: orgId },
+  //   orderBy: { timestamp: 'desc' },
+  // });
+  // return logs.map(l => ({
+  //   id: l.id,
+  //   userId: l.userId || '',
+  //   action: l.action,
+  //   target: l.entityType + ':' + l.entityId,
+  //   createdAt: l.timestamp.toISOString(),
+  // }));
+  
+  return [];
 }
 
 export async function getBillingInfo(orgId: string): Promise<BillingInfo> {
   const { userId } = await auth();
   if (!userId) throw new Error('Unauthorized');
-  const sub = await prisma.subscription.findFirst({ where: { organizationId: orgId } });
-  if (!sub) {
-    return { plan: 'free', status: 'inactive', currentPeriodEnds: '' };
-  }
+  
+  // TODO: Subscription model not yet implemented in schema
+  // const sub = await prisma.subscription.findFirst({ where: { organizationId: orgId } });
+  // if (!sub) {
+  //   return { plan: 'free', status: 'inactive', currentPeriodEnds: '' };
+  // }
+  // return {
+  //   plan: sub.plan,
+  //   status: sub.status,
+  //   currentPeriodEnds: sub.currentPeriodEnds.toISOString(),
+  // };
+
+  // Return default billing info until subscription model is implemented
+  const org = await prisma.organization.findUnique({
+    where: { id: orgId },
+    select: { subscriptionTier: true, subscriptionStatus: true }
+  });
+  
   return {
-    plan: sub.plan,
-    status: sub.status,
-    currentPeriodEnds: sub.currentPeriodEnds.toISOString(),
+    plan: org?.subscriptionTier || 'free',
+    status: org?.subscriptionStatus || 'inactive',
+    currentPeriodEnds: '',
   };
 }
 

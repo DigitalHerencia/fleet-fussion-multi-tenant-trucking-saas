@@ -4,8 +4,10 @@ import path from 'path';
 const nextConfig: import('next').NextConfig = {
   reactStrictMode: true,
   images: {
-    // Add domains for remote images here if you use them (example below):
-    // domains: ['images.unsplash.com', 'cdn.example.com'],
+    domains: [
+      'fleet-fusion.vercel.app',
+      // ...add other domains as needed
+    ],
     remotePatterns: [
       {
         protocol: 'https',

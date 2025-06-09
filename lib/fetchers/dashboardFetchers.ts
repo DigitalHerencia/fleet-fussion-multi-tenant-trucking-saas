@@ -8,9 +8,8 @@ import prisma from '@/lib/database/db';
 export const getDashboardMetrics = async (orgId: string) =>
   unstable_cache(
     async () => {
-      const [loads, drivers, vehicles, alerts] = await Promise.all([
-        prisma.load.count({
-          where: { organizationId: orgId, status: 'active' },
+      const [loads, drivers, vehicles, alerts] = await Promise.all([        prisma.load.count({
+          where: { organizationId: orgId, status: 'in_transit' },
         }),
         prisma.driver.count({
           where: { organizationId: orgId, status: 'active' },

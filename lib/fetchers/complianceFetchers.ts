@@ -9,7 +9,7 @@ import {
   complianceDocumentFilterSchema,
   hosFilterSchema,
 } from '@/schemas/compliance';
-import prisma from '@/lib/database/db';
+import { prisma } from '@/lib/database/db';
 import { handleError } from '@/lib/errors/handleError';
 import {
   getCachedData,
@@ -267,7 +267,9 @@ export async function getDriverComplianceStatuses(
         const violationStatus = hos?.data?.complianceStatus ?? 'unknown';
         const lastViolation = hos?.data?.lastLoggedAt ?? null;
         const lastInspection =
-          d.loads?.[0]?.vehicle?.lastInspectionDate ?? null;
+          d.loads && d.loads.length > 0 && d.loads[0].vehicle
+            ? d.loads[0].vehicle.lastInspectionDate
+            : null;
 
         return {
           id: d.id,

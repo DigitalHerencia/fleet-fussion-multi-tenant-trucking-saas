@@ -1,7 +1,7 @@
 'use server';
 
 import { auth } from '@clerk/nextjs/server';
-import prisma from '@/lib/database/db';
+import { prisma } from '@/lib/database/db';
 import type { Notification } from '@/types/notifications';
 
 /**
@@ -11,7 +11,7 @@ export async function listUnreadNotifications(orgId: string): Promise<Notificati
   const { userId } = await auth();
   if (!userId) return [];
 
-  return prisma.notification.findMany({
+  const notifications = await prisma.notification.findMany({
     where: {
       organizationId: orgId,
       OR: [{ userId }, { userId: null }],
@@ -20,6 +20,14 @@ export async function listUnreadNotifications(orgId: string): Promise<Notificati
     orderBy: { createdAt: 'desc' },
     take: 10,
   });
+
+  // Convert Date fields to string for Notification type compatibility
+  return notifications.map(n => ({
+    ...n,
+    createdAt: n.createdAt.toISOString(),
+    updatedAt: n.updatedAt.toISOString(),
+    readAt: n.readAt ? n.readAt.toISOString() : null,
+  }));
 }
 
 /**

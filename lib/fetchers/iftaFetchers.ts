@@ -31,13 +31,39 @@ async function checkUserAccess(organizationId: string) {
 }
 
 /**
+ * Add type for IFTA period data summary
+ */
+interface IftaPeriodSummary {
+  totalMiles: number;
+  totalGallons: number;
+  averageMpg: number;
+  totalFuelCost: number;
+}
+
+interface IftaJurisdictionSummary {
+  jurisdiction: string;
+  miles: number;
+  fuelGallons: number;
+  taxPaid: number;
+}
+
+interface IftaPeriodData {
+  period: { quarter: number; year: number };
+  summary: IftaPeriodSummary;
+  trips: any[];
+  fuelPurchases: any[];
+  jurisdictionSummary: IftaJurisdictionSummary[];
+  report: any;
+}
+
+/**
  * Get IFTA data for a specific period
  */
 export async function getIftaDataForPeriod(
   orgId: string,
   quarter: string,
   year: string
-) {
+): Promise<IftaPeriodData> {
   try {
     await checkUserAccess(orgId);
 
@@ -56,8 +82,17 @@ export async function getIftaDataForPeriod(
     const cacheKey = `ifta:${orgId}:${year}:Q${quarterNum}`;
 
     // Check cache first
-    const cached = getCachedData(cacheKey);
-    if (cached) {
+    const cached = getCachedData(cacheKey) as IftaPeriodData | null;
+    if (
+      cached &&
+      typeof cached === 'object' &&
+      'period' in cached &&
+      'summary' in cached &&
+      'trips' in cached &&
+      'fuelPurchases' in cached &&
+      'jurisdictionSummary' in cached &&
+      'report' in cached
+    ) {
       return cached;
     }
 
@@ -442,10 +477,17 @@ export async function calculateQuarterlyTaxes(
   const data = await getIftaDataForPeriod(orgId, quarter, year);
   const rates = await getJurisdictionRates();
 
-  const taxes = (data.jurisdictionSummary || []).map((j: any) => {
+  // Ensure jurisdictionSummary is always an array
+  const jurisdictionSummary = Array.isArray(data.jurisdictionSummary)
+    ? data.jurisdictionSummary
+    : [];
+
+  const taxes = jurisdictionSummary.map((j) => {
     const rate = rates[j.jurisdiction as keyof typeof rates] || 0;
-    const taxDue = ((j.miles || j.totalMiles || 0) / (data.summary.totalMiles || 1)) *
-      (data.summary.totalGallons || 0) * rate;
+    const taxDue =
+      ((j.miles || 0) / (data.summary.totalMiles || 1)) *
+      (data.summary.totalGallons || 0) *
+      rate;
     return {
       jurisdiction: j.jurisdiction,
       taxRate: rate,

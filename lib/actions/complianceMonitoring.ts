@@ -1,7 +1,7 @@
 'use server';
 
 import { subDays, addDays } from 'date-fns';
-import { db } from './database/db';
+import { db } from '@/lib/database/db';
 import { getCurrentUser } from '@/lib/auth/auth';
 import { handleError } from '@/lib/errors/handleError';
 
@@ -22,7 +22,7 @@ export async function checkExpiringDocuments(days = 30) {
     });
 
     await Promise.all(
-      docs.map(doc =>
+      docs.map((doc: any) =>
         db.complianceAlert.create({
           data: {
             organizationId: orgId,

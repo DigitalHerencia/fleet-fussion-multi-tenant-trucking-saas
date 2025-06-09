@@ -46,6 +46,7 @@ model Organization {
   @@index([clerkId])
   @@index([slug])
   @@map("organizations")
+  Notification Notification[]
 }
 
 model User {
@@ -77,6 +78,7 @@ model User {
   @@index([email])
   @@index([role])
   @@map("users")
+  Notification Notification[]
 }
 
 model Vehicle {

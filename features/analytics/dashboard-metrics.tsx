@@ -17,10 +17,8 @@ import {
 import { FC } from 'react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  getDashboardSummary,
-  type DashboardSummary,
-} from '@/lib/fetchers/analyticsFetchers';
+import { getDashboardSummary } from '@/lib/fetchers/analyticsFetchers';
+import type { DashboardSummary } from '@/types/analytics';
 
 interface MetricCardProps {
   title: string;

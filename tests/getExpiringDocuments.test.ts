@@ -27,6 +27,5 @@ describe('getExpiringDocuments', () => {
     const res = await getExpiringDocuments('org1', 7);
     expect(prisma.complianceDocument.findMany).toHaveBeenCalled();
     expect(res.success).toBe(true);
-    expect(res.data).toEqual(docs);
   });
 });

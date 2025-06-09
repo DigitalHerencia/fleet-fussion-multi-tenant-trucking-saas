@@ -3,7 +3,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { unstable_cache } from 'next/cache';
 
-import prisma from '@/lib/database/db';
+import { prisma } from '@/lib/database/db';
 import { loadFilterSchema, type LoadFilterInput } from '@/schemas/dispatch';
 import type {
   Load,
@@ -863,15 +863,22 @@ function formatLoadForBoard(load: Load): Load {
 // Fetch dispatch board data with caching
 export const getDispatchBoardData = unstable_cache(
   async (orgId: string, filters?: LoadFilterInput) => {
+    // Extract date range from filters if present, else use default
+    let dateRange: { from: Date; to: Date } | undefined = undefined;
+    if (filters && (filters.startDate || filters.endDate)) {
+      const from = filters.startDate ? new Date(filters.startDate) : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+      const to = filters.endDate ? new Date(filters.endDate) : new Date();
+      dateRange = { from, to };
+    }
     const [loadsResult, driversResult, vehiclesResult, statsResult] =
       await Promise.all([
         listLoadsByOrg(orgId, filters),
         getAvailableDriversForLoad(orgId),
         getAvailableVehiclesForLoad(orgId, {}),
-        getLoadStatistics(orgId, filters),
+        getLoadStatistics(orgId, dateRange), // <-- pass dateRange, not filters
       ]);
 
-    const loads = (loadsResult?.data?.loads || []) as Load[];
+    const loads = ( loadsResult?.data?.loads || [] ) as unknown as Load[];
 
     return {
       loads: loads.map(formatLoadForBoard),

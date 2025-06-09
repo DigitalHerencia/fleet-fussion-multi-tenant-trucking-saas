@@ -4,17 +4,16 @@ import { getDashboardSummary } from '@/lib/fetchers/analyticsFetchers';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { orgId: string } }
+  { params }: { params: Promise<{ orgId: string }> }
 ) {
   const { userId } = await auth();
   if (!userId) return new Response('Unauthorized', { status: 401 });
 
-  const orgId = params.orgId;
+  const { orgId } = await params;
   const searchParams = req.nextUrl.searchParams;
   const timeRange = searchParams.get('timeRange') || '30d';
   const driver = searchParams.get('driver');
   const filters = driver ? { driverId: driver } : {};
-
   const stream = new ReadableStream({
     async start(controller) {
       const send = async () => {
@@ -22,11 +21,14 @@ export async function GET(
         controller.enqueue(`data: ${JSON.stringify(data)}\n\n`);
       };
       await send();
-      const interval = setInterval(send, 10000);
-      this.interval = interval;
+      const intervalId = setInterval(send, 10000);
+      (controller as any).intervalId = intervalId;
     },
     cancel() {
-      clearInterval((this as any).interval);
+      const intervalId = (this as any).intervalId;
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
     },
   });
 

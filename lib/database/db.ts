@@ -7,47 +7,51 @@
  */
 
 import { PrismaClient } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { PrismaNeon } from '@prisma/adapter-neon';
 import dotenv from 'dotenv';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 dotenv.config();
 const connectionString = `${process.env.DATABASE_URL}`;
 
 const adapter = new PrismaNeon({ connectionString });
 const prisma = new PrismaClient({ adapter });
+export { prisma };
 export const db = prisma;
 
 // Utility function to handle database errors
 export function handleDatabaseError(error: unknown): never {
   console.error('Database error:', error);
-  if (error instanceof PrismaClientKnownRequestError) {
-    switch (error.code) {
-      case 'P2002':
-      case 'P2003':
-      case 'P2025':
-      default:
-        throw new Error(
-          `Database error (Prisma): ${error.message} (Code: ${error.code})`
-        );
-    }
-  } else if (
+  if (
     typeof error === 'object' &&
     error !== null &&
     'code' in error &&
-    'message' in error
+    typeof (error as any).code === 'string'
   ) {
-    // Fallback for generic SQL errors
-    const sqlError = error as { code: string; message: string };
-    switch (sqlError.code) {
-      case '23505':
-      case '23503':
-      case '23502':
-      case '42P01':
-      default:
-        throw new Error(
-          `Database error: ${sqlError.message} (SQL Code: ${sqlError.code})`
-        );
+    // Prisma known request error
+    if (error instanceof PrismaClientKnownRequestError) {
+      switch ((error as PrismaClientKnownRequestError).code) {
+        case 'P2002':
+        case 'P2003':
+        case 'P2025':
+        default:
+          throw new Error(
+            `Database error (Prisma): ${(error as PrismaClientKnownRequestError).message} (Code: ${(error as PrismaClientKnownRequestError).code})`
+          );
+      }
+    } else {
+      // Fallback for generic SQL errors
+      const sqlError = error as { code: string; message: string };
+      switch (sqlError.code) {
+        case '23505':
+        case '23503':
+        case '23502':
+        case '42P01':
+        default:
+          throw new Error(
+            `Database error: ${sqlError.message} (SQL Code: ${sqlError.code})`
+          );
+      }
     }
   }
   throw new Error('Unknown database error occurred');

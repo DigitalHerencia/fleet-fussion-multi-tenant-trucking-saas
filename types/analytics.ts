@@ -116,3 +116,20 @@ export interface ProfitabilityMetrics {
     margin: number;
   }[];
 }
+
+export interface DashboardSummary {
+  averageRevenuePerMile: number;
+  totalLoads: any;
+  activeDrivers: any;
+  activeVehicles: any;
+  totalRevenue: number;
+  totalMiles: number;
+  activeLoads: number;
+  completedLoads: number;
+  averageRpm: number;
+  fuelEfficiency: number;
+  maintenanceCosts: number;
+  driverUtilization: number;
+  timeRange: string;
+  lastUpdated: string;
+}

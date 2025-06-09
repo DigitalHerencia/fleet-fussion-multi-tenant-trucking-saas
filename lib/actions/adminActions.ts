@@ -212,7 +212,7 @@ export async function getOrganizationStatsAction(
 /**
  * Bulk invite users (placeholder implementation)
  */
-export async function inviteUsersAction(orgId: string) {
+export async function inviteUsersAction(orgId: string, formData: FormData) {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -232,7 +232,7 @@ export async function inviteUsersAction(orgId: string) {
   }
 }
 
-export async function activateUsersAction(orgId: string) {
+export async function activateUsersAction(orgId: string, formData: FormData) {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -253,7 +253,7 @@ export async function activateUsersAction(orgId: string) {
   }
 }
 
-export async function deactivateUsersAction(orgId: string) {
+export async function deactivateUsersAction(orgId: string, formData: FormData) {
   try {
     const { userId } = await auth();
     if (!userId) {

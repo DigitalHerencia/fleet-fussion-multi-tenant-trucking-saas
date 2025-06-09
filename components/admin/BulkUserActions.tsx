@@ -2,9 +2,17 @@ import { Button } from '@/components/ui/button';
 import { inviteUsersAction, activateUsersAction, deactivateUsersAction } from '@/lib/actions/adminActions';
 
 export function BulkUserActions({ orgId }: { orgId: string }) {
-  const invite = inviteUsersAction.bind(null, orgId);
-  const activate = activateUsersAction.bind(null, orgId);
-  const deactivate = deactivateUsersAction.bind(null, orgId);
+  // Wrap each action to accept FormData and return void as required by <form action={...}>
+  const invite = async (formData: FormData) => {
+    await inviteUsersAction(orgId, formData);
+  };
+  const activate = async (formData: FormData) => {
+    await activateUsersAction(orgId, formData);
+  };
+  const deactivate = async (formData: FormData) => {
+    await deactivateUsersAction(orgId, formData);
+  };
+
   return (
     <div className="flex gap-2">
       <form action={invite}>

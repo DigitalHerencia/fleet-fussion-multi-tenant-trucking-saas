@@ -4,7 +4,7 @@ import { auth } from '@clerk/nextjs/server';
 import { getDashboardSummary } from '@/lib/fetchers/analyticsFetchers';
 import { PDFDocument, StandardFonts } from 'pdf-lib';
 
-export async function exportAnalyticsReport(formData: FormData) {
+export async function exportAnalyticsReport(formData: FormData): Promise<Response> {
   const { userId } = await auth();
   if (!userId) {
     return new Response('Unauthorized', { status: 401 });
@@ -48,7 +48,7 @@ export async function exportAnalyticsReport(formData: FormData) {
       y -= 16;
     });
     const pdfBytes = await doc.save();
-    return new Response(pdfBytes, {
+    return new Response(Buffer.from(pdfBytes), {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',

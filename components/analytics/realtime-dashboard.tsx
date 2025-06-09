@@ -1,6 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { DashboardSummary } from '@/lib/fetchers/analyticsFetchers';
+// FIX: Import DashboardSummary from types, not fetchers
+import { DashboardSummary } from '@/types/analytics';
+import type { JSX } from 'react/jsx-runtime';
 
 interface RealtimeDashboardProps {
   orgId: string;
