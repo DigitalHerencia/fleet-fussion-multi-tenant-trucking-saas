@@ -288,3 +288,13 @@ export async function generateCustomIFTAReport(
     };
   }
 }
+
+export async function fetchIftaDataAction(orgId: string, quarter: string, year: string) {
+  try {
+    await checkIftaPermissions(orgId);
+    return await getIftaDataForPeriod(orgId, quarter, year);
+  } catch (error) {
+    console.error('Error fetching IFTA data:', error);
+    throw new Error('Failed to fetch IFTA data');
+  }
+}
