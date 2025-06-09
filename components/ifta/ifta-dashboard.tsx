@@ -60,8 +60,12 @@ export function IftaDashboard() {
         setLoading(true);
         const [quarterPart, yearPart] = quarter.split('-');
         const data = await getIftaDataForPeriod(orgId, quarterPart, yearPart);
-        setIftaData(data);
-        setError(null);
+        if (validateIftaPeriodData(data)) {
+          setIftaData(data);
+          setError(null);
+        } else {
+          throw new Error('Invalid IFTA data structure');
+        }
       } catch (err) {
         console.error('Error fetching IFTA data:', err);
         setError('Failed to load IFTA data');
