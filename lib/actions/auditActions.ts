@@ -4,6 +4,7 @@
 import { auth } from '@clerk/nextjs/server';
 
 import { db } from '@/lib/database/db';
+import { handleError } from '@/lib/errors/handleError';
 
 export interface AuditLogEntry {
   id: string;
@@ -36,12 +37,7 @@ export async function logAuditEvent(
       throw new Error('User must be authenticated');
     }
   } catch (error) {
-    console.error('Failed to log audit event:', error);
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : 'Failed to log audit event',
-    };
+    return handleError(error, 'Log Audit Event');
   }
 }
 
@@ -118,12 +114,7 @@ export async function getAuditLogs(
       },
     };
   } catch (error) {
-    console.error('Failed to get audit logs:', error);
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : 'Failed to get audit logs',
-    };
+    return handleError(error, 'Get Audit Logs');
   }
 }
 
@@ -217,12 +208,7 @@ export async function cleanupAuditLogs(daysToKeep: number = 365) {
       deletedCount: deletedCount.count,
     };
   } catch (error) {
-    console.error('Failed to cleanup audit logs:', error);
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : 'Failed to cleanup audit logs',
-    };
+    return handleError(error, 'Cleanup Audit Logs');
   }
 }
 
@@ -291,11 +277,6 @@ export async function exportAuditLogs(
       filename: `audit-logs-${new Date().toISOString().split('T')[0]}.csv`,
     };
   } catch (error) {
-    console.error('Failed to export audit logs:', error);
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : 'Failed to export audit logs',
-    };
+    return handleError(error, 'Export Audit Logs');
   }
 }

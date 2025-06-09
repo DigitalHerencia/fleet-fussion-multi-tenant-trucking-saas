@@ -2,6 +2,7 @@
 
 import { auth, clerkClient } from '@clerk/nextjs/server';
 import { revalidatePath } from 'next/cache';
+import { handleError } from '@/lib/errors/handleError';
 
 export interface InvitationData {
   emailAddress: string;
@@ -19,12 +20,7 @@ export async function createOrganizationInvitation(data: InvitationData) {
 
     revalidatePath('/[orgId]/settings', 'page');
   } catch (error) {
-    console.error('Error creating organization invitation:', error);
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : 'Failed to create invitation',
-    };
+    return handleError(error, 'Create Organization Invitation');
   }
 }
 
@@ -37,11 +33,6 @@ export async function getOrganizationInvitations(organizationId?: string) {
       return { success: false, error: 'Unauthorized' };
     }
   } catch (error) {
-    console.error('Error getting organization invitations:', error);
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : 'Failed to get invitations',
-    };
+    return handleError(error, 'Get Organization Invitations');
   }
 }
