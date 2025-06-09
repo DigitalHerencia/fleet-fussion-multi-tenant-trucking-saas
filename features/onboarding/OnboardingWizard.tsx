@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CheckCircle } from 'lucide-react';
@@ -39,6 +40,7 @@ export function OnboardingWizard({ initialStatus }: OnboardingWizardProps) {
   );
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   // Load onboarding status
 
@@ -48,12 +50,8 @@ export function OnboardingWizard({ initialStatus }: OnboardingWizardProps) {
       const result = await submitOnboardingStepAction(step, data);
 
       if (result.success) {
-        // Refresh status
-        // const newStatus = await result.data;
-        // setStatus(newStatus);
-        // Instead, optimistically update or refetch status here if possible
-        // For now, just reload the page or setStatus as needed
-        window.location.reload();
+        // Refresh status via router to avoid full page reload
+        router.refresh();
 
         toast({
           title: 'Progress saved',

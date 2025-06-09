@@ -7,26 +7,40 @@
 
 import { auth, clerkClient } from '@clerk/nextjs/server';
 import { revalidatePath } from 'next/cache';
-
 import prisma from '@/lib/database/db';
 import { handleError } from '@/lib/errors/handleError';
 import { SystemRoles } from '@/types/abac';
+import type { AdminActionResult } from '@/types/actions';
+import type { DatabaseUser } from '@/types/auth';
+import type { AuditLogEntry, OrganizationStats } from '@/types/admin';
 
-export interface AdminActionResult {
-  success: boolean;
-  error?: string;
-  data?: any;
+async function verifyAdminAccess(userId: string, orgId: string) {
+  const user = await db.user.findUnique({
+    where: { clerkId: userId },
+    select: { organizationId: true, role: true },
+  });
+  return (
+    user?.organizationId === orgId && user.role === SystemRoles.ADMIN
+  );
 }
 
 /**
  * Get all users in an organization (Admin only)
  */
+type OrgUser =
+  Pick<DatabaseUser, 'id' | 'email' | 'firstName' | 'lastName' | 'role' | 'isActive' | 'createdAt' | 'lastLogin'> &
+  { clerkId: string };
+
 export async function getOrganizationUsersAction(
   orgId: string
-): Promise<AdminActionResult> {
+): Promise<AdminActionResult<OrgUser[]>> {
   try {
     const { userId } = await auth();
     if (!userId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+    const isAdmin = await verifyAdminAccess(userId, orgId);
+    if (!isAdmin) {
       return { success: false, error: 'Unauthorized' };
     }
 
@@ -60,10 +74,14 @@ export async function updateUserRoleAction(
   orgId: string,
   targetUserId: string,
   newRole: string
-): Promise<AdminActionResult> {
+): Promise<AdminActionResult<void>> {
   try {
     const { userId } = await auth();
     if (!userId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+    const isAdmin = await verifyAdminAccess(userId, orgId);
+    if (!isAdmin) {
       return { success: false, error: 'Unauthorized' };
     }
 
@@ -91,10 +109,14 @@ export async function updateUserRoleAction(
 export async function deactivateUserAction(
   orgId: string,
   targetUserId: string
-): Promise<AdminActionResult> {
+): Promise<AdminActionResult<void>> {
   try {
     const { userId } = await auth();
     if (!userId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+    const isAdmin = await verifyAdminAccess(userId, orgId);
+    if (!isAdmin) {
       return { success: false, error: 'Unauthorized' };
     }
 
@@ -119,10 +141,14 @@ export async function deactivateUserAction(
  */
 export async function getAuditLogsAction(
   orgId: string
-): Promise<AdminActionResult> {
+): Promise<AdminActionResult<AuditLogEntry[]>> {
   try {
     const { userId } = await auth();
     if (!userId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+    const isAdmin = await verifyAdminAccess(userId, orgId);
+    if (!isAdmin) {
       return { success: false, error: 'Unauthorized' };
     }
 
@@ -151,10 +177,14 @@ export async function getAuditLogsAction(
  */
 export async function getOrganizationStatsAction(
   orgId: string
-): Promise<AdminActionResult> {
+): Promise<AdminActionResult<OrganizationStats>> {
   try {
     const { userId } = await auth();
     if (!userId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+    const isAdmin = await verifyAdminAccess(userId, orgId);
+    if (!isAdmin) {
       return { success: false, error: 'Unauthorized' };
     }
 
@@ -187,10 +217,17 @@ export async function getOrganizationStatsAction(
 /**
  * Bulk invite users (placeholder implementation)
  */
-export async function inviteUsersAction(orgId: string, formData: FormData) {
+export async function inviteUsersAction(
+  orgId: string,
+  formData: FormData
+): Promise<AdminActionResult<void>> {
   try {
     const { userId } = await auth();
     if (!userId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+    const isAdmin = await verifyAdminAccess(userId, orgId);
+    if (!isAdmin) {
       return { success: false, error: 'Unauthorized' };
     }
 
@@ -203,10 +240,17 @@ export async function inviteUsersAction(orgId: string, formData: FormData) {
   }
 }
 
-export async function activateUsersAction(orgId: string, formData: FormData) {
+export async function activateUsersAction(
+  orgId: string,
+  formData: FormData
+): Promise<AdminActionResult<void>> {
   try {
     const { userId } = await auth();
     if (!userId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+    const isAdmin = await verifyAdminAccess(userId, orgId);
+    if (!isAdmin) {
       return { success: false, error: 'Unauthorized' };
     }
     await prisma.user.updateMany({
@@ -220,10 +264,17 @@ export async function activateUsersAction(orgId: string, formData: FormData) {
   }
 }
 
-export async function deactivateUsersAction(orgId: string, formData: FormData) {
+export async function deactivateUsersAction(
+  orgId: string,
+  formData: FormData
+): Promise<AdminActionResult<void>> {
   try {
     const { userId } = await auth();
     if (!userId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+    const isAdmin = await verifyAdminAccess(userId, orgId);
+    if (!isAdmin) {
       return { success: false, error: 'Unauthorized' };
     }
     await prisma.user.updateMany({

@@ -2,9 +2,9 @@
 'use server';
 
 import { auth } from '@clerk/nextjs/server';
-
 import { db } from '@/lib/database/db';
 import { handleError } from '@/lib/errors/handleError';
+
 
 export interface AuditLogEntry {
   id: string;
@@ -13,7 +13,7 @@ export interface AuditLogEntry {
   action: string;
   resource: string;
   resourceId?: string;
-  metadata: Record<string, any>;
+  metadata: Metadata;
   ipAddress?: string;
   userAgent?: string;
   timestamp: Date;
@@ -26,7 +26,7 @@ export async function logAuditEvent(
   action: string,
   resource: string,
   resourceId?: string,
-  metadata: Record<string, any> = {},
+  metadata: Metadata = {},
   ipAddress?: string,
   userAgent?: string
 ) {
@@ -124,7 +124,7 @@ export async function getAuditLogs(
 export async function logDriverAction(
   action: string,
   driverId: string,
-  metadata: Record<string, any> = {},
+  metadata: Metadata = {},
   p0: string,
   entityType: any,
   p1: string,
@@ -142,7 +142,7 @@ export async function logDriverAction(
 export async function logVehicleAction(
   action: string,
   vehicleId: string,
-  metadata: Record<string, any> = {}
+  metadata: Metadata = {}
 ) {
   return logAuditEvent(action, 'vehicle', vehicleId, metadata);
 }
@@ -153,7 +153,7 @@ export async function logVehicleAction(
 export async function logDispatchAction(
   action: string,
   loadId: string,
-  metadata: Record<string, any> = {}
+  metadata: Metadata = {}
 ) {
   return logAuditEvent(action, 'dispatch', loadId, metadata);
 }
@@ -164,7 +164,7 @@ export async function logDispatchAction(
 export async function logComplianceAction(
   action: string,
   resourceId: string,
-  metadata: Record<string, any> = {}
+  metadata: Metadata = {}
 ) {
   return logAuditEvent(action, 'compliance', resourceId, metadata);
 }
@@ -175,7 +175,7 @@ export async function logComplianceAction(
 export async function logIftaAction(
   action: string,
   reportId: string,
-  metadata: Record<string, any> = {}
+  metadata: Metadata = {}
 ) {
   return logAuditEvent(action, 'ifta', reportId, metadata);
 }

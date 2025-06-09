@@ -69,7 +69,7 @@ async function createAuditLog(
   action: string,
   entityType: string,
   entityId: string,
-  changes: Record<string, any>,
+  changes: Record<string, unknown>,
   userId: string,
   organizationId: string
 ) {
@@ -134,7 +134,12 @@ export async function createLoadAction(orgId: string, data: CreateLoadInput) {
       statusEvents,
       ...rest
     } = validatedData;
-    const dbData: any = {
+    const dbData: Partial<UpdateLoadInput> & {
+      referenceNumber: string;
+      organizationId: string;
+      createdAt: Date;
+      updatedAt: Date;
+    } = {
       ...rest,
       referenceNumber,
       rate,
@@ -242,7 +247,7 @@ export async function updateLoadAction(loadId: string, data: UpdateLoadInput) {
       statusEvents,
       ...updateData
     } = validatedData;
-    const dbData: any = {
+    const dbData: Partial<UpdateLoadInput> & { updatedAt: Date } = {
       ...updateData,
       updatedAt: new Date(),
       priority: priority || undefined,
@@ -430,5 +435,31 @@ export async function assignDriverAction(input: LoadAssignmentInput) {
     return { success: true };
   } catch (error) {
     return handleError(error, 'Assign Driver');
+  }
+}
+
+// Fetch a single load by id with relations
+export async function getLoadById(orgId: string, loadId: string) {
+  try {
+    await checkUserPermissions(orgId, ['dispatch:manage', 'loads:update']);
+    const load = await prisma.load.findFirst({
+      where: { id: loadId, organizationId: orgId },
+      include: {
+        driver: true,
+        vehicle: true,
+        trailer: true,
+        statusEvents: { orderBy: { timestamp: 'desc' } },
+      },
+    });
+    if (!load) {
+      return { success: false, error: 'Load not found' };
+    }
+    return { success: true, data: load };
+  } catch (error) {
+    console.error('Error fetching load by id:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to fetch load',
+    };
   }
 }

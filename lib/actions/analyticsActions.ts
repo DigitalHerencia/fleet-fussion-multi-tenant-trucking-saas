@@ -1,16 +1,36 @@
 'use server';
 
 import { auth } from '@clerk/nextjs/server';
+import { getCurrentUser } from '@/lib/auth/auth';
 
 import prisma from '@/lib/database/db';
 import { hasPermission } from '@/lib/auth/permissions';
 import { handleError } from '@/lib/errors/handleError';
 import { PermissionActions, ResourceTypes, SystemRoles } from '@/types/abac';
 import { ClerkOrganizationMetadata } from '@/types/auth';
+import type { AnalyticsActionResult } from '@/types/actions';
 
-export interface AnalyticsActionResult {
-  success: boolean;
-  data?: any;
+interface FleetMetrics {
+  vehicleCount: number;
+  activeVehicleCount: number;
+  maintenanceVehicleCount: number;
+  fleetUtilization: number;
+  totalMiles: number;
+}
+
+interface LoadAnalytics {
+  totalLoads: number;
+  deliveredLoads: number;
+  inTransitLoads: number;
+  pendingLoads: number;
+  completionRate: number;
+}
+
+interface ComplianceAnalytics {
+  totalDocuments: number;
+  expiredDocuments: number;
+  expiringDocuments: number;
+  complianceRate: number;
 }
 
 /**
@@ -18,39 +38,20 @@ export interface AnalyticsActionResult {
  */
 export async function getFleetMetricsAction(
   orgId: string
-): Promise<AnalyticsActionResult> {
+): Promise<AnalyticsActionResult<FleetMetrics>> {
   try {
     const { userId } = await auth();
     if (!userId) {
       return { success: false };
     }
-    // Minimal UserContext for permission check
-    const userContext = {
-      userId,
-      organizationId: orgId,
-      name: '',
-      role: SystemRoles.VIEWER,
-      permissions: [],
-      email: '',
-      isActive: true,
-      onboardingComplete: true,
-      organizationMetadata: {
-        subscriptionTier: 'free',
-        subscriptionStatus: 'active',
-        maxUsers: 1,
-        features: [],
-        createdAt: new Date().toISOString(),
-        billingEmail: '',
-        settings: {
-          timezone: 'America/Denver',
-          dateFormat: 'MM/dd/yyyy',
-          distanceUnit: 'miles',
-          fuelUnit: 'gallons',
-        },
-      } satisfies ClerkOrganizationMetadata,
-    };
+
+    const user = await getCurrentUser();
+    if (!user || !user.organizationId) {
+      return { success: false };
+    }
+
     const hasAccess = hasPermission(
-      userContext,
+      user,
       PermissionActions.READ,
       ResourceTypes.ORGANIZATION
     );
@@ -98,39 +99,20 @@ export async function getFleetMetricsAction(
  */
 export async function getLoadAnalyticsAction(
   orgId: string
-): Promise<AnalyticsActionResult> {
+): Promise<AnalyticsActionResult<LoadAnalytics>> {
   try {
     const { userId } = await auth();
     if (!userId) {
       return { success: false };
     }
-    // Minimal UserContext for permission check
-    const userContext = {
-      userId,
-      organizationId: orgId,
-      name: '',
-      role: SystemRoles.VIEWER,
-      permissions: [],
-      email: '',
-      isActive: true,
-      onboardingComplete: true,
-      organizationMetadata: {
-        subscriptionTier: 'free',
-        subscriptionStatus: 'active',
-        maxUsers: 1,
-        features: [],
-        createdAt: new Date().toISOString(),
-        billingEmail: '',
-        settings: {
-          timezone: 'America/Denver',
-          dateFormat: 'MM/dd/yyyy',
-          distanceUnit: 'miles',
-          fuelUnit: 'gallons',
-        },
-      } satisfies ClerkOrganizationMetadata,
-    };
+
+    const user = await getCurrentUser();
+    if (!user || !user.organizationId) {
+      return { success: false };
+    }
+
     const hasAccess = hasPermission(
-      userContext,
+      user,
       PermissionActions.READ,
       ResourceTypes.ORGANIZATION
     );
@@ -180,39 +162,20 @@ export async function getLoadAnalyticsAction(
  */
 export async function getFinancialMetricsAction(
   orgId: string
-): Promise<AnalyticsActionResult> {
+): Promise<AnalyticsActionResult<void>> {
   try {
     const { userId } = await auth();
     if (!userId) {
       return { success: false };
     }
-    // Minimal UserContext for permission check
-    const userContext = {
-      userId,
-      organizationId: orgId,
-      name: '',
-      role: SystemRoles.VIEWER,
-      permissions: [],
-      email: '',
-      isActive: true,
-      onboardingComplete: true,
-      organizationMetadata: {
-        subscriptionTier: 'free',
-        subscriptionStatus: 'active',
-        maxUsers: 1,
-        features: [],
-        createdAt: new Date().toISOString(),
-        billingEmail: '',
-        settings: {
-          timezone: 'America/Denver',
-          dateFormat: 'MM/dd/yyyy',
-          distanceUnit: 'miles',
-          fuelUnit: 'gallons',
-        },
-      } satisfies ClerkOrganizationMetadata,
-    };
+
+    const user = await getCurrentUser();
+    if (!user || !user.organizationId) {
+      return { success: false };
+    }
+
     const hasAccess = hasPermission(
-      userContext,
+      user,
       PermissionActions.READ,
       ResourceTypes.ORGANIZATION
     );
@@ -242,39 +205,20 @@ export async function getFinancialMetricsAction(
  */
 export async function getComplianceAnalyticsAction(
   orgId: string
-): Promise<AnalyticsActionResult> {
+): Promise<AnalyticsActionResult<ComplianceAnalytics>> {
   try {
     const { userId } = await auth();
     if (!userId) {
       return { success: false };
     }
-    // Minimal UserContext for permission check
-    const userContext = {
-      userId,
-      organizationId: orgId,
-      name: '',
-      role: SystemRoles.VIEWER,
-      permissions: [],
-      email: '',
-      isActive: true,
-      onboardingComplete: true,
-      organizationMetadata: {
-        subscriptionTier: 'free',
-        subscriptionStatus: 'active',
-        maxUsers: 1,
-        features: [],
-        createdAt: new Date().toISOString(),
-        billingEmail: '',
-        settings: {
-          timezone: 'America/Denver',
-          dateFormat: 'MM/dd/yyyy',
-          distanceUnit: 'miles',
-          fuelUnit: 'gallons',
-        },
-      } satisfies ClerkOrganizationMetadata,
-    };
+
+    const user = await getCurrentUser();
+    if (!user || !user.organizationId) {
+      return { success: false };
+    }
+
     const hasAccess = hasPermission(
-      userContext,
+      user,
       PermissionActions.READ,
       ResourceTypes.ORGANIZATION
     );

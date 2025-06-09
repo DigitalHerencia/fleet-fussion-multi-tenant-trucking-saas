@@ -152,7 +152,7 @@ export async function generateIftaReportAction(
 
 // -------------------- PDF Generation Actions --------------------
 
-async function createBasicPdf(title: string, content: Record<string, any>) {
+async function createBasicPdf(title: string, content: Record<string, unknown>) {
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage();
   const { width, height } = page.getSize();
@@ -286,5 +286,15 @@ export async function generateCustomIFTAReport(
           ? error.message
           : 'Failed to generate custom PDF',
     };
+  }
+}
+
+export async function fetchIftaDataAction(orgId: string, quarter: string, year: string) {
+  try {
+    await checkIftaPermissions(orgId);
+    return await getIftaDataForPeriod(orgId, quarter, year);
+  } catch (error) {
+    console.error('Error fetching IFTA data:', error);
+    throw new Error('Failed to fetch IFTA data');
   }
 }
