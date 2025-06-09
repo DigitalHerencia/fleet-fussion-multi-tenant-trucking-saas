@@ -8,11 +8,21 @@
 import { auth, clerkClient } from '@clerk/nextjs/server';
 import { revalidatePath } from 'next/cache';
 
-import prisma from '@/lib/database/db';
+import prisma, { db } from '@/lib/database/db';
 import { SystemRoles } from '@/types/abac';
 import type { AdminActionResult } from '@/types/actions';
 import type { DatabaseUser } from '@/types/auth';
 import type { AuditLogEntry, OrganizationStats } from '@/types/admin';
+
+async function verifyAdminAccess(userId: string, orgId: string) {
+  const user = await db.user.findUnique({
+    where: { clerkId: userId },
+    select: { organizationId: true, role: true },
+  });
+  return (
+    user?.organizationId === orgId && user.role === SystemRoles.ADMIN
+  );
+}
 
 /**
  * Get all users in an organization (Admin only)
@@ -27,6 +37,10 @@ export async function getOrganizationUsersAction(
   try {
     const { userId } = await auth();
     if (!userId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+    const isAdmin = await verifyAdminAccess(userId, orgId);
+    if (!isAdmin) {
       return { success: false, error: 'Unauthorized' };
     }
 
@@ -70,6 +84,10 @@ export async function updateUserRoleAction(
     if (!userId) {
       return { success: false, error: 'Unauthorized' };
     }
+    const isAdmin = await verifyAdminAccess(userId, orgId);
+    if (!isAdmin) {
+      return { success: false, error: 'Unauthorized' };
+    }
 
     // Validate role
     if (!Object.values(SystemRoles).includes(newRole as any)) {
@@ -106,6 +124,10 @@ export async function deactivateUserAction(
     if (!userId) {
       return { success: false, error: 'Unauthorized' };
     }
+    const isAdmin = await verifyAdminAccess(userId, orgId);
+    if (!isAdmin) {
+      return { success: false, error: 'Unauthorized' };
+    }
 
     // Update in database
     await prisma.user.update({
@@ -137,6 +159,10 @@ export async function getAuditLogsAction(
   try {
     const { userId } = await auth();
     if (!userId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+    const isAdmin = await verifyAdminAccess(userId, orgId);
+    if (!isAdmin) {
       return { success: false, error: 'Unauthorized' };
     }
 
@@ -174,6 +200,10 @@ export async function getOrganizationStatsAction(
   try {
     const { userId } = await auth();
     if (!userId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+    const isAdmin = await verifyAdminAccess(userId, orgId);
+    if (!isAdmin) {
       return { success: false, error: 'Unauthorized' };
     }
 
@@ -222,6 +252,10 @@ export async function inviteUsersAction(
     if (!userId) {
       return { success: false, error: 'Unauthorized' };
     }
+    const isAdmin = await verifyAdminAccess(userId, orgId);
+    if (!isAdmin) {
+      return { success: false, error: 'Unauthorized' };
+    }
 
     // Implementation would send invitations via Clerk or email provider
     console.log('Inviting users for org', orgId);
@@ -243,6 +277,10 @@ export async function activateUsersAction(
   try {
     const { userId } = await auth();
     if (!userId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+    const isAdmin = await verifyAdminAccess(userId, orgId);
+    if (!isAdmin) {
       return { success: false, error: 'Unauthorized' };
     }
     await prisma.user.updateMany({
@@ -267,6 +305,10 @@ export async function deactivateUsersAction(
   try {
     const { userId } = await auth();
     if (!userId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+    const isAdmin = await verifyAdminAccess(userId, orgId);
+    if (!isAdmin) {
       return { success: false, error: 'Unauthorized' };
     }
     await prisma.user.updateMany({
