@@ -1,18 +1,22 @@
 'use server';
 
-import { subDays, addDays } from 'date-fns';
+import { addDays } from 'date-fns';
+import { z } from 'zod';
 import { db } from '@/lib/database/db';
 import { getCurrentUser } from '@/lib/auth/auth';
 import { handleError } from '@/lib/errors/handleError';
 
+const daysSchema = z.number().int().positive();
+
 export async function checkExpiringDocuments(days = 30) {
   try {
+    const validatedDays = daysSchema.parse(days);
     const user = await getCurrentUser();
     const orgId = user?.organizationId;
     const userId = user?.userId;
     if (!orgId || !userId) throw new Error('Unauthorized');
 
-    const cutoff = addDays(new Date(), days);
+    const cutoff = addDays(new Date(), validatedDays);
     const docs = await db.complianceDocument.findMany({
       where: {
         organizationId: orgId,
