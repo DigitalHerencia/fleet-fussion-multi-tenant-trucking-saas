@@ -1,11 +1,10 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
-
 import { LoadForm } from '@/components/dispatch/load-form';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useAuth } from '@/components/auth/context';
+import { getLoadById } from '@/lib/actions/dispatchActions';
+
+interface PageProps {
+  params: { orgId: string; userId: string };
+  searchParams: { id?: string };
+}
 
 // Add index signature to allow string indexing
 export type Dispatches = Record<
@@ -23,56 +22,28 @@ export type Dispatches = Record<
   }
 >;
 
-export default function EditLoadPage() {
-  const { id } = useParams();
-  const [isLoading, setIsLoading] = useState(true);
-  const [load, setLoad] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
-  const { company } = useAuth();
-
-  useEffect(() => {
-    if (!id) return;
-    setIsLoading(true);
-    setError(null);
-    setLoad(null);
-    // Replace with your actual API endpoint
-    fetch(`/api/dispatch/${id}`)
-      .then(async res => {
-        if (!res.ok) throw new Error('Failed to fetch load');
-        const data = await res.json();
-        setLoad(data);
-      })
-      .catch(err => {
-        setError(err.message);
-      })
-      .finally(() => setIsLoading(false));
-  }, [id]);
-
-  if (!company) {
-    return <div>Company not found. Please create a company first.</div>;
+export default async function EditLoadPage({
+  params,
+  searchParams,
+}: PageProps) {
+  const loadId = searchParams.id;
+  if (!loadId) {
+    return <div className="mt-6">Load not found</div>;
   }
 
-  if (isLoading) {
+  const result = await getLoadById(params.orgId, loadId);
+
+  if (!result.success || !result.data) {
     return (
-      <div className="mt-6 space-y-4">
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-64 w-full" />
-        <Skeleton className="h-64 w-full" />
+      <div className="mt-6 text-red-500">
+        Error: {result.error || 'Load not found'}
       </div>
     );
   }
 
-  if (error) {
-    return <div className="mt-6 text-red-500">Error: {error}</div>;
-  }
-
-  if (!load) {
-    return <div className="mt-6">Load not found</div>;
-  }
-
   return (
     <div className="mt-6">
-      <LoadForm drivers={[]} vehicles={[]} load={load} />
+      <LoadForm drivers={[]} vehicles={[]} load={result.data} />
     </div>
   );
 }
