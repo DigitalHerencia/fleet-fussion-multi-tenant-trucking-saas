@@ -21,7 +21,7 @@
 FleetFusion is a modern, multi-tenant fleet management platform for logistics and transportation
 companies. It provides robust tools for dispatching, driver management, vehicle tracking, regulatory
 compliance, IFTA reporting, analytics, and more. The platform is built using Next.js 15 (for web
-interface), TypeScript 5, and leverages a PostgreSQL database (via Drizzle ORM). User authentication
+interface), TypeScript 5, and leverages a PostgreSQL database (via Prisma ORM). User authentication
 and organization management are handled through Clerk's service, enabling multi-organization
 (multi-tenant) support out-of-the-box.
 
@@ -106,7 +106,7 @@ support these product requirements._
 - **Language & Runtime:** TypeScript 5 for all frontend and backend code, enforcing strict typing.
   The Node.js runtime is utilized via Vercel serverless functions for backend logic.
 - **Database:** PostgreSQL is used as the primary data store, with schema and queries managed
-  through the Drizzle ORM. The database is hosted on Neon (a cloud Postgres provider). All data is
+  through the Prisma ORM. The database is hosted on Neon (a cloud Postgres provider). All data is
   partitioned by company (multi-tenant design).
 - **Authentication & Users:** Clerk is integrated for authentication, user management, and
   organization (tenant) management. Clerk provides a drop-in auth UI and handles user sessions,
@@ -126,7 +126,7 @@ support these product requirements._
     server-side mutation and data retrieval logic).
   - `types/` – TypeScript type definitions that are shared across the app (e.g., domain models, API
     response shapes).
-  - `db/` – Database schema (in `schema.ts` using Drizzle ORM definitions) and migration files.
+  - `db/` – Database schema (in `schema.prisma` using Prisma ORM definitions) and migration files.
   - `docs/` – Documentation (product specs, technical docs, guides).
 
 - **API Routes:** Next.js API routes under `app/api/` are used sparingly. Only a few endpoints
@@ -325,9 +325,9 @@ the platform but have isolated data:
   company context (if they belong to more than one organization). This context is passed through the
   app (via a React context provider and Next.js middleware) so that every page and action knows the
   current `companyId`.
-- **Scoped Database Queries:** All database queries performed via the Drizzle ORM include a
+- **Scoped Database Queries:** All database queries performed via the Prisma ORM include a
   `where companyId = ...` clause for tables that contain tenant data. For convenience, relationships
-  in Drizzle are set up such that, for example, fetching a driver by ID will inherently require
+  in Prisma are set up such that, for example, fetching a driver by ID will inherently require
   matching the `companyId` of that driver to the `companyId` of the current session.
 - **Front-End Routing:** The Next.js application can enforce that certain routes or layouts are
   organization-specific. For instance, a user might have a company switcher in the UI, and the
@@ -407,7 +407,7 @@ compliance with CSP, as fewer external calls are made from the browser.
 
 ## Database Schema Reference
 
-FleetFusion uses PostgreSQL with the Drizzle ORM to define and manage the database schema. Key
+FleetFusion uses PostgreSQL with the Prisma ORM to define and manage the database schema. Key
 aspects of the schema include:
 
 - **Companies & Users:**
@@ -443,7 +443,7 @@ aspects of the schema include:
   - All primary keys are UUIDs (universally unique identifiers). This ensures uniqueness across
     distributed systems and avoids sequential ID predictability.
   - Timestamps (`createdAt`, `updatedAt`) are included in most tables to track when records are
-    added or modified. Drizzle ORM can auto-manage these or they can be set via triggers.
+    added or modified. Prisma ORM can auto-manage these or they can be set via triggers.
   - Foreign key relations are set with `ON DELETE CASCADE` for any child records that should be
     removed if a parent is deleted (e.g., deleting a driver could cascade delete their HOS logs or
     compliance docs; deleting a company cascades to all its data).
@@ -454,12 +454,12 @@ aspects of the schema include:
   - A `company_users` record should not exist without a corresponding `companies` entry.
   - A `loads` entry with a `driverId` and `vehicleId` should reference valid entries in `drivers`
     and `vehicles` that belong to the same company.
-  - Drizzle's schema definitions and TypeScript types help enforce these relationships in code,
+  - Prisma's schema definitions and TypeScript types help enforce these relationships in code,
     while the database enforces them at runtime.
 
 Developers can refer to the `db/schema.ts` file for the complete and authoritative schema
 definitions including all fields and relationships. Additionally, migration files (if using
-Drizzle's migrations or an external tool) provide a history of schema changes.
+Prisma's migrations or an external tool) provide a history of schema changes.
 
 ## Deployment and CI/CD
 
