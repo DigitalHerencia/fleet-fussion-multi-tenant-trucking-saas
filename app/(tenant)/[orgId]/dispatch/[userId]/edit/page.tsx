@@ -1,10 +1,12 @@
+import { notFound } from 'next/navigation';
 import { LoadForm } from '@/components/dispatch/load-form';
-import { getLoadById } from '@/lib/actions/dispatchActions';
-
-interface PageProps {
-  params: { orgId: string; userId: string };
-  searchParams: { id?: string };
-}
+import {
+  getLoadDetails,
+  getAvailableDriversForLoad,
+  getAvailableVehiclesForLoad,
+  getAvailableTrailersForLoad,
+} from '@/lib/fetchers/dispatchFetchers';
+import { getCurrentCompany } from '@/lib/auth/auth';
 
 // Add index signature to allow string indexing
 export type Dispatches = Record<
@@ -22,28 +24,41 @@ export type Dispatches = Record<
   }
 >;
 
-export default async function EditLoadPage({
-  params,
-  searchParams,
-}: PageProps) {
-  const loadId = searchParams.id;
+interface PageProps {
+  params: Promise<{ orgId: string; userId: string }>;
+  searchParams: { id?: string };
+}
+
+  const { orgId } = await params;
+  const loadId = searchParams?.id;
+
+  const company = await getCurrentCompany();
+  if (!company) {
+    return <div>Company not found. Please create a company first.</div>;
+  }
+
   if (!loadId) {
-    return <div className="mt-6">Load not found</div>;
+    return notFound();
   }
 
-  const result = await getLoadById(params.orgId, loadId);
+  const [load, driversRes, vehiclesRes, trailersRes] = await Promise.all([
+    getLoadDetails(orgId, loadId),
+    getAvailableDriversForLoad(orgId),
+    getAvailableVehiclesForLoad(orgId, {}),
+    getAvailableTrailersForLoad(orgId, {}),
+  ]);
 
-  if (!result.success || !result.data) {
-    return (
-      <div className="mt-6 text-red-500">
-        Error: {result.error || 'Load not found'}
-      </div>
-    );
-  }
+  if (!load) return notFound();
+
+  const drivers = driversRes?.data || [];
+  const vehicles = [
+    ...(vehiclesRes?.data || []),
+    ...(trailersRes?.data || []),
+  ];
 
   return (
     <div className="mt-6">
-      <LoadForm drivers={[]} vehicles={[]} load={result.data} />
+      <LoadForm drivers={drivers} vehicles={vehicles} load={load} />
     </div>
   );
 }
