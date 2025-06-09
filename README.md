@@ -21,7 +21,7 @@
 ---
 
 > **FleetFusion** is a next-gen SaaS platform for trucking companies to manage vehicles, drivers,
-> loads, compliance, and analytics. Built with the latest Next.js, React Server Components, Drizzle
+> loads, compliance, and analytics. Built with the latest Next.js, React Server Components, Prisma
 > ORM, and Neon Postgres. 🚀
 
 ---
@@ -44,7 +44,7 @@
 
 - **Frontend:** Next.js 15 (App Router), React 19 (Server Components), Tailwind CSS 4
 - **Backend:** Node.js/Edge, React Server Actions, Next.js API Routes
-- **Database:** PostgreSQL (Neon), Drizzle ORM
+- **Database:** PostgreSQL (Neon), Prisma ORM
 - **Auth:** Clerk (org-based, RBAC)
 - **Storage:** Vercel Blob Storage
 - **Monitoring:** Vercel Analytics
@@ -67,7 +67,7 @@
 git clone https://github.com/your-username/fleet-fusion.git
 cd fleet-fusion
 npm install
-cp .env.example .env.local # Edit with your config
+cp .env.example .env.local # Edit with your DATABASE_URL and DIRECT_URL
 npm run dev
 ```
 

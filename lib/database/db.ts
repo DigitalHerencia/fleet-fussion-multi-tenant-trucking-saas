@@ -13,9 +13,23 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 const connectionString = `${process.env.DATABASE_URL}`;
-
 const adapter = new PrismaNeon({ connectionString });
-const prisma = new PrismaClient({ adapter });
+
+declare global {
+  // eslint-disable-next-line no-var
+  var prisma: PrismaClient | undefined;
+}
+
+let prisma: PrismaClient;
+if (process.env.NODE_ENV === 'production') {
+  prisma = new PrismaClient({ adapter });
+} else {
+  if (!globalThis.prisma) {
+    globalThis.prisma = new PrismaClient({ adapter });
+  }
+  prisma = globalThis.prisma;
+}
+
 export { prisma };
 export const db = prisma;
 
