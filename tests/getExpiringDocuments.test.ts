@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { getExpiringDocuments } from '../lib/fetchers/complianceFetchers';
-import prisma from '../lib/database/db';
+import { prisma } from '../lib/database/db';
 
 vi.mock('../lib/database/db', () => ({
   __esModule: true,
-  default: {
+  prisma: {
     complianceDocument: {
       findMany: vi.fn(),
     },
