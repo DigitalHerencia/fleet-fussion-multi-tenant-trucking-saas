@@ -1,6 +1,6 @@
-import { defineConfig, devices } from '@playwright/test';
+import { devices, type PlaywrightTestConfig } from '@playwright/test';
 
-export default defineConfig({
+const config = {
   testDir: './tests',
   timeout: 90 * 1000, // Increased for complex auth flows
   expect: {
@@ -37,4 +37,6 @@ export default defineConfig({
   outputDir: 'test-results/',
   globalSetup: require.resolve('./tests/global-setup'),
   globalTeardown: require.resolve('./tests/global-teardown'),
-});
+} satisfies PlaywrightTestConfig;
+
+export default config;

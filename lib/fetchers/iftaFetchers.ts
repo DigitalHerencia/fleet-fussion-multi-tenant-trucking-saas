@@ -176,7 +176,7 @@ export async function getIftaDataForPeriod(
         acc[jurisdiction].miles += trip.distance;
         return acc;
       },
-      {} as Record<string, any>
+      {} as Record<string, IftaJurisdictionSummary>
     );
 
     // Add fuel data to jurisdiction summary

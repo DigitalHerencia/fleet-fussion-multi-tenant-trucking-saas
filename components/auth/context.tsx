@@ -45,6 +45,16 @@ const authStateCache = new Map<
 
 const AUTH_STATE_CACHE_TTL = 60 * 1000; // 1 minute cache for auth state
 
+// Remove expired cache entries
+function cleanupAuthStateCache() {
+  const now = Date.now();
+  for (const [key, value] of authStateCache) {
+    if (now - value.timestamp >= AUTH_STATE_CACHE_TTL) {
+      authStateCache.delete(key);
+    }
+  }
+}
+
 /**
  * Auth Provider Component
  * Wraps the application and provides auth state with ABAC data
@@ -61,6 +71,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     organization: null,
     company: null,
   });
+
+  // Periodic cleanup of stale cache entries
+  useEffect(() => {
+    const interval = setInterval(
+      cleanupAuthStateCache,
+      AUTH_STATE_CACHE_TTL
+    );
+    return () => clearInterval(interval);
+  }, []);
 
   // Memoized user context builder
   const buildUserContext = useCallback(
@@ -135,11 +154,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     try {
       // Try to get cached state first
+      cleanupAuthStateCache();
       if (cacheKey) {
         const cached = authStateCache.get(cacheKey);
-        if (cached && Date.now() - cached.timestamp < AUTH_STATE_CACHE_TTL) {
-          setAuthState(cached.state);
-          return;
+        if (cached) {
+          if (Date.now() - cached.timestamp < AUTH_STATE_CACHE_TTL) {
+            setAuthState(cached.state);
+            return;
+          }
+          authStateCache.delete(cacheKey);
         }
       }
 

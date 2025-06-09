@@ -1,5 +1,4 @@
 import { notFound } from 'next/navigation';
-
 import { LoadForm } from '@/components/dispatch/load-form';
 import {
   getLoadDetails,
@@ -30,10 +29,6 @@ interface PageProps {
   searchParams: { id?: string };
 }
 
-export default async function EditLoadPage({
-  params,
-  searchParams,
-}: PageProps) {
   const { orgId } = await params;
   const loadId = searchParams?.id;
 
