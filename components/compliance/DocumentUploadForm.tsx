@@ -4,6 +4,7 @@ import React, { useRef, useState } from 'react';
 import { put } from '@vercel/blob/client';
 
 import {
+import type { ComplianceDocument } from "@/types/compliance";
   saveUploadedDocument,
   getSignedUploadToken,
 } from '@/lib/actions/fileUploadActions';
@@ -11,7 +12,7 @@ import {
 type EntityType = 'driver' | 'vehicle' | 'trailer' | 'company';
 
 interface DocumentUploadFormProps {
-  onUpload: (file: File, metadata: any) => void;
+  onUpload: (file: File, metadata: ComplianceDocument) => void;
   entityType: EntityType;
   entityId: string;
   documentType?: string;

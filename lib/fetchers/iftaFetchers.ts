@@ -9,6 +9,7 @@ import {
   CACHE_TTL,
 } from '@/lib/cache/auth-cache';
 
+import type { IftaPeriodData, IftaPeriodSummary, IftaJurisdictionSummary, IftaTripRecord, IftaFuelPurchaseRecord } from "@/types/ifta";
 /**
  * Check user access to organization
  */
@@ -29,33 +30,6 @@ async function checkUserAccess(organizationId: string) {
 
   return user;
 }
-
-/**
- * Add type for IFTA period data summary
- */
-interface IftaPeriodSummary {
-  totalMiles: number;
-  totalGallons: number;
-  averageMpg: number;
-  totalFuelCost: number;
-}
-
-interface IftaJurisdictionSummary {
-  jurisdiction: string;
-  miles: number;
-  fuelGallons: number;
-  taxPaid: number;
-}
-
-interface IftaPeriodData {
-  period: { quarter: number; year: number };
-  summary: IftaPeriodSummary;
-  trips: any[];
-  fuelPurchases: any[];
-  jurisdictionSummary: IftaJurisdictionSummary[];
-  report: any;
-}
-
 /**
  * Get IFTA data for a specific period
  */
@@ -198,7 +172,7 @@ export async function getIftaDataForPeriod(
       },
     });
 
-    const result = {
+    const result: IftaPeriodData = {
       period: { quarter: quarterNum, year: yearNum },
       summary: {
         totalMiles,

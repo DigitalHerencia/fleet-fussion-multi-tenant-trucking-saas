@@ -1,3 +1,4 @@
+import type { MetadataRecord } from "./metadata";
 /**
  * Type definitions for the compliance module
  */

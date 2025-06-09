@@ -1,5 +1,6 @@
 import React from 'react';
 import { z } from 'zod';
+import type { DriverFormData } from "@/types/drivers";
 
 import { driverFormSchema } from '@/schemas/drivers';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,7 @@ import { cn } from '@/lib/utils/utils';
 
 export type DriverFormProps = {
   form: {
-    values: z.infer<typeof driverFormSchema>;
+    values: DriverFormData;
     errors: Record<string, string>;
     onChange: (field: string, value: any) => void;
     onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;

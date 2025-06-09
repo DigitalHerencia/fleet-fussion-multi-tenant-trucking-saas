@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useParams } from 'next/navigation';
 
+import type { IftaPeriodData } from "@/types/ifta";
 import {
   Card,
   CardContent,
@@ -32,13 +33,7 @@ import { fetchIftaDataAction } from '@/lib/actions/iftaActions';
 import { IftaReportTable } from './ifta-report-table';
 import { IftaTripTable } from './ifta-trip-table';
 
-interface IftaData {
-  summary: {
-    totalMiles: number;
-    totalGallons: number;
-    averageMpg: number;
-    totalFuelCost: number;
-  };
+type IftaData = IftaPeriodData;
   trips: any[];
   fuelPurchases: any[];
   jurisdictionSummary: any[];
@@ -49,7 +44,7 @@ export function IftaDashboard() {
   const params = useParams();
   const orgId = params?.orgId as string;
   const [quarter, setQuarter] = useState('2025-Q2');
-  const [iftaData, setIftaData] = useState<IftaData | null>(null);
+  const [iftaData, setIftaData] = useState<IftaPeriodData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,53 +55,15 @@ export function IftaDashboard() {
       try {
         setLoading(true);
         const [quarterPart, yearPart] = quarter.split('-');
-        const data = await fetchIftaDataAction(orgId, quarterPart, yearPart);
-        // Ensure data matches IftaData shape
-        if (
-          data &&
-          typeof data === 'object' &&
-          'summary' in data &&
-          'trips' in data &&
-          'fuelPurchases' in data &&
-          'jurisdictionSummary' in data &&
-          'report' in data
-        ) {
-          // Transform data to match IftaData type
-          setIftaData({
-            summary: {
-              totalMiles: Number((data as any).summary?.totalMiles) || 0,
-              totalGallons: Number((data as any).summary?.totalGallons) || 0,
-              averageMpg: Number((data as any).summary?.averageMpg) || 0,
-              totalFuelCost: Number((data as any).summary?.totalFuelCost) || 0,
-            },
-            trips: Array.isArray((data as any).trips)
-              ? (data as any).trips
-              : [],
-            fuelPurchases: Array.isArray((data as any).fuelPurchases)
-              ? (data as any).fuelPurchases
-              : [],
-            jurisdictionSummary: Array.isArray(
-              (data as any).jurisdictionSummary
-            )
-              ? (data as any).jurisdictionSummary
-              : [],
-            report: (data as any).report ?? null,
-          });
+
+        const data = await getIftaDataForPeriod(orgId, quarterPart, yearPart);
+        if (validateIftaPeriodData(data)) {
+          setIftaData(data);
+          setError(null);
+
         } else {
-          setIftaData({
-            summary: {
-              totalMiles: 0,
-              totalGallons: 0,
-              averageMpg: 0,
-              totalFuelCost: 0,
-            },
-            trips: [],
-            fuelPurchases: [],
-            jurisdictionSummary: [],
-            report: null,
-          });
+          throw new Error('Invalid IFTA data structure');
         }
-        setError(null);
       } catch (err) {
         console.error('Error fetching IFTA data:', err);
         setError('Failed to load IFTA data');

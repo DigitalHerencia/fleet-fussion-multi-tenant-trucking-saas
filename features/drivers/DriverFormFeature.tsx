@@ -1,5 +1,6 @@
 'use client';
 import React, { useState } from 'react';
+import type { DriverFormData } from "@/types/drivers";
 import { z } from 'zod';
 
 import {
@@ -18,7 +19,7 @@ import {
 import { toast } from '@/hooks/use-toast';
 
 export interface DriverFormFeatureProps {
-  initialValues?: z.infer<typeof driverFormSchema>;
+  initialValues?: DriverFormData;
   mode: 'create' | 'edit';
   driverId?: string;
   /** Tenant/organization id for create operations */
@@ -34,7 +35,7 @@ export function DriverFormFeature({
   onSuccess,
 }: DriverFormFeatureProps) {
   const [form, setForm] = useState<{
-    values: z.infer<typeof driverFormSchema>;
+    values: DriverFormData;
     errors: Record<string, string>;
     submitting: boolean;
     serverError: string | undefined;

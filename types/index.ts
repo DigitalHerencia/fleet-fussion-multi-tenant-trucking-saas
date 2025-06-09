@@ -91,6 +91,6 @@ export interface ApiResponse<T> {
 }
 
 export type { Metadata, WebhookMetadata, ComplianceMetadata } from './metadata';
-
 export type { GlobalSearchResultItem } from './search';
 export type { Notification, NotificationActionResult } from './notifications';
+export type { MetadataRecord } from './metadata';

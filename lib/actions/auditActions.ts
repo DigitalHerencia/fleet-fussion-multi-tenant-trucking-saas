@@ -1,10 +1,9 @@
-// filepath: lib/actions/auditActions.ts
 'use server';
 
 import { auth } from '@clerk/nextjs/server';
+import type { MetadataRecord } from "@/types/metadata";
 import { db } from '@/lib/database/db';
 import { handleError } from '@/lib/errors/handleError';
-
 
 export interface AuditLogEntry {
   id: string;
@@ -13,7 +12,7 @@ export interface AuditLogEntry {
   action: string;
   resource: string;
   resourceId?: string;
-  metadata: Metadata;
+  metadata: MetadataRecord;
   ipAddress?: string;
   userAgent?: string;
   timestamp: Date;
@@ -26,7 +25,7 @@ export async function logAuditEvent(
   action: string,
   resource: string,
   resourceId?: string,
-  metadata: Metadata = {},
+  metadata: MetadataRecord = {},
   ipAddress?: string,
   userAgent?: string
 ) {
@@ -124,7 +123,7 @@ export async function getAuditLogs(
 export async function logDriverAction(
   action: string,
   driverId: string,
-  metadata: Metadata = {},
+  metadata: MetadataRecord = {},
   p0: string,
   entityType: any,
   p1: string,
@@ -142,7 +141,7 @@ export async function logDriverAction(
 export async function logVehicleAction(
   action: string,
   vehicleId: string,
-  metadata: Metadata = {}
+  metadata: MetadataRecord = {}
 ) {
   return logAuditEvent(action, 'vehicle', vehicleId, metadata);
 }
@@ -153,7 +152,7 @@ export async function logVehicleAction(
 export async function logDispatchAction(
   action: string,
   loadId: string,
-  metadata: Metadata = {}
+  metadata: MetadataRecord = {}
 ) {
   return logAuditEvent(action, 'dispatch', loadId, metadata);
 }
@@ -164,7 +163,7 @@ export async function logDispatchAction(
 export async function logComplianceAction(
   action: string,
   resourceId: string,
-  metadata: Metadata = {}
+  metadata: MetadataRecord = {}
 ) {
   return logAuditEvent(action, 'compliance', resourceId, metadata);
 }
@@ -175,7 +174,7 @@ export async function logComplianceAction(
 export async function logIftaAction(
   action: string,
   reportId: string,
-  metadata: Metadata = {}
+  metadata: MetadataRecord = {}
 ) {
   return logAuditEvent(action, 'ifta', reportId, metadata);
 }
