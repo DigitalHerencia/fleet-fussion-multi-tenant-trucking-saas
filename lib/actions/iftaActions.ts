@@ -152,7 +152,7 @@ export async function generateIftaReportAction(
 
 // -------------------- PDF Generation Actions --------------------
 
-async function createBasicPdf(title: string, content: Record<string, any>) {
+async function createBasicPdf(title: string, content: Record<string, unknown>) {
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage();
   const { width, height } = page.getSize();
