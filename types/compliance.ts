@@ -1,3 +1,4 @@
+import type { MetadataRecord } from "./metadata";
 /**
  * Type definitions for the compliance module
  */
@@ -29,7 +30,7 @@ export interface ComplianceDocument {
     | 'failed';
   renewalNotes?: string;
   tags?: string[];
-  metadata?: Record<string, any>;
+  metadata?: MetadataRecord;
   uploadedBy: string;
   lastUpdated: Date;
   createdAt: Date;
@@ -166,7 +167,7 @@ export interface EldData {
   firmwareVersion: string;
   dataTransferMethod: 'web' | 'email' | 'usb' | 'bluetooth';
   lastSyncAt: Date;
-  rawData?: Record<string, any>;
+  rawData?: MetadataRecord;
   malfunctions?: EldMalfunction[];
   dataQuality: 'good' | 'fair' | 'poor';
 }
@@ -430,7 +431,7 @@ export interface ComplianceAlert {
   resolvedBy?: string;
   resolvedAt?: Date;
   resolutionNotes?: string;
-  metadata?: Record<string, any>;
+  metadata?: MetadataRecord;
   createdAt: Date;
   updatedAt: Date;
 }

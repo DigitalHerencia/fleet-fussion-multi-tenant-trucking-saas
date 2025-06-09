@@ -92,3 +92,58 @@ export interface TripReport {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface IftaPeriodSummary {
+  totalMiles: number;
+  totalGallons: number;
+  averageMpg: number;
+  totalFuelCost: number;
+}
+
+export interface IftaTripRecord {
+  id: string;
+  date: Date;
+  vehicleId: string;
+  vehicle: {
+    id: string;
+    unitNumber: string;
+    make: string;
+    model: string;
+  };
+  jurisdiction: string;
+  distance: number;
+  fuelUsed: number | null;
+  notes?: string | null;
+}
+
+export interface IftaFuelPurchaseRecord {
+  id: string;
+  date: Date;
+  vehicleId: string;
+  vehicle: {
+    id: string;
+    unitNumber: string;
+    make: string;
+    model: string;
+  };
+  jurisdiction: string;
+  gallons: number;
+  amount: number;
+  vendor?: string | null;
+  receiptNumber?: string | null;
+  notes?: string | null;
+}
+
+export interface IftaPeriodData {
+  period: { quarter: number; year: number };
+  summary: IftaPeriodSummary;
+  trips: IftaTripRecord[];
+  fuelPurchases: IftaFuelPurchaseRecord[];
+  jurisdictionSummary: IftaJurisdictionSummary[];
+  report: {
+    id: string;
+    status: string;
+    submittedAt: Date | null;
+    dueDate: Date | null;
+  } | null;
+}
