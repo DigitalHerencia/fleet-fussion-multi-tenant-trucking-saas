@@ -1,6 +1,7 @@
 'use server';
 
 import { auth } from '@clerk/nextjs/server';
+import { getCurrentUser } from '@/lib/auth/auth';
 
 import prisma from '@/lib/database/db';
 import { hasPermission } from '@/lib/auth/permissions';
@@ -42,33 +43,14 @@ export async function getFleetMetricsAction(
     if (!userId) {
       return { success: false };
     }
-    // Minimal UserContext for permission check
-    const userContext = {
-      userId,
-      organizationId: orgId,
-      name: '',
-      role: SystemRoles.VIEWER,
-      permissions: [],
-      email: '',
-      isActive: true,
-      onboardingComplete: true,
-      organizationMetadata: {
-        subscriptionTier: 'free',
-        subscriptionStatus: 'active',
-        maxUsers: 1,
-        features: [],
-        createdAt: new Date().toISOString(),
-        billingEmail: '',
-        settings: {
-          timezone: 'America/Denver',
-          dateFormat: 'MM/dd/yyyy',
-          distanceUnit: 'miles',
-          fuelUnit: 'gallons',
-        },
-      } satisfies ClerkOrganizationMetadata,
-    };
+
+    const user = await getCurrentUser();
+    if (!user || !user.organizationId) {
+      return { success: false };
+    }
+
     const hasAccess = hasPermission(
-      userContext,
+      user,
       PermissionActions.READ,
       ResourceTypes.ORGANIZATION
     );
@@ -123,33 +105,14 @@ export async function getLoadAnalyticsAction(
     if (!userId) {
       return { success: false };
     }
-    // Minimal UserContext for permission check
-    const userContext = {
-      userId,
-      organizationId: orgId,
-      name: '',
-      role: SystemRoles.VIEWER,
-      permissions: [],
-      email: '',
-      isActive: true,
-      onboardingComplete: true,
-      organizationMetadata: {
-        subscriptionTier: 'free',
-        subscriptionStatus: 'active',
-        maxUsers: 1,
-        features: [],
-        createdAt: new Date().toISOString(),
-        billingEmail: '',
-        settings: {
-          timezone: 'America/Denver',
-          dateFormat: 'MM/dd/yyyy',
-          distanceUnit: 'miles',
-          fuelUnit: 'gallons',
-        },
-      } satisfies ClerkOrganizationMetadata,
-    };
+
+    const user = await getCurrentUser();
+    if (!user || !user.organizationId) {
+      return { success: false };
+    }
+
     const hasAccess = hasPermission(
-      userContext,
+      user,
       PermissionActions.READ,
       ResourceTypes.ORGANIZATION
     );
@@ -206,33 +169,14 @@ export async function getFinancialMetricsAction(
     if (!userId) {
       return { success: false };
     }
-    // Minimal UserContext for permission check
-    const userContext = {
-      userId,
-      organizationId: orgId,
-      name: '',
-      role: SystemRoles.VIEWER,
-      permissions: [],
-      email: '',
-      isActive: true,
-      onboardingComplete: true,
-      organizationMetadata: {
-        subscriptionTier: 'free',
-        subscriptionStatus: 'active',
-        maxUsers: 1,
-        features: [],
-        createdAt: new Date().toISOString(),
-        billingEmail: '',
-        settings: {
-          timezone: 'America/Denver',
-          dateFormat: 'MM/dd/yyyy',
-          distanceUnit: 'miles',
-          fuelUnit: 'gallons',
-        },
-      } satisfies ClerkOrganizationMetadata,
-    };
+
+    const user = await getCurrentUser();
+    if (!user || !user.organizationId) {
+      return { success: false };
+    }
+
     const hasAccess = hasPermission(
-      userContext,
+      user,
       PermissionActions.READ,
       ResourceTypes.ORGANIZATION
     );
@@ -269,33 +213,14 @@ export async function getComplianceAnalyticsAction(
     if (!userId) {
       return { success: false };
     }
-    // Minimal UserContext for permission check
-    const userContext = {
-      userId,
-      organizationId: orgId,
-      name: '',
-      role: SystemRoles.VIEWER,
-      permissions: [],
-      email: '',
-      isActive: true,
-      onboardingComplete: true,
-      organizationMetadata: {
-        subscriptionTier: 'free',
-        subscriptionStatus: 'active',
-        maxUsers: 1,
-        features: [],
-        createdAt: new Date().toISOString(),
-        billingEmail: '',
-        settings: {
-          timezone: 'America/Denver',
-          dateFormat: 'MM/dd/yyyy',
-          distanceUnit: 'miles',
-          fuelUnit: 'gallons',
-        },
-      } satisfies ClerkOrganizationMetadata,
-    };
+
+    const user = await getCurrentUser();
+    if (!user || !user.organizationId) {
+      return { success: false };
+    }
+
     const hasAccess = hasPermission(
-      userContext,
+      user,
       PermissionActions.READ,
       ResourceTypes.ORGANIZATION
     );

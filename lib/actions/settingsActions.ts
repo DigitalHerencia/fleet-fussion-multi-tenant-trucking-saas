@@ -3,6 +3,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { revalidatePath } from 'next/cache';
 import { db } from '@/lib/database/db';
+import type { Prisma } from '@prisma/client';
 import {
   CompanyProfileSchema,
   OrganizationSettingsSchema,
@@ -20,7 +21,7 @@ async function verifyOrgAccess(orgId: string) {
   return userId;
 }
 
-async function logChange(orgId: string, userId: string, action: string, changes: Record<string, any>) {
+async function logChange(orgId: string, userId: string, action: string, changes: Prisma.JsonObject) {
   await db.auditLog.create({
     data: {
       organizationId: orgId,
@@ -105,7 +106,7 @@ export async function exportSettings(orgId: string) {
   return org?.settings || {};
 }
 
-export async function importSettings(orgId: string, settings: Record<string, any>) {
+export async function importSettings(orgId: string, settings: Prisma.JsonObject) {
   const userId = await verifyOrgAccess(orgId);
   await db.organization.update({ where: { id: orgId }, data: { settings } });
   await logChange(orgId, userId, 'importSettings', settings);

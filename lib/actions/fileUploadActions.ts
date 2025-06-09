@@ -71,6 +71,11 @@ export async function saveUploadedDocument(
 
 export async function getSignedUploadToken(filename: string) {
   try {
+    const readWriteToken = process.env.NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN;
+    if (!readWriteToken) {
+      throw new Error('Blob read-write token not configured');
+    }
+
     const user = await getCurrentUser();
     const userId = user?.userId;
     const orgId = user?.organizationId;
@@ -79,7 +84,7 @@ export async function getSignedUploadToken(filename: string) {
     const pathname = `${orgId}/${userId}/${Date.now()}-${filename}`;
     const token = await generateClientTokenFromReadWriteToken({
       pathname,
-      token: process.env.NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN,
+      token: readWriteToken,
     });
 
     return { success: true, token, pathname };

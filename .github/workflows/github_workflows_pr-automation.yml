@@ -14,6 +14,40 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Auto-fix PR title if missing release type
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request;
+            const title = pr.title.trim();
+            const types = ['feat', 'fix', 'docs', 'chore', 'refactor', 'test', 'config'];
+            const typePattern = new RegExp(`^(${types.join('|')}):\\s`, 'i');
+
+            if (!typePattern.test(title)) {
+              // Try to guess type from branch prefix
+              const branch = pr.head.ref;
+              let guessedType = 'fix';
+              if (branch.startsWith('feature/')) guessedType = 'feat';
+              else if (branch.startsWith('fix/')) guessedType = 'fix';
+              else if (branch.startsWith('docs/')) guessedType = 'docs';
+              else if (branch.startsWith('chore/')) guessedType = 'chore';
+              else if (branch.startsWith('refactor/')) guessedType = 'refactor';
+              else if (branch.startsWith('test/')) guessedType = 'test';
+              else if (branch.startsWith('config/')) guessedType = 'config';
+
+              const newTitle = `${guessedType}: ${title.replace(/^(feat|fix|docs|chore|refactor|test|config):\s*/i, '')}`;
+              await github.rest.pulls.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+                title: newTitle
+              });
+              console.log(`Auto-fixed PR title to: "${newTitle}"`);
+            } else {
+              console.log('PR title already follows semantic convention.');
+            }
+
       - name: Ensure semantic PR title
         uses: amannn/action-semantic-pull-request@v5
         env:

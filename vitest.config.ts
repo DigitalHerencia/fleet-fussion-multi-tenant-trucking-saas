@@ -1,7 +1,7 @@
-import { defineConfig } from 'vitest/config';
 import { resolve } from 'path';
+import type { UserConfig } from 'vitest/config';
 
-export default defineConfig({
+const config = {
   test: {
     environment: 'jsdom',
     globals: true,
@@ -11,4 +11,6 @@ export default defineConfig({
       '@': resolve(__dirname, '.'),
     },
   },
-});
+} satisfies UserConfig;
+
+export default config;
