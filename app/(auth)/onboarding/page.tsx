@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
 import type { OnboardingData } from '@/types/auth';
+import { SystemRoles } from '@/types/abac';
 import { setClerkMetadata } from '@/lib/actions/onboardingActions';
 
 // Utility to generate a base slug from company name
@@ -128,7 +129,7 @@ export default function OnboardingPage() {
         state: formData.state.trim(),
         zip: formData.zip.trim(),
         phone: formData.phone.trim(),
-        role: 'admin', // Default to admin for onboarding
+        role: SystemRoles.ADMIN, // Default to admin for onboarding
         onboardingComplete: true,
       };
 

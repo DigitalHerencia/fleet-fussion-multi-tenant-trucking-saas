@@ -29,6 +29,7 @@ import {
   Permission,
   ROLE_PERMISSIONS,
 } from '@/types/auth';
+import { SystemRoles } from '@/types/abac';
 import { authCache } from '@/lib/cache/auth-cache';
 
 // Create the auth context
@@ -89,7 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       userMetadata: ClerkUserMetadata,
       orgMetadata: ClerkOrganizationMetadata
     ): UserContext => {
-      const role: UserRole = userMetadata?.role || 'viewer';
+      const role: UserRole = userMetadata?.role || SystemRoles.VIEWER;
       const permissions: Permission[] =
         userMetadata?.permissions || ROLE_PERMISSIONS[role] || [];
 
@@ -339,7 +340,7 @@ export function useAllPermissions(permissions: Permission[]): boolean {
  * Hook to check if user is admin
  */
 export function useIsAdmin(): boolean {
-  return useRole('admin');
+  return useRole(SystemRoles.ADMIN);
 }
 
 /**
