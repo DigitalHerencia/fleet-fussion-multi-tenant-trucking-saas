@@ -50,7 +50,7 @@ export function DriverCard({ driver, onClick }: DriverCardProps) {
 
   return (
     <Card
-      className="cursor-pointer bg-black transition-shadow hover:shadow-md"
+      className="cursor-pointer transition-shadow hover:shadow-md"
       onClick={onClick}
     >
       <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-2">
