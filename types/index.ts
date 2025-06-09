@@ -90,5 +90,7 @@ export interface ApiResponse<T> {
   error?: string;
 }
 
+export type { Metadata, WebhookMetadata, ComplianceMetadata } from './metadata';
+
 export type { GlobalSearchResultItem } from './search';
 export type { Notification } from './notifications';

@@ -11,7 +11,7 @@ export interface OrganizationSettings {
   id: string;
   name: string;
   timezone: string;
-  businessRules?: Record<string, any>;
+  businessRules?: Record<string, unknown>;
   logoUrl?: string;
   address?: string;
 }
