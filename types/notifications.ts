@@ -7,3 +7,9 @@ export interface Notification {
   readAt?: string | null;
   createdAt: string;
 }
+
+export interface NotificationActionResult {
+  success: boolean;
+  data?: Notification[];
+  error?: string;
+}
