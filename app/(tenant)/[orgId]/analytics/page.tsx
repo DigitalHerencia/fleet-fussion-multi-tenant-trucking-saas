@@ -28,10 +28,10 @@ export default async function AnalyticsPage({
   params,
   searchParams,
 }: {
-  params: Promise<{ orgId: string }>;
+  params: { orgId: string; userId?: string };
   searchParams?: Promise<{ start?: string; end?: string; driver?: string }>;
 }) {
-  const { orgId } = await params;
+  const { orgId, userId } = params;
   const sp = searchParams ? await searchParams : undefined;
 
   const start = sp?.start;
