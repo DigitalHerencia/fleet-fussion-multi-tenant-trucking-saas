@@ -22,6 +22,7 @@ import {
   getIftaReports,
 } from '@/lib/fetchers/iftaFetchers';
 import type { IFTAReport, IFTATrip } from '@/components/ifta/ifta-columns';
+import type { IftaPeriodData } from '@/types/ifta';
 
 // Define a custom FuelIcon component since it's not in lucide-react
 function FuelIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -58,38 +59,23 @@ function getCurrentQuarterAndYear() {
   return { quarter, year };
 }
 
-// IftaData type for strong typing
-interface IftaData {
-  summary: {
-    totalMiles: number;
-    totalGallons: number;
-    averageMpg: number;
-    totalFuelCost?: number;
-  };
-  trips: IFTATrip[];
-  fuelPurchases: any[];
-  jurisdictionSummary: any[];
-  report: any;
-}
-
 export default async function IFTAPage({
   params,
 }: {
-  params: { orgId: string; userId?: string };
+  params: Promise<{ orgId: string; userId?: string }>;
 }) {
-  const { orgId, userId } = params;
-  // Default to current quarter/year, but allow query param override in the future
+  const { orgId, userId } = await params;  // Default to current quarter/year, but allow query param override in the future
   const { quarter, year } = getCurrentQuarterAndYear();
   const period = `Q${quarter}`;
-  let iftaData: IftaData | null = null;
+  let iftaData: IftaPeriodData | null = null;
   let reports: IFTAReport[] = [];
   let error: string | null = null;
   try {
-    iftaData = (await getIftaDataForPeriod(
+    iftaData = await getIftaDataForPeriod(
       orgId,
       period,
       year.toString()
-    )) as IftaData;
+    );
     const reportsRes = await getIftaReports(orgId, year);
     // Transform reports to IFTAReport[] for the table
     reports = (reportsRes?.data || []).map((r: any) => ({
@@ -222,10 +208,21 @@ export default async function IFTAPage({
                     Track interstate travel for IFTA reporting and tax
                     calculations.
                   </CardDescription>
-                </CardHeader>
-                <CardContent className="overflow-x-auto">
+                </CardHeader>                <CardContent className="overflow-x-auto">
                   <Suspense fallback={<div>Loading IFTA trip data...</div>}>
-                    <IftaTripTableClient data={iftaData?.trips || []} />
+                    <IftaTripTableClient 
+                      data={iftaData?.trips.map(trip => ({
+                        id: trip.id,
+                        date: trip.date.toISOString().split('T')[0],
+                        driver: trip.driver || 'N/A',
+                        vehicle: trip.vehicle.unitNumber,
+                        startLocation: trip.startLocation || 'N/A',
+                        endLocation: trip.endLocation || 'N/A',
+                        miles: trip.miles || trip.distance,
+                        gallons: trip.gallons || 0,
+                        state: trip.state || trip.jurisdiction,
+                      })) || []} 
+                    />
                   </Suspense>
                 </CardContent>
               </Card>

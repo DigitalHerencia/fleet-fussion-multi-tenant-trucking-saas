@@ -24,19 +24,15 @@ export async function scheduleVehicleInspection(data: z.infer<typeof scheduleIns
         lastInspectionDate: inspectionDate,
         nextInspectionDue: null,
       },
-    });
-    await db.complianceAlert.create({
+    });    await db.complianceAlert.create({
       data: {
         organizationId: user.organizationId,
         userId: user.userId,
         vehicleId: validated.vehicleId,
+        driverId: undefined,
         type: 'inspection_due',
         severity: 'low',
-        title: 'Inspection Completed',
         message: `Vehicle inspected on ${inspectionDate.toISOString().slice(0,10)}`,
-        entityType: 'vehicle',
-        entityId: validated.vehicleId,
-        dueDate: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       },

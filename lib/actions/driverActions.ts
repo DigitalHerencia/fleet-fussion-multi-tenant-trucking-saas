@@ -22,8 +22,6 @@ import {
   driverBulkUpdateSchema,
 } from '@/schemas/drivers';
 
-// Helper function to convert Prisma Driver to Driver interface
-
 // ================== Core CRUD Operations ==================
 
 /**
@@ -47,10 +45,10 @@ export async function createDriverAction(
       };
     }
 
-    // Validate permissions
-
     // Validate input data
-    const validatedData = driverFormSchema.parse(data); // Check for duplicate CDL number within tenant
+    const validatedData = driverFormSchema.parse(data);
+    
+    // Check for duplicate CDL number within tenant
     const existingDriver = await db.driver.findFirst({
       where: {
         organizationId: tenantId,
@@ -67,7 +65,9 @@ export async function createDriverAction(
         error: 'A driver with this CDL number already exists',
         code: 'DUPLICATE_CDL',
       };
-    } // Check for duplicate email within tenant
+    }
+
+    // Check for duplicate email within tenant
     const existingEmail = await db.driver.findFirst({
       where: {
         organizationId: tenantId,
@@ -84,7 +84,9 @@ export async function createDriverAction(
         error: 'A driver with this email already exists',
         code: 'DUPLICATE_EMAIL',
       };
-    } // Create driver record
+    }
+
+    // Create driver record with proper Prisma schema mapping
     const newDriver = await db.driver.create({
       data: {
         organizationId: tenantId,
@@ -94,21 +96,19 @@ export async function createDriverAction(
         phone: validatedData.phone,
         employeeId: validatedData.employeeId || null,
         hireDate: validatedData.hireDate,
-
         licenseNumber: validatedData.cdlNumber,
         licenseState: validatedData.cdlState,
         licenseClass: validatedData.cdlClass,
         licenseExpiration: validatedData.cdlExpiration,
-
         medicalCardExpiration: validatedData.medicalCardExpiration,
-
         status: 'active',
-
         emergencyContact1: validatedData.emergencyContact?.name || null,
         emergencyContact2: validatedData.emergencyContact?.phone || null,
         notes: validatedData.notes || null,
-
-        customFields: validatedData.tags ? { tags: validatedData.tags } : {},
+        customFields: {
+          tags: validatedData.tags || [],
+          emergencyContact: validatedData.emergencyContact || null,
+        },
       },
     });
 
@@ -165,59 +165,65 @@ export async function updateDriverAction(
       return { success: false, error: 'Driver not found', code: 'NOT_FOUND' };
     }
 
-    // Validate permissions
-
     // Validate input data
     const validatedData = driverUpdateSchema.parse(data);
 
-    // Prepare update object
-    const updateData: Partial<DriverUpdateData> & {
-      updatedAt: string;
-      updatedBy: string;
-    } = {
-      updatedAt: new Date().toISOString(),
-      updatedBy: userId,
+    // Prepare update object with proper Prisma field mapping
+    const updateData: any = {
+      updatedAt: new Date(),
     };
 
-    // Update only provided fields
+    // Direct field mappings to Prisma Driver schema
     if (validatedData.phone !== undefined)
       updateData.phone = validatedData.phone;
-    if (validatedData.address !== undefined)
-      updateData.address = validatedData.address
-        ? JSON.stringify(validatedData.address)
-        : null;
-    if (validatedData.payRate !== undefined)
-      updateData.payRate = validatedData.payRate;
-    if (validatedData.payType !== undefined)
-      updateData.payType = validatedData.payType;
-    if (validatedData.homeTerminal !== undefined)
-      updateData.homeTerminal = validatedData.homeTerminal;
-    if (validatedData.cdlExpiration !== undefined)
-      updateData.cdlExpiration = validatedData.cdlExpiration;
-    if (validatedData.endorsements !== undefined)
-      updateData.endorsements = validatedData.endorsements
-        ? JSON.stringify(validatedData.endorsements)
-        : null;
-    if (validatedData.restrictions !== undefined)
-      updateData.restrictions = validatedData.restrictions
-        ? JSON.stringify(validatedData.restrictions)
-        : null;
-    if (validatedData.medicalCardExpiration !== undefined)
-      updateData.medicalCardExpiration = validatedData.medicalCardExpiration;
-    if (validatedData.status !== undefined)
-      updateData.status = validatedData.status;
-    if (validatedData.availabilityStatus !== undefined)
-      updateData.availabilityStatus = validatedData.availabilityStatus;
-    if (validatedData.emergencyContact !== undefined)
-      updateData.emergencyContact = validatedData.emergencyContact
-        ? JSON.stringify(validatedData.emergencyContact)
-        : null;
     if (validatedData.notes !== undefined)
       updateData.notes = validatedData.notes;
+    if (validatedData.status !== undefined)
+      updateData.status = validatedData.status;
+    if (validatedData.cdlExpiration !== undefined)
+      updateData.licenseExpiration = validatedData.cdlExpiration;
+    if (validatedData.medicalCardExpiration !== undefined)
+      updateData.medicalCardExpiration = validatedData.medicalCardExpiration;
+
+    // Handle address - convert object to string if needed
+    if (validatedData.address !== undefined) {
+      if (typeof validatedData.address === 'string') {
+        updateData.address = validatedData.address;
+      } else if (validatedData.address && typeof validatedData.address === 'object') {
+        // Convert address object to formatted string
+        const addressParts = [
+          validatedData.address.street,
+          validatedData.address.city,
+          `${validatedData.address.state || ''} ${validatedData.address.zipCode }`.trim()
+        ].filter(Boolean);
+        updateData.address = addressParts.join(', ');
+      } else {
+        updateData.address = null;
+      }
+    }
+
+    // Store complex fields in customFields JSON
+    const existingCustomFields = (existingDriver.customFields as any) || {};
+    const customFieldsUpdate: any = { ...existingCustomFields };
+    
+    if (validatedData.endorsements !== undefined)
+      customFieldsUpdate.endorsements = validatedData.endorsements;
+    if (validatedData.restrictions !== undefined)
+      customFieldsUpdate.restrictions = validatedData.restrictions;
+    if (validatedData.emergencyContact !== undefined)
+      customFieldsUpdate.emergencyContact = validatedData.emergencyContact;
     if (validatedData.tags !== undefined)
-      updateData.tags = validatedData.tags
-        ? JSON.stringify(validatedData.tags)
-        : null;
+      customFieldsUpdate.tags = validatedData.tags;
+    if (validatedData.payRate !== undefined)
+      customFieldsUpdate.payRate = validatedData.payRate;
+    if (validatedData.payType !== undefined)
+      customFieldsUpdate.payType = validatedData.payType;
+    if (validatedData.homeTerminal !== undefined)
+      customFieldsUpdate.homeTerminal = validatedData.homeTerminal;
+    if (validatedData.availabilityStatus !== undefined)
+      customFieldsUpdate.availabilityStatus = validatedData.availabilityStatus;
+    
+    updateData.customFields = customFieldsUpdate;
 
     // Update driver
     const updatedDriver = await db.driver.update({
@@ -235,7 +241,7 @@ export async function updateDriverAction(
 
     await logAuditEvent('driver.updated', 'driver', driverId, {
       updatedFields: Object.keys(updateData).filter(
-        key => key !== 'updatedAt' && key !== 'updatedBy'
+        key => key !== 'updatedAt'
       ),
     });
     return {
@@ -272,15 +278,13 @@ export async function deleteDriverAction(
       return { success: false, error: 'Driver not found', code: 'NOT_FOUND' };
     }
 
-    // Validate permissions
-
     // Soft delete (deactivate) driver
     const deletedDriver = await db.driver.update({
       where: { id: driverId },
       data: {
         status: 'terminated',
-        terminationDate: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        terminationDate: new Date(),
+        updatedAt: new Date(),
       },
     });
 
@@ -332,28 +336,27 @@ export async function updateDriverStatusAction(
       return { success: false, error: 'Driver not found', code: 'NOT_FOUND' };
     }
 
-    // Validate permissions
-
     // Validate input
     const validatedData = driverStatusUpdateSchema.parse(statusUpdate);
 
-    // Update driver status
-    const updateData: Partial<DriverUpdateData> & {
-      updatedAt: string;
-      updatedBy: string;
-    } = {
-      status: validatedData.status,
-      updatedAt: new Date().toISOString(),
-      updatedBy: userId,
-    };
-
+    // Prepare customFields update with location and availability status
+    const existingCustomFields = (existingDriver.customFields as any) || {};
+    const customFieldsUpdate: any = { ...existingCustomFields };
+    
     if (validatedData.availabilityStatus) {
-      updateData.availabilityStatus = validatedData.availabilityStatus;
+      customFieldsUpdate.availabilityStatus = validatedData.availabilityStatus;
+    }
+    
+    if (validatedData.location) {
+      customFieldsUpdate.currentLocation = validatedData.location;
     }
 
-    if (validatedData.location) {
-      updateData.currentLocation = JSON.stringify(validatedData.location);
-    }
+    // Update driver status
+    const updateData: any = {
+      status: validatedData.status,
+      updatedAt: new Date(),
+      customFields: customFieldsUpdate,
+    };
 
     const updatedDriver = await db.driver.update({
       where: { id: driverId },
@@ -417,26 +420,24 @@ export async function bulkUpdateDriversAction(
           continue;
         }
 
-        // Check permissions
+        // Prepare update with proper customFields handling
+        const existingCustomFields = (driver.customFields as any) || {};
+        const customFieldsUpdate: any = { ...existingCustomFields };
 
-        // Prepare update
-        const updateData: Partial<DriverUpdateData> & {
-          updatedAt: string;
-          updatedBy: string;
-        } = {
-          updatedAt: new Date().toISOString(),
-          updatedBy: userId,
+        const updateData: any = {
+          updatedAt: new Date(),
         };
 
         if (validatedData.updates.status)
           updateData.status = validatedData.updates.status;
         if (validatedData.updates.availabilityStatus)
-          updateData.availabilityStatus =
-            validatedData.updates.availabilityStatus;
+          customFieldsUpdate.availabilityStatus = validatedData.updates.availabilityStatus;
         if (validatedData.updates.homeTerminal)
-          updateData.homeTerminal = validatedData.updates.homeTerminal;
+          customFieldsUpdate.homeTerminal = validatedData.updates.homeTerminal;
         if (validatedData.updates.tags)
-          updateData.tags = JSON.stringify(validatedData.updates.tags);
+          customFieldsUpdate.tags = validatedData.updates.tags;
+
+        updateData.customFields = customFieldsUpdate;
 
         // Update driver
         await db.driver.update({
@@ -451,8 +452,6 @@ export async function bulkUpdateDriversAction(
         failed++;
       }
     }
-
-    // Revalidate paths for all affected tenants
 
     return {
       success: succeeded > 0,
@@ -515,7 +514,9 @@ export async function unassignDriverAction(
         error: 'Authentication required',
         code: 'UNAUTHORIZED',
       };
-    } // Get driver with current assignments
+    }
+
+    // Get driver with current assignments
     const driver = await db.driver.findUnique({
       where: { id: driverId },
       include: {
@@ -529,7 +530,7 @@ export async function unassignDriverAction(
                 'at_pickup',
                 'picked_up',
                 'en_route',
-              ],
+              ] as any[], // Ensure this is an array of the correct enum type
             },
           },
         },
@@ -580,7 +581,9 @@ export async function unassignDriverAction(
             },
           })
         );
-      } // Update driver's last modification time (don't change base status)
+      }
+
+      // Update driver's last modification time (don't change base status)
       updates.push(
         tx.driver.update({
           where: { id: driverId },

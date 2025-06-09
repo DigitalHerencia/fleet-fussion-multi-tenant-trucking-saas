@@ -1,9 +1,11 @@
 'use server';
 
 import { auth } from '@clerk/nextjs/server';
-import type { MetadataRecord } from "@/types/metadata";
 import { db } from '@/lib/database/db';
 import { handleError } from '@/lib/errors/handleError';
+
+// Define MetadataRecord type locally
+export type MetadataRecord = Record<string, any>;
 
 export interface AuditLogEntry {
   id: string;

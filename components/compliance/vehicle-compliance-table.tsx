@@ -25,8 +25,10 @@ export interface Vehicle {
   type: string;
 }
 
-// Props for VehicleComplianceTable (none in this case, but explicit for clarity)
-type VehicleComplianceTableProps = object
+// Props for VehicleComplianceTable
+interface VehicleComplianceTableProps {
+  orgId: string;
+}
 
 export const columns: ColumnDef<Vehicle>[] = [
   {
@@ -137,9 +139,11 @@ export const columns: ColumnDef<Vehicle>[] = [
   },
 ];
 
-export function VehicleComplianceTable(
-  props: VehicleComplianceTableProps
-): JSX.Element {
+export function VehicleComplianceTable({
+  orgId
+}: VehicleComplianceTableProps): JSX.Element {
+  // TODO: Fetch vehicle compliance data using orgId
+  
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -148,6 +152,9 @@ export function VehicleComplianceTable(
       </div>
 
       {/* Vehicle list would go here */}
+      <div className="text-sm text-muted-foreground">
+        Vehicle compliance data for organization: {orgId}
+      </div>
     </div>
   );
 }

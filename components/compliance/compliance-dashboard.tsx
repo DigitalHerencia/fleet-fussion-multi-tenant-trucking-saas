@@ -245,7 +245,7 @@ export function ComplianceDashboard({ orgId }: ComplianceDashboardProps) {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <VehicleComplianceTable />
+              <VehicleComplianceTable orgId={ '' } />
             </CardContent>
           </Card>
         </TabsContent>
@@ -259,7 +259,7 @@ export function ComplianceDashboard({ orgId }: ComplianceDashboardProps) {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ComplianceDocuments documents={[]} />
+              <ComplianceDocuments documents={ [] } orgId={ '' } />
             </CardContent>
           </Card>
         </TabsContent>

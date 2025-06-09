@@ -40,8 +40,8 @@ export async function createComplianceDocument(
     const validatedData = createComplianceDocumentSchema.parse(data);
 
     // Map entityType/entityId to driverId/vehicleId
-    let driverId: string | null = null;
-    let vehicleId: string | null = null;
+    let driverId: string | undefined = undefined;
+    let vehicleId: string | undefined = undefined;
     if (validatedData.entityType === 'driver') {
       driverId = validatedData.entityId;
     } else if (validatedData.entityType === 'vehicle') {
@@ -54,8 +54,8 @@ export async function createComplianceDocument(
         where: {
           organizationId: orgId,
           type: validatedData.type,
-          driverId: driverId || undefined,
-          vehicleId: vehicleId || undefined,
+          driverId,
+          vehicleId,
           expirationDate: { gte: new Date() },
         },
       });
@@ -117,15 +117,11 @@ export async function createComplianceDocument(
         data: {
           organizationId: orgId,
           userId,
-          driverId,
-          vehicleId,
+          ...(driverId ? { driverId } : {}),
+          ...(vehicleId ? { vehicleId } : {}),
           type: 'expiring_document',
           severity: 'high',
-          title: 'Document Expired',
           message: `Document ${document.title} has expired.`,
-          entityType: validatedData.entityType,
-          entityId: validatedData.entityId,
-          dueDate: document.expirationDate,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -161,7 +157,7 @@ export async function updateComplianceDocument(
     }
 
     // Map name to title if present
-    const updateData: Partial<UpdateComplianceDocumentInput> & { updatedAt: Date } = {
+    const updateData: Partial<UpdateComplianceDocumentInput> & { updatedAt: Date; title?: string } = {
       ...validatedData,
       updatedAt: new Date(),
     };
@@ -170,7 +166,7 @@ export async function updateComplianceDocument(
       delete updateData.name;
     }
     if (validatedData.expirationDate) {
-      updateData.expirationDate = new Date(validatedData.expirationDate);
+      updateData.expirationDate = new Date(validatedData.expirationDate).toISOString();
     }
 
     const updatedDocument = await db.complianceDocument.update({
@@ -198,28 +194,18 @@ export async function updateComplianceDocument(
     if (
       updatedDocument.expirationDate &&
       new Date(updatedDocument.expirationDate) < new Date()
-    ) {
-      await db.complianceAlert.create({
+    ) {      await db.complianceAlert.create({
         data: {
           organizationId: orgId,
           userId,
-          driverId: updatedDocument.driverId,
-          vehicleId: updatedDocument.vehicleId,
+          ...(updatedDocument.driverId && { driverId: updatedDocument.driverId }),
+          ...(updatedDocument.vehicleId && { vehicleId: updatedDocument.vehicleId }),
           type: 'expiring_document',
           severity: 'high',
-          title: 'Document Expired',
           message: `Document ${updatedDocument.title} has expired.`,
-          entityType: existingDocument.driverId
-            ? 'driver'
-            : existingDocument.vehicleId
-              ? 'vehicle'
-              : 'company',
-          entityId:
-            existingDocument.driverId || existingDocument.vehicleId || orgId,
-          dueDate: updatedDocument.expirationDate,
           createdAt: new Date(),
           updatedAt: new Date(),
-        },
+        }
       });
     }
 
@@ -489,9 +475,7 @@ export async function generateExpirationAlertsAction(daysAhead = 30) {
         const existing = await db.complianceAlert.findFirst({
           where: {
             organizationId: orgId,
-            entityId: doc.id,
             type: 'expiring_document',
-            resolved: false,
           },
         });
         if (existing) return;
@@ -499,24 +483,15 @@ export async function generateExpirationAlertsAction(daysAhead = 30) {
         const daysLeft = Math.ceil(
           (doc.expirationDate!.getTime() - today.getTime()) /
             (24 * 60 * 60 * 1000)
-        );
-        await db.complianceAlert.create({
+        );        await db.complianceAlert.create({
           data: {
             organizationId: orgId,
             userId,
-            driverId: doc.driverId ?? undefined,
-            vehicleId: doc.vehicleId ?? undefined,
+            driverId: doc.driverId || undefined,
+            vehicleId: doc.vehicleId || undefined,
             type: 'expiring_document',
             severity: daysLeft <= 7 ? 'high' : 'medium',
-            title: 'Document Expiring Soon',
             message: `${doc.title} expires in ${daysLeft} days`,
-            entityType: doc.driverId
-              ? 'driver'
-              : doc.vehicleId
-                ? 'vehicle'
-                : 'company',
-            entityId: doc.id,
-            dueDate: doc.expirationDate!,
             createdAt: new Date(),
             updatedAt: new Date(),
           },

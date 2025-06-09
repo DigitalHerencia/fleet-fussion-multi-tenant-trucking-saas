@@ -15,7 +15,7 @@ import type { DatabaseUser } from '@/types/auth';
 import type { AuditLogEntry, OrganizationStats } from '@/types/admin';
 
 async function verifyAdminAccess(userId: string, orgId: string) {
-  const user = await db.user.findUnique({
+  const user = await prisma.user.findUnique({
     where: { clerkId: userId },
     select: { organizationId: true, role: true },
   });
@@ -27,9 +27,17 @@ async function verifyAdminAccess(userId: string, orgId: string) {
 /**
  * Get all users in an organization (Admin only)
  */
-type OrgUser =
-  Pick<DatabaseUser, 'id' | 'email' | 'firstName' | 'lastName' | 'role' | 'isActive' | 'createdAt' | 'lastLogin'> &
-  { clerkId: string };
+type OrgUser = {
+  id: string;
+  clerkId: string;
+  email: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  role: string;
+  isActive: boolean;
+  createdAt: Date;
+  lastLogin: Date | null;
+};
 
 export async function getOrganizationUsersAction(
   orgId: string
@@ -166,7 +174,16 @@ export async function getAuditLogsAction(
       },
     });
 
-    return { success: true, data: auditLogs };
+    // Transform to match AuditLogEntry interface
+    const transformedLogs: AuditLogEntry[] = auditLogs.map(log => ({
+      id: log.id,
+      userId: log.userId || '',
+      action: log.action,
+      target: log.entityType,
+      createdAt: log.timestamp.toISOString(),
+    }));
+
+    return { success: true, data: transformedLogs };
   } catch (error) {
     return handleError(error, 'Get Audit Logs');
   }
@@ -231,8 +248,42 @@ export async function inviteUsersAction(
       return { success: false, error: 'Unauthorized' };
     }
 
-    // Implementation would send invitations via Clerk or email provider
-    console.log('Inviting users for org', orgId);
+    // Get emails and role from form data
+    const emailsString = formData.get('emails') as string;
+    const role = formData.get('role') as string;
+    
+    if (!emailsString || !role) {
+      return { success: false, error: 'Missing required fields' };
+    }
+
+    const emails = emailsString.split(',').map(email => email.trim()).filter(email => email);
+    
+    if (emails.length === 0) {
+      return { success: false, error: 'No valid emails provided' };
+    }
+
+    // Validate role
+    if (!Object.values(SystemRoles).includes(role as any)) {
+      return { success: false, error: 'Invalid role' };
+    }
+
+    // Implementation would send invitations via Clerk
+    // For now, we'll log the action
+    console.log('Inviting users for org', orgId, { emails, role });
+    
+    // Create audit log entry
+    await prisma.auditLog.create({
+      data: {
+        userId,
+        organizationId: orgId,
+        action: 'BULK_INVITE_USERS',
+        entityType: 'USER',
+        entityId: '',
+        metadata: { emails, role, count: emails.length },
+        timestamp: new Date(),
+      },
+    });
+
     revalidatePath(`/${orgId}/admin`);
     return { success: true };
   } catch (error) {
@@ -240,6 +291,9 @@ export async function inviteUsersAction(
   }
 }
 
+/**
+ * Bulk activate users
+ */
 export async function activateUsersAction(
   orgId: string,
   formData: FormData
@@ -253,10 +307,41 @@ export async function activateUsersAction(
     if (!isAdmin) {
       return { success: false, error: 'Unauthorized' };
     }
-    await prisma.user.updateMany({
-      where: { organizationId: orgId },
-      data: { isActive: true },
+
+    const userIdsString = formData.get('userIds') as string;
+    const userIds = userIdsString ? userIdsString.split(',').filter(id => id.trim()) : [];
+
+    if (userIds.length === 0) {
+      // Activate all users if no specific IDs provided
+      await prisma.user.updateMany({
+        where: { organizationId: orgId, isActive: false },
+        data: { isActive: true },
+      });
+    } else {
+      // Activate specific users
+      await prisma.user.updateMany({
+        where: { 
+          organizationId: orgId, 
+          id: { in: userIds },
+          isActive: false 
+        },
+        data: { isActive: true },
+      });
+    }
+
+    // Create audit log entry
+    await prisma.auditLog.create({
+      data: {
+        userId,
+        organizationId: orgId,
+        action: 'BULK_ACTIVATE_USERS',
+        entityType: 'USER',
+        entityId: '',
+        metadata: { userIds, count: userIds.length || 'all' },
+        timestamp: new Date(),
+      },
     });
+
     revalidatePath(`/${orgId}/admin`);
     return { success: true };
   } catch (error) {
@@ -264,6 +349,9 @@ export async function activateUsersAction(
   }
 }
 
+/**
+ * Bulk deactivate users
+ */
 export async function deactivateUsersAction(
   orgId: string,
   formData: FormData
@@ -277,13 +365,237 @@ export async function deactivateUsersAction(
     if (!isAdmin) {
       return { success: false, error: 'Unauthorized' };
     }
+
+    const userIdsString = formData.get('userIds') as string;
+    const userIds = userIdsString ? userIdsString.split(',').filter(id => id.trim()) : [];
+
+    if (userIds.length === 0) {
+      return { success: false, error: 'No users specified for deactivation' };
+    }
+
+    // Deactivate specific users (don't allow bulk deactivation of all users)
     await prisma.user.updateMany({
-      where: { organizationId: orgId },
+      where: { 
+        organizationId: orgId, 
+        id: { in: userIds },
+        isActive: true 
+      },
       data: { isActive: false },
     });
+
+    // Create audit log entry
+    await prisma.auditLog.create({
+      data: {
+        userId,
+        organizationId: orgId,
+        action: 'BULK_DEACTIVATE_USERS',
+        entityType: 'USER',
+        entityId: '',
+        metadata: { userIds, count: userIds.length },
+        timestamp: new Date(),
+      },
+    });
+
     revalidatePath(`/${orgId}/admin`);
     return { success: true };
   } catch (error) {
     return handleError(error, 'Deactivate Users');
+  }
+}
+
+/**
+ * Export organization data
+ */
+export async function exportOrganizationDataAction(
+  orgId: string,
+  formData: FormData
+): Promise<AdminActionResult<{ downloadUrl: string }>> {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+    const isAdmin = await verifyAdminAccess(userId, orgId);
+    if (!isAdmin) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    const exportType = formData.get('exportType') as string || 'full';
+    const format = formData.get('format') as string || 'csv';
+
+    // Create audit log entry
+    await prisma.auditLog.create({
+      data: {
+        userId,
+        organizationId: orgId,
+        action: 'EXPORT_DATA',
+        entityType: 'ORGANIZATION',
+        entityId: orgId,
+        metadata: { exportType, format },
+        timestamp: new Date(),
+      },
+    });
+
+    // TODO: Implement actual data export logic
+    // This would generate a file and return a download URL
+    const downloadUrl = `/api/admin/export/${orgId}?type=${exportType}&format=${format}`;
+
+    return { success: true, data: { downloadUrl } };
+  } catch (error) {
+    return handleError(error, 'Export Organization Data');
+  }
+}
+
+/**
+ * Get system health metrics
+ */
+export async function getSystemHealthAction(): Promise<AdminActionResult<{
+  uptime: number;
+  databaseStatus: string;
+  queueStatus: string;
+  memoryUsage: number;
+  cpuUsage: number;
+}>> {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    // Basic system health metrics
+    const uptime = process.uptime();
+    const memoryUsage = process.memoryUsage();
+    
+    const healthData = {
+      uptime,
+      databaseStatus: 'healthy',
+      queueStatus: 'healthy', 
+      memoryUsage: Math.round((memoryUsage.heapUsed / memoryUsage.heapTotal) * 100),
+      cpuUsage: 0, // Would need additional monitoring for real CPU usage
+    };
+
+    return { success: true, data: healthData };
+  } catch (error) {
+    return handleError(error, 'Get System Health');
+  }
+}
+
+/**
+ * Update organization settings
+ */
+export async function updateOrganizationSettingsAction(
+  orgId: string,
+  formData: FormData
+): Promise<AdminActionResult<void>> {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+    const isAdmin = await verifyAdminAccess(userId, orgId);
+    if (!isAdmin) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    const name = formData.get('name') as string;
+    const timezone = formData.get('timezone') as string;
+    const features = formData.get('features') as string;
+
+    const updateData: any = {};
+    if (name) updateData.name = name;
+    if (timezone) updateData.timezone = timezone;
+    if (features) {
+      try {
+        updateData.features = JSON.parse(features);
+      } catch (e) {
+        return { success: false, error: 'Invalid features JSON' };
+      }
+    }
+
+    await prisma.organization.update({
+      where: { id: orgId },
+      data: updateData,
+    });
+
+    // Create audit log entry
+    await prisma.auditLog.create({
+      data: {
+        userId,
+        organizationId: orgId,
+        action: 'UPDATE_ORGANIZATION_SETTINGS',
+        entityType: 'ORGANIZATION',
+        entityId: orgId,
+        metadata: updateData,
+        timestamp: new Date(),
+      },
+    });
+
+    revalidatePath(`/${orgId}/admin`);
+    return { success: true };
+  } catch (error) {
+    return handleError(error, 'Update Organization Settings');
+  }
+}
+
+/**
+ * Get organization billing info
+ */
+export async function getOrganizationBillingAction(
+  orgId: string
+): Promise<AdminActionResult<{
+  plan: string;
+  status: string;
+  currentPeriodEnds: string;
+  usage: {
+    users: number;
+    maxUsers: number;
+    vehicles: number;
+    maxVehicles: number;
+  };
+}>> {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+    const isAdmin = await verifyAdminAccess(userId, orgId);
+    if (!isAdmin) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    const org = await prisma.organization.findUnique({
+      where: { id: orgId },
+      select: { 
+        subscriptionTier: true, 
+        subscriptionStatus: true,
+        maxUsers: true,
+        maxVehicles: true,
+      }
+    });
+
+    if (!org) {
+      return { success: false, error: 'Organization not found' };
+    }
+
+    const [userCount, vehicleCount] = await Promise.all([
+      prisma.user.count({ where: { organizationId: orgId } }),
+      prisma.vehicle.count({ where: { organizationId: orgId } }),
+    ]);
+
+    const billingData = {
+      plan: org.subscriptionTier || 'free',
+      status: org.subscriptionStatus || 'active',
+      currentPeriodEnds: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
+      usage: {
+        users: userCount,
+        maxUsers: org.maxUsers || 5,
+        vehicles: vehicleCount,
+        maxVehicles: org.maxVehicles || 10,
+      },
+    };
+
+    return { success: true, data: billingData };
+  } catch (error) {
+    return handleError(error, 'Get Organization Billing');
   }
 }

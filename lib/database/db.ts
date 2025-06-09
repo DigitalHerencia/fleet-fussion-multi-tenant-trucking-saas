@@ -125,11 +125,10 @@ export class DatabaseQueries {
       // Upsert membership (unique on orgId+userId)
       const membership = await db.organizationMembership.upsert({
         where: {
-          // Composite unique constraint name is org_user_unique, so use { organizationId, userId }
-          org_user_unique: {
+          organizationId_userId: {
             organizationId: organization.id,
-            userId: user.id,
-          },
+            userId: user.id
+          }
         },
         update: {
           role,
@@ -187,10 +186,10 @@ export class DatabaseQueries {
       }
       await db.organizationMembership.delete({
         where: {
-          org_user_unique: {
+          organizationId_userId: {
             organizationId: organization.id,
-            userId: user.id,
-          },
+            userId: user.id
+          }
         },
       });
       return { success: true };

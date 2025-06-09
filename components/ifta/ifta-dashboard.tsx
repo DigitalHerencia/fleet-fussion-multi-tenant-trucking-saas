@@ -28,17 +28,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
-import { fetchIftaDataAction } from '@/lib/actions/iftaActions';
 
 import { IftaReportTable } from './ifta-report-table';
 import { IftaTripTable } from './ifta-trip-table';
+import { getIftaDataForPeriod } from '@/lib/fetchers/iftaFetchers';
 
 type IftaData = IftaPeriodData;
-  trips: any[];
-  fuelPurchases: any[];
-  jurisdictionSummary: any[];
-  report: any;
-}
 
 export function IftaDashboard() {
   const params = useParams();
@@ -68,7 +63,13 @@ export function IftaDashboard() {
         console.error('Error fetching IFTA data:', err);
         setError('Failed to load IFTA data');
         // Set default data for UI demonstration
+        // Parse quarter string (e.g., "2025-Q2") into { year: number, quarter: number }
+        const [yearStr, qStr] = quarter.split('-');
         setIftaData({
+          period: {
+            year: Number(yearStr),
+            quarter: Number(qStr.replace('Q', '')),
+          },
           summary: {
             totalMiles: 0,
             totalGallons: 0,
@@ -390,7 +391,25 @@ export function IftaDashboard() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <IftaTripTable trips={iftaData?.trips || []} />
+                    <IftaTripTable
+                      trips={
+                        (iftaData?.trips || []).map((trip: any) => ({
+                          // Map/transform fields from IftaTripRecord to TripReport
+                          tenantId: trip.tenantId ?? '',
+                          driverId: trip.driverId ?? '',
+                          startDate: trip.startDate ?? '',
+                          endDate: trip.endDate ?? '',
+                          vehicleId: trip.vehicleId ?? '',
+                          jurisdiction: trip.jurisdiction ?? '',
+                          miles: trip.miles ?? 0,
+                          fuelUsed: trip.fuelUsed ?? 0,
+                          notes: trip.notes ?? '',
+                          // ...add any other required TripReport fields with fallbacks...
+                          // Optionally, spread trip for extra fields if types overlap
+                          ...trip,
+                        }))
+                      }
+                    />
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -514,3 +533,29 @@ export function IftaDashboard() {
     </div>
   );
 }
+
+function validateIftaPeriodData(data: IftaPeriodData | any): boolean {
+  // Basic runtime validation for required fields
+  if (
+    typeof data !== 'object' ||
+    data === null ||
+    typeof data.summary !== 'object' ||
+    !Array.isArray(data.trips) ||
+    !Array.isArray(data.fuelPurchases) ||
+    !Array.isArray(data.jurisdictionSummary)
+  ) {
+    return false;
+  }
+  // Optionally, check summary fields
+  const summary = data.summary;
+  if (
+    typeof summary.totalMiles !== 'number' ||
+    typeof summary.totalGallons !== 'number' ||
+    typeof summary.averageMpg !== 'number' ||
+    typeof summary.totalFuelCost !== 'number'
+  ) {
+    return false;
+  }
+  return true;
+}
+

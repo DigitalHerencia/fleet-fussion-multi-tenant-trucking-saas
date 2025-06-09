@@ -62,9 +62,9 @@ interface loadList {
 export default async function DispatchPage({
   params,
 }: {
-  params: { orgId: string; userId?: string };
+  params: Promise<{ orgId: string; userId?: string }>;
 }) {
-  const { orgId, userId } = params;
+  const { orgId, userId } = await params;
   if (!orgId) {
     return <div className="p-8 text-red-400">Organization not found.</div>;
   }

@@ -6,9 +6,9 @@ import VehicleListClient from '@/features/vehicles/vehicle-list-client';
 export default async function VehiclesPage({
   params,
 }: {
-  params: { orgId: string; userId?: string };
+  params: Promise<{ orgId: string; userId?: string }>;
 }) {
-  const { orgId, userId } = params;
+  const { orgId, userId } = await params;
   const vehicles = await listVehiclesByOrg(orgId);
   return (
     <Suspense>

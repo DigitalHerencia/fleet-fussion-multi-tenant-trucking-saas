@@ -133,3 +133,30 @@ export interface DashboardSummary {
   timeRange: string;
   lastUpdated: string;
 }
+
+export interface AnalyticsData {
+  timeSeriesData: TimeSeriesData[];
+  summary?: DashboardSummary;
+  performanceData?: PerformanceDataPoint[];
+  financialData?: ProfitabilityMetrics;
+  driverPerformanceMetrics?: DriverPerformanceMetrics[];
+  vehicleData?: VehiclePerformanceMetrics[];
+}
+
+export interface PerformanceDataPoint {
+  date: string;
+  revenue?: number;
+  loads?: number;
+  miles?: number;
+  drivers?: number;
+  vehicles?: number;
+  revenuePerMile?: number;
+  onTimeDelivery?: number;
+  utilization?: number;
+}
+
+export interface TimeSeriesData {
+  date: string;
+  value: number;
+  label?: string;
+}

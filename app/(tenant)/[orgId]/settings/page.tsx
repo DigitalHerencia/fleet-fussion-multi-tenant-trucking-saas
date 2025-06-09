@@ -5,9 +5,9 @@ import { getOrganizationSettings } from '@/lib/fetchers/settingsFetchers';
 export default async function SettingsPage({
   params,
 }: {
-  params: { orgId: string; userId?: string };
+  params: Promise<{ orgId: string; userId?: string }>;
 }) {
-  const { orgId, userId } = params;
+  const { orgId, userId } = await params;
   await getOrganizationSettings(orgId); // prime cache
   return (
     <div className="settings-page mx-auto flex w-full max-w-4xl flex-col gap-8">

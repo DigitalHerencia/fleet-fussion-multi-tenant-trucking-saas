@@ -189,11 +189,10 @@ export function DispatchBoard({
           title: 'Status Updated',
           description: `Load status updated to ${newStatus.replace('_', ' ')}`,
         });
-        router.refresh();
-      } else {
+        router.refresh();      } else {
         toast({
           title: 'Error',
-          description: result.error || 'Failed to update load status',
+          description: 'success' in result && !result.success ? (result as any).error || 'Failed to update load status' : 'Failed to update load status',
           variant: 'destructive',
         });
       }

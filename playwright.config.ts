@@ -36,7 +36,6 @@ const config = {
   ],
   outputDir: 'test-results/',
   globalSetup: require.resolve('./tests/global-setup'),
-  globalTeardown: require.resolve('./tests/global-teardown'),
 } satisfies PlaywrightTestConfig;
 
 export default config;

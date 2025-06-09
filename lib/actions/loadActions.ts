@@ -37,45 +37,46 @@ export async function updateLoadAction(id: string, data: UpdateLoadInput) {
       trailer,
       ...rest
     } = validated;
-    const updateData: Partial<UpdateLoadInput> & { updatedAt: Date } = {
+    // Map incoming data to flat DB fields as in dispatchActions.ts
+    const dbData: any = {
       ...rest,
       updatedAt: new Date(),
     };
-    if (typeof rate !== 'undefined') updateData.rate = rate;
+    if (typeof rate !== 'undefined') dbData.rate = rate;
     if (customer && typeof customer === 'object') {
-      updateData.customerName = customer.name ?? null;
-      updateData.customerContact = customer.contactName ?? null;
-      updateData.customerPhone = customer.phone ?? null;
-      updateData.customerEmail = customer.email ?? null;
+      dbData.customerName = customer.name ?? null;
+      dbData.customerContact = customer.contactName ?? null;
+      dbData.customerPhone = customer.phone ?? null;
+      dbData.customerEmail = customer.email ?? null;
     }
     if (origin && typeof origin === 'object') {
-      updateData.originAddress = origin.address ?? null;
-      updateData.originCity = origin.city ?? null;
-      updateData.originState = origin.state ?? null;
-      updateData.originZip = origin.zip ?? null;
-      updateData.originLat = origin.latitude ?? null;
-      updateData.originLng = origin.longitude ?? null;
+      dbData.originAddress = origin.address ?? null;
+      dbData.originCity = origin.city ?? null;
+      dbData.originState = origin.state ?? null;
+      dbData.originZip = origin.zip ?? null;
+      dbData.originLat = origin.latitude ?? null;
+      dbData.originLng = origin.longitude ?? null;
     }
     if (destination && typeof destination === 'object') {
-      updateData.destinationAddress = destination.address ?? null;
-      updateData.destinationCity = destination.city ?? null;
-      updateData.destinationState = destination.state ?? null;
-      updateData.destinationZip = destination.zip ?? null;
-      updateData.destinationLat = destination.latitude ?? null;
-      updateData.destinationLng = destination.longitude ?? null;
+      dbData.destinationAddress = destination.address ?? null;
+      dbData.destinationCity = destination.city ?? null;
+      dbData.destinationState = destination.state ?? null;
+      dbData.destinationZip = destination.zip ?? null;
+      dbData.destinationLat = destination.latitude ?? null;
+      dbData.destinationLng = destination.longitude ?? null;
     }
     if (driver && typeof driver === 'object' && driver.id)
-      updateData.driverId = driver.id;
+      dbData.driverId = driver.id;
     if (vehicle && typeof vehicle === 'object' && vehicle.id)
-      updateData.vehicleId = vehicle.id;
+      dbData.vehicleId = vehicle.id;
     if (trailer && typeof trailer === 'object' && trailer.id)
-      updateData.trailerId = trailer.id;
+      dbData.trailerId = trailer.id;
     const load = await db.load.update({
       where: {
         id,
         organizationId: orgId,
       },
-      data: updateData,
+      data: dbData,
     });
     revalidatePath('/[orgId]/dispatch', 'page');
     revalidatePath(`/[orgId]/dispatch/${id}`, 'page');

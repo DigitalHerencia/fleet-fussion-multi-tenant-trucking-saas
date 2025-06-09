@@ -7,9 +7,9 @@ import DriverListPage from '@/features/drivers/DriverListPage';
 export default async function DriversPage({
   params,
 }: {
-  params: { orgId: string; userId?: string };
+  params: Promise<{ orgId: string; userId?: string }>;
 }) {
-  const { orgId, userId } = params;
+  const { orgId, userId } = await params;
   const result = await listDriversByOrg(orgId);
   if (!result || !Array.isArray(result.drivers)) return notFound();
 

@@ -26,11 +26,12 @@ export type Dispatches = Record<
 
 interface PageProps {
   params: Promise<{ orgId: string; userId: string }>;
-  searchParams: { id?: string };
+  searchParams: Promise<{ id?: string }>;
 }
 
+export default async function EditLoadPage({ params, searchParams }: PageProps) {
   const { orgId } = await params;
-  const loadId = searchParams?.id;
+  const loadId = (await searchParams)?.id;
 
   const company = await getCurrentCompany();
   if (!company) {
@@ -47,7 +48,6 @@ interface PageProps {
     getAvailableVehiclesForLoad(orgId, {}),
     getAvailableTrailersForLoad(orgId, {}),
   ]);
-
   if (!load) return notFound();
 
   const drivers = driversRes?.data || [];
@@ -56,9 +56,38 @@ interface PageProps {
     ...(trailersRes?.data || []),
   ];
 
+  // Transform the database load object to match LoadForm interface expectations
+  const transformedLoad = {
+    id: load.id,
+    referenceNumber: load.referenceNumber || '',
+    status: load.status,
+    customerName: load.customerName || '',
+    customerContact: load.customerContact || '',
+    customerPhone: load.customerPhone || '',
+    customerEmail: load.customerEmail || '',
+    originAddress: load.originAddress,
+    originCity: load.originCity,
+    originState: load.originState,
+    originZip: load.originZip,
+    destinationAddress: load.destinationAddress,
+    destinationCity: load.destinationCity,
+    destinationState: load.destinationState,
+    destinationZip: load.destinationZip,
+    pickupDate: load.scheduledPickupDate?.toISOString().split('T')[0] || '',
+    deliveryDate: load.scheduledDeliveryDate?.toISOString().split('T')[0] || '',
+    commodity: load.commodity || '',
+    weight: load.weight || 0,
+    rate: Number(load.rate) || 0,
+    miles: load.estimatedMiles || 0,
+    notes: load.notes || '',
+    driverId: load.driverId || '',
+    vehicleId: load.vehicleId || '',
+    trailerId: load.trailerId || '',
+  };
+
   return (
     <div className="mt-6">
-      <LoadForm drivers={drivers} vehicles={vehicles} load={load} />
+      <LoadForm drivers={drivers} vehicles={vehicles} load={transformedLoad} />
     </div>
   );
 }

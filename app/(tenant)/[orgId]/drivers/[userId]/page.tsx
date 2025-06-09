@@ -39,15 +39,14 @@ function getAssignmentLabel(assignment: any) {
 export default async function DriverDashboardPage({
   params,
 }: {
-  params: { orgId: string; userId?: string };
+  params: Promise<{ orgId: string; userId: string }>;
 }): Promise<JSX.Element> {
-  const { orgId, userId } = params;
+  const { orgId, userId } = await params;
   // Fetch driver data by ID and org for multitenancy support
   const driverData = await getDriverById(userId, orgId);
   if (!driverData) return notFound();
-
   // Real-time status: poll HOS status and assignment every 10s
-  const hosStatus = await getDriverHOSStatus(userId!, { revalidate: 10 });
+  const hosStatus = await getDriverHOSStatus(userId, { revalidate: 10 });
   let currentStatus: string = driverData.status;
   if (hosStatus && typeof hosStatus === 'object') {
     const hs = hosStatus as any;

@@ -51,16 +51,14 @@ export function OnboardingWizard({ initialStatus }: OnboardingWizardProps) {
 
       if (result.success) {
         // Refresh status via router to avoid full page reload
-        router.refresh();
-
-        toast({
+        router.refresh();        toast({
           title: 'Progress saved',
           description: 'Your onboarding step has been completed.',
         });
       } else {
         toast({
           title: 'Error',
-          description: result.error || 'Failed to save progress',
+          description: ('error' in result ? result.error : 'Failed to save progress'),
           variant: 'destructive',
         });
       }

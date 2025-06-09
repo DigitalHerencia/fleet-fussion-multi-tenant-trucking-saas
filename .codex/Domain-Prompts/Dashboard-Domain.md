@@ -1,7 +1,5 @@
 # FleetFusion Dashboard Domain Development Prompt
 
-✅ **Issue #53** - 📊 Implement Multi-Role Dashboard & KPIs  
-
 ## Context & Overview
 
 You are an expert full-stack developer working on the **Dashboard Domain** of FleetFusion, a modern

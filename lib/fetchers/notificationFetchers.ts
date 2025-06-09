@@ -14,7 +14,10 @@ export async function listUnreadNotifications(orgId: string): Promise<Notificati
   const notifications = await prisma.notification.findMany({
     where: {
       organizationId: orgId,
-      OR: [{ userId }, { userId: null }],
+      OR: [
+        { userId },
+        { userId: null } // Global notifications
+      ],
       readAt: null,
     },
     orderBy: { createdAt: 'desc' },

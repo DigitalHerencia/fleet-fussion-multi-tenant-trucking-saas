@@ -133,13 +133,7 @@ export async function createLoadAction(orgId: string, data: CreateLoadInput) {
       priority,
       statusEvents,
       ...rest
-    } = validatedData;
-    const dbData: Partial<UpdateLoadInput> & {
-      referenceNumber: string;
-      organizationId: string;
-      createdAt: Date;
-      updatedAt: Date;
-    } = {
+    } = validatedData;    const dbData: any = {
       ...rest,
       referenceNumber,
       rate,
@@ -247,7 +241,7 @@ export async function updateLoadAction(loadId: string, data: UpdateLoadInput) {
       statusEvents,
       ...updateData
     } = validatedData;
-    const dbData: Partial<UpdateLoadInput> & { updatedAt: Date } = {
+    const dbData: any = {
       ...updateData,
       updatedAt: new Date(),
       priority: priority || undefined,

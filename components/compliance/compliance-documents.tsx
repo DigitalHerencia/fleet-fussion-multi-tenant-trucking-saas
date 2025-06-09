@@ -113,11 +113,14 @@ export const columns: ColumnDef<ComplianceDocument>[] = [
 ];
 
 interface ComplianceDocumentsProps {
-  documents: ComplianceDocument[]; // Added prop for documents
+  orgId: string;
+  documents?: ComplianceDocument[]; // Made optional with default
 }
 
 // Update the component to accept documents as a prop
-export function ComplianceDocuments({ documents }: ComplianceDocumentsProps) {
+export function ComplianceDocuments({ orgId, documents = [] }: ComplianceDocumentsProps) {
+  // TODO: Fetch compliance documents using orgId if not provided
+  
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -131,7 +134,12 @@ export function ComplianceDocuments({ documents }: ComplianceDocumentsProps) {
       {/* Document list would go here */}
       <div className="grid gap-4">
         {documents.length === 0 ? (
-          <DocumentListEmpty />
+          <div className="space-y-2">
+            <DocumentListEmpty />
+            <div className="text-sm text-muted-foreground">
+              Organization: {orgId}
+            </div>
+          </div>
         ) : (
           documents.map(doc => (
             <div
