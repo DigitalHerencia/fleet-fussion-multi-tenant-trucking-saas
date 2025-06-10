@@ -9,6 +9,11 @@ const nextConfig = {
       new URL('https://**'),
       new URL('http://localhost/**'),
     ],
+    localPatterns: [
+      {
+        pathname: '/**',
+      },
+    ],
   },
   experimental: {
     serverActions: {
