@@ -1,20 +1,13 @@
 import path from 'path';
 
 const nextConfig = {
-  reactStrictMode: true,  images: {
+  reactStrictMode: true,  
+  images: {
+    formats: ['image/avif', 'image/webp'],
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'fleet-fusion.vercel.app',
-      },
-      {
-        protocol: 'https',
-        hostname: '**',
-      },
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-      },
+      new URL('https://fleet-fusion.vercel.app/**'),
+      new URL('https://**'),
+      new URL('http://localhost/**'),
     ],
   },
   experimental: {

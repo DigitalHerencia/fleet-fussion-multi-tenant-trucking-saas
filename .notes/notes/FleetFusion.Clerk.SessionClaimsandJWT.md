@@ -2,7 +2,7 @@
 id: byw07mcf7jlw2ksdaw5f8x5
 title: SessionClaimsandJWT
 desc: ''
-updated: 1748311694106
+updated: 1749526424504
 created: 1748309991987
 ---
 
@@ -103,3 +103,9 @@ NEXT_PUBLIC_APP_URL=http://fleet-fusion.vercel.app
 NEXT_PUBLIC_CLERK_FRONTEND_API=driving-gelding-14.clerk.accounts.dev
 
 NEXT_PUBLIC_CLERK_WEBHOOK_ENDPOINT=https://fleet-fusion.vercel.app/api/clerk/webhook-handler
+
+## running the dev server
+
+ in addition to `npm run dev`, you also need to run the ngrok endpoint in a separate terminal window:
+ 
+ `ngrok http --domain=liberal-gull-quietly.ngrok-free.app 3000`
