@@ -226,16 +226,17 @@ export async function getDriverAnalytics(
   }
 
   try {
-    const { startDate, endDate } = getDateRange(timeRange);
-
-    // Get driver performance data
+    const { startDate, endDate } = getDateRange(timeRange);    // Get driver performance data
     const driverData = await prisma.driver.findMany({
       where: {
         organizationId,
         status: 'active',
         ...(filters.driverId && { id: filters.driverId }),
       },
-      include: {
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
         loads: {
           where: {
             actualDeliveryDate: {
@@ -320,16 +321,18 @@ export async function getVehicleAnalytics(
   }
 
   try {
-    const { startDate, endDate } = getDateRange(timeRange);
-
-    // Get vehicle utilization data
+    const { startDate, endDate } = getDateRange(timeRange);    // Get vehicle utilization data
     const vehicleData = await prisma.vehicle.findMany({
       where: {
         organizationId,
         status: 'active',
         ...(filters.vehicleId && { id: filters.vehicleId }),
       },
-      include: {
+      select: {
+        id: true,
+        unitNumber: true,
+        make: true,
+        model: true,
         loads: {
           where: {
             actualDeliveryDate: {

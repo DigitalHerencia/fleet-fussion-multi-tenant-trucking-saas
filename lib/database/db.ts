@@ -208,11 +208,34 @@ export class DatabaseQueries {
 
   /**
    * Get organization by Clerk ID
-   */
-  static async getOrganizationByClerkId(clerkId: string) {
+   */  static async getOrganizationByClerkId(clerkId: string) {
     try {
       const organization = await db.organization.findUnique({
         where: { clerkId },
+        select: {
+          id: true,
+          clerkId: true,
+          name: true,
+          slug: true,
+          mcNumber: true,
+          address: true,
+          city: true,
+          state: true,
+          zip: true,
+          phone: true,
+          email: true,
+          logoUrl: true,
+          subscriptionTier: true,
+          subscriptionStatus: true,
+          maxUsers: true,
+          maxVehicles: true,
+          billingEmail: true,
+          settings: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true,
+          dotNumber: true,
+        },
       });
       return organization || null;
     } catch (error) {

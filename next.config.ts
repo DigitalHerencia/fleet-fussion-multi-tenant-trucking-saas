@@ -1,13 +1,12 @@
 import path from 'path';
 
 const nextConfig = {
-  reactStrictMode: true,
-  images: {
-    domains: [
-      'fleet-fusion.vercel.app',
-      // ...add other domains as needed
-    ],
+  reactStrictMode: true,  images: {
     remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'fleet-fusion.vercel.app',
+      },
       {
         protocol: 'https',
         hostname: '**',
