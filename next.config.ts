@@ -3,6 +3,7 @@ import path from 'path';
 const nextConfig = {
   reactStrictMode: true,  
   images: {
+    unoptimized: true,
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       new URL('https://fleet-fusion.vercel.app/**'),
