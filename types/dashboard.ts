@@ -29,6 +29,13 @@ export interface QuickAction {
   icon: string;
   color: string;
   permission: string[];
+  priority?: 'high' | 'medium' | 'low';
+  badge?: {
+    text: string;
+    variant?: 'default' | 'secondary' | 'destructive' | 'outline';
+  };
+  shortcut?: string;
+  category?: 'fleet' | 'dispatch' | 'compliance' | 'admin' | 'financial';
 }
 
 export interface ActivityItem {

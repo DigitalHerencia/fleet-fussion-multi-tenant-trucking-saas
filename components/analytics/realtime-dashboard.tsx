@@ -32,6 +32,8 @@ interface RealtimeDashboardProps {
   timeRange: string;
   driver?: string;
   metrics: Array<{ icon: JSX.Element; label: string; value: string; change: string }>;
+  enableAutoRefresh?: boolean;
+  refreshInterval?: number;
 }
 
 interface LiveMetrics {

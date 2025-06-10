@@ -404,7 +404,6 @@ export async function getDashboardSummary(
   const cacheKey = `analytics:dashboard:${organizationId}:${timeRange}:${JSON.stringify(filters)}`;
   const cached = getCachedData(cacheKey) as DashboardSummary | null;
   if (cached) return cached;
-
   // Mock data for now - replace with actual calculations
   const summary: DashboardSummary = {
     totalRevenue: 125000,
@@ -417,10 +416,13 @@ export async function getDashboardSummary(
     driverUtilization: 85.5,
     timeRange,
     lastUpdated: new Date().toISOString(),
-    averageRevenuePerMile: 0,
-    totalLoads: undefined,
-    activeDrivers: undefined,
-    activeVehicles: undefined
+    averageRevenuePerMile: 2.78,
+    totalLoads: 90,
+    activeDrivers: 25,
+    activeVehicles: 18,
+    onTimeDeliveryRate: 88.5,
+    maintenanceAlerts: 3,
+    safetyScore: 95.2
   };
 
   setCachedData(cacheKey, summary, CACHE_TTL.DATA || 300);

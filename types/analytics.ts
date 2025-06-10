@@ -132,6 +132,9 @@ export interface DashboardSummary {
   driverUtilization: number;
   timeRange: string;
   lastUpdated: string;
+  onTimeDeliveryRate: number;
+  maintenanceAlerts: number;
+  safetyScore: number;
 }
 
 export interface AnalyticsData {
