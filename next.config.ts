@@ -4,66 +4,8 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false, // Remove X-Powered-By header
   
-  // Security Headers
-  async headers() {
-    return [
-      {
-        source: '/(.*)',
-        headers: [
-          // Security Headers
-          {
-            key: 'X-DNS-Prefetch-Control',
-            value: 'on'
-          },
-          {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=63072000; includeSubDomains; preload'
-          },
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY'
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff'
-          },
-          {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block'
-          },
-          {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin'
-          },
-          {
-            key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(self), interest-cohort=()'
-          },
-          // Content Security Policy
-          {
-            key: 'Content-Security-Policy',
-            value: [
-              "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://clerk.dev https://*.clerk.dev https://*.clerk.accounts.dev",
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' data: https: blob:",
-              "connect-src 'self' https://clerk.dev https://*.clerk.dev https://*.clerk.accounts.dev https://api.mapbox.com wss://*.clerk.dev",
-              "frame-src 'self' https://*.clerk.dev https://*.clerk.accounts.dev",
-              "worker-src 'self' blob:",
-              "object-src 'none'",
-              "base-uri 'self'",
-              "form-action 'self'",
-              "frame-ancestors 'none'",
-              "upgrade-insecure-requests"
-            ].join('; ')
-          }
-        ]
-      }
-    ];  },
-  
   images: {
-    // Remove unoptimized: true - Next.js 15 uses Sharp by default for better optimization
+    // Enhanced image optimization for Next.js 15
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       {
@@ -97,15 +39,36 @@ const nextConfig = {
         port: '3000',
         pathname: '/**',
       },
+      // Added for Clerk CAPTCHA and Google images
+      {
+        protocol: 'https',
+        hostname: 'www.google.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.gstatic.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.clerk.com',
+        pathname: '/**',
+      },
     ],
-    // Enhanced image optimization settings for Next.js 15
+    // Optimized settings for Next.js 15 Image component
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 60,
-    dangerouslyAllowSVG: false,
-    contentDispositionType: 'attachment',
+    dangerouslyAllowSVG: true, // Allow SVG for icons
+    contentDispositionType: 'inline', // Change from attachment to inline
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-  },  // Turbopack configuration (moved from experimental.turbo)
+    // Add loader for better performance
+    loader: 'default',    // Disable static imports for better dynamic loading
+    unoptimized: false,
+  },
+  
+  // Turbopack configuration (moved from experimental.turbo)
   turbopack: {
     // Enable Turbo for faster builds (optional)
     rules: {

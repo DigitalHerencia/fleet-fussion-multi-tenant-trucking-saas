@@ -22,17 +22,16 @@ export function PersonalInfoStep({ formData, updateFormData, onNext }: PersonalI
       onNext();
     }
   };
-
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <div className="mx-auto w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-          <User className="h-6 w-6 text-blue-600" />
+        <div className="mx-auto w-12 h-12 bg-neutral-800 rounded-full flex items-center justify-center mb-4">
+          <User className="h-6 w-6 text-blue-500" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+        <h2 className="text-2xl font-bold text-white mb-2">
           Let's start with the basics
         </h2>
-        <p className="text-gray-600">
+        <p className="text-gray-400">
           Tell us a bit about yourself so we can personalize your experience.
         </p>
       </div>
@@ -40,40 +39,42 @@ export function PersonalInfoStep({ formData, updateFormData, onNext }: PersonalI
       <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto">
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="firstName">First Name</Label>
+            <Label htmlFor="firstName" className="text-sm font-medium text-gray-200">First Name</Label>
             <Input
               id="firstName"
               type="text"
               placeholder="John"
               value={formData.firstName}
               onChange={(e) => updateFormData({ firstName: e.target.value })}
+              className="rounded-md border border-neutral-700 bg-black px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
               required
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="lastName">Last Name</Label>
+            <Label htmlFor="lastName" className="text-sm font-medium text-gray-200">Last Name</Label>
             <Input
               id="lastName"
               type="text"
               placeholder="Doe"
               value={formData.lastName}
               onChange={(e) => updateFormData({ lastName: e.target.value })}
+              className="rounded-md border border-neutral-700 bg-black px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
               required
             />
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="email">Email Address</Label>
+          <Label htmlFor="email" className="text-sm font-medium text-gray-200">Email Address</Label>
           <Input
             id="email"
             type="email"
             placeholder="john.doe@example.com"
             value={formData.email}
             onChange={(e) => updateFormData({ email: e.target.value })}
+            className="rounded-md border border-neutral-700 bg-neutral-800 px-3 py-2 text-gray-400 focus:ring-2 focus:ring-blue-500 focus:outline-none"
             required
             disabled // Usually pre-filled from Clerk
-            className="bg-gray-50"
           />
           <p className="text-sm text-gray-500">
             This email is from your account and cannot be changed here.
@@ -83,7 +84,7 @@ export function PersonalInfoStep({ formData, updateFormData, onNext }: PersonalI
         <div className="pt-4">
           <Button 
             type="submit" 
-            className="w-full"
+            className="w-full bg-blue-500 text-white hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:outline-none"
             disabled={!isValid}
           >
             Continue

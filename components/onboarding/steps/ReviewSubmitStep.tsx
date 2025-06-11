@@ -31,15 +31,14 @@ export function ReviewSubmitStep({
   onPrev, 
   isLoading 
 }: ReviewSubmitStepProps) {
-  
-  const getRoleBadgeColor = (role: string) => {
+    const getRoleBadgeColor = (role: string) => {
     switch (role) {
-      case 'admin': return 'bg-purple-100 text-purple-800';
-      case 'dispatcher': return 'bg-blue-100 text-blue-800';
-      case 'driver': return 'bg-green-100 text-green-800';
-      case 'compliance_officer': return 'bg-orange-100 text-orange-800';
-      case 'accountant': return 'bg-teal-100 text-teal-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'admin': return 'bg-purple-900/30 text-purple-300 border-purple-700/30';
+      case 'dispatcher': return 'bg-blue-900/30 text-blue-300 border-blue-700/30';
+      case 'driver': return 'bg-green-900/30 text-green-300 border-green-700/30';
+      case 'compliance_officer': return 'bg-orange-900/30 text-orange-300 border-orange-700/30';
+      case 'accountant': return 'bg-teal-900/30 text-teal-300 border-teal-700/30';
+      default: return 'bg-neutral-800 text-gray-300 border-neutral-700';
     }
   };
 

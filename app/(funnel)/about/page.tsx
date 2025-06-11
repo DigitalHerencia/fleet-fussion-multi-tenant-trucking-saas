@@ -15,10 +15,11 @@ export default function AboutPage() {
         <Image
           src="/sunset_bg.png"
           alt="Highway with truck"
-          width={1200}
-          height={800}
-          className="h-auto w-full object-cover"
+          fill
+          className="object-cover"
           priority
+          quality={85}
+          sizes="100vw"
         />
       </div>
 

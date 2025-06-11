@@ -52,14 +52,6 @@ export default function SignUpPage() {
 
     if (!isLoaded) return;
 
-    // Enforce Clerk CAPTCHA if present
-    const captcha = (window as any).Clerk?.captcha;
-    if (captcha && !captcha.isSolved()) {
-      setError('Please complete the CAPTCHA challenge.');
-      setLoading(false);
-      return;
-    }
-
     try {
       const res = await signUp.create({
         emailAddress: email,
@@ -186,6 +178,15 @@ export default function SignUpPage() {
             className="rounded-md border border-neutral-700 bg-black px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
             value={password}
             onChange={e => setPassword(e.target.value)}
+          />
+
+          {/* Clerk CAPTCHA Widget */}
+          <div
+            id="clerk-captcha"
+            data-cl-theme="dark"
+            data-cl-size="flexible"
+            data-cl-language="auto"
+            className="my-4 flex justify-center"
           />
 
           {error && <p className="mt-2 text-sm text-red-500">{error}</p>}

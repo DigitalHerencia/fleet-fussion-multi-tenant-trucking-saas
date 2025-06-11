@@ -216,6 +216,11 @@ function forbiddenOrRedirect(req: NextRequest, redirectUrl?: string) {
 export default clerkMiddleware(async (auth, req: NextRequest) => {
   // [A] Intercept every request before route handlers/pages
   
+  // Early exit for Clerk webhook handler
+  if (req.nextUrl.pathname === '/api/clerk/webhook-handler') {
+    return NextResponse.next();
+  }
+  
   // Basic security checks
   const userAgent = req.headers.get('user-agent') || '';
   const origin = req.headers.get('origin');
@@ -297,7 +302,9 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
 // 8. Next.js matcher config (which routes this middleware applies to)
 export const config = {
   matcher: [
-    // Exclude Next.js internals and static files from middleware
-    '/((?!_next|_static|_vercel|favicon.ico|robots.txt|sitemap.xml|manifest.json|public|api\\/clerk\\/webhook-handler).*)',
+    // Include most routes, exclude static assets
+    '/((?!_next/static|_next/image|_next/webpack-hmr|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|svg|webp|avif|ico)$).*)',
+    // Include API routes
+    '/api/:path*',
   ],
 };

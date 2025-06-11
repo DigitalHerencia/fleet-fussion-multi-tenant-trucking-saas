@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Circle, Truck, Users, Building } from 'lucide-react';
+import { CheckCircle, Circle, Truck, Users, Building, MapPinned } from 'lucide-react';
 
 // Step Components
 import { PersonalInfoStep } from './steps/PersonalInfoStep';
@@ -150,24 +150,23 @@ export function OnboardingStepper() {
       </div>
     );
   }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100 p-4">
-      <div className="max-w-4xl mx-auto pt-8">
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+      <div className="w-full max-w-4xl space-y-8">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <Truck className="h-8 w-8 text-blue-600" />
-            <h1 className="text-3xl font-bold text-gray-900">FleetFusion</h1>
+            <MapPinned className="h-8 w-8 text-blue-500" />
+            <h1 className="text-3xl font-bold text-white">FleetFusion</h1>
           </div>
-          <p className="text-lg text-gray-600">
+          <p className="text-lg text-gray-400">
             Let's get you set up! This will only take a few minutes.
           </p>
         </div>
 
         {/* Progress Bar */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-2">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
             {steps.map((step, index) => {
               const Icon = step.icon;
               const isActive = index === currentStep;
@@ -177,9 +176,9 @@ export function OnboardingStepper() {
                 <div key={step.id} className="flex items-center">
                   <div className={`
                     flex items-center justify-center w-10 h-10 rounded-full border-2 
-                    ${isCompleted ? 'bg-green-500 border-green-500 text-white' :
-                      isActive ? 'border-blue-500 text-blue-500 bg-white' :
-                      'border-gray-300 text-gray-400 bg-white'}
+                    ${isCompleted ? 'bg-blue-500 border-blue-500 text-white' :
+                      isActive ? 'border-blue-500 text-blue-500 bg-neutral-900' :
+                      'border-neutral-700 text-gray-400 bg-neutral-900'}
                   `}>
                     {isCompleted ? (
                       <CheckCircle className="h-5 w-5" />
@@ -189,76 +188,74 @@ export function OnboardingStepper() {
                   </div>
                   <div className="ml-2 hidden sm:block">
                     <p className={`text-sm font-medium ${
-                      isActive ? 'text-blue-600' : 
-                      isCompleted ? 'text-green-600' : 'text-gray-500'
+                      isActive ? 'text-blue-500' : 
+                      isCompleted ? 'text-blue-400' : 'text-gray-500'
                     }`}>
                       {step.title}
                     </p>
                   </div>
                   {index < steps.length - 1 && (
-                    <div className="flex-1 h-0.5 bg-gray-300 mx-4" />
+                    <div className="flex-1 h-0.5 bg-neutral-700 mx-4" />
                   )}
                 </div>
               );
             })}
           </div>
-          <Progress value={progress} className="w-full" />
+          <Progress value={progress} className="w-full [&>div]:bg-blue-500 bg-neutral-700" />
         </div>
 
         {/* Step Content */}
-        <Card>
-          <CardContent className="p-8">
-            {currentStep === 0 && (
-              <PersonalInfoStep
-                formData={formData}
-                updateFormData={updateFormData}
-                onNext={nextStep}
-              />
-            )}
-            
-            {currentStep === 1 && (
-              <RoleSelectionStep
-                formData={formData}
-                updateFormData={updateFormData}
-                onNext={nextStep}
-                onPrev={prevStep}
-              />
-            )}
-            
-            {currentStep === 2 && (
-              <>
-                {isAdmin ? (
-                  <CompanySetupStep
-                    formData={formData}
-                    updateFormData={updateFormData}
-                    onNext={nextStep}
-                    onPrev={prevStep}
-                  />
-                ) : (
-                  <EmployeeJoinStep
-                    formData={formData}
-                    updateFormData={updateFormData}
-                    onNext={nextStep}
-                    onPrev={prevStep}
-                  />
-                )}
-              </>
-            )}
-            
-            {currentStep === 3 && (
-              <ReviewSubmitStep
-                formData={formData}
-                isAdmin={isAdmin}
-                onSubmit={handleSubmit}
-                onPrev={prevStep}
-                isLoading={isLoading}
-              />
-            )}
-          </CardContent>
-        </Card>
+        <div className="rounded-lg border border-neutral-800 bg-neutral-900 p-8 shadow-lg">
+          {currentStep === 0 && (
+            <PersonalInfoStep
+              formData={formData}
+              updateFormData={updateFormData}
+              onNext={nextStep}
+            />
+          )}
+          
+          {currentStep === 1 && (
+            <RoleSelectionStep
+              formData={formData}
+              updateFormData={updateFormData}
+              onNext={nextStep}
+              onPrev={prevStep}
+            />
+          )}
+          
+          {currentStep === 2 && (
+            <>
+              {isAdmin ? (
+                <CompanySetupStep
+                  formData={formData}
+                  updateFormData={updateFormData}
+                  onNext={nextStep}
+                  onPrev={prevStep}
+                />
+              ) : (
+                <EmployeeJoinStep
+                  formData={formData}
+                  updateFormData={updateFormData}
+                  onNext={nextStep}
+                  onPrev={prevStep}
+                />
+              )}
+            </>
+          )}
+          
+          {currentStep === 3 && (
+            <ReviewSubmitStep
+              formData={formData}
+              isAdmin={isAdmin}
+              onSubmit={handleSubmit}
+              onPrev={prevStep}
+              isLoading={isLoading}
+            />
+          )}
+        </div>
 
         {/* Fun Footer Message */}
-        <div className="text-center mt-8 text-gray-500">
+        <div className="text-center text-gray-500">
           <p className="text-sm">
             🚛 Almost there! Your virtual trip to productivity paradise awaits... 
             <br />

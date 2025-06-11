@@ -25,10 +25,11 @@ export default function FeaturesPage() {
         <Image
           src="/mountain_bg.png"
           alt="Road leading to mountains"
-          width={1200}
-          height={800}
-          className="h-auto w-full object-cover"
+          fill
+          className="object-cover"
           priority
+          quality={85}
+          sizes="100vw"
         />
       </div>
 
