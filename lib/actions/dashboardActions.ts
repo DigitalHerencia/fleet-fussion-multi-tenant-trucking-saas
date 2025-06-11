@@ -7,7 +7,7 @@ import prisma from '@/lib/database/db';
 import { handleError } from '@/lib/errors/handleError';
 import { getOrganizationKPIs } from '@/lib/fetchers/kpiFetchers';
 import type { OrganizationKPIs } from '@/types/kpi';
-import { db } from '@/lib/database/db';
+import db from '@/lib/database/db';
 
 export interface DashboardActionResult<T = unknown> {
   success: boolean;

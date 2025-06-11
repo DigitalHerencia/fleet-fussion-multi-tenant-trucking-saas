@@ -1,7 +1,7 @@
-import Link from 'next/link';
+import { Suspense } from 'react';
 
 import { listVehiclesByOrg } from '@/lib/fetchers/vehicleFetchers';
-import { VehicleTable } from '@/components/vehicles/vehicle-table';
+import VehicleListClient from './vehicle-list-client';
 
 interface VehicleListPageProps {
   orgId: string;
@@ -12,31 +12,23 @@ export default async function VehicleListPage({
   orgId,
   page = 1,
 }: VehicleListPageProps) {
-  const { vehicles, totalPages } = await listVehiclesByOrg(orgId, {
+  const { vehicles } = await listVehiclesByOrg(orgId, {
     page,
     limit: 0,
   });
 
   return (
-    <div className="space-y-4">
-      <VehicleTable vehicles={vehicles} />
-      <div className="flex items-center justify-between">
-        <Link
-          href={`?page=${page - 1}`}
-          className={`btn btn-outline ${page <= 1 ? 'pointer-events-none opacity-50' : ''}`}
-        >
-          Previous
-        </Link>
-        <span className="text-sm">
-          Page {page} of {totalPages}
-        </span>
-        <Link
-          href={`?page=${page + 1}`}
-          className={`btn btn-outline ${page >= totalPages ? 'pointer-events-none opacity-50' : ''}`}
-        >
-          Next
-        </Link>
+    <div className="container mx-auto py-6">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Fleet Vehicles</h1>
+          <p className="text-muted-foreground">Manage your fleet vehicles and their information</p>
+        </div>
       </div>
+      
+      <Suspense fallback={<div>Loading vehicles...</div>}>
+        <VehicleListClient orgId={orgId} initialVehicles={vehicles} />
+      </Suspense>
     </div>
   );
 }

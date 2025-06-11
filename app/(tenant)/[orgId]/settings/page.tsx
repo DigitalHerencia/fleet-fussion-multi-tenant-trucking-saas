@@ -10,8 +10,9 @@ import {
   getIntegrationSettings,
   getBillingSettings 
 } from '@/lib/fetchers/settingsFetchers';
-import { db } from '@/lib/database/db';
+import db from '@/lib/database/db';
 import { hasPermission } from '@/lib/auth/permissions';
+import { Permission } from '@/types/auth';
 import { LoadingSpinner } from '@/components/shared/loading-spinner';
 import { getCurrentUser } from '@/lib/auth/auth';
 
@@ -34,8 +35,8 @@ export default async function SettingsPage({ params }: SettingsPageProps) {
     redirect('/sign-in');
   }
 
-  // Verify user has permission to access settings - use organization read permission
-  const canViewSettings = hasPermission(currentUser, 'read', 'organization');
+  // Verify user has permission to access settings
+  const canViewSettings = hasPermission(currentUser, 'settings.read' as Permission);
   if (!canViewSettings) {
     redirect(`/${orgId}/dashboard`);
   }

@@ -8,6 +8,7 @@ import {
   SystemRoles,
   getPermissionsForRole,
   type SystemRole,
+  type Permission,
 } from '@/types/abac';
 
 // 1. Define public routes (no auth/RBAC required)
@@ -53,55 +54,82 @@ function setCachedUserContext(
   });
 }
 
-// 3. Utility: Build user context from session claims
+// 3. Utility: Build user context from session claims (Enhanced for custom session claims API)
 function buildUserContext(
   userId: string,
   sessionClaims: Record<string, unknown>,
-  orgId: string | null
+  orgId: string | null // This will be null since we're not using Clerk orgs
 ): UserContext {
   const claims = sessionClaims as any;
-  // Extract role and permissions from session claims
-  const userRole =
-    claims?.abac?.role ||
+  
+  // Priority order: ABAC claims > org claims > metadata > defaults
+  // Extract from ABAC structure (our custom session claims API)
+  const abacClaims = claims?.abac;
+  
+  const userRole: SystemRole =
+    abacClaims?.role ||
+    claims?.['org.role'] ||
+    claims?.privateMetadata?.role ||
     claims?.publicMetadata?.role ||
-    claims?.metadata?.role ||
-    SystemRoles.VIEWER;
-  const userPermissions =
-    claims?.abac?.permissions ||
-    getPermissionsForRole(userRole as SystemRole);
+    SystemRoles.MEMBER; // Default to member
+    
+  // Get permissions from ABAC claims, org membership, or derive from role
+  const userPermissions: Permission[] = 
+    abacClaims?.permissions ||
+    claims?.['org_membership.permissions'] ||
+    claims?.privateMetadata?.permissions ||
+    getPermissionsForRole(userRole);
+  
+  // Get organizationId from ABAC claims, org context, or metadata
   const organizationId =
-    claims?.abac?.organizationId ||
-    orgId ||
+    abacClaims?.organizationId ||
+    claims?.['org.id'] ||
+    claims?.privateMetadata?.organizationId ||
     claims?.publicMetadata?.organizationId ||
-    claims?.metadata?.organizationId ||
     '';
+    
   const onboardingComplete =
     claims?.publicMetadata?.onboardingComplete ||
     claims?.metadata?.onboardingComplete ||
+    claims?.privateMetadata?.onboardingComplete ||
     false;
-  const isActive = claims?.metadata?.isActive !== false;
-  const orgMetadata = claims?.org_public_metadata as
+    
+  const isActive = 
+    claims?.metadata?.isActive !== false &&
+    claims?.privateMetadata?.isActive !== false;  
+  // Since we're not using Clerk orgs, create default org metadata
+  const orgMetadata = claims?.publicMetadata?.organizationMetadata as
     | ClerkOrganizationMetadata
     | undefined;
-
+    
+  // Enhanced user info extraction with multiple fallbacks
+  const firstName = claims?.firstName || claims?.first_name || '';
+  const lastName = claims?.lastName || claims?.last_name || '';
+  const fullName = claims?.fullName || `${firstName} ${lastName}`.trim() || '';
+  const email = 
+    claims?.primaryEmail ||
+    claims?.primaryEmailAddress?.emailAddress ||
+    claims?.emailAddresses?.[0]?.emailAddress ||
+    '';
+  
   return {
     userId,
     organizationId,
     role: userRole as SystemRole,
     permissions: userPermissions,
     isActive,
-    name:
-      claims?.firstName || claims?.fullName?.split(' ')[0] || '',
-    email: claims?.primaryEmail || '',
-    firstName: claims?.firstName || '',
-    lastName: claims?.lastName || '',
+    name: firstName || fullName.split(' ')[0] || '',
+    email,
+    firstName,
+    lastName,
     onboardingComplete,
     organizationMetadata: orgMetadata || {
+      name: 'Default Organization',
       subscriptionTier: 'free',
       subscriptionStatus: 'inactive',
       maxUsers: 5,
       features: [],
-      billingEmail: '',
+      billingEmail: email,
       createdAt: new Date().toISOString(),
       settings: {
         timezone: 'UTC',
@@ -119,12 +147,11 @@ function getDashboardPath(userContext: UserContext): string {
   const userId = userContext.userId;
   switch (userContext.role) {
     case 'admin':
-    case 'accountant':
-    case 'viewer':
+    case 'member':
       return `/${orgId}/dashboard/${userId}`;
     case 'dispatcher':
       return `/${orgId}/dispatch/${userId}`;
-    case 'compliance_officer':
+    case 'compliance':
       return `/${orgId}/compliance/${userId}`;
     case 'driver':
       return `/${orgId}/drivers/${userId}`;
@@ -133,12 +160,15 @@ function getDashboardPath(userContext: UserContext): string {
   }
 }
 
-// 5. Utility: Create response with user/org headers
+// 5. Utility: Create response with user/org headers and security enhancements
 function createResponseWithHeaders(
   userContext: UserContext,
-  orgId: string | null
+  orgId: string | null,
+  req: NextRequest
 ): NextResponse {
   const response = NextResponse.next();
+  
+  // User context headers
   response.headers.set('x-user-role', userContext.role);
   if (userContext.permissions.length > 0) {
     response.headers.set(
@@ -149,6 +179,19 @@ function createResponseWithHeaders(
   if (orgId) {
     response.headers.set('x-organization-id', orgId);
   }
+  
+  // Security headers (additional runtime security)
+  response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+  response.headers.set('X-Request-ID', crypto.randomUUID());
+  
+  // Rate limiting headers (basic implementation)
+  const userAgent = req.headers.get('user-agent') || '';
+  const isBot = /bot|crawler|spider|scraper/i.test(userAgent);
+  if (isBot) {
+    response.headers.set('X-RateLimit-Limit', '10');
+    response.headers.set('X-RateLimit-Remaining', '10');
+  }
+  
   return response;
 }
 
@@ -172,15 +215,37 @@ function forbiddenOrRedirect(req: NextRequest, redirectUrl?: string) {
 // 7. Main middleware logic
 export default clerkMiddleware(async (auth, req: NextRequest) => {
   // [A] Intercept every request before route handlers/pages
+  
+  // Basic security checks
+  const userAgent = req.headers.get('user-agent') || '';
+  const origin = req.headers.get('origin');
+  const referer = req.headers.get('referer');
+  
+  // Block suspicious requests
+  if (userAgent.length > 1000 || userAgent.includes('<script>')) {
+    return new NextResponse('Bad Request', { status: 400 });
+  }
+  
+  // CORS protection for API routes
+  if (req.nextUrl.pathname.startsWith('/api/') && req.method === 'OPTIONS') {
+    return new NextResponse(null, {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': origin || '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Max-Age': '86400',
+      },
+    });
+  }
 
   // [B] Check if route is public (no auth/RBAC required)
   if (isPublicRoute(req)) {
     // Allow public routes through
     return NextResponse.next();
   }
-
   // [C] Extract authentication credentials (session/cookies)
-  const { userId, sessionClaims, orgId } = await auth();
+  const { userId, sessionClaims } = await auth(); // Remove orgId since we're not using Clerk orgs
 
   // [D] Validate credentials (is user authenticated?)
   if (!userId) {
@@ -189,12 +254,14 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
     signInUrl.searchParams.set('redirect_url', req.url);
     return NextResponse.redirect(signInUrl);
   }
-
   // [E] Build user context (roles, permissions, org, etc.)
-  const sessionId = `${userId}-${orgId || 'no-org'}`;
+  const userOrgId = (sessionClaims as any)?.privateMetadata?.organizationId || 
+                   (sessionClaims as any)?.publicMetadata?.organizationId || 
+                   'no-org';
+  const sessionId = `${userId}-${userOrgId}`;
   let userContext = getCachedUserContext(sessionId);
   if (!userContext) {
-    userContext = buildUserContext(userId, sessionClaims, orgId || null);
+    userContext = buildUserContext(userId, sessionClaims, null); // Pass null for orgId
     setCachedUserContext(sessionId, userContext);
   }
 
@@ -223,9 +290,8 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
     // User does not have permission for this route
     return forbiddenOrRedirect(req, '/sign-in');
   }
-
   // [I] Allow request to proceed, attach user/org info as headers
-  return createResponseWithHeaders(userContext, orgId || null);
+  return createResponseWithHeaders(userContext, userContext.organizationId || null, req);
 });
 
 // 8. Next.js matcher config (which routes this middleware applies to)

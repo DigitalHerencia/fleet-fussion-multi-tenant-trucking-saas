@@ -2,7 +2,7 @@
 
 import { z } from 'zod';
 
-import { db } from '../database/db';
+import db from '../database/db';
 
 export const auditLogSchema = z.object({
   organizationId: z.string(),

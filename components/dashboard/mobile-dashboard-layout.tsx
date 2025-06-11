@@ -51,11 +51,11 @@ export function MobileDashboardLayout({
         return `Dispatch - ${dashboardData.metrics.activeLoads} loads`;
       case SystemRoles.DRIVER:
         return `Driver Portal`;
-      case SystemRoles.COMPLIANCE_OFFICER:
+      case SystemRoles.COMPLIANCE:
         return `Compliance - ${dashboardData.metrics.criticalAlerts} alerts`;
-      case SystemRoles.ACCOUNTANT:
+      case SystemRoles.ADMIN:
         return `Financial Overview`;
-      case SystemRoles.VIEWER:
+      case SystemRoles.MEMBER:
         return `Fleet Overview`;
       default:
         return 'Fleet operations';

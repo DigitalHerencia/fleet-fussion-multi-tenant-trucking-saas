@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { prisma } from '@/lib/database/db';
+import db from '@/lib/database/db';
 
 // GET /api/dispatch/[orgId]/updates - Polling endpoint
 export async function GET(
@@ -18,7 +18,7 @@ export async function GET(
     const since = searchParams.get('since');
 
     // Check if user belongs to organization
-    const user = await prisma.user.findFirst({
+    const user = await db.user.findFirst({
       where: { clerkId: userId, organizationId: orgId },
     });
 
@@ -43,7 +43,7 @@ export async function GET(
     }
 
     // Get recent load updates
-    const recentLoads = await prisma.load.findMany({
+    const recentLoads = await db.load.findMany({
       where,
       select: {
         id: true,

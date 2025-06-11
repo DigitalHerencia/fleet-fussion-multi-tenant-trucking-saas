@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { prisma } from '@/lib/database/db';
+import db from '@/lib/database/db';
 
 export const runtime = 'nodejs';
 
@@ -19,7 +19,7 @@ export async function GET(
   const since = searchParams.get('since');
 
   // Check if user belongs to organization
-  const user = await prisma.user.findFirst({
+  const user = await db.user.findFirst({
     where: { clerkId: userId, organizationId: orgId },
   });
 
@@ -48,7 +48,7 @@ export async function GET(
           const now = new Date();
           
           // Get loads updated since last check
-          const updatedLoads = await prisma.load.findMany({
+          const updatedLoads = await db.load.findMany({
             where: {
               organizationId: orgId,
               updatedAt: {
@@ -192,7 +192,7 @@ async function getCriticalDispatchAlerts(orgId: string) {
 
   try {
     // Overdue pickups
-    const overduePickups = await prisma.load.findMany({
+    const overduePickups = await db.load.findMany({
       where: {
         organizationId: orgId,
         status: 'assigned',
@@ -220,7 +220,7 @@ async function getCriticalDispatchAlerts(orgId: string) {
     });
 
     // Unassigned loads due soon
-    const unassignedLoads = await prisma.load.findMany({
+    const unassignedLoads = await db.load.findMany({
       where: {
         organizationId: orgId,
         status: 'pending',

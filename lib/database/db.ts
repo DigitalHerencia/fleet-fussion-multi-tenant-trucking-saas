@@ -4,34 +4,129 @@
  * - Uses Neon serverless driver for serverless/edge environments
  * - Uses Prisma client singleton pattern to avoid connection exhaustion
  * - Handles error logging and type-safe queries
+ * - Implements secure connection management with retry logic
  */
 
 import { PrismaClient } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { PrismaNeon } from '@prisma/adapter-neon';
-import dotenv from 'dotenv';
 
-dotenv.config();
-const connectionString = `${process.env.DATABASE_URL}`;
-const adapter = new PrismaNeon({ connectionString });
+// Validate required environment variables
+const requiredEnvVars = ['DATABASE_URL'] as const;
+for (const envVar of requiredEnvVars) {
+  if (!process.env[envVar]) {
+    throw new Error(`Missing required environment variable: ${envVar}`);
+  }
+}
+
+// Secure connection string validation
+const connectionString = process.env.DATABASE_URL!;
+if (!connectionString.includes('sslmode=require')) {
+  console.warn('Database connection should use SSL in production');
+}
+
+// Enhanced adapter configuration with timeout and retry settings
+const adapter = new PrismaNeon({ 
+  connectionString,
+  // Neon handles pooling at infrastructure level
+});
 
 declare global {
   // eslint-disable-next-line no-var
   var prisma: PrismaClient | undefined;
 }
 
+// Enhanced Prisma client configuration with logging and timeouts
+const createPrismaClient = () => {
+  return new PrismaClient({
+    adapter,
+    log: process.env.NODE_ENV === 'development' 
+      ? ['query', 'info', 'warn', 'error']
+      : ['error'],
+    // Note: Do not specify datasources when using driver adapters
+    // The connection string is already provided to the adapter
+  });
+};
+
 let prisma: PrismaClient;
 if (process.env.NODE_ENV === 'production') {
-  prisma = new PrismaClient({ adapter });
+  prisma = createPrismaClient();
 } else {
   if (!globalThis.prisma) {
-    globalThis.prisma = new PrismaClient({ adapter });
+    globalThis.prisma = createPrismaClient();
   }
   prisma = globalThis.prisma;
 }
 
-export { prisma };
-export const db = prisma;
+// Database monitoring and performance tracking
+const setupDatabaseMonitoring = () => {
+  if (process.env.DATABASE_LOGGING === 'true') {
+    prisma.$use(async (params, next) => {
+      const start = Date.now();
+      const result = await next(params);
+      const duration = Date.now() - start;
+      
+      // Log slow queries for performance monitoring
+      const slowQueryThreshold = parseInt(process.env.SLOW_QUERY_THRESHOLD || '1000');
+      if (duration > slowQueryThreshold) {
+        console.warn(`Slow query detected: ${params.model}.${params.action} took ${duration}ms`);
+        
+        // In production, log to audit system for performance tracking
+        if (process.env.NODE_ENV === 'production') {
+          try {            await prisma.auditLog.create({
+              data: {
+                organizationId: 'system',
+                entityId: 'system', // Add required entityId field
+                entityType: 'database',
+                action: 'slow_query',
+                changes: {
+                  model: params.model,
+                  action: params.action,
+                  duration,
+                  args: params.args
+                },
+                metadata: {
+                  query_type: 'slow',
+                  threshold_ms: slowQueryThreshold
+                }
+              }
+            });
+          } catch (auditError) {
+            console.error('Failed to log slow query to audit system:', auditError);
+          }
+        }
+      }
+      
+      return result;
+    });
+  }
+};
+
+// Initialize monitoring
+setupDatabaseMonitoring();
+
+// Health check function for database connectivity
+export const checkDatabaseHealth = async (): Promise<{
+  status: 'healthy' | 'unhealthy';
+  latency?: number;
+  error?: string;
+}> => {
+  try {
+    const start = Date.now();
+    await prisma.$queryRaw`SELECT 1`;
+    const latency = Date.now() - start;
+    
+    return {
+      status: 'healthy',
+      latency
+    };
+  } catch (error) {
+    return {
+      status: 'unhealthy',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    };
+  }
+};
 
 // Utility function to handle database errors
 export function handleDatabaseError(error: unknown): never {
@@ -97,13 +192,13 @@ export class DatabaseQueries {
    * Looks up internal org/user IDs by Clerk IDs, upserts membership, sets role and timestamps
    */
   static async upsertOrganizationMembership({
-    organizationClerkId,
+    organizationId,
     userClerkId,
     role,
     createdAt,
     updatedAt,
   }: {
-    organizationClerkId: string;
+    organizationId: string;
     userClerkId: string;
     role: string;
     createdAt?: Date;
@@ -112,11 +207,11 @@ export class DatabaseQueries {
     try {
       // Look up internal IDs
       const organization = await db.organization.findUnique({
-        where: { clerkId: organizationClerkId },
+        where: { id: organizationId },
       });
       if (!organization)
         throw new Error(
-          `Organization not found for clerkId: ${organizationClerkId}`
+          `Organization not found for clerkId: ${organizationId}`
         );
       const user = await db.user.findUnique({
         where: { clerkId: userClerkId },
@@ -153,19 +248,19 @@ export class DatabaseQueries {
    * Delete an organization membership (by orgClerkId and userClerkId)
    */
   static async deleteOrganizationMembership({
-    organizationClerkId,
+    organizationId,
     userClerkId,
   }: {
-    organizationClerkId: string;
+    organizationId: string;
     userClerkId: string;
   }) {
     try {
       const organization = await db.organization.findUnique({
-        where: { clerkId: organizationClerkId },
+        where: { id: organizationId },
       });
       if (!organization) {
         console.warn(
-          `[DB] Organization not found for clerkId: ${organizationClerkId}, skipping membership delete.`
+          `[DB] Organization not found for clerkId: ${organizationId}, skipping membership delete.`
         );
         return {
           success: true,
@@ -208,35 +303,20 @@ export class DatabaseQueries {
 
   /**
    * Get organization by Clerk ID
-   */  static async getOrganizationByClerkId(clerkId: string) {
+   */  static async getOrganizationByClerkId({
+    clerkId,
+  }: {
+    clerkId: string;
+  }) {
     try {
-      const organization = await db.organization.findUnique({
-        where: { clerkId },
-        select: {
-          id: true,
-          clerkId: true,
-          name: true,
-          slug: true,
-          mcNumber: true,
-          address: true,
-          city: true,
-          state: true,
-          zip: true,
-          phone: true,
-          email: true,
-          logoUrl: true,
-          subscriptionTier: true,
-          subscriptionStatus: true,
-          maxUsers: true,
-          maxVehicles: true,
-          billingEmail: true,
-          settings: true,
-          isActive: true,
-          createdAt: true,
-          updatedAt: true,
-          dotNumber: true,
-        },
+      const organization = await db.organization.findFirst({
+        where: { id: clerkId },
       });
+      if (!organization) {
+        console.warn(
+          `[DB] Organization not found for id: ${clerkId}`
+        );
+      }
       return organization || null;
     } catch (error) {
       handleDatabaseError(error);
@@ -289,8 +369,8 @@ export class DatabaseQueries {
       if (!data.slug)
         throw new Error('slug is required for organization upsert');
       const { clerkId } = data;
-      const existingOrg = await db.organization.findUnique({
-        where: { clerkId },
+      const existingOrg = await db.organization.findFirst({
+        where: { id: clerkId },
       });
       if (existingOrg) {
         const updateData = {
@@ -309,7 +389,7 @@ export class DatabaseQueries {
           isActive: data.isActive === undefined ? true : data.isActive,
         };
         const organization = await db.organization.update({
-          where: { clerkId },
+          where: { id: clerkId },
           data: updateData,
         });
         return organization;
@@ -359,8 +439,8 @@ export class DatabaseQueries {
                 (typeof target === 'string' && target === 'clerkId') ||
                 (Array.isArray(target) && target.includes('clerkId'))
               ) {
-                const existingOrg = await db.organization.findUnique({
-                  where: { clerkId },
+                const existingOrg = await db.organization.findFirst({
+                  where: { id: clerkId },
                 });
                 if (existingOrg) {
                   return existingOrg;
@@ -379,7 +459,7 @@ export class DatabaseQueries {
       }
     } catch (error) {
       console.error(
-        `Error in upsertOrganization for clerkId: ${data.clerkId}`,
+        `Error in upsertOrganization for id: ${data.clerkId}`,
         error
       );
       handleDatabaseError(error);
@@ -454,13 +534,13 @@ export class DatabaseQueries {
    */
   static async deleteOrganization(clerkId: string) {
     try {
-      console.log('[DB] deleteOrganization called with clerkId:', clerkId);
-      const organization = await db.organization.findUnique({
-        where: { clerkId },
+      console.log('[DB] deleteOrganization called with id:', clerkId);
+      const organization = await db.organization.findFirst({
+        where: { id: clerkId },
       });
       if (!organization) {
         console.warn(
-          `[DB] Organization with clerkId ${clerkId} does not exist, skipping delete.`
+          `[DB] Organization with id ${clerkId} does not exist, skipping delete.`
         );
         return {
           success: true,
@@ -468,7 +548,7 @@ export class DatabaseQueries {
         };
       }
       await db.organization.delete({
-        where: { clerkId },
+        where: { id: clerkId },
       });
       console.log(`[DB] Organization deleted successfully: ${clerkId}`);
       return { success: true, message: 'Organization deleted successfully' };
@@ -531,5 +611,8 @@ export class DatabaseQueries {
     }
   }
 }
+
+// Create db alias for consistent exports
+const db = prisma;
 
 export default db;

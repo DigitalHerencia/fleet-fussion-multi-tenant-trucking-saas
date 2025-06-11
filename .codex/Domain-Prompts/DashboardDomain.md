@@ -183,7 +183,7 @@ const loads = await prisma.load.findMany({
 ### Connection Pattern
 
 ```typescript
-import { db } from '@/lib/database/db';
+import db from '@/lib/database/db';
 // or
 import prisma from '@/lib/database/db';
 ```

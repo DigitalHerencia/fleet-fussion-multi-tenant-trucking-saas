@@ -119,7 +119,6 @@ interface ComplianceDocumentsProps {
 
 // Update the component to accept documents as a prop
 export function ComplianceDocuments({ orgId, documents = [] }: ComplianceDocumentsProps) {
-  // TODO: Fetch compliance documents using orgId if not provided
   
   return (
     <div className="space-y-4">

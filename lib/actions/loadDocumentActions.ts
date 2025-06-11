@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { auth } from '@clerk/nextjs/server';
 import { revalidatePath } from 'next/cache';
 
-import { db } from '@/lib/database/db';
+import db from '@/lib/database/db';
 import { handleError } from '@/lib/errors/handleError';
 import { loadDocumentSchema } from '@/schemas/dispatch';
 import type { LoadDocument } from '@/types/dispatch';

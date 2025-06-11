@@ -5,14 +5,6 @@ import Image from 'next/image';
 
 import { Button } from '@/components/ui/button';
 
-const imageLoader = ({ src, width, quality }: {
-  src: string;
-  width: number;
-  quality?: number;
-}) => {
-  return `${src}?w=${width}&q=${quality || 75}`
-}
-
 const plans = [
   {
     name: 'Starter',
@@ -65,7 +57,6 @@ export default function PricingSection({
       {/* Background image */}
       <div className="absolute inset-0 z-10 h-full w-full">
         <Image
-          loader={imageLoader}
           src="/tiers_bg.png"
           alt="Pricing Background"
           className="h-full w-full object-cover object-center"

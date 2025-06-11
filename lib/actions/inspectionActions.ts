@@ -1,7 +1,7 @@
 'use server';
 
 import { z } from 'zod';
-import { db } from '@/lib/database/db';
+import db from '@/lib/database/db';
 import { getCurrentUser } from '@/lib/auth/auth';
 import { handleError } from '@/lib/errors/handleError';
 

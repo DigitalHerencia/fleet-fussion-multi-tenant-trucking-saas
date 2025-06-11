@@ -1,10 +1,8 @@
 'use client';
 
-import { MapPinned, Menu, Moon, User } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { MapPinned, Menu, User } from 'lucide-react';
 import Link from 'next/link';
 
-import { useAuth } from '@/components/auth/context';
 import { GlobalSearchBar } from '@/components/shared/GlobalSearchBar';
 import { NotificationCenter } from '@/components/shared/NotificationCenter';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -14,27 +12,31 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-interface TopNavBarProps {
-  className?: string;
+interface User {
+  name: string;
+  email: string;
+  profileImage: string;
 }
 
-export function TopNavBar({ className }: TopNavBarProps) {
-  const { user, organization } = useAuth();
-  const router = useRouter();
+interface Organization {
+  name: string;
+}
 
-  const handleLogout = () => {
-    router.push('/login');
-  };
+const handleLogout = () => {
+  // Placeholder for logout logic
+  console.log('Logout clicked');
+};
 
-  if (!user || !organization) {
-    return null;
-  }
+interface TopNavBarProps {
+  user: User;
+  organization: Organization;
+}
 
+export function TopNavBar({ user, organization }: TopNavBarProps) {
   return (
     <div className="fixed top-0 right-0 left-0 z-[100] h-16 border-b border-gray-200 bg-black shadow-lg">
       <div className="flex h-16 items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">

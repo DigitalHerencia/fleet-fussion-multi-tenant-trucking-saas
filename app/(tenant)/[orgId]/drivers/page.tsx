@@ -4,6 +4,9 @@ import { notFound } from 'next/navigation';
 import { listDriversByOrg } from '@/lib/fetchers/driverFetchers';
 import DriverListPage from '@/features/drivers/DriverListPage';
 
+// Cache control for auth-required dynamic pages
+export const dynamic = 'force-dynamic';
+
 export default async function DriversPage({
   params,
 }: {

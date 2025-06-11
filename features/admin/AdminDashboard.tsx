@@ -3,6 +3,7 @@ import { getOrganizationStatsAction } from '@/lib/actions/adminActions';
 
 interface AdminDashboardProps {
   orgId: string;
+  userId?: string; // Optional userId if needed for future features
 }
 
 export async function AdminDashboard({ orgId }: AdminDashboardProps) {

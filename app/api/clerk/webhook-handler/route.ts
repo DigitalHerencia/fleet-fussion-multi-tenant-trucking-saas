@@ -9,7 +9,7 @@ import type {
   UserJSON,
 } from '@clerk/backend';
 
-import { DatabaseQueries, db } from '@/lib/database/db';
+import db, { DatabaseQueries } from '@/lib/database/db';
 // Clerk backend types
 
 const CLERK_WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET ?? '';
@@ -51,15 +51,11 @@ async function handleClerkEvent(eventType: string, data: any) {
         profileImage: user.image_url ?? null,
         isActive: true,
         onboardingComplete: getBooleanField(
-          user.public_metadata,
+          user.private_metadata,
           'onboardingComplete'
         ),
         lastLogin: user.last_sign_in_at ? new Date(user.last_sign_in_at) : null,
-        organizationId:
-          Array.isArray(user.organization_memberships) &&
-          user.organization_memberships[0]?.organization?.id
-            ? user.organization_memberships[0].organization.id
-            : null,
+        organizationId: getStringField(user.private_metadata, 'organizationId'),
       });
       break;
     }
@@ -68,72 +64,14 @@ async function handleClerkEvent(eventType: string, data: any) {
       if (user.id) await DatabaseQueries.deleteUser(user.id);
       break;
     }
-    case 'organization.created':
-    case 'organization.updated': {
-      const org = data as OrganizationJSON;
-      const pm = org.public_metadata ?? {};
-      await DatabaseQueries.upsertOrganization({
-        clerkId: org.id,
-        name: org.name,
-        slug: org.slug,
-        dotNumber: getStringField(pm, 'dotNumber'),
-        mcNumber: getStringField(pm, 'mcNumber'),
-        address: getStringField(pm, 'address'),
-        city: getStringField(pm, 'city'),
-        state: getStringField(pm, 'state'),
-        zip: getStringField(pm, 'zip'),
-        phone: getStringField(pm, 'phone'),
-        email: getStringField(pm, 'email'),
-        logoUrl: org.image_url ?? null,
-        maxUsers: org.max_allowed_memberships ?? 5,
-        billingEmail: getStringField(pm, 'billingEmail'),
-        isActive: true,
-      });
-      break;
-    }
-    case 'organization.deleted': {
-      const org = data as DeletedObjectJSON;
-      if (org.id) await DatabaseQueries.deleteOrganization(org.id);
-      break;
-    }
-    case 'organizationMembership.created':
-    case 'organizationMembership.updated': {
-      const membership = data as OrganizationMembershipJSON;
-      const userId = membership.public_user_data?.user_id;
-      const orgId = membership.organization?.id;
-      if (userId && orgId) {
-        await DatabaseQueries.upsertUser({
-          clerkId: userId,
-          organizationId: orgId,
-          email: membership.public_user_data?.identifier ?? null,
-          firstName: membership.public_user_data?.first_name ?? null,
-          lastName: membership.public_user_data?.last_name ?? null,
-          profileImage: membership.public_user_data?.image_url ?? null,
-          isActive: true,
-          onboardingComplete: true,
-        });
-        await DatabaseQueries.upsertOrganizationMembership({
-          organizationClerkId: orgId,
-          userClerkId: userId,
-          role: membership.role,
-          createdAt: new Date(membership.created_at),
-          updatedAt: new Date(membership.updated_at),
-        });
-      }
-      break;
-    }
-    case 'organizationMembership.deleted': {
-      const membership = data as OrganizationMembershipJSON;
-      const userId = membership.public_user_data?.user_id;
-      const orgId = membership.organization?.id;
-      if (userId && orgId) {
-        await DatabaseQueries.deleteOrganizationMembership({
-          organizationClerkId: orgId,
-          userClerkId: userId,
-        });
-      }
-      break;
-    }
+    // NOTE: Organization events removed - using custom organization management
+    // case 'organization.created':
+    // case 'organization.updated': 
+    // case 'organization.deleted':
+    // case 'organizationMembership.created':
+    // case 'organizationMembership.updated':
+    // case 'organizationMembership.deleted':
+    // These are now handled through our custom onboarding flow
     default:
       console.log(`[Clerk Webhook] Unhandled event: ${eventType}`);
       break;

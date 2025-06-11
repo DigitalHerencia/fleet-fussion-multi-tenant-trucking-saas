@@ -37,7 +37,7 @@ export function MainNav({
 }: MainNavProps) {
   const { signOut } = useClerk();
   const user = useUserContext();
-  const userRole: SystemRole = user?.role || SystemRoles.VIEWER;
+  const userRole: SystemRole = user?.role || SystemRoles.MEMBER;
 
   // navLinks: array of navigation link objects for the sidebar
   const navLinks = [
@@ -50,9 +50,8 @@ export function MainNav({
         SystemRoles.ADMIN,
         SystemRoles.DISPATCHER,
         SystemRoles.DRIVER,
-        SystemRoles.COMPLIANCE_OFFICER,
-        SystemRoles.ACCOUNTANT,
-        SystemRoles.VIEWER,
+        SystemRoles.COMPLIANCE,
+        SystemRoles.MEMBER,
       ],
     },
     {
@@ -70,8 +69,9 @@ export function MainNav({
       roles: [
         SystemRoles.ADMIN,
         SystemRoles.DISPATCHER,
-        SystemRoles.COMPLIANCE_OFFICER,
-        SystemRoles.ACCOUNTANT,
+        SystemRoles.DRIVER,
+        SystemRoles.COMPLIANCE,
+        SystemRoles.MEMBER,
       ],
     },
     {
@@ -82,8 +82,9 @@ export function MainNav({
       roles: [
         SystemRoles.ADMIN,
         SystemRoles.DISPATCHER,
-        SystemRoles.COMPLIANCE_OFFICER,
-        SystemRoles.ACCOUNTANT,
+        SystemRoles.DRIVER,
+        SystemRoles.COMPLIANCE,
+        SystemRoles.MEMBER,
       ],
     },
     {
@@ -91,21 +92,21 @@ export function MainNav({
       href: `/${orgId}/compliance/${userId}`,
       label: 'Compliance',
       icon: <FileText className="h-5 w-5" />,
-      roles: [SystemRoles.ADMIN, SystemRoles.COMPLIANCE_OFFICER],
+      roles: [SystemRoles.ADMIN, SystemRoles.COMPLIANCE],
     },
     {
       key: 'ifta',
       href: `/${orgId}/ifta`,
       label: 'IFTA',
       icon: <Activity className="h-5 w-5" />,
-      roles: [SystemRoles.ADMIN, SystemRoles.ACCOUNTANT],
+      roles: [SystemRoles.ADMIN, SystemRoles.MEMBER],
     },
     {
       key: 'analytics',
       href: `/${orgId}/analytics`,
       label: 'Analytics',
       icon: <BarChart2 className="h-5 w-5" />,
-      roles: [SystemRoles.ADMIN, SystemRoles.ACCOUNTANT],
+      roles: [SystemRoles.ADMIN, SystemRoles.MEMBER],
     },
     {
       key: 'admin',

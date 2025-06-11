@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
+import Link from 'next/link';
 import {
   Truck,
   Gauge,
@@ -9,7 +10,6 @@ import {
   AlertTriangle,
   MapPin,
 } from 'lucide-react';
-import Link from 'next/link';
 
 import {
   Dialog,
@@ -30,22 +30,9 @@ import {
 } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { formatDate, formatCurrency } from '@/lib/utils/utils';
-
-interface Vehicle {
-  id: string;
-  unitNumber: string;
-  type: string;
-  status: string;
-  make?: string;
-  model?: string;
-  year?: number;
-  vin?: string;
-  licensePlate?: string;
-  state?: string;
-  currentOdometer?: number;
-  lastOdometerUpdate?: Date;
-  fuelType?: string;
-}
+import { updateVehicleStatusAction } from '@/lib/actions/vehicleActions';
+import { useToast } from '@/hooks/use-toast';
+import type { VehicleStatus, Vehicle } from '@/types/vehicles';
 
 interface MaintenanceRecord {
   id: string;
@@ -67,7 +54,7 @@ interface Inspection {
   date: Date;
   location?: string;
   notes?: string;
-  defects?: any;
+  defects?: any[];
 }
 
 interface Load {
@@ -91,8 +78,9 @@ interface VehicleDetailsDialogProps {
   maintenanceRecords?: MaintenanceRecord[];
   inspections?: Inspection[];
   recentLoads?: Load[];
-  isOpen: boolean;
-  onClose: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onVehicleUpdate?: (vehicle: Vehicle) => void;
 }
 
 export function VehicleDetailsDialog({
@@ -100,19 +88,27 @@ export function VehicleDetailsDialog({
   maintenanceRecords = [],
   inspections = [],
   recentLoads = [],
-  isOpen,
-  onClose,
+  open,
+  onOpenChange,
+  onVehicleUpdate,
 }: VehicleDetailsDialogProps) {
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
+  const [isPending, startTransition] = useTransition();
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active':
+      case 'available':
         return 'bg-green-100 text-green-800';
-      case 'inactive':
-        return 'bg-red-100 text-red-800';
-      case 'maintenance':
+      case 'assigned':
+        return 'bg-blue-100 text-blue-800';
+      case 'in_maintenance':
         return 'bg-yellow-100 text-yellow-800';
+      case 'out_of_service':
+        return 'bg-red-100 text-red-800';
+      case 'retired':
+        return 'bg-gray-100 text-gray-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -163,53 +159,73 @@ export function VehicleDetailsDialog({
 
   const handleStatusUpdate = async (newStatus: string) => {
     setIsUpdatingStatus(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsUpdatingStatus(false);
-      onClose();
-    }, 1000);
+    setError(null);
+    startTransition(async () => {
+      try {
+        // Map UI status to VehicleStatus enum
+        let status: VehicleStatus;
+        switch (newStatus) {
+          case 'active':
+            status = 'available';
+            break;
+          case 'maintenance':
+            status = 'in_maintenance';
+            break;
+          case 'inactive':
+            status = 'out_of_service';
+            break;
+          case 'assigned':
+            status = 'assigned';
+            break;
+          case 'retired':
+            status = 'retired';
+            break;
+          default:
+            status = 'available';
+        }
+        const result = await updateVehicleStatusAction(vehicle.id, { status });
+        setIsUpdatingStatus(false);
+        if (result.success && result.data) {
+          // Defensive: result.data can be Vehicle or Vehicle[]
+          const updated = Array.isArray(result.data) ? result.data[0] : result.data;
+          if (onVehicleUpdate) onVehicleUpdate(updated);
+          toast({ title: 'Status Updated', description: `Vehicle status changed to ${status.replace('_', ' ')}` });
+          onOpenChange(false);
+        } else {
+          setError(result.error || 'Failed to update vehicle status');
+          toast({ title: 'Error', description: result.error || 'Failed to update vehicle status', variant: 'destructive' });
+        }
+      } catch (err) {
+        setIsUpdatingStatus(false);
+        setError('An unexpected error occurred');
+        toast({ title: 'Error', description: 'An unexpected error occurred', variant: 'destructive' });
+      }
+    });
   };
 
   const upcomingMaintenance = maintenanceRecords.filter(
-    record => record.status === 'scheduled' && record.scheduledDate
-  );
-  const completedMaintenance = maintenanceRecords.filter(
-    record => record.status === 'completed'
+    (record: MaintenanceRecord) => record.status === 'scheduled' && record.scheduledDate
   );
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-screen max-w-4xl overflow-y-auto">
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-xl">Vehicle Details</DialogTitle>
-            <Badge className={getStatusColor(vehicle.status)}>
-              {vehicle.status.replace('_', ' ')}
-            </Badge>
-          </div>
+          <DialogTitle className="flex items-center gap-2">
+            <Truck className="h-5 w-5" />
+            Vehicle Details - Unit #{vehicle.unitNumber || 'N/A'}
+          </DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue="details" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="details">Details</TabsTrigger>
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
             <TabsTrigger value="inspections">Inspections</TabsTrigger>
-            <TabsTrigger value="loads">Loads</TabsTrigger>
+            <TabsTrigger value="loads">Recent Loads</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="details" className="mt-4 space-y-4">
-            <div className="flex items-center gap-4">
-              <div className="bg-muted rounded-full p-3">
-                <Truck className="h-8 w-8" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold">{vehicle.unitNumber}</h2>
-                <p className="text-muted-foreground">
-                  {vehicle.make} {vehicle.model} {vehicle.year}
-                </p>
-              </div>
-            </div>
-
+          <TabsContent value="overview" className="mt-4 space-y-4">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <Card>
                 <CardHeader className="pb-2">
@@ -249,7 +265,7 @@ export function VehicleDetailsDialog({
                       <div>
                         <Label className="text-xs">State</Label>
                         <div className="font-medium">
-                          {vehicle.state || 'N/A'}
+                          {vehicle.licensePlateState || 'N/A'}
                         </div>
                       </div>
                     </div>
@@ -265,19 +281,19 @@ export function VehicleDetailsDialog({
                   <div className="space-y-2">
                     <div>
                       <Label className="flex items-center gap-1 text-xs">
-                        <Gauge className="h-3 w-3" /> Current Odometer
+                        <Gauge className="h-3 w-3" /> Total Mileage
                       </Label>
                       <div className="font-medium">
-                        {vehicle.currentOdometer
-                          ? `${vehicle.currentOdometer.toLocaleString()} miles`
+                        {vehicle.totalMileage
+                          ? `${vehicle.totalMileage.toLocaleString()} miles`
                           : 'N/A'}
                       </div>
                     </div>
                     <div>
-                      <Label className="text-xs">Last Odometer Update</Label>
+                      <Label className="text-xs">Last Maintenance Mileage</Label>
                       <div className="font-medium">
-                        {vehicle.lastOdometerUpdate
-                          ? formatDate(vehicle.lastOdometerUpdate)
+                        {vehicle.lastMaintenanceMileage
+                          ? `${vehicle.lastMaintenanceMileage.toLocaleString()} miles`
                           : 'N/A'}
                       </div>
                     </div>
@@ -300,7 +316,7 @@ export function VehicleDetailsDialog({
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
-                      {upcomingMaintenance.map(record => (
+                      {upcomingMaintenance.map((record: MaintenanceRecord) => (
                         <div
                           key={record.id}
                           className="flex items-start gap-2 rounded-md border p-2"
@@ -353,7 +369,7 @@ export function VehicleDetailsDialog({
 
                 {maintenanceRecords.length > 0 ? (
                   <div className="space-y-4">
-                    {maintenanceRecords.map(record => (
+                    {maintenanceRecords.map((record: MaintenanceRecord) => (
                       <div key={record.id} className="rounded-md border p-4">
                         <div className="flex items-start justify-between">
                           <div>
@@ -457,7 +473,7 @@ export function VehicleDetailsDialog({
 
                 {inspections.length > 0 ? (
                   <div className="space-y-4">
-                    {inspections.map(inspection => (
+                    {inspections.map((inspection: Inspection) => (
                       <div
                         key={inspection.id}
                         className="rounded-md border p-4"
@@ -537,7 +553,7 @@ export function VehicleDetailsDialog({
               <CardContent>
                 {recentLoads.length > 0 ? (
                   <div className="space-y-4">
-                    {recentLoads.map(load => (
+                    {recentLoads.map((load: Load) => (
                       <div key={load.id} className="rounded-md border p-4">
                         <div className="flex items-start justify-between">
                           <div>
@@ -584,17 +600,23 @@ export function VehicleDetailsDialog({
           </TabsContent>
         </Tabs>
 
+        {error && (
+          <div className="mt-4 rounded-md bg-red-100 p-4 text-red-800">
+            {error}
+          </div>
+        )}
+
         <DialogFooter className="flex items-center justify-between">
           <div className="flex gap-2">
             <Button variant="outline" asChild>
               <Link href={`/vehicles/${vehicle.id}/edit`}>Edit Vehicle</Link>
             </Button>
-            <Button variant="outline" onClick={onClose}>
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
               Close
             </Button>
           </div>
           <div className="flex gap-2">
-            {vehicle.status === 'active' && (
+            {vehicle.status === 'available' && (
               <Button
                 variant="outline"
                 onClick={() => handleStatusUpdate('maintenance')}
@@ -603,7 +625,7 @@ export function VehicleDetailsDialog({
                 Mark for Maintenance
               </Button>
             )}
-            {vehicle.status === 'maintenance' && (
+            {vehicle.status === 'in_maintenance' && (
               <Button
                 variant="outline"
                 onClick={() => handleStatusUpdate('active')}

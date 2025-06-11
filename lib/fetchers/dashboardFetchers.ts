@@ -2,7 +2,7 @@
 
 import { auth } from '@clerk/nextjs/server';
 import { unstable_cache } from 'next/cache';
-import { db } from '@/lib/database/db';
+import db from '@/lib/database/db';
 import type { DashboardMetrics, DashboardData, ActivityItem, DashboardKPI, QuickAction } from '@/types/dashboard';
 
 export const getDashboardMetrics = unstable_cache(

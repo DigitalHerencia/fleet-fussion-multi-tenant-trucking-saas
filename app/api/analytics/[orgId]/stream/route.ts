@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { db } from '@/lib/database/db';
+import db from '@/lib/database/db';
 import { 
   getDashboardSummary, 
   getPerformanceAnalytics,

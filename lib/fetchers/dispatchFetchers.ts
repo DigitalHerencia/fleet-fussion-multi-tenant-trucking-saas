@@ -3,7 +3,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { unstable_cache } from 'next/cache';
 
-import { prisma } from '@/lib/database/db';
+import db from '@/lib/database/db';
 import { loadFilterSchema, type LoadFilterInput } from '@/schemas/dispatch';
 import type {
   Load,
@@ -220,9 +220,9 @@ export async function listLoadsByOrg(
     // Pagination
     const page = validatedFilters.page || 1;
     const limit = validatedFilters.limit || 50;
-    const skip = (page - 1) * limit; // Execute queries
+    const skip = (page - 1) * limit;    // Execute queries
     const [loads, totalCount] = await Promise.all([
-      prisma.load.findMany({
+      db.load.findMany({
         where,
         include: {
           driver: {
@@ -253,7 +253,7 @@ export async function listLoadsByOrg(
         take: limit,
       }),
 
-      prisma.load.count({ where }),
+      db.load.count({ where }),
     ]);
 
     return {
@@ -279,7 +279,7 @@ export async function getActiveLoadsForDispatchBoard(orgId: string) {
   try {
     await checkUserAccess(orgId);
 
-    const loads = await prisma.load.findMany({
+    const loads = await db.load.findMany({
       where: {
         organizationId: orgId,
         status: {
@@ -344,7 +344,7 @@ export async function getAvailableDriversForLoad(
     }
 
     // Exclude drivers who are already assigned to active loads
-    const drivers = await prisma.driver.findMany({
+    const drivers = await db.driver.findMany({
       where: {
         ...where,
         loads: {
@@ -399,7 +399,7 @@ export async function getAvailableVehiclesForLoad(
     }
 
     // Exclude vehicles that are already assigned to active loads
-    const vehicles = await prisma.vehicle.findMany({
+    const vehicles = await db.vehicle.findMany({
       where: {
         ...where,
         loads: {
@@ -457,7 +457,7 @@ export async function getAvailableTrailersForLoad(
     }
 
     // Exclude trailers that are already assigned to active loads
-    const trailers = await prisma.vehicle.findMany({
+    const trailers = await db.vehicle.findMany({
       where: {
         ...where,
         trailerLoads: {
@@ -523,41 +523,41 @@ export async function getLoadStatistics(
       totalMiles,
     ] = await Promise.all([
       // Total loads count
-      prisma.load.count({ where }),
+      db.load.count({ where }),
 
       // Delivered loads count
-      prisma.load.count({
+      db.load.count({
         where: { ...where, status: 'delivered' },
       }),
 
       // In transit loads count
-      prisma.load.count({
+      db.load.count({
         where: { ...where, status: 'in_transit' },
       }),
 
       // Cancelled loads count
-      prisma.load.count({
+      db.load.count({
         where: { ...where, status: 'cancelled' },
       }),
 
       // Total revenue
-      prisma.load.aggregate({
+      db.load.aggregate({
         where: { ...where, status: 'delivered' },
         _sum: { rate: true },
       }),
 
       // Total miles
-      prisma.load.aggregate({
+      db.load.aggregate({
         where: { ...where, status: 'delivered' },
         _sum: { actualMiles: true },
       }),
     ]);
 
-    const onTimeDeliveries = await prisma.load.count({
+    const onTimeDeliveries = await db.load.count({
       where: {
         ...where,
         status: 'delivered',
-        actualDeliveryDate: { lte: prisma.load.fields.scheduledDeliveryDate },
+        actualDeliveryDate: { lte: db.load.fields.scheduledDeliveryDate },
       },
     });
 
@@ -592,7 +592,7 @@ export async function getCustomerStatistics(orgId: string) {
     await checkUserAccess(orgId);
 
     // Get customer data aggregated from loads
-    const customerStats = await prisma.load.groupBy({
+    const customerStats = await db.load.groupBy({
       by: ['customerName'],
       where: {
         organizationId: orgId,
@@ -685,7 +685,7 @@ export async function getLoadAlerts(orgId: string, severity?: string[]) {
     }> = [];
 
     // 1. Overdue pickups
-    const overduePickups = await prisma.load.findMany({
+    const overduePickups = await db.load.findMany({
       where: {
         organizationId: orgId,
         status: 'assigned',
@@ -708,7 +708,7 @@ export async function getLoadAlerts(orgId: string, severity?: string[]) {
     });
 
     // 2. Loads without assigned drivers (due soon)
-    const unassignedLoads = await prisma.load.findMany({
+    const unassignedLoads = await db.load.findMany({
       where: {
         organizationId: orgId,
         status: 'pending',
@@ -726,7 +726,7 @@ export async function getLoadAlerts(orgId: string, severity?: string[]) {
     });
 
     // 3. Loads at risk of being late
-    const atRiskLoads = await prisma.load.findMany({
+    const atRiskLoads = await db.load.findMany({
       where: {
         organizationId: orgId,
         status: 'in_transit',
@@ -814,7 +814,7 @@ export async function getRecentDispatchActivity(orgId: string, limit = 10) {
   try {
     await checkUserAccess(orgId);
 
-    const logs = await prisma.auditLog.findMany({
+    const logs = await db.auditLog.findMany({
       where: {
         organizationId: orgId,
         OR: [
@@ -898,7 +898,7 @@ export const getDispatchBoardData = unstable_cache(
 export const getLoadDetails = unstable_cache(
   async (orgId: string, loadId: string) => {
     await checkUserAccess(orgId);
-    return prisma.load.findFirst({
+    return db.load.findFirst({
       where: { id: loadId, organizationId: orgId },
       include: {
         driver: true,

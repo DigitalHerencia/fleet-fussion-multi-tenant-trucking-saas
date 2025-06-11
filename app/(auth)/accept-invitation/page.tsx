@@ -68,7 +68,7 @@ export default function AcceptInvitationPage() {
 
       // Get user's role and redirect to appropriate dashboard
       const userRole =
-        (user.publicMetadata?.role as SystemRole) || SystemRoles.VIEWER;
+        (user.publicMetadata?.role as SystemRole) || SystemRoles.MEMBER;
       const orgId = user.publicMetadata?.organizationId as string;
 
       if (orgId) {
@@ -92,10 +92,8 @@ export default function AcceptInvitationPage() {
         return `/${orgId}/dispatcher/${userId}`;
       case SystemRoles.DRIVER:
         return `/${orgId}/drivers/${userId}`;
-      case SystemRoles.COMPLIANCE_OFFICER:
+      case SystemRoles.COMPLIANCE:
         return `/${orgId}/compliance/${userId}`;
-      case SystemRoles.ACCOUNTANT:
-        return `/${orgId}/dashboard/${userId}`;
       default:
         return `/${orgId}/dashboard/${userId}`;
     }

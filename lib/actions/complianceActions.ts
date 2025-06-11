@@ -20,7 +20,7 @@ import { handleError } from '@/lib/errors/handleError';
 
 import { getComplianceDocuments } from '../fetchers/complianceFetchers';
 import { ComplianceDocument } from '../../types/compliance';
-import { db } from '../database/db';
+import db from '../database/db';
 import { createAuditLog } from './auditLogActions';
 
 // Document Management Actions

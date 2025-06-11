@@ -47,7 +47,7 @@ export async function getCurrentUser(
   // Get DB user/org for additional info
   const dbUser = await DatabaseQueries.getUserByClerkId(userId);
   const dbOrg = orgId
-    ? await DatabaseQueries.getOrganizationByClerkId(orgId)
+    ? await DatabaseQueries.getOrganizationByClerkId({ clerkId: orgId })
     : null;
   if (!dbUser || !dbOrg) return null;
 
@@ -77,7 +77,7 @@ export async function getCurrentUser(
 export async function getCurrentCompany(): Promise<ClerkOrganizationMetadata | null> {
   const { orgId } = await auth();
   if (!orgId) return null;
-  const dbOrg = await DatabaseQueries.getOrganizationByClerkId(orgId);
+  const dbOrg = await DatabaseQueries.getOrganizationByClerkId({ clerkId: orgId });
   if (!dbOrg) return null;
   return dbOrg as unknown as ClerkOrganizationMetadata;
 }

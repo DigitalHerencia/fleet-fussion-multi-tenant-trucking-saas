@@ -1,24 +1,45 @@
 'use server';
 
-
 import { auth } from '@clerk/nextjs/server';
 import { z } from 'zod';
 
-import { parsePermission } from '@/lib/auth/permissions';
-import {
-  complianceDocumentFilterSchema,
-  hosFilterSchema,
+import { ClerkOrganizationMetadata } from '@/types/auth';
+import { hasPermission } from '@/lib/auth/permissions';
+import type { UserContext } from '@/types/auth';
+import { calculateHosStatus } from '@/lib/utils/hos';
+import { 
+  complianceDocumentFilterSchema, 
+  hosFilterSchema 
 } from '@/schemas/compliance';
-import { prisma } from '@/lib/database/db';
+
+import prisma from '@/lib/database/db';
 import { handleError } from '@/lib/errors/handleError';
 import {
   getCachedData,
   setCachedData,
   CACHE_TTL,
 } from '@/lib/cache/auth-cache';
-import { calculateHosStatus } from '@/lib/utils/hos';
 
-import { HosLog } from './../../types/compliance';
+import type { HosLog } from '@/types/compliance';
+
+// Utility function to create default organization metadata
+function createDefaultOrgMetadata(): ClerkOrganizationMetadata {
+  return {
+    name: 'Default Organization',
+    subscriptionTier: 'free',
+    subscriptionStatus: 'inactive',
+    maxUsers: 5,
+    features: [],
+    billingEmail: '',
+    createdAt: new Date().toISOString(),
+    settings: {
+      timezone: 'UTC',
+      dateFormat: 'MM/DD/YYYY',
+      distanceUnit: 'miles',
+      fuelUnit: 'gallons',
+    },
+  };
+}
 
 /**
  * Get compliance dashboard overview data
@@ -38,7 +59,6 @@ export async function getComplianceDashboard(organizationId: string) {
   try {
     const today = new Date();
     const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
-    const sixtyDaysAgo = new Date(today.getTime() - 60 * 24 * 60 * 60 * 1000);
 
     const [
       totalDocuments,
@@ -299,11 +319,19 @@ export async function getComplianceDocuments(
     const { userId, orgId } = await auth();
     if (!userId || !orgId) {
       throw new Error('Unauthorized');
-    }
-
-    // Check permissions
-    const hasPermission = parsePermission(userId);
-    if (!hasPermission) {
+    }    // Fix permission check
+    const userContext: UserContext = {
+      userId, 
+      organizationId: orgId,
+      name: undefined,
+      role: 'driver',
+      permissions: [],
+      email: '',
+      isActive: false,
+      onboardingComplete: false,
+      organizationMetadata: createDefaultOrgMetadata()
+    };
+    if (!hasPermission(userContext, 'org:compliance:view_compliance_dashboard')) {
       throw new Error('Insufficient permissions');
     }
 
@@ -400,11 +428,18 @@ export async function getComplianceDocumentById(documentId: string) {
     const { userId, orgId } = await auth();
     if (!userId || !orgId) {
       throw new Error('Unauthorized');
-    }
-
-    // Check permissions
-    const hasPermission = parsePermission(userId);
-    if (!hasPermission) {
+    }    // Fix permission check
+    const userContext: UserContext = {
+      userId, organizationId: orgId,
+      name: undefined,
+      role: 'driver',
+      permissions: [],
+      email: '',
+      isActive: false,
+      onboardingComplete: false,
+      organizationMetadata: createDefaultOrgMetadata()
+    };
+    if (!hasPermission(userContext, 'org:compliance:view_compliance_dashboard')) {
       throw new Error('Insufficient permissions');
     }
 
@@ -457,9 +492,18 @@ export async function getPaginatedComplianceDocuments(
       throw new Error('Unauthorized');
     }
 
-    // Check permissions
-    const hasPermission = parsePermission(userId);
-    if (!hasPermission) {
+    // Fix permission check
+    const userContext: UserContext = {
+      userId, organizationId: orgId,
+      name: undefined,
+      role: 'driver',
+      permissions: [],
+      email: '',
+      isActive: false,
+      onboardingComplete: false,
+      organizationMetadata: createDefaultOrgMetadata()
+    };
+    if (!hasPermission(userContext, 'org:compliance:view_compliance_dashboard')) {
       throw new Error('Insufficient permissions');
     }
 
@@ -554,9 +598,18 @@ export async function getHOSLogs(filter: z.infer<typeof hosFilterSchema> = {}) {
       throw new Error('Unauthorized');
     }
 
-    // Check permissions
-    const hasPermission = parsePermission(userId);
-    if (!hasPermission) {
+    // Fix permission check
+    const userContext: UserContext = {
+      userId, organizationId: orgId,
+      name: undefined,
+      role: 'driver',
+      permissions: [],
+      email: '',
+      isActive: false,
+      onboardingComplete: false,
+      organizationMetadata: createDefaultOrgMetadata()
+    };
+    if (!hasPermission(userContext, 'org:compliance:view_compliance_dashboard')) {
       throw new Error('Insufficient permissions');
     }
 
@@ -687,7 +740,7 @@ export async function getHOSLogs(filter: z.infer<typeof hosFilterSchema> = {}) {
 /**
  * Get HOS status for a specific driver
  */
-export async function getDriverHOSStatus(driverId: string, p0?: { revalidate: number; }) {
+export async function getDriverHOSStatus(driverId: string) {
   try {
     const { userId, orgId } = await auth();
     if (!userId || !orgId) {
@@ -756,7 +809,7 @@ export async function getDriverHOSStatus(driverId: string, p0?: { revalidate: nu
 export async function getHOSViolations(
   organizationId: string,
   options: {
-    severity?: string[];
+    severity?: string[];  // Keep severity as it's used in the where clause setup
     resolved?: boolean;
     startDate?: Date;
     endDate?: Date;

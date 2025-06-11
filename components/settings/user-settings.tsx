@@ -108,9 +108,8 @@ export function UserSettings() {
       [SystemRoles.ADMIN]: 'bg-red-100 text-red-800',
       [SystemRoles.DISPATCHER]: 'bg-blue-100 text-blue-800',
       [SystemRoles.DRIVER]: 'bg-green-100 text-green-800',
-      [SystemRoles.COMPLIANCE_OFFICER]: 'bg-purple-100 text-purple-800',
-      [SystemRoles.ACCOUNTANT]: 'bg-orange-100 text-orange-800',
-      [SystemRoles.VIEWER]: 'bg-gray-100 text-gray-800',
+      [SystemRoles.COMPLIANCE]: 'bg-purple-100 text-purple-800',
+      [SystemRoles.MEMBER]: 'bg-gray-100 text-gray-800',
     };
 
     return (
@@ -340,13 +339,13 @@ export function UserSettings() {
                         <SelectItem value={SystemRoles.DRIVER}>
                           Driver
                         </SelectItem>
-                        <SelectItem value={SystemRoles.COMPLIANCE_OFFICER}>
+                        <SelectItem value={SystemRoles.COMPLIANCE}>
                           Compliance Officer
                         </SelectItem>
-                        <SelectItem value={SystemRoles.ACCOUNTANT}>
+                        <SelectItem value={SystemRoles.ADMIN}>
                           Accountant
                         </SelectItem>
-                        <SelectItem value={SystemRoles.VIEWER}>
+                        <SelectItem value={SystemRoles.MEMBER}>
                           Viewer
                         </SelectItem>
                       </SelectContent>

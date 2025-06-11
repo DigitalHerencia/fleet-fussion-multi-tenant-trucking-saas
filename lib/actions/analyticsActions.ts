@@ -6,8 +6,6 @@ import { getCurrentUser } from '@/lib/auth/auth';
 import prisma from '@/lib/database/db';
 import { hasPermission } from '@/lib/auth/permissions';
 import { handleError } from '@/lib/errors/handleError';
-import { PermissionActions, ResourceTypes, SystemRoles } from '@/types/abac';
-import { ClerkOrganizationMetadata } from '@/types/auth';
 import type { AnalyticsActionResult } from '@/types/actions';
 
 interface FleetMetrics {
@@ -52,8 +50,7 @@ export async function getFleetMetricsAction(
 
     const hasAccess = hasPermission(
       user,
-      PermissionActions.READ,
-      ResourceTypes.ORGANIZATION
+      'org:sys_memberships:read'
     );
     if (!hasAccess) {
       return { success: false };
@@ -113,8 +110,7 @@ export async function getLoadAnalyticsAction(
 
     const hasAccess = hasPermission(
       user,
-      PermissionActions.READ,
-      ResourceTypes.ORGANIZATION
+      'org:sys_memberships:read'
     );
     if (!hasAccess) {
       return { success: false };
@@ -176,15 +172,14 @@ export async function getFinancialMetricsAction(
 
     const hasAccess = hasPermission(
       user,
-      PermissionActions.READ,
-      ResourceTypes.ORGANIZATION
+      'org:sys_memberships:read'
     );
     if (!hasAccess) {
       return { success: false };
     }
 
     // Get revenue from completed loads
-    const revenueData = await prisma.load.aggregate({
+    const { _sum: { rate }, _count } = await prisma.load.aggregate({
       where: {
         organizationId: orgId,
         status: 'delivered',
@@ -219,8 +214,7 @@ export async function getComplianceAnalyticsAction(
 
     const hasAccess = hasPermission(
       user,
-      PermissionActions.READ,
-      ResourceTypes.ORGANIZATION
+      'org:sys_memberships:read'
     );
     if (!hasAccess) {
       return { success: false };

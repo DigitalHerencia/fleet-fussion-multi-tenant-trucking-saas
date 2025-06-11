@@ -208,13 +208,13 @@ async function DashboardContent({ orgId }: { orgId: string }) {
         <Card>
           <CardHeader>
             <CardTitle>
-              {user.role === SystemRoles.ACCOUNTANT ? 'Financial Summary' : 
+              {user.role === SystemRoles.ADMIN ? 'Financial Summary' : 
                user.role === SystemRoles.DRIVER ? 'My Performance' : 'Load Summary'}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {user.role === SystemRoles.ACCOUNTANT ? (
+              {user.role === SystemRoles.ADMIN ? (
                 <>
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">Monthly Revenue</span>

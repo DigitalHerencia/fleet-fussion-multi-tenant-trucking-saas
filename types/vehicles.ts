@@ -148,7 +148,9 @@ export interface VehicleUtilizationStats {
 // ================== Action Result Types ==================
 
 export interface VehicleActionResult {
+  data: boolean;
   success: boolean;
-  data?: Vehicle | Vehicle[];
+  vehicle?: Vehicle; // Changed from data to be more specific for single vehicle results
   error?: string;
+  fieldErrors?: Record<string, string[]>; // Added for field-specific errors
 }

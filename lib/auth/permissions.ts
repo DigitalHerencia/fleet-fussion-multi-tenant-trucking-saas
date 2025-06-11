@@ -2,70 +2,30 @@
  * ABAC (Attribute-Based Access Control) Utilities
  *
  * Provides permission checking and role management utilities
- * for the FleetFusion multi-tenant system with aligned type structure
+ * for the FleetFusion multi-tenant system with custom role/permission management
  */
-
-// NOTE: All ABAC/auth types (UserRole, Permission, ResourceType, etc.)
-// are now defined in types/auth.ts or types/abac.ts. Do not define or export them here.
-//
-// IMPORTANT: If you need UserRole, Permission, ResourceType, etc., import them from '@/types/auth' or '@/types/abac'.
 
 import {
   SystemRole,
   SystemRoles,
   Permission,
-  PermissionAction,
-  ResourceType,
+  Permissions,
   hasPermission as abacHasPermission,
   getPermissionsForRole as abacGetPermissionsForRole,
+  canAccessCompliance,
+  canManageUsers,
+  canManageLoads,
+  isAdmin as abacIsAdmin,
 } from '@/types/abac';
 import type { UserContext } from '@/types/auth';
 
 /**
- * Create a permission string from action and resource
- */
-export function createPermission(
-  action: PermissionAction,
-  resource: ResourceType
-): string {
-  return `${action}:${resource}`;
-}
-
-/**
- * Parse a permission string into action and resource
- */
-export function parsePermission(
-  permission: string
-): { action: PermissionAction; resource: ResourceType } | null {
-  const parts = permission.split(':');
-  if (parts.length !== 2) return null;
-  return {
-    action: parts[0] as PermissionAction,
-    resource: parts[1] as ResourceType,
-  };
-}
-
-/**
- * Check if a user has a specific permission
+ * Check if a user has a specific permission (by permission string)
  */
 export function hasPermission(
-  user: UserContext | null,
-  action: PermissionAction,
-  resource: ResourceType
-): boolean {
-  if (!user || user.isActive === false) return false;
-  return abacHasPermission(user.permissions, action, resource);
-}
-
-/**
- * Check if a user has a specific action on a resource
- */
-export function hasResourcePermission(
-  user: UserContext | null,
-  action: PermissionAction,
-  resource: ResourceType
-): boolean {
-  return hasPermission(user, action, resource);
+user: UserContext | null, permission: Permission ): boolean {
+  if (!user || user.isActive === false || !user.permissions) return false;
+  return abacHasPermission(user.permissions, permission);
 }
 
 /**
@@ -73,12 +33,10 @@ export function hasResourcePermission(
  */
 export function hasAnyPermission(
   user: UserContext | null,
-  permissions: Array<{ action: PermissionAction; resource: ResourceType }>
+  permissions: Permission[]
 ): boolean {
   if (!user || user.isActive === false || !user.permissions) return false;
-  return permissions.some(perm =>
-    abacHasPermission(user.permissions, perm.action, perm.resource)
-  );
+  return permissions.some(perm => abacHasPermission(user.permissions, perm));
 }
 
 /**
@@ -86,12 +44,10 @@ export function hasAnyPermission(
  */
 export function hasAllPermissions(
   user: UserContext | null,
-  permissions: Array<{ action: PermissionAction; resource: ResourceType }>
+  permissions: Permission[]
 ): boolean {
   if (!user || user.isActive === false || !user.permissions) return false;
-  return permissions.every(perm =>
-    abacHasPermission(user.permissions, perm.action, perm.resource)
-  );
+  return permissions.every(perm => abacHasPermission(user.permissions, perm));
 }
 
 /**
@@ -117,28 +73,44 @@ export function hasAnyRole(
  * Check if a user is an admin
  */
 export function isAdmin(user: UserContext | null): boolean {
-  return hasRole(user, SystemRoles.ADMIN);
+  return user ? abacIsAdmin(user.role) : false;
+}
+
+/**
+ * Check if a user can access compliance features
+ */
+export function canAccessComplianceFeatures(user: UserContext | null): boolean {
+  return user ? canAccessCompliance(user.permissions) : false;
 }
 
 /**
  * Check if a user can manage other users
  */
-export function canManageUsers(user: UserContext | null): boolean {
-  return hasResourcePermission(user, 'manage', 'user');
+export function canManageUsersAndRoles(user: UserContext | null): boolean {
+  return user ? canManageUsers(user.permissions) : false;
+}
+
+/**
+ * Check if a user can manage loads
+ */
+export function canManageLoadsAndDispatch(user: UserContext | null): boolean {
+  return user ? canManageLoads(user.permissions) : false;
 }
 
 /**
  * Check if a user can view billing information
  */
 export function canViewBilling(user: UserContext | null): boolean {
-  return hasResourcePermission(user, 'read', 'billing');
+  return hasPermission(user, Permissions['org:sys_billing:read']) || 
+         hasPermission(user, Permissions['org:sys_billing:manage']);
 }
 
 /**
  * Check if a user can manage organization settings
  */
 export function canManageSettings(user: UserContext | null): boolean {
-  return hasResourcePermission(user, 'update', 'organization');
+  return hasPermission(user, Permissions['org:sys_profile:manage']) ||
+         hasPermission(user, Permissions['org:admin:configure_company_settings']);
 }
 
 /**
@@ -149,95 +121,62 @@ export function getPermissionsForRole(role: SystemRole): Permission[] {
 }
 
 /**
- * Check if a user belongs to a specific organization
+ * Feature-specific permission checkers using exact Clerk permission strings
  */
-export function belongsToOrganization(
-  user: UserContext | null,
-  organizationId: string
-): boolean {
-  if (!user) return false;
-  return user.organizationId === organizationId; // Corrected: Use organizationId from UserContext
-}
-
-/**
- * Resource-specific permission checks - Updated for new permission structure
- */
-export const PermissionChecks = {
+export const FeaturePermissions = {
   // Vehicle Management
   canViewVehicles: (user: UserContext | null) =>
-    hasResourcePermission(user, 'read', 'vehicle'),
-  canCreateVehicles: (user: UserContext | null) =>
-    hasResourcePermission(user, 'create', 'vehicle'),
-  canUpdateVehicles: (user: UserContext | null) =>
-    hasResourcePermission(user, 'update', 'vehicle'),
-  canDeleteVehicles: (user: UserContext | null) =>
-    hasResourcePermission(user, 'delete', 'vehicle'),
-
-  // Driver Management
+    hasPermission(user, Permissions['org:sys_memberships:read']) || 
+    hasPermission(user, Permissions['org:admin:view_edit_all_loads']),
+  
+  // Driver Management  
   canViewDrivers: (user: UserContext | null) =>
-    hasResourcePermission(user, 'read', 'driver'),
-  canCreateDrivers: (user: UserContext | null) =>
-    hasResourcePermission(user, 'create', 'driver'),
-  canUpdateDrivers: (user: UserContext | null) =>
-    hasResourcePermission(user, 'update', 'driver'),
-  canDeleteDrivers: (user: UserContext | null) =>
-    hasResourcePermission(user, 'delete', 'driver'),
+    hasPermission(user, Permissions['org:sys_memberships:read']) ||
+    hasPermission(user, Permissions['org:dispatcher:view_driver_vehicle_status']),
+  canAssignDrivers: (user: UserContext | null) =>
+    hasPermission(user, Permissions['org:dispatcher:assign_drivers']),
 
   // Load Management
   canViewLoads: (user: UserContext | null) =>
-    hasResourcePermission(user, 'read', 'load'),
+    hasPermission(user, Permissions['org:driver:view_assigned_loads']) ||
+    hasPermission(user, Permissions['org:admin:view_edit_all_loads']) ||
+    hasPermission(user, Permissions['org:dispatcher:create_edit_loads']),
   canCreateLoads: (user: UserContext | null) =>
-    hasResourcePermission(user, 'create', 'load'),
-  canUpdateLoads: (user: UserContext | null) =>
-    hasResourcePermission(user, 'update', 'load'),
-  canDeleteLoads: (user: UserContext | null) =>
-    hasResourcePermission(user, 'delete', 'load'),
-  canAssignLoads: (user: UserContext | null) =>
-    hasResourcePermission(user, 'assign', 'load'),
+    hasPermission(user, Permissions['org:dispatcher:create_edit_loads']) ||
+    hasPermission(user, Permissions['org:admin:view_edit_all_loads']),
+  canUpdateLoadStatus: (user: UserContext | null) =>
+    hasPermission(user, Permissions['org:driver:update_load_status']) ||
+    hasPermission(user, Permissions['org:admin:view_edit_all_loads']),
 
   // Document Management
-  canViewDocuments: (user: UserContext | null) =>
-    hasResourcePermission(user, 'read', 'document'),
-  canCreateDocuments: (user: UserContext | null) =>
-    hasResourcePermission(user, 'create', 'document'),
-  canUpdateDocuments: (user: UserContext | null) =>
-    hasResourcePermission(user, 'update', 'document'),
-  canDeleteDocuments: (user: UserContext | null) =>
-    hasResourcePermission(user, 'delete', 'document'),
-  canApproveDocuments: (user: UserContext | null) =>
-    hasResourcePermission(user, 'approve', 'document'),
+  canUploadDocuments: (user: UserContext | null) =>
+    hasPermission(user, Permissions['org:driver:upload_documents']),
+  canReviewCompliance: (user: UserContext | null) =>
+    hasPermission(user, Permissions['org:compliance:upload_review_compliance']) ||
+    hasPermission(user, Permissions['org:admin:view_audit_logs']),
 
-  // IFTA Management
-  canViewIFTA: (user: UserContext | null) =>
-    hasResourcePermission(user, 'read', 'ifta_report'),
-  canCreateIFTA: (user: UserContext | null) =>
-    hasResourcePermission(user, 'create', 'ifta_report'),
-  canUpdateIFTA: (user: UserContext | null) =>
-    hasResourcePermission(user, 'update', 'ifta_report'),
-  canReportIFTA: (user: UserContext | null) =>
-    hasResourcePermission(user, 'report', 'ifta_report'),
+  // HOS (Hours of Service)
+  canLogHOS: (user: UserContext | null) =>
+    hasPermission(user, Permissions['org:driver:log_hos']),
 
-  // Organization & Administration
-  canViewOrganization: (user: UserContext | null) =>
-    hasResourcePermission(user, 'read', 'organization'),
-  canUpdateOrganization: (user: UserContext | null) =>
-    hasResourcePermission(user, 'update', 'organization'),
-  canViewBilling: (user: UserContext | null) =>
-    hasResourcePermission(user, 'read', 'billing'),
+  // Reporting and Analytics
+  canAccessReports: (user: UserContext | null) =>
+    hasPermission(user, Permissions['org:admin:access_all_reports']) ||
+    hasPermission(user, Permissions['org:compliance:generate_compliance_req']),
+  canViewAuditLogs: (user: UserContext | null) =>
+    hasPermission(user, Permissions['org:admin:view_audit_logs']) ||
+    hasPermission(user, Permissions['org:compliance:access_audit_logs']),
+
+  // Organization Management
+  canManageCompanySettings: (user: UserContext | null) =>
+    hasPermission(user, Permissions['org:admin:configure_company_settings']),
+  canManageUserRoles: (user: UserContext | null) =>
+    hasPermission(user, Permissions['org:admin:manage_users_and_roles']),
   canManageBilling: (user: UserContext | null) =>
-    hasResourcePermission(user, 'manage', 'billing'),
-
-  // User Management
-  canViewUsers: (user: UserContext | null) =>
-    hasResourcePermission(user, 'read', 'user'),
-  canCreateUsers: (user: UserContext | null) =>
-    hasResourcePermission(user, 'create', 'user'),
-  canUpdateUsers: (user: UserContext | null) =>
-    hasResourcePermission(user, 'update', 'user'),
-  canDeleteUsers: (user: UserContext | null) =>
-    hasResourcePermission(user, 'delete', 'user'),
-  canManageUsers: (user: UserContext | null) =>
-    hasResourcePermission(user, 'manage', 'user'),
+    hasPermission(user, Permissions['org:sys_billing:manage']),
+  canViewBillingInfo: (user: UserContext | null) =>
+    hasPermission(user, Permissions['org:sys_billing:read']) ||
+    hasPermission(user, Permissions['org:sys_billing:manage']),
 } as const;
 
 /**
@@ -251,11 +190,11 @@ export class ResourcePermissions {
   static canAccessDriver(user: UserContext | null, driverId: string): boolean {
     if (!user) return false;
 
-    // If user has general driver permissions, allow access
-    if (hasPermission(user, 'read', 'driver')) return true;
+    // If user has general driver viewing permissions, allow access
+    if (FeaturePermissions.canViewDrivers(user)) return true;
 
     // If user is the driver themselves, allow access to own data
-    if (user.role === 'driver' && user.userId === driverId) return true;
+    if (user.role === SystemRoles.DRIVER && user.userId === driverId) return true;
 
     return false;
   }
@@ -270,11 +209,11 @@ export class ResourcePermissions {
   ): boolean {
     if (!user) return false;
 
-    // If user has general dispatch permissions, allow access
-    if (hasPermission(user, 'read', 'load')) return true;
+    // If user has general load viewing permissions, allow access
+    if (FeaturePermissions.canViewLoads(user)) return true;
 
     // If user is a driver and the load is assigned to them, allow access
-    if (user.role === 'driver' && loadDriverId === user.userId) return true;
+    if (user.role === SystemRoles.DRIVER && loadDriverId === user.userId) return true;
 
     return false;
   }
@@ -290,85 +229,71 @@ export class ResourcePermissions {
     if (!user) return false;
 
     // If user has general compliance permissions, allow access
-    if (hasPermission(user, 'read', 'document')) return true;
+    if (FeaturePermissions.canReviewCompliance(user)) return true;
 
     // If user is a driver and the document belongs to them, allow access
-    if (user.role === 'driver' && documentDriverId === user.userId) return true;
+    if (user.role === SystemRoles.DRIVER && documentDriverId === user.userId) return true;
 
     return false;
   }
 }
 
 /**
- * Higher-order component utilities for permission-based rendering
- */
-export function requirePermission(permission: Permission) {
-  return function <T extends object>(Component: React.ComponentType<T>) {
-    return function PermissionWrapper(props: T) {
-      // This would be used with the auth context
-      // Implementation would check permissions and render component or fallback
-      return Component as any; // Placeholder for type checking
-    };
-  };
-}
-
-/**
  * Route protection utilities
  */
 export class RouteProtection {
-  // Define PROTECTED_ROUTES using SystemRole and real route patterns
+  // Define PROTECTED_ROUTES using SystemRole and real route patterns  
   static PROTECTED_ROUTES: Record<string, SystemRole[]> = {
     // Dashboard: All authenticated users should access their dashboard
     '/:orgId/dashboard/:userId': [
       SystemRoles.ADMIN,
       SystemRoles.DISPATCHER,
       SystemRoles.DRIVER,
-      SystemRoles.COMPLIANCE_OFFICER,
-      SystemRoles.ACCOUNTANT,
-      SystemRoles.VIEWER,
+      SystemRoles.COMPLIANCE,
+      SystemRoles.MEMBER,
     ],
     // Compliance dashboard: Compliance Officer, Admin
     '/:orgId/compliance/:userId': [
-      SystemRoles.COMPLIANCE_OFFICER,
+      SystemRoles.COMPLIANCE,
       SystemRoles.ADMIN,
-    ], // Drivers list: Admin, Dispatcher, Compliance (need to see drivers for compliance), Viewer, Accountant (for payroll/financial reporting)
+    ],
+    // Drivers list: Admin, Dispatcher, Compliance (need to see drivers for compliance), Member
     '/:orgId/drivers': [
       SystemRoles.ADMIN,
       SystemRoles.DISPATCHER,
-      SystemRoles.COMPLIANCE_OFFICER,
-      SystemRoles.VIEWER,
-      SystemRoles.ACCOUNTANT,
+      SystemRoles.COMPLIANCE,
+      SystemRoles.MEMBER,
     ],
     // Drivers dashboard: Driver (own profile), Admin, Dispatcher, Compliance
     '/:orgId/drivers/:userId': [
       SystemRoles.DRIVER,
       SystemRoles.ADMIN,
       SystemRoles.DISPATCHER,
-      SystemRoles.COMPLIANCE_OFFICER,
+      SystemRoles.COMPLIANCE,
     ],
     // Dispatch dashboard: Dispatcher, Admin
-    '/:orgId/dispatch/:userId': [SystemRoles.DISPATCHER, SystemRoles.ADMIN], // Analytics: Admin, Dispatcher, Compliance Officer, Viewer (read-only), Accountant (for financial analytics)
+    '/:orgId/dispatch/:userId': [SystemRoles.DISPATCHER, SystemRoles.ADMIN],
+    // Analytics: Admin, Dispatcher, Compliance Officer, Member (read-only)
     '/:orgId/analytics': [
       SystemRoles.ADMIN,
       SystemRoles.DISPATCHER,
-      SystemRoles.COMPLIANCE_OFFICER,
-      SystemRoles.VIEWER,
-      SystemRoles.ACCOUNTANT,
+      SystemRoles.COMPLIANCE,
+      SystemRoles.MEMBER,
     ],
-    // Vehicles list: Admin, Dispatcher, Compliance (for inspections), Viewer, Accountant (for asset tracking/financial reporting)
+    // Vehicles list: Admin, Dispatcher, Compliance (for inspections), Member
     '/:orgId/vehicles': [
       SystemRoles.ADMIN,
       SystemRoles.DISPATCHER,
-      SystemRoles.COMPLIANCE_OFFICER,
-      SystemRoles.VIEWER,
-      SystemRoles.ACCOUNTANT,
+      SystemRoles.COMPLIANCE,
+      SystemRoles.MEMBER,
     ],
-    // IFTA: Admin, Accountant
-    '/:orgId/ifta': [SystemRoles.ADMIN, SystemRoles.ACCOUNTANT],
+    // IFTA: Admin, Member (members can view basic IFTA info)
+    '/:orgId/ifta': [SystemRoles.ADMIN, SystemRoles.MEMBER],
     // Settings: Admin only
     '/:orgId/settings': [SystemRoles.ADMIN],
     // Add more as needed for other tenant routes
   };
+
   /**
    * Check if user can access a specific route
    */

@@ -2,20 +2,29 @@
 
 import type { Notification, NotificationActionResult } from '@/types/notifications';
 import { listUnreadNotifications, markNotificationRead } from '@/lib/fetchers/notificationFetchers';
-import { getCurrentUser } from '@/lib/auth/auth';
-import { belongsToOrganization } from '@/lib/auth/permissions';
 import { handleError } from '@/lib/errors/handleError';
+import { auth } from '@clerk/nextjs/server';
+import db from '../database/db';
 
 export async function fetchNotifications(
   orgId: string
 ): Promise<NotificationActionResult> {
   try {
-    const user = await getCurrentUser();
-    if (!user || !belongsToOrganization(user, orgId)) {
+    const { userId } = await auth();
+    if (!userId) {
       throw new Error('Unauthorized');
     }
-
-    const notifications = await listUnreadNotifications(orgId);
+    // Check if user belongs to the organization and has required permissions
+    const user = await db.user.findUnique({
+      where: {
+        organizationId: orgId,
+        clerkId: userId,
+      },
+    });
+    if (!user) {
+      throw new Error('User not found or not member of organization');
+    }
+    const notifications: Notification[] = await listUnreadNotifications(orgId);
     return { success: true, data: notifications };
   } catch (error) {
     return handleError(error, 'Fetch Notifications');
@@ -23,18 +32,28 @@ export async function fetchNotifications(
 }
 
 export async function readNotification(
-  id: string,
-  orgId: string
+  orgId: string,
+  id: string
 ): Promise<NotificationActionResult> {
   try {
-    const user = await getCurrentUser();
-    if (!user || !belongsToOrganization(user, orgId)) {
+    const { userId } = await auth();
+    if (!userId) {
       throw new Error('Unauthorized');
     }
-
+    // Check if user belongs to the organization and has required permissions
+    const user = await db.user.findUnique({
+      where: {
+        clerkId: userId,
+        organizationId: orgId,
+      },
+    });
+    if (!user) {
+      throw new Error('User not found or not member of organization');
+    }
     await markNotificationRead(id);
     return { success: true };
   } catch (error) {
     return handleError(error, 'Read Notification');
   }
 }
+

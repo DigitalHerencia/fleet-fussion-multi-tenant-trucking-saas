@@ -1,6 +1,6 @@
 'use server';
 
-import { db, handleDatabaseError } from '@/lib/database/db';
+import db, { handleDatabaseError } from '@/lib/database/db';
 import type { OnboardingStatus } from '@/types/onboarding';
 
 import { SystemRole } from './../../types/abac';

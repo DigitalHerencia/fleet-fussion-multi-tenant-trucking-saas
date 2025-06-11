@@ -1,7 +1,7 @@
 'use server';
 
 import { auth } from '@clerk/nextjs/server';
-import { db } from '@/lib/database/db';
+import db from '@/lib/database/db';
 import { handleError } from '@/lib/errors/handleError';
 
 // Define MetadataRecord type locally

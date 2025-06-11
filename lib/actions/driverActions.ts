@@ -12,7 +12,7 @@ import type {
   DriverActionResult,
   DriverBulkActionResult,
 } from '@/types/drivers';
-import { db } from '@/lib/database/db';
+import db from '@/lib/database/db';
 import { logAuditEvent } from '@/lib/actions/auditActions';
 import {
   driverFormSchema,

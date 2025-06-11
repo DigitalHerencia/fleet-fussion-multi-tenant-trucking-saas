@@ -10,7 +10,7 @@ datasource db {
 
 model Organization {
   id                     String                   @id @default(uuid())
-  clerkId                String                   @unique @map("clerk_id")
+  clerkId                String                   @unique
   name                   String
   slug                   String                   @unique
   mcNumber               String?                  @map("mc_number")
@@ -51,7 +51,6 @@ model Organization {
   iftaAuditLogs          IftaAuditLog[]
   iftaPDFGenerationLogs  IftaPDFGenerationLog[]
 
-  @@index([clerkId])
   @@index([slug])
   @@map("organizations")
 }
@@ -64,7 +63,7 @@ model User {
   firstName              String?                  @map("first_name")
   lastName               String?                  @map("last_name")
   profileImage           String?                  @map("profile_image")
-  role                   UserRole                 @default(viewer)
+  role                   UserRole                 @default(member)
   permissions            Json?                    @default("[]")
   isActive               Boolean                  @default(true) @map("is_active")
   lastLogin              DateTime?                @map("last_login")
@@ -569,13 +568,10 @@ model IftaAuditLog {
 
 enum UserRole {
   admin
-  manager
-  user
   dispatcher
   driver
   compliance
-  accountant
-  viewer
+  member
 }
 
 enum SubscriptionTier {

@@ -3,7 +3,7 @@
 import { z } from 'zod';
 import { getCurrentUser } from '@/lib/auth/auth';
 import { handleError } from '@/lib/errors/handleError';
-import { db } from '@/lib/database/db';
+import db from '@/lib/database/db';
 import { complianceReportSchema } from '@/schemas/compliance';
 
 export async function generateComplianceReport(input: z.infer<typeof complianceReportSchema>) {

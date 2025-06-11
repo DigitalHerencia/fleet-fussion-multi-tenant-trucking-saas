@@ -4,7 +4,7 @@ import { auth } from '@clerk/nextjs/server';
 import { revalidatePath } from 'next/cache';
 import { LoadStatus as PrismaLoadStatus } from '@prisma/client';
 
-import { db } from '@/lib/database/db';
+import db from '@/lib/database/db';
 import { handleError } from '@/lib/errors/handleError';
 import {
   updateLoadSchema,

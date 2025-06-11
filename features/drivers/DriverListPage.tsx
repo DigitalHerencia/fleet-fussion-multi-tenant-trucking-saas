@@ -1,8 +1,10 @@
 import Link from 'next/link';
+import { Plus } from 'lucide-react';
 
 import { listDriversByOrg } from '@/lib/fetchers/driverFetchers';
 import { DriverCard } from '@/components/drivers/driver-card';
-import { DriverFormFeature } from '@/features/drivers/DriverFormFeature';
+import { AddDriverDialog } from '@/features/drivers/AddDriverDialog';
+import { Button } from '@/components/ui/button';
 import type { DriverFilters } from '@/types/drivers';
 
 interface DriverListPageProps {
@@ -26,6 +28,16 @@ export default async function DriverListPage({
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Drivers</h1>
+          <p className="text-muted-foreground">
+            Manage your fleet drivers and their information
+          </p>
+        </div>
+        <AddDriverDialog orgId={orgId} />
+      </div>
+      
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {drivers.map(driver => (
           <Link
@@ -60,7 +72,6 @@ export default async function DriverListPage({
           </Link>
         ))}
       </div>
-      <DriverFormFeature mode="create" orgId={orgId} />
     </div>
   );
 }

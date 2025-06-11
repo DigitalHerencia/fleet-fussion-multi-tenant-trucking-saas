@@ -12,12 +12,9 @@
 import {
   SystemRole,
   SystemRoles,
-  ResourceType,
-  ResourceTypes,
-  PermissionAction,
-  PermissionActions,
   Permission,
   RolePermissions as ABACRolePermissions,
+  UserSessionAttributes
 } from './abac';
 
 // Use ABAC system roles as the canonical role definition
@@ -25,10 +22,9 @@ export const UserRole = SystemRoles;
 export type UserRole = SystemRole;
 
 // Use ABAC permission structure as canonical
-export type { Permission, ResourceType, PermissionAction };
+export type { Permission, UserSessionAttributes };
 
 // Re-export for backwards compatibility
-export { ResourceTypes, PermissionActions };
 
 // Use ABAC role permissions as the source of truth
 export const ROLE_PERMISSIONS = ABACRolePermissions;
@@ -45,6 +41,7 @@ export interface ClerkUserMetadata {
 
 // Organization metadata in Clerk
 export interface ClerkOrganizationMetadata {
+  name: string;
   subscriptionTier: 'free' | 'pro' | 'enterprise';
   subscriptionStatus: 'active' | 'inactive' | 'trial' | 'cancelled';
   maxUsers: number;

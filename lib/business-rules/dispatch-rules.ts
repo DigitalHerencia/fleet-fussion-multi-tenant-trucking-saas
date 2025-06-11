@@ -181,10 +181,10 @@ export async function validateDriverAvailability(
   };
 
   try {
-    const { prisma } = await import('@/lib/database/db');
+    const db = await import('@/lib/database/db').then(m => m.default);
     
     // Check if driver exists and is active
-    const driver = await prisma.driver.findFirst({
+    const driver = await db.driver.findFirst({
       where: {
         id: driverId,
         organizationId: orgId,
@@ -199,7 +199,7 @@ export async function validateDriverAvailability(
     }
 
     // Check for conflicting assignments
-    const conflictingLoads = await prisma.load.findMany({
+    const conflictingLoads = await db.load.findMany({
       where: {
         driverId,
         organizationId: orgId,
@@ -267,10 +267,10 @@ export async function validateVehicleAvailability(
   };
 
   try {
-    const { prisma } = await import('@/lib/database/db');
+    const db = await import('@/lib/database/db').then(m => m.default);
     
     // Check if vehicle exists and is active
-    const vehicle = await prisma.vehicle.findFirst({
+    const vehicle = await db.vehicle.findFirst({
       where: {
         id: vehicleId,
         organizationId: orgId,
@@ -285,7 +285,7 @@ export async function validateVehicleAvailability(
     }
 
     // Check for conflicting assignments
-    const conflictingLoads = await prisma.load.findMany({
+    const conflictingLoads = await db.load.findMany({
       where: {
         vehicleId,
         organizationId: orgId,
@@ -348,10 +348,10 @@ export async function validateLoadAssignment(
     warnings: [],
   };
   try {
-    const { prisma } = await import('@/lib/database/db');
+    const db = await import('@/lib/database/db').then(m => m.default);
     
     // Get load details
-    const load = await prisma.load.findFirst({
+    const load = await db.load.findFirst({
       where: { id: loadId },
       select: {
         organizationId: true,
@@ -389,7 +389,7 @@ export async function validateLoadAssignment(
       if (!vehicleValidation.isValid) result.isValid = false;
 
       // Additional vehicle-load compatibility checks
-      const vehicle = await prisma.vehicle.findFirst({
+      const vehicle = await db.vehicle.findFirst({
         where: { id: vehicleId },
         select: { type: true, maxWeight: true, maxLength: true },
       });      if (vehicle && load.cargo) {

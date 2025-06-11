@@ -67,9 +67,17 @@ export default function AddVehicleDialog({
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      const result = await createVehicleAction(orgId, { ...form });
+      // Convert form to FormData
+      const formData = new FormData();
+      Object.entries(form).forEach(([key, value]) => {
+        if (value !== undefined) {
+          formData.append(key, String(value));
+        }
+      });
+
+      const result = await createVehicleAction(null, formData);
       if (result.success && result.data) {
-        onSuccess(result.data as Vehicle);
+        onSuccess(result.data as unknown as Vehicle);
         onOpenChange(false);
         setForm(initialState);
       }

@@ -1,7 +1,7 @@
 'use server';
 
 import { auth } from '@clerk/nextjs/server';
-import { prisma } from '@/lib/database/db';
+import db from '@/lib/database/db';
 import type { Notification } from '@/types/notifications';
 
 /**
@@ -11,7 +11,7 @@ export async function listUnreadNotifications(orgId: string): Promise<Notificati
   const { userId } = await auth();
   if (!userId) return [];
 
-  const notifications = await prisma.notification.findMany({
+  const notifications = await db.notification.findMany({
     where: {
       organizationId: orgId,
       OR: [
@@ -40,7 +40,7 @@ export async function markNotificationRead(id: string): Promise<void> {
   const { userId } = await auth();
   if (!userId) return;
 
-  await prisma.notification.update({
+  await db.notification.update({
     where: { id },
     data: { readAt: new Date() },
   });

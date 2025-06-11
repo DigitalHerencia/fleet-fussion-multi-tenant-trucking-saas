@@ -2,7 +2,7 @@
 
 import { auth } from '@clerk/nextjs/server';
 import { revalidatePath } from 'next/cache';
-import { db } from '@/lib/database/db';
+import db from '@/lib/database/db';
 import type { Prisma } from '@prisma/client';
 import {
   CompanyProfileSchema,

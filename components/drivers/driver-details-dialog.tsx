@@ -9,6 +9,7 @@ import {
   Truck,
   MapPin,
   AlertTriangle,
+  Edit,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -35,6 +36,8 @@ import {
   DocumentUpload,
   DocumentListEmpty,
 } from '@/components/shared/DocumentUpload';
+import { updateDriverStatusAction } from '@/lib/actions/driverActions';
+import { toast } from '@/hooks/use-toast';
 
 interface Driver {
   id: string;
@@ -69,6 +72,7 @@ interface DriverDetailsDialogProps {
   recentLoads?: Load[];
   isOpen: boolean;
   onClose: () => void;
+  orgId: string; // Add orgId for proper links and actions
 }
 
 export function DriverDetailsDialog({
@@ -76,6 +80,7 @@ export function DriverDetailsDialog({
   recentLoads = [],
   isOpen,
   onClose,
+  orgId,
 }: DriverDetailsDialogProps) {
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
@@ -98,11 +103,34 @@ export function DriverDetailsDialog({
 
   const handleStatusUpdate = async (newStatus: string) => {
     setIsUpdatingStatus(true);
-    // Simulate API call
-    setTimeout(() => {
+    
+    try {
+      const result = await updateDriverStatusAction(driver.id, {
+        status: newStatus as any,
+      });
+
+      if (result.success) {
+        toast({
+          title: 'Status Updated',
+          description: `Driver status changed to ${newStatus.replace('_', ' ')}`,
+        });
+        onClose(); // Close dialog to refresh parent
+      } else {
+        toast({
+          title: 'Error',
+          description: result.error || 'Failed to update driver status',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'An unexpected error occurred',
+        variant: 'destructive',
+      });
+    } finally {
       setIsUpdatingStatus(false);
-      onClose();
-    }, 1000);
+    }
   };
 
   const getLoadStatusColor = (status: string) => {

@@ -30,7 +30,7 @@ declare global {
 
     // Organization membership permissions (structured as ABAC permissions)
     'org_membership.permissions'?: Permission[];
-    'user.organizations'?: string | object[];
+    'user.organizations'?: string[] | object[];
 
     // Legacy fields for backward compatibility (deprecated - use abac field instead)
     metadata?: {

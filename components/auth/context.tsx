@@ -90,7 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       userMetadata: ClerkUserMetadata,
       orgMetadata: ClerkOrganizationMetadata
     ): UserContext => {
-      const role: UserRole = userMetadata?.role || SystemRoles.VIEWER;
+      const role: UserRole = userMetadata?.role || SystemRoles.MEMBER;
       const permissions: Permission[] =
         userMetadata?.permissions || ROLE_PERMISSIONS[role] || [];
 

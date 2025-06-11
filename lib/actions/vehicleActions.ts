@@ -9,7 +9,7 @@ import { revalidatePath } from 'next/cache';
 import { auth } from '@clerk/nextjs/server';
 import { VehicleStatus as PrismaVehicleStatus } from '@prisma/client';
 
-import { db } from '@/lib/database/db';
+import db from '@/lib/database/db';
 import { handleError } from '@/lib/errors/handleError';
 import { hasPermission } from '@/lib/auth/permissions';
 import {
@@ -176,23 +176,34 @@ function toPublicVehicle(prismaVehicle: any): Vehicle {
 }
 
 export async function createVehicleAction(
-  organizationId: string,
-  data: VehicleFormData
+  _prevState: VehicleActionResult | null, // Added prevState for useActionState
+  formData: FormData // Changed to FormData for useActionState
 ): Promise<VehicleActionResult> {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return { success: false, error: 'Unauthorized' };
+    const { userId, orgId: currentOrgId } = await auth(); // Get orgId from auth
+    if (!userId || !currentOrgId) {
+      return { success: false, error: 'Unauthorized', data: false };
     }
 
-    // Validate input
-    const validatedData = VehicleFormSchema.parse(data);
+    // Extract data from FormData
+    const rawFormData = Object.fromEntries(formData.entries());
+    const validatedFields = VehicleFormSchema.safeParse(rawFormData);
+
+    if (!validatedFields.success) {
+      return {
+        success: false,
+        error: 'Invalid form data. Please check the fields.',
+        fieldErrors: validatedFields.error.flatten().fieldErrors as Record<string, string[]>,
+        data: false,
+      };
+    }
+    const validatedData = validatedFields.data;
 
     // Check if VIN already exists in the organization
     const existingVehicle = await db.vehicle.findFirst({
       where: {
         vin: validatedData.vin,
-        organizationId,
+        organizationId: currentOrgId, // Use orgId from auth
       },
     });
 
@@ -200,57 +211,82 @@ export async function createVehicleAction(
       return {
         success: false,
         error: 'A vehicle with this VIN already exists',
+        fieldErrors: { vin: ['A vehicle with this VIN already exists'] },
+        data: false,
       };
     }
 
     // Map status/type to Prisma
     const vehicleData = {
       ...validatedData,
-      organizationId,
+      organizationId: currentOrgId, // Use orgId from auth
       status: toPrismaVehicleStatus('available'),
       type: validatedData.type,
       unitNumber: validatedData.unitNumber ?? '', // ensure string
-      registrationExpiration: validatedData.registrationExpiry
+      registrationExpiry: validatedData.registrationExpiry
         ? new Date(validatedData.registrationExpiry)
         : null,
-      insuranceExpiration: validatedData.insuranceExpiry
+      insuranceExpiry: validatedData.insuranceExpiry
         ? new Date(validatedData.insuranceExpiry)
         : null,
       nextMaintenanceDate: validatedData.nextMaintenanceDate
         ? new Date(validatedData.nextMaintenanceDate)
         : null,
+      // Ensure numeric fields are numbers or undefined
+      year: validatedData.year ? Number(validatedData.year) : new Date().getFullYear(),
+      totalMileage: validatedData.totalMileage ? Number(validatedData.totalMileage) : undefined,
+      nextMaintenanceMileage: validatedData.nextMaintenanceMileage ? Number(validatedData.nextMaintenanceMileage) : undefined,
+      grossVehicleWeight: validatedData.grossVehicleWeight ? Number(validatedData.grossVehicleWeight) : undefined,
+      maxPayload: validatedData.maxPayload ? Number(validatedData.maxPayload) : undefined,
     };
-    const vehicle = await db.vehicle.create({ data: vehicleData });
+    const vehicle = await db.vehicle.create({ data: vehicleData as any }); // Use 'as any' for now, refine Prisma types later
 
-    revalidatePath(`/dashboard/${organizationId}/vehicles`);
-    return { success: true, data: toPublicVehicle(vehicle) };
+    revalidatePath(`/dashboard/${currentOrgId}/vehicles`);
+    return { success: true, vehicle: toPublicVehicle(vehicle), data: true };
   } catch (error) {
-    return handleError(error, 'Create Vehicle');
+    const result = handleError(error, 'Create Vehicle');
+    return { success: false, error: result.error, fieldErrors: (result as any).fieldErrors, data: false };
   }
 }
 
 export async function updateVehicleAction(
-  vehicleId: string,
-  data: VehicleFormData
+  prevState: VehicleActionResult | null, // Added prevState for useActionState
+  formData: FormData // Changed to FormData for useActionState
 ): Promise<VehicleActionResult> {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return { success: false, error: 'Unauthorized' };
+    const { userId, orgId: currentOrgId } = await auth();
+    if (!userId || !currentOrgId) {
+      return { success: false, error: 'Unauthorized', data: false };
+    }
+
+    const vehicleId = formData.get('vehicleId') as string;
+    if (!vehicleId) {
+      return { success: false, error: 'Vehicle ID is missing.', data: false };
     }
 
     // Get existing vehicle to check permissions
     const existingVehicle = await db.vehicle.findUnique({
-      where: { id: vehicleId },
+      where: { id: vehicleId, organizationId: currentOrgId }, // Ensure vehicle belongs to the org
       select: { id: true, organizationId: true, vin: true },
     });
 
     if (!existingVehicle) {
-      return { success: false, error: 'Vehicle not found' };
+      return { success: false, error: 'Vehicle not found or you do not have permission to edit it.', data: false };
     }
 
-    // Validate input
-    const validatedData = VehicleFormSchema.parse(data);
+    // Extract data from FormData
+    const rawFormData = Object.fromEntries(formData.entries());
+    const validatedFields = VehicleFormSchema.safeParse(rawFormData);
+
+    if (!validatedFields.success) {
+      return {
+        success: false,
+        error: 'Invalid form data. Please check the fields.',
+        fieldErrors: validatedFields.error.flatten().fieldErrors as Record<string, string[]>,
+        data: false,
+      };
+    }
+    const validatedData = validatedFields.data;
 
     // Check if VIN change conflicts with existing vehicle
     if (validatedData.vin !== existingVehicle.vin) {
@@ -266,6 +302,8 @@ export async function updateVehicleAction(
         return {
           success: false,
           error: 'A vehicle with this VIN already exists',
+          fieldErrors: { vin: ['A vehicle with this VIN already exists'] },
+          data: false,
         };
       }
     }
@@ -274,29 +312,36 @@ export async function updateVehicleAction(
     const updateData = {
       ...validatedData,
       type: validatedData.type,
-      registrationExpiration: validatedData.registrationExpiry
+      registrationExpiry: validatedData.registrationExpiry
         ? new Date(validatedData.registrationExpiry)
         : null,
-      insuranceExpiration: validatedData.insuranceExpiry
+      insuranceExpiry: validatedData.insuranceExpiry
         ? new Date(validatedData.insuranceExpiry)
         : null,
       nextMaintenanceDate: validatedData.nextMaintenanceDate
         ? new Date(validatedData.nextMaintenanceDate)
         : null,
+      // Ensure numeric fields are numbers or undefined
+      year: validatedData.year ? Number(validatedData.year) : new Date().getFullYear(),
+      totalMileage: validatedData.totalMileage ? Number(validatedData.totalMileage) : undefined,
+      nextMaintenanceMileage: validatedData.nextMaintenanceMileage ? Number(validatedData.nextMaintenanceMileage) : undefined,
+      grossVehicleWeight: validatedData.grossVehicleWeight ? Number(validatedData.grossVehicleWeight) : undefined,
+      maxPayload: validatedData.maxPayload ? Number(validatedData.maxPayload) : undefined,
     };
 
     const vehicle = await db.vehicle.update({
       where: { id: vehicleId },
-      data: updateData,
+      data: updateData as any, // Use 'as any' for now, refine Prisma types later
     });
 
     revalidatePath(`/dashboard/${existingVehicle.organizationId}/vehicles`);
     revalidatePath(
       `/dashboard/${existingVehicle.organizationId}/vehicles/${vehicleId}`
     );
-    return { success: true, data: toPublicVehicle(vehicle) };
+    return { success: true, vehicle: toPublicVehicle(vehicle), data: true };
   } catch (error) {
-    return handleError(error, 'Update Vehicle');
+    const result = handleError(error, 'Update Vehicle');
+    return { success: false, error: result.error, fieldErrors: (result as any).fieldErrors, data: false };
   }
 }
 
@@ -307,7 +352,7 @@ export async function updateVehicleStatusAction(
   try {
     const { userId } = await auth();
     if (!userId) {
-      return { success: false, error: 'Unauthorized' };
+      return { success: false, error: 'Unauthorized', data: false };
     }
 
     // Get existing vehicle to check permissions
@@ -324,7 +369,7 @@ export async function updateVehicleStatusAction(
     });
 
     if (!existingVehicle) {
-      return { success: false, error: 'Vehicle not found' };
+      return { success: false, error: 'Vehicle not found', data: false };
     }
 
     // Validate input
@@ -343,9 +388,10 @@ export async function updateVehicleStatusAction(
     revalidatePath(
       `/dashboard/${existingVehicle.organizationId}/vehicles/${vehicleId}`
     );
-    return { success: true, data: toPublicVehicle(updatedVehicle) };
+    return { success: true, vehicle: toPublicVehicle(updatedVehicle), data: true };
   } catch (error) {
-    return handleError(error, 'Update Vehicle Status');
+    const result = handleError(error, 'Update Vehicle Status');
+    return { success: result.success, error: result.error, fieldErrors: (result as any).fieldErrors, data: false };
   }
 }
 
@@ -355,7 +401,7 @@ export async function deleteVehicleAction(
   try {
     const { userId } = await auth();
     if (!userId) {
-      return { success: false, error: 'Unauthorized' };
+      return { success: false, error: 'Unauthorized', data: false };
     }
 
     // Get vehicle to get organizationId for revalidation
@@ -365,7 +411,7 @@ export async function deleteVehicleAction(
     });
 
     if (!vehicle) {
-      return { success: false, error: 'Vehicle not found' };
+      return { success: false, error: 'Vehicle not found', data: false };
     }
 
     await db.vehicle.delete({
@@ -373,9 +419,10 @@ export async function deleteVehicleAction(
     });
 
     revalidatePath(`/dashboard/${vehicle.organizationId}/vehicles`);
-    return { success: true };
+    return { success: true, data: true };
   } catch (error) {
-    return handleError(error, 'Delete Vehicle');
+    const result = handleError(error, 'Delete Vehicle');
+    return { success: result.success, error: result.error, fieldErrors: (result as any).fieldErrors, data: false };
   }
 }
 
@@ -386,21 +433,25 @@ export async function assignVehicleToDriverAction(
   try {
     const { userId } = await auth();
     if (!userId) {
-      return { success: false, error: 'Unauthorized' };
+      return { success: false, error: 'Unauthorized', data: false };
+    }
+
+    const vehicle = await db.vehicle.findUnique({
+      where: { id: vehicleId },
+      select: {
+        id: true,
+        organizationId: true,
+        status: true,
+        // currentDriverId: true, // Removed as it's not part of the select type and not used
+      },
+    });
+
+    if (!vehicle) {
+      return { success: false, error: 'Vehicle not found', data: false };
     }
 
     // Find an active load for this vehicle, or create a new one for assignment
     // (This is a simplified example; real logic may need to check for existing assignments, statuses, etc.)
-    const vehicle = await db.vehicle.findUnique({
-      where: { id: vehicleId },
-      select: { organizationId: true },
-    });
-
-    if (!vehicle) {
-      return { success: false, error: 'Vehicle not found' };
-    }
-
-    // Create a new load assignment (minimal fields)
     const newLoad = await db.load.create({
       data: {
         organizationId: vehicle.organizationId,
@@ -430,9 +481,11 @@ export async function assignVehicleToDriverAction(
     });
     return {
       success: true,
-      data: updatedVehicle ? toPublicVehicle(updatedVehicle) : undefined,
+      vehicle: updatedVehicle ? toPublicVehicle(updatedVehicle) : undefined,
+      data: true,
     };
   } catch (error) {
-    return handleError(error, 'Assign Vehicle To Driver');
+    const result = handleError(error, 'Assign Vehicle To Driver');
+    return { success: result.success, error: result.error, fieldErrors: (result as any).fieldErrors, data: false };
   }
 }

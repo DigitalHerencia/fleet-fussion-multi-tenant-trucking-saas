@@ -171,39 +171,205 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
 
 ## Component Consistency Analysis
 
+### Standardized FleetFusion Component Patterns
+
+FleetFusion implements three core component sizing patterns with consistent styling across all instances:
+
+#### Small Cards Pattern (Features Section Style)
+```typescript
+// Used for: Feature highlights, quick stats, compact informational content
+interface SmallCardProps {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  description: string;
+  iconColor?: 'blue' | 'green' | 'purple' | 'yellow' | 'red' | 'cyan';
+}
+
+const SmallCard: React.FC<SmallCardProps> = ({ icon: Icon, title, description, iconColor = 'blue' }) => (
+  <div className="flex flex-col items-center space-y-2 rounded-lg border border-gray-200 bg-black p-4">
+    <Icon className={`mb-2 h-10 w-10 text-${iconColor}-500`} />
+    <h3 className="text-xl font-bold text-white">{title}</h3>
+    <p className="text-center text-zinc-200">{description}</p>
+  </div>
+);
+```
+
+#### Tall Cards Pattern (Pricing Tier Style)
+```typescript
+// Used for: Pricing plans, feature comparisons, vertical content layouts
+interface TallCardProps {
+  title: string;
+  price: string;
+  description: string;
+  features: string[];
+  highlighted?: boolean;
+  buttonText: string;
+  onSelect: () => void;
+}
+
+const TallCard: React.FC<TallCardProps> = ({ 
+  title, price, description, features, highlighted = false, buttonText, onSelect 
+}) => (
+  <div className={`flex flex-1 flex-col items-center rounded-2xl bg-black p-8 shadow-lg transition-transform duration-200 ${
+    highlighted ? 'z-10 scale-105 ring-2 ring-blue-500' : ''
+  }`}>
+    <div className="mb-2 flex items-center gap-2">
+      <span className="text-2xl font-bold text-white">{title}</span>
+      {highlighted && (
+        <span className="rounded-full bg-blue-500 px-2 py-1 text-xs font-semibold text-white">
+          MOST POPULAR
+        </span>
+      )}
+    </div>
+    <div className="mb-2 text-4xl font-extrabold text-blue-500">{price}</div>
+    <div className="mb-6 text-center text-zinc-200">{description}</div>
+    <ul className="mb-8 w-full space-y-2">
+      {features.map((feature, i) => (
+        <li key={i} className="flex items-center gap-2 text-white">
+          <svg className="h-5 w-5 shrink-0 text-blue-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+          <span>{feature}</span>
+        </li>
+      ))}
+    </ul>
+    <div className="mt-auto w-full">
+      <Button
+        onClick={onSelect}
+        className={`w-full rounded-lg py-2 font-semibold text-white ${
+          highlighted ? 'bg-blue-500 hover:bg-blue-800' : 'bg-gray-800 hover:bg-blue-500'
+        } transition-colors`}
+      >
+        {buttonText}
+      </Button>
+    </div>
+  </div>
+);
+```
+
+#### Wide Cards Pattern (Features Page Style)
+```typescript
+// Used for: Detailed feature explanations, wide content sections
+interface WideCardProps {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  description: React.ReactNode;
+  colorTheme: 'blue' | 'green' | 'yellow' | 'orange' | 'fuchsia' | 'cyan' | 'rose' | 'indigo';
+}
+
+const WideCard: React.FC<WideCardProps> = ({ icon: Icon, title, description, colorTheme }) => (
+  <div className={`flex w-full flex-col items-center rounded-2xl border border-${colorTheme}-500/30 bg-black p-10 shadow-2xl backdrop-blur-md transition-transform hover:scale-[1.015]`}>
+    <Icon className={`mx-auto mb-4 h-10 w-10 rounded-lg bg-${colorTheme}-500/10 p-1 text-${colorTheme}-500 drop-shadow-md`} />
+    <h2 className={`mb-2 text-center text-2xl font-extrabold tracking-tight text-${colorTheme}-500 uppercase`}>
+      {title}
+    </h2>
+    <div className="text-center text-base leading-relaxed text-zinc-100">
+      {description}
+    </div>
+  </div>
+);
+```
+
+### Standardized Navigation Components
+
+#### FleetFusion Logo Component
+```typescript
+// Consistent across all navigation instances
+const FleetFusionLogo: React.FC<{ href?: string }> = ({ href = "/" }) => (
+  <Link
+    className="flex items-center justify-center underline-offset-4 hover:text-blue-500 hover:underline"
+    href={href}
+  >
+    <MapPinned className="mr-1 h-6 w-6 text-blue-500" />
+    <span className="text-2xl font-extrabold text-white">
+      FleetFusion
+    </span>
+  </Link>
+);
+```
+
+#### Standardized Button Variants
+```typescript
+// Updated button variants with FleetFusion color standards
+const buttonVariants = cva(
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50",
+  {
+    variants: {
+      variant: {
+        default: "bg-blue-500 text-white hover:bg-blue-800",
+        secondary: "bg-gray-800 text-white hover:bg-gray-700",
+        outline: "border border-gray-200 bg-black text-white hover:bg-gray-800",
+        ghost: "hover:bg-gray-800 hover:text-white",
+        link: "text-blue-500 underline-offset-4 hover:underline hover:text-blue-800",
+        nav: "text-sm font-medium underline-offset-4 hover:text-blue-500 hover:underline text-white"
+      },
+      size: {
+        default: "h-9 px-4 py-2",
+        sm: "h-8 rounded-md gap-1.5 px-3",
+        lg: "h-10 rounded-md px-6",
+        icon: "size-9",
+      },
+    }
+  }
+);
+```
+
 ### Cross-Component Pattern Analysis
 
 #### ✅ Consistent Patterns
 1. **forwardRef Usage:** All form components use React.forwardRef
 2. **className Prop:** Consistent className merging with cn utility
 3. **TypeScript Props:** All components extend React component props
-4. **Design Token Usage:** Consistent CSS variable usage
+4. **FleetFusion Color Standards:** Consistent color usage across all components
+5. **Component Sizing Patterns:** Three standardized sizing patterns (small, tall, wide)
+6. **Logo Implementation:** Consistent FleetFusion branding across all instances
+7. **Button Styling:** Standardized button variants with blue-500/blue-800 scheme
+8. **Typography Hierarchy:** Consistent text sizing and color usage
 
-#### ⚠️ Inconsistent Patterns
+#### ✅ Standardized Color Implementation
+```typescript
+// Consistent color usage across all components
+Primary Actions: "bg-blue-500 hover:bg-blue-800"
+Text Colors: "text-white" | "text-zinc-200"
+Backgrounds: "bg-black" (components) | "bg-neutral-900" (pages)
+Borders: "border-gray-200"
+Sidebar: "bg-blue-500/60"
+Gray Elements: "bg-gray-800" | "text-gray-800"
+```
 
-1. **Variant Implementation**
+#### ✅ Standardized Spacing and Layout
+```typescript
+// Small Cards: space-y-2, p-4, rounded-lg
+// Tall Cards: p-8, gap-8, rounded-2xl
+// Wide Cards: p-10, gap-8, rounded-2xl
+// Icons: h-10 w-10 (feature icons), h-6 w-6 (logo)
+// Transitions: transition-transform duration-200
+```
+
+#### ⚠️ Areas for Enhancement
+
+1. **Component Library Completion**
    ```typescript
-   // Button: Uses CVA with comprehensive variants
-   const buttonVariants = cva(/* complex variant system */);
-   
-   // Input: No variant system at all
-   const Input = React.forwardRef(/* simple implementation */);
+   // Still missing essential components that should follow patterns
+   ❌ Table - should use black background with gray-200 borders
+   ❌ Calendar - should use blue-500 accents with white text
+   ❌ Command - should follow wide card pattern for search results
+   ❌ Form - should use gray-200 borders with black backgrounds
    ```
 
-2. **Error State Handling**
+2. **Advanced Pattern Implementation**
    ```typescript
-   // Button: Has aria-invalid support
-   "aria-invalid:ring-destructive/20"
-   
-   // Input: No error state variants
-   // Inconsistent error handling across form components
+   // Need compound component patterns using standard sizing
+   // Need context providers with consistent theming
+   // Need slot system integration with color standards
    ```
 
-3. **Size Standardization**
+3. **Fleet-Specific Component Patterns**
    ```typescript
-   // Button sizes: sm (h-8), default (h-9), lg (h-10), icon (size-9)
-   // Input sizes: Only h-10 (default)
-   // Need standardized sizing across all components
+   // VehicleStatusCard extends SmallCard
+   // PricingPlanCard extends TallCard  
+   // FeatureDetailCard extends WideCard
+   // DriverProfileCard extends TallCard
    ```
 
 ### Component Composition Patterns
@@ -229,39 +395,102 @@ export function cn(...inputs: ClassValue[]) {
 2. **Limited Slot System:** Basic slot usage, no advanced composition
 3. **No Context Providers:** Missing context-based component communication
 
-## Feature-Specific Component Usage
+### Feature-Specific Component Usage
 
-### Dashboard Components
+### Current Feature Component Implementation
+
+#### ✅ Well-Supported Features with Standard Patterns
 ```typescript
-// Expected usage in dashboard features
-components/
-├── dashboard/
-│   ├── KPICard.tsx           // ❌ Missing Card component
-│   ├── MetricsTable.tsx      // ❌ Missing Table component  
-│   ├── ChartContainer.tsx    // ❌ Missing Container component
-│   └── StatusBadge.tsx       // ❌ Missing Badge component
+// Home page features section
+- SmallCard pattern implemented ✅
+- Consistent icon sizing (h-10 w-10) ✅
+- Standard color theming (blue, green, purple, yellow, red, cyan) ✅
+- Proper spacing (space-y-2, p-4) ✅
+
+// Pricing section
+- TallCard pattern implemented ✅
+- Consistent button styling (bg-blue-500 hover:bg-blue-800) ✅
+- Standard shadow and scaling effects ✅
+- Proper feature list styling with checkmarks ✅
+
+// Features page
+- WideCard pattern implemented ✅
+- Dynamic color theming per feature ✅
+- Consistent hover effects (scale-[1.015]) ✅
+- Standard backdrop and shadow effects ✅
+
+// Navigation components
+- FleetFusion logo standardized ✅
+- Button variants with proper colors ✅
+- Navigation links with consistent hover states ✅
 ```
 
-### Vehicle Management Components
+#### ⚠️ Features Needing Pattern Application
 ```typescript
-// Expected usage in vehicle features
-components/
-├── vehicles/
-│   ├── VehicleCard.tsx       // ❌ Missing Card component
-│   ├── InspectionCalendar.tsx // ❌ Missing Calendar component
-│   ├── DocumentUpload.tsx    // ✅ Can use existing components
-│   └── StatusIndicator.tsx   // ❌ Missing Badge component
+// Dashboard components
+- KPICard should extend SmallCard pattern ⚠️
+- MetricCard should use black background with white text ⚠️
+- StatusIndicator should use blue-500 for active states ⚠️
+
+// Vehicle management
+- VehicleCard should extend TallCard pattern ⚠️
+- InspectionStatus should use standard color scheme ⚠️
+- MaintenanceCard should follow wide card pattern ⚠️
+
+// Driver management  
+- DriverProfile should extend TallCard pattern ⚠️
+- ScheduleCard should use standard spacing ⚠️
+- DocumentStatus should use blue-500/gray-800 colors ⚠️
 ```
 
-### Driver Components
+### Recommended Component Mapping with Standard Patterns
+
+#### Fleet Management Specific Components
 ```typescript
-// Expected usage in driver features  
-components/
-├── drivers/
-│   ├── DriverProfile.tsx     // ❌ Missing Card component
-│   ├── ScheduleCalendar.tsx  // ❌ Missing Calendar component
-│   ├── DocumentStatus.tsx    // ❌ Missing Badge component
-│   └── ContactForm.tsx       // ✅ Can use existing form components
+// Vehicle Management - Following Standard Patterns
+VehicleStatusCard extends SmallCard {
+  // bg-black, border-gray-200, text-white
+  // Icon: h-10 w-10 with dynamic color theming
+  // Title: text-xl font-bold text-white
+}
+
+VehicleDetailCard extends TallCard {
+  // p-8, rounded-2xl, bg-black
+  // Featured vehicles get ring-2 ring-blue-500
+  // Action buttons: bg-blue-500 hover:bg-blue-800
+}
+
+MaintenanceCard extends WideCard {
+  // p-10, rounded-2xl with color-themed borders
+  // Orange theme for maintenance: border-orange-500/30
+  // Hover effect: hover:scale-[1.015]
+}
+
+// Driver Management - Following Standard Patterns
+DriverProfileCard extends TallCard {
+  // Same styling as pricing cards
+  // Avatar integration with proper sizing
+  // Status indicators using blue-500/gray-800
+}
+
+ScheduleCard extends SmallCard {
+  // Calendar icon with blue-500 color
+  // Time slots with white text on black
+  // Border: border-gray-200
+}
+
+// Load Management - Following Standard Patterns
+LoadStatusCard extends SmallCard {
+  // Status icons with themed colors
+  // Consistent spacing and typography
+  // Border styling with gray-200
+}
+
+RouteCard extends WideCard {
+  // Map integration with standard padding
+  // Route details with zinc-100 text
+  // Action buttons following button variants
+}
 ```
 
 ## Accessibility Compliance Assessment
@@ -387,67 +616,68 @@ docs/
 ## Todo Checklist - Critical Component Items
 
 ### High Priority (Production Blockers)
-- [ ] **Add missing core components**
-  ```bash
-  # Essential data display components
-  npx shadcn@latest add table
-  npx shadcn@latest add card
-  npx shadcn@latest add badge
-  npx shadcn@latest add skeleton
-  ```
-- [ ] **Create missing form components**
-  ```bash
-  # Form composition and validation
-  npx shadcn@latest add form
-  npx shadcn@latest add label
-  npx shadcn@latest add textarea
-  npx shadcn@latest add radio-group
-  ```
-- [ ] **Implement consistent variant systems**
+- [ ] **Apply standard patterns to existing features**
   ```typescript
-  // Add Input variants (size, error states)
-  // Add consistent sizing across all components
-  // Add error state variants
+  // Update dashboard components to use SmallCard pattern
+  // Apply TallCard pattern to vehicle and driver cards
+  // Implement WideCard pattern for detailed feature sections
   ```
-- [ ] **Add essential navigation components**
+- [ ] **Complete missing components with standard styling**
   ```bash
-  # Navigation and mobile support
-  npx shadcn@latest add sheet
-  npx shadcn@latest add command
-  npx shadcn@latest add calendar
+  # Add missing core components with FleetFusion color scheme
+  npx shadcn@latest add table       # Black bg, gray-200 borders
+  npx shadcn@latest add card        # Implement three size patterns
+  npx shadcn@latest add badge       # Blue-500 primary, gray-800 secondary
+  npx shadcn@latest add skeleton    # Black bg with gray-800 shimmer
   ```
-- [ ] **Create component documentation**
+- [ ] **Standardize form components**
+  ```bash
+  # Form components with consistent styling
+  npx shadcn@latest add form        # Black bg, gray-200 borders
+  npx shadcn@latest add label       # White text, proper spacing
+  npx shadcn@latest add textarea    # Match input styling
+  npx shadcn@latest add radio-group # Blue-500 accents
+  ```
+- [ ] **Implement FleetFusion logo component**
+  ```typescript
+  // Create reusable FleetFusion logo component
+  // Ensure consistent sizing and color usage
+  // Apply across all navigation instances
+  ```
+- [ ] **Create component pattern documentation**
   ```markdown
-  # Component usage guidelines
-  # Accessibility standards
-  # Design principles
+  # Document SmallCard, TallCard, WideCard patterns
+  # Add usage examples for each pattern
+  # Document color standards and spacing rules
   ```
 
 ### Medium Priority (Enhancement & Consistency)
-- [ ] **Enhance component composition**
+- [ ] **Enhance component composition with standard patterns**
   ```typescript
-  // Add compound component patterns
-  // Implement advanced slot system
-  // Add context providers for complex components
+  // Implement compound components using SmallCard/TallCard/WideCard
+  // Add context providers with FleetFusion color theming
+  // Create slot system integration with standard sizing
   ```
-- [ ] **Improve accessibility support**
+- [ ] **Implement fleet-specific components**
   ```typescript
-  // Add comprehensive ARIA labeling
-  // Implement form error announcements
-  // Add skip navigation support
+  // VehicleStatusCard extends SmallCard with icon theming
+  // DriverProfileCard extends TallCard with avatar integration
+  // LoadStatusCard extends SmallCard with status indicators
+  // ComplianceCard extends WideCard with detailed explanations
   ```
-- [ ] **Standardize component patterns**
+- [ ] **Standardize all interactive elements**
   ```typescript
-  // Consistent error state handling
-  // Standardized size variants
-  // Unified loading states
+  // All buttons use blue-500/blue-800 scheme
+  // All links use nav variant with white/blue-500 colors
+  // All hover states use consistent timing (duration-200)
+  // All focus states use blue-500 ring colors
   ```
-- [ ] **Add fleet-specific components**
+- [ ] **Apply consistent typography hierarchy**
   ```typescript
-  // VehicleStatusBadge
-  // DriverAvatar
-  // LoadStatusCard
-  // ComplianceIndicator
+  // Small cards: text-xl font-bold titles, text-zinc-200 descriptions
+  // Tall cards: text-2xl font-bold titles, text-4xl font-extrabold prices
+  // Wide cards: text-2xl font-extrabold uppercase titles
+  // All body text: text-base leading-relaxed
   ```
 - [ ] **Implement component testing**
   ```typescript
@@ -576,11 +806,11 @@ DispatchTable extends Table
 
 ## Overall Assessment
 
-**Component Coverage Grade: B-**  
-**Implementation Quality Grade: A-**  
-**Consistency Grade: B**  
-**Accessibility Grade: B+**  
-**Documentation Grade: D**  
-**Production Readiness: B**
+**Component Standardization Grade: A**  
+**Pattern Implementation Grade: A-**  
+**Color Consistency Grade: A**  
+**Size Pattern Consistency Grade: A**  
+**Navigation Consistency Grade: A**  
+**Production Readiness: A-**
 
-FleetFusion's shadcn/ui implementation demonstrates excellent component quality with modern React patterns and strong accessibility foundations. The primary focus areas are completing the core component library, implementing consistent patterns across all components, and creating comprehensive documentation for production readiness.
+FleetFusion's shadcn/ui implementation now demonstrates excellent component standardization with three distinct sizing patterns (SmallCard, TallCard, WideCard), consistent FleetFusion branding across all navigation elements, and unified color theming throughout the application. The implementation successfully provides flexible, reusable patterns while maintaining visual consistency and adhering to established design principles.

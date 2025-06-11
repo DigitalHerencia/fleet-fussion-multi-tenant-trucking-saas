@@ -102,9 +102,8 @@ export const systemRoleSchema = z.enum([
   SystemRoles.ADMIN,
   SystemRoles.DISPATCHER,
   SystemRoles.DRIVER,
-  SystemRoles.COMPLIANCE_OFFICER,
-  SystemRoles.ACCOUNTANT,
-  SystemRoles.VIEWER,
+  SystemRoles.COMPLIANCE,
+  SystemRoles.MEMBER,
 ] as const);
 
 export const userRoleAssignmentSchema = z.object({
