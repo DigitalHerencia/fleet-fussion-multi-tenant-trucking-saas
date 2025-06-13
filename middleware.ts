@@ -183,6 +183,14 @@ function createResponseWithHeaders(
   // Security headers (additional runtime security)
   response.headers.set('X-Robots-Tag', 'noindex, nofollow');
   response.headers.set('X-Request-ID', crypto.randomUUID());
+  response.headers.set(
+    'Content-Security-Policy',
+    "default-src 'self'; img-src 'self' data: https:; object-src 'none'; frame-ancestors 'none';"
+  );
+  response.headers.set('X-Frame-Options', 'DENY');
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
   
   // Rate limiting headers (basic implementation)
   const userAgent = req.headers.get('user-agent') || '';

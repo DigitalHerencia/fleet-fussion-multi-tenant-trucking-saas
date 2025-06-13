@@ -287,6 +287,9 @@ export class RouteProtection {
       SystemRoles.COMPLIANCE,
       SystemRoles.MEMBER,
     ],
+    // Admin dashboard and sub pages: Admin only
+    '/:orgId/admin': [SystemRoles.ADMIN],
+    '/:orgId/admin/:userId': [SystemRoles.ADMIN],
     // IFTA: Admin, Member (members can view basic IFTA info)
     '/:orgId/ifta': [SystemRoles.ADMIN, SystemRoles.MEMBER],
     // Settings: Admin only
