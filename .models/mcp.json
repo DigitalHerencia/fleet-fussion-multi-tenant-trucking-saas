@@ -3,19 +3,20 @@
   "inputs": [],
   "servers": {
     "neon": {
-      "type": "stdio",
+      "type": "stdio", 
       "command": "npx",
-      "args": ["-y", "@neondatabase/mcp-server-neon", "start", "${NEON_API_KEY}"],
+      "args": ["-y", "@neondatabase/mcp-server-neon", "start"],
       "env": {
-        "DATABASE_URL": "${DATABASE_URL}"
+        "DATABASE_URL": "${DATABASE_URL}",
+        "NEON_API_KEY": "${NEON_API_KEY}"
       }
     },
     "clerk": {
       "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "@clerk/agent-toolkit", "-p", "local-mcp", "--secret-key", "${CLERK_SECRET_KEY}"],
+      "command": "npx", 
+      "args": ["-y", "@clerk/agent-toolkit", "start"],
       "env": {
-        "CLERK_API_KEY": "${CLERK_SECRET_KEY}",
+        "CLERK_SECRET_KEY": "${CLERK_SECRET_KEY}",
         "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": "${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}"
       }
     },
@@ -28,23 +29,26 @@
       }
     },
     "github": {
-      "type": "stdio",
+      "type": "stdio", 
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-github"],
       "env": {
         "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}",
-        "GITHUB_WORKING_DIRECTORY": "./"
+        "GITHUB_REPOSITORY": "DigitalHerencia/FleetFusion"
       }
     },
     "filesystem": {
       "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "./"]
-    },
-    "playwright": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["@playwright/mcp@latest"]
+      "command": "npx", 
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "./"],
+      "env": {
+        "ALLOWED_DIRECTORIES": ["./src", "./app", "./components", "./lib", "./types", "./config", "./.github"]
+      }
     }
+  },
+  "playwright": {
+    "type": "stdio",
+    "command": "npx",
+    "args": ["@playwright/mcp@latest"]
   }
 }

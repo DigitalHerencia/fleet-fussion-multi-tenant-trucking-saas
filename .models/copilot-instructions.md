@@ -129,6 +129,21 @@ export default async function Page({ params }: PageProps) {
 }
 ```
 
+## GitHub PR Standards (CRITICAL)
+
+**PR Title Format:** `[type]: description`
+- Types: `feat`, `fix`, `docs`, `test`, `refactor`, `config`
+- Example: `feat: add vehicle tracking dashboard`
+
+**PR Description Must Include:**
+- Closing keywords: `Closes #123`
+- Dependencies: `Depends on #456` or `Blocked by #789`
+- Brief impact summary
+- Completed checklist
+
+**Branch Naming:** `type/description-kebab-case`
+- Examples: `feature/client-management`, `fix/auth-bug`, `docs/
+
 **Additional Guidance**
 
 - Always clarify requirements if any ambiguity exists before generating code.

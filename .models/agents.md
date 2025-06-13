@@ -1,4 +1,4 @@
-Here’s a **strictly enforced GitHub automation standards doc** for FleetFusion, incorporating all your required conventions, project management flows, PR/issue automation, and referencing the correct standards from your repo context and personal instructions. This version is clear, actionable, and immediately implementable for solo/automated DevOps:
+_Here’s a **strictly enforced GitHub automation standards doc** for FleetFusion, incorporating all your required conventions, project management flows, PR/issue automation, and referencing the correct standards from your repo context and personal instructions. This version is clear, actionable, and immediately implementable for solo/automated DevOps:
 
 ---
 
@@ -17,125 +17,132 @@ Here’s a **strictly enforced GitHub automation standards doc** for FleetFusion
 
 ---
 
-## 2️⃣ Branching & Commit Rules
+## 2️⃣ GitFlow & Branching Strategy
 
-- **NEVER commit directly to `main`.**
-- **All work must occur in a branch** named with these prefixes:
-  - `feature/<scope>` ― new features
-  - `fix/<scope>` ― bugfixes
-  - `docs/<scope>` ― docs/README
-  - `test/<scope>` ― tests
-  - `refactor/<scope>` ― code quality
-  - `config/<scope>` ― config/env setup
-- **All PRs:** Title must be `[type]: description` (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `config:`).
-- **PR Descriptions:** Must include:
-  - Linked issues using closing keywords (e.g., `Closes #42`)
-  - Short summary of scope and impact
-  - Checklist: [ ] Passes CI, [ ] Updates docs (if needed), [ ] Notifies project board/milestone
-- **Labels:** PRs auto-labeled by branch prefix and must include one of: `Feature`, `Bug`, `Documentation`, `Testing`, `Code-Quality`, `Configuration`.
-- **Milestones:** All PRs must be assigned to an active milestone if related to a release.
+### Branch Structure
+- **`main`**: Production-ready code only
+- **`develop`**: Integration branch for features
+- **Feature branches**: `feature/description-kebab-case`
+- **Hotfix branches**: `hotfix/description-kebab-case`
+- **Release branches**: `release/v1.0.0`
 
----
+### Workflow Rules
+1. **NEVER commit directly to `main` or `develop`**
+2. All work starts from `develop` branch
+3. Feature branches merge back to `develop` via PR
+4. Release branches created from `develop`, merged to both `main` and `develop`
+5. Hotfixes branch from `main`, merge to both `main` and `develop`
 
-## 3️⃣ Issue Management & Templates
+### PR Title Format
+- MUST use: `[type]: description`
+- Valid types: `feat`, `fix`, `docs`, `test`, `refactor`, `config`, `hotfix`
 
-- **Labels:** Every issue must be labeled with:
-  - Type (`Feature`, `Bug`, `Documentation`, `Testing`, `Code-Quality`, `Configuration`)
-  - Priority (`Priority-High`, `Priority-Medium`, `Priority-Low`)
-  - Assignment (`Codex`, `Copilot`)
-  - Workflow (`Has-PR`, `Blocked`, `Technical-Debt`)
-- **Templates:** Use or extend `.github/ISSUE_TEMPLATE/` for:
-  - Bug report
-  - Feature request
-  - Docs/Chore
-- **Dependencies:** Link related issues/PRs via GitHub keywords (`blocked by #X`, `closes #Y`).
-- **Project Board:** All issues must be moved to the correct board column (`Todo`, `In Progress`, `Review`, `Done`) as soon as status changes.  
-  **Reminder:** Update the project board and milestone on every status change.
+### Required PR Elements
+1. `Closes #[issue-number]` or `Fixes #[issue-number]`
+2. Brief description of changes
+3. Dependencies (if any): `Depends on #X`
+4. Milestone assignment
 
 ---
 
-## 4️⃣ Pull Request Automation
+## 3️⃣ Issue Management
 
-- **Auto-label PRs** based on branch prefix.
-- **Auto-assign reviewers** (for solo dev, self-assignment is valid).
-- **All PRs run CI:** Must pass `ci/test`, `ci/lint`, `ci/typecheck` before merge.
-- **Auto-move** PRs/issues on the project board per status (see board flow below).
-- **Merge Rule:** Only squash merge allowed, never rebase or merge commits.
-- **No direct pushes to main.**
-- **PR merges:** Only after human (your) review and CI passes.
+### Required Labels
+- **Type**: `feature`, `bug`, `documentation`, `testing`, `refactor`, `config`
+- **Priority**: `priority/high`, `priority/medium`, `priority/low`
+- **Status**: `status/todo`, `status/in-progress`, `status/review`, `status/done`
 
----
-
-## 5️⃣ Project Board & Milestone Flow
-
-```mermaid
-graph LR
-  subgraph "Project Board"
-    A[📋 Todo] -->|Start Work| B[🔄 In Progress]
-    B -->|Create PR| C[👀 Review]
-    C -->|Merge| D[✅ Done]
-  end
-  subgraph "Auto-Movement"
-    E[New Issue] --> A
-    F[Add Feature/Bug Label] --> B
-    G[Has-PR Label] --> C
-    H[Close Issue/PR] --> D
-  end
-```
-- **Milestone closure:** Only after all assigned issues/PRs are closed and released.
+### Issue Linking
+- Use GitHub keywords: `closes #X`, `fixes #X`, `resolves #X`
+- For dependencies: `blocked by #X`, `depends on #X`
 
 ---
 
-## 6️⃣ Release & Deployment
+## 4️⃣ Pull Request Standards
+
+### Automated Checks
+- **CI Pipeline**: All PRs must pass `test`, `lint`, `typecheck`
+- **Branch Protection**: Required status checks on `main` and `develop`
+- **Review Required**: At least one approval before merge
+
+### Merge Strategy
+- **Feature → develop**: Squash merge
+- **Release → main**: Merge commit (preserves release history)
+- **Hotfix**: Squash merge to both `main` and `develop`
+
+---
+
+## 5️⃣ Release Management
 
 ```mermaid
 graph TD
-  A[feature/* branch] -->|PR created| B[GitHub Actions CI]
-  B -->|Tests pass| C[Vercel Preview Deploy]
-  C -->|Review approved| D[Squash merge to main]
-  D -->|Auto-deploy| E[Production: fleet-fusion.vercel.app]
-  F[main branch] -->|Tag release| G[Production Release]
-  G --> H[Close milestone]
+  A[feature/xyz] -->|PR| B[develop]
+  B -->|Release ready| C[release/v1.0.0]
+  C -->|Testing complete| D[main]
+  C -->|Backmerge| B
+  E[hotfix/urgent] -->|Critical fix| D
+  E -->|Backmerge| B
+  D -->|Tag| F[v1.0.0]
 ```
-- **Production deploys:** Only from tagged commits on `main`.
-- **CI/CD:** Automated via GitHub Actions → Vercel.
-- **Secrets:** All environment secrets must be managed via repository/environment settings (NEVER in code).
+
+### Release Process
+1. Create release branch from `develop`
+2. Version bump and changelog update
+3. Testing and bug fixes on release branch
+4. Merge to `main` with merge commit
+5. Tag release on `main`
+6. Backmerge release to `develop`
 
 ---
 
-## 7️⃣ Automation & Workflow Suggestions
+## 6️⃣ CI/CD Pipeline
 
-- **Issue templates:** Use `.github/ISSUE_TEMPLATE` for feature, bug, docs.
-- **PR template:** Create `.github/pull_request_template.md` enforcing:
-  - `[type]: description` title
-  - Linked issues
-  - Checklist (CI, docs, board, milestone)
-- **Auto-label action:** Use `actions/labeler` to tag PRs by branch prefix.
-- **Project automation:** Use GitHub Projects (beta/next) for auto-move on status update.
-- **Branch protection:** Enable required status checks, require PR review, disable force-pushes.
-- **Dependency tracking:** Always refer to issue/PR numbers in descriptions with closing/blocked keywords.
-- **Reminder:** Update project board and milestones with every PR/issue update.
+### Deployment Flow
+- **Feature branches**: Preview deployment on Vercel
+- **develop**: Staging environment
+- **main**: Production deployment
+- **Tags**: Versioned production releases
 
----
-
-## 8️⃣ Secrets & Security
-
-- **Required:** `GITHUB_TOKEN`, `VERCEL_TOKEN`, `CLERK_SECRET_KEY`, `NEON_API_KEY`
-- **Never commit secrets.** Use GitHub Actions secrets and Vercel dashboard for env vars.
+### Required Secrets
+- `VERCEL_TOKEN`
+- `CLERK_SECRET_KEY`
+- `DATABASE_URL`
 
 ---
 
-## 9️⃣ Summary — Non-Negotiables
+## 7️⃣ GitHub Configuration
 
-1. **No direct commits to main.**
-2. **All work on prefixed branches, PRs must follow `[type]: description`.**
-3. **Labels, project, milestone, and automation must be maintained for every PR/issue.**
-4. **PRs: squash merge only, after passing CI and review.**
-5. **Update board and milestones with every status change.**
-6. **All releases and deployments strictly follow CI flow.**
+### Branch Protection Rules
+```yaml
+# main branch
+- Require PR reviews (1)
+- Require status checks
+- Restrict pushes (no direct commits)
+- Include administrators
+
+# develop branch  
+- Require PR reviews (1)
+- Require status checks
+- Allow force pushes (for rebasing)
+```
+
+### Issue Templates
+Create in `.github/ISSUE_TEMPLATE/`:
+- `feature.yml` - Feature requests
+- `bug.yml` - Bug reports
+- `docs.yml` - Documentation improvements
 
 ---
 
-**Strictly follow these standards for all automation, PRs, issues, and releases. Deviations break project automation and release integrity.**
+## 8️⃣ Non-Negotiables
+
+1. **No direct commits to protected branches**
+2. **All features via PR with proper titles**
+3. **Required CI checks must pass**
+4. **Proper issue linking in PRs**
+5. **Squash merge for features, merge commit for releases**
+6. **Tag all production releases**
 
 ---
+
+**Follow these standards strictly. Automation depends on consistent workflow patterns.**
