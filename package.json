@@ -23,6 +23,7 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
+    "@clerk/agent-toolkit": "^0.1.0",
     "@clerk/nextjs": "^6.20.0",
     "@hookform/resolvers": "^5.0.1",
     "@neondatabase/serverless": "^1.0.0",
@@ -91,7 +92,6 @@
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^11.1.0",
     "vaul": "^1.1.2",
-    "xlsx": "^0.18.5",
     "zod": "3.25.28"
   },
   "devDependencies": {

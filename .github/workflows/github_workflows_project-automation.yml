@@ -24,12 +24,13 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
 
-            // FleetFusion Project Column IDs
+            // FleetFusion Project Column IDs (updated with actual column IDs)
             const columns = {
               todo: "Y3Vyc29yOnYyOpLOC9kG5qRUb2Rv",
               inProgress: "Y3Vyc29yOnYyOpLOC9kG5qtJbiBQcm9ncmVzcw==",
               review: "Y3Vyc29yOnYyOpLOC9kG5qZSZXZpZXc=",
-              done: "Y3Vyc29yOnYyOpLOC9kG5qREb25l"
+              done: "Y3Vyc29yOnYyOpLOC9kG5qREb25l",
+              blocked: null // Add blocked column ID here if you have one
             };
 
             const payload = context.payload;
@@ -44,7 +45,7 @@ jobs:
             if (state === 'closed') {
               targetColumn = columns.done;
             } else if (labels.includes('Blocked')) {
-              targetColumn = columns.todo;
+              targetColumn = columns.blocked || columns.todo; // Use blocked column if available, otherwise todo
             } else if (labels.includes('Has-PR') || (!isIssue && state === 'open')) {
               targetColumn = columns.review; // PRs and issues with PRs go to review
             } else if (labels.some(l => ['Feature', 'Bug', 'Documentation', 'Code-Quality', 'Testing'].includes(l))) {

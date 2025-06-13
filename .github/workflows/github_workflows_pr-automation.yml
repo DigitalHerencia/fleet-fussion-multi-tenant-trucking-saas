@@ -156,6 +156,40 @@ jobs:
               console.log(`Added "${priority}" label based on milestone "${milestone}"`);
             }
 
+      - name: Check for dependencies and blocked status
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request;
+            const body = pr.body || '';
+            const prNumber = pr.number;
+            
+            // Check for dependency references ("depends on #123", "blocked by #456")
+            const dependencyRefs = [...body.matchAll(/(?:depends on|blocked by|requires)\s*#(\d+)/gi)]
+              .map(match => parseInt(match[1]));
+            
+            if (dependencyRefs.length > 0) {
+              // Add blocked label if dependencies found
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                labels: ['Blocked']
+              });
+              
+              // Comment with dependency information
+              const depList = dependencyRefs.map(num => `#${num}`).join(', ');
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: `🚫 **Blocked**: This PR depends on ${depList}. It will be automatically unblocked when dependencies are resolved.`
+              });
+              
+              console.log(`Added "Blocked" label due to dependencies: ${depList}`);
+            }
+
       - name: Request review from @DigitalHerencia automatically
         if: |
           github.actor != 'DigitalHerencia' &&
