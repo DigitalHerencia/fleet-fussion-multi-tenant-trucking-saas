@@ -1,3 +1,5 @@
+# PR Template Specifications
+
 ## PR Type
 - [ ] feat
 - [ ] fix
@@ -8,15 +10,13 @@
 - [ ] config
 
 ## Description
-<!-- What does this PR do and why? -->
+<!-- Describe what this PR changes and why -->
 
 ## Linked Issue(s)
 Closes #
 
 ## Checklist
-- [ ] Title follows `[type]: description` format
-- [ ] References an issue (with closing keyword)
 - [ ] Tests added/updated
 - [ ] Docs updated
+- [ ] Branch named correctly
 - [ ] Milestone assigned
-- [ ] Project board updated
