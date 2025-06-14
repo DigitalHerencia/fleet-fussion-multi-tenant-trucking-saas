@@ -109,12 +109,14 @@ Use descriptive branch names following this pattern:
 - `docs/description-of-documentation-change`
 - `refactor/description-of-refactor`
 - `test/description-of-test-addition`
+- `config/description-of-configuration-change`
 
 Examples:
 
 - `feature/driver-compliance-dashboard`
 - `fix/load-assignment-validation`
 - `docs/api-reference-updates`
+- `config/github-workflows-setup`
 
 ### Commit Message Guidelines
 
@@ -136,7 +138,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/) specificatio
 - `style`: Code style changes (formatting, etc.)
 - `refactor`: Code refactoring
 - `test`: Adding or updating tests
-- `chore`: Maintenance tasks
+- `config`: Configuration changes
 
 **Examples:**
 

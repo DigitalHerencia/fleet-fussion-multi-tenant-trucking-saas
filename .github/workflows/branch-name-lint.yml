@@ -13,8 +13,8 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const branch = context.payload.pull_request.head.ref;
-            const validPrefixes = ['feature/', 'fix/', 'docs/', 'chore/', 'refactor/', 'test/', 'config/'];
-            const regex = /^(feature|fix|docs|chore|refactor|test|config)\/[a-z0-9._-]+$/;
+            const validPrefixes = ['feature/', 'fix/', 'docs/', 'test/', 'refactor/', 'config/'];
+            const regex = /^(feature|fix|docs|test|refactor|config)\/[a-zA-Z0-9._-]+$/;
             
             if (!regex.test(branch)) {
               const message = `❌ Branch name "${branch}" does not follow the required naming convention.

@@ -4,7 +4,6 @@
 - [ ] feat
 - [ ] fix
 - [ ] docs
-- [ ] chore
 - [ ] refactor
 - [ ] test
 - [ ] config

@@ -12,6 +12,8 @@ jobs:
         run: |
           if [[ ! "${{ github.event.pull_request.title }}" =~ ^(feat|fix|docs|test|refactor|config):.+ ]]; then
             echo "❌ PR title must follow format: [type]: description"
+            echo "Valid types: feat, fix, docs, test, refactor, config"
+            echo "Example: feat: add driver dashboard"
             exit 1
           fi
       
@@ -19,5 +21,7 @@ jobs:
         run: |
           if [[ ! "${{ github.head_ref }}" =~ ^(feature|fix|docs|test|refactor|config)/.+ ]]; then
             echo "❌ Branch must follow format: type/description"
+            echo "Valid types: feature, fix, docs, test, refactor, config"
+            echo "Example: feature/driver-dashboard"
             exit 1
           fi
