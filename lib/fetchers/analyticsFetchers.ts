@@ -407,28 +407,96 @@ export async function getDashboardSummary(
   const cacheKey = `analytics:dashboard:${organizationId}:${timeRange}:${JSON.stringify(filters)}`;
   const cached = getCachedData(cacheKey) as DashboardSummary | null;
   if (cached) return cached;
-  // Mock data for now - replace with actual calculations
+
+  const { startDate, endDate } = getDateRange(timeRange);
+
+  const whereClause: any = {
+    organizationId,
+    actualDeliveryDate: { gte: startDate, lte: endDate }
+  };
+  if (filters.driverId) whereClause.driverId = filters.driverId;
+  if (filters.vehicleId) whereClause.vehicleId = filters.vehicleId;
+  if (filters.customerId) whereClause.customerId = filters.customerId;
+  if (filters.customerName) {
+    whereClause.customerName = {
+      contains: filters.customerName,
+      mode: 'insensitive'
+    };
+  }
+  if (filters.equipmentType) {
+    whereClause.equipment = { path: ['type'], equals: filters.equipmentType };
+  }
+  if (filters.priority) whereClause.priority = filters.priority;
+
+  const [loads, activeDrivers, activeVehicles, fuelStats, complianceAlerts, maintenanceVehicles] =
+    await Promise.all([
+      prisma.load.findMany({
+        where: whereClause,
+        select: {
+          status: true,
+          rate: true,
+          actualMiles: true,
+          actualDeliveryDate: true,
+          scheduledDeliveryDate: true
+        }
+      }),
+      prisma.driver.count({ where: { organizationId, status: 'active' } }),
+      prisma.vehicle.count({ where: { organizationId, status: 'active' } }),
+      prisma.iftaFuelPurchase.aggregate({
+        where: { organizationId, date: { gte: startDate, lte: endDate } },
+        _sum: { gallons: true }
+      }),
+      prisma.complianceAlert.count({
+        where: { organizationId, status: { not: 'resolved' } }
+      }),
+      prisma.vehicle.count({ where: { organizationId, status: 'maintenance' } })
+    ]);
+
+  const totalLoads = loads.length;
+  const completedLoads = loads.filter(l => l.status === 'delivered').length;
+  const activeLoads = loads.filter(
+    l => l.status !== 'delivered' && l.status !== 'cancelled'
+  ).length;
+  const totalRevenue = loads.reduce((sum, l) => sum + Number(l.rate || 0), 0);
+  const totalMiles = loads.reduce((sum, l) => sum + Number(l.actualMiles || 0), 0);
+  const averageRpm = totalMiles > 0 ? totalRevenue / totalMiles : 0;
+  const onTimeDeliveries = loads.filter(
+    l =>
+      l.actualDeliveryDate &&
+      l.scheduledDeliveryDate &&
+      new Date(l.actualDeliveryDate) <= new Date(l.scheduledDeliveryDate)
+  ).length;
+  const onTimeDeliveryRate =
+    completedLoads > 0 ? (onTimeDeliveries / completedLoads) * 100 : 0;
+
+  const fuelConsumed = Number(fuelStats._sum.gallons || 0);
+  const fuelEfficiency = fuelConsumed > 0 ? totalMiles / fuelConsumed : 0;
+  const driverUtilization =
+    activeDrivers > 0 ? (activeLoads / activeDrivers) * 100 : 0;
+  const maintenanceAlerts = maintenanceVehicles + complianceAlerts;
+  const safetyScore = Math.max(0, 100 - complianceAlerts * 2);
+
   const summary: DashboardSummary = {
-    totalRevenue: 125000,
-    totalMiles: 45000,
-    activeLoads: 12,
-    completedLoads: 78,
-    averageRpm: 2.78,
-    fuelEfficiency: 6.2,
-    maintenanceCosts: 8500,
-    driverUtilization: 85.5,
+    totalRevenue,
+    totalMiles,
+    activeLoads,
+    completedLoads,
+    averageRpm,
+    fuelEfficiency,
+    maintenanceCosts: 0,
+    driverUtilization,
     timeRange,
     lastUpdated: new Date().toISOString(),
-    averageRevenuePerMile: 2.78,
-    totalLoads: 90,
-    activeDrivers: 25,
-    activeVehicles: 18,
-    onTimeDeliveryRate: 88.5,
-    maintenanceAlerts: 3,
-    safetyScore: 95.2
+    averageRevenuePerMile: averageRpm,
+    totalLoads,
+    activeDrivers,
+    activeVehicles,
+    onTimeDeliveryRate,
+    maintenanceAlerts,
+    safetyScore
   };
 
-  setCachedData(cacheKey, summary, CACHE_TTL.DATA || 300);
+  setCachedData(cacheKey, summary, CACHE_TTL.DATA);
   return summary;
 }
 
