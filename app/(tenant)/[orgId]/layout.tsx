@@ -10,14 +10,14 @@ import { useUserContext } from '@/components/auth/context';
 
 interface TenantLayoutProps {
   children: React.ReactNode;
-  params: Promise<{ orgId: string }>;
+  params: { orgId: string };
 }
 /**
  * Client Component for Tenant Layout
  * Receives orgId from server component and uses auth context for userId
  */
-export async function TenantLayout({ children, params }: TenantLayoutProps) {
-  const { orgId } = await params;
+export function TenantLayout({ children, params }: TenantLayoutProps) {
+  const { orgId } = params;
   const isMobile = useIsMobile();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const userContext = useUserContext();
