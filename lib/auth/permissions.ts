@@ -273,6 +273,9 @@ export class RouteProtection {
     ],
     // Dispatch dashboard: Dispatcher, Admin
     '/:orgId/dispatch/:userId': [SystemRoles.DISPATCHER, SystemRoles.ADMIN],
+    // Admin dashboard and management pages
+    '/:orgId/admin': [SystemRoles.ADMIN],
+    '/:orgId/admin/:userId': [SystemRoles.ADMIN],
     // Analytics: Admin, Dispatcher, Compliance Officer, Member (read-only)
     '/:orgId/analytics': [
       SystemRoles.ADMIN,
